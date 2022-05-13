@@ -1,7 +1,6 @@
-package com.moli.common.exception;
+package com.moli.order.server.exception;
 
 
-import com.moli.common.core.MoliResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.AuthorizationException;
 import org.springframework.dao.DataAccessException;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -26,9 +24,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(value = BaseException.class)
     public MoliResult<Object> baseExceptionHandler(HttpServletRequest req, BaseException e) {
-        log.error("数据异常！原因是:", e);
+        log.error("数据异常！原因是:{}", e.getMessage());
         log.error("接口名URL: {}" + req.getRequestURI());
-        return MoliResult.success(e.getErrorMsg());
+        return MoliResult.error(e.getErrorCode(), e.getErrorMsg());
     }
 
     /**

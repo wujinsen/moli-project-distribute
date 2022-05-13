@@ -1,0 +1,12 @@
+### 配置端口号
+server:
+  port: 8086
+  shutdown: graceful #优雅停机配置, springboot 2.3.0开始提供
+
+### 选择环境
+spring:
+  application:
+    name: user-center-server
+  lifecycle:
+    timeout-per-shutdown-phase: 30s #优雅停机配置, 设置缓冲器， 最大等待时间  cloud:
+

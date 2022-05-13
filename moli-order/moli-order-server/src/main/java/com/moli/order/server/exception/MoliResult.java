@@ -1,7 +1,6 @@
-package com.moli.common.core;
+package com.moli.order.server.exception;
 
 
-import com.moli.common.enums.ResponseCodeEnums;
 import lombok.Data;
 
 import java.io.Serializable;

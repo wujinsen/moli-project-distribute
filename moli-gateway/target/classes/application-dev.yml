@@ -1,0 +1,25 @@
+
+spring:
+  cloud:
+    gateway:
+      enabled:  true
+      discovery:
+        locator:
+          lower-case-service-id: true
+      # spring cloud route config -- UserCenter Server
+      routes:
+      - id: nacos-route
+        uri: lb://user-center-server
+        predicates:
+        - Path=/UserCenter/**
+        filters:
+        - StripPrefix=1
+      # spring cloud route config -- Order Server
+      - id: nacos-route
+        uri: lb://order-server
+        predicates:
+        - Path=/chat/**
+        filters:
+        - StripPrefix=2
+
+

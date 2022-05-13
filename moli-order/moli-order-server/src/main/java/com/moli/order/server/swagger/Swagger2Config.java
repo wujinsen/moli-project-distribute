@@ -1,4 +1,4 @@
-package com.moli.config.swagger;
+package com.moli.order.server.swagger;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,8 +30,8 @@ import static com.google.common.collect.Lists.newArrayList;
 @EnableSwagger2
 public class Swagger2Config extends WebMvcConfigurerAdapter {
 
-    @Value("${swagger.show}")
-    private boolean swaggerShow;
+//    @Value("${swagger.show}")
+//    private boolean swaggerShow;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -52,10 +52,10 @@ public class Swagger2Config extends WebMvcConfigurerAdapter {
                 .required(false).build(); //header中的ticket参数非必填，传空也可以
         pars.add(ticketPar.build());  //根据每个方法名也知道当前方法在设置什么参数
         return new Docket(DocumentationType.SWAGGER_2)
-                .enable(swaggerShow)
+                .enable(true)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.moli"))
+                .apis(RequestHandlerSelectors.basePackage("com.aaa"))
                 .paths(PathSelectors.any())
                 .build().globalOperationParameters(pars);
     }

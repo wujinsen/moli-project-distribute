@@ -1,4 +1,4 @@
-package com.moli.common.enums;
+package com.moli.order.server.exception;
 
 public enum ResponseCodeEnums {
 

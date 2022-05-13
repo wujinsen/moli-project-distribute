@@ -1,4 +1,4 @@
-package com.moli.common.exception;
+package com.moli.order.server.exception;
 
 /**
  * 业务异常类
@@ -22,12 +22,12 @@ public class BaseException extends RuntimeException {
 
 
     public BaseException(String errorMsg) {
-        super(errorMsg);
+        super("==========: "+ errorMsg);
         this.errorMsg = errorMsg;
     }
 
     public BaseException(String errorCode, String errorMsg) {
-        super(errorCode);
+        super(errorCode + errorMsg);
         this.errorCode = errorCode;
         this.errorMsg = errorMsg;
     }
