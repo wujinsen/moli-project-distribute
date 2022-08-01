@@ -1,7 +1,5 @@
 package com.moli.order.server;
 
-
-
 import com.moli.user.center.client.UserCenterClient;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;

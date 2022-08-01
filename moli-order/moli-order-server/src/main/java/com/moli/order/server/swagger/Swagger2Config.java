@@ -55,7 +55,7 @@ public class Swagger2Config extends WebMvcConfigurerAdapter {
                 .enable(true)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.aaa"))
+                .apis(RequestHandlerSelectors.basePackage("com.moli"))
                 .paths(PathSelectors.any())
                 .build().globalOperationParameters(pars);
     }
