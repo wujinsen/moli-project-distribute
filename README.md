@@ -6,11 +6,11 @@
 基于SpringCloud体系微服务技术选型
 
 服务发现: Spring Cloud OpenFeign
-配置中心: Spring Cloud OpenFeign
-服务网关: Spring Cloud OpenFeign
-负载均衡: Spring Cloud OpenFeign
-降级熔断: Spring Cloud OpenFeign
-服务调用: Spring Cloud OpenFeign
+配置中心: Spring Cloud Alibaba Nacos
+服务网关: Spring Cloud Gateway
+负载均衡: Spring Cloud Ribbon
+降级熔断: Spring Cloud Sentinel
+服务调用: Spring Cloud **OpenFeign**
 数据库: mysql
 缓存数据库: redis
 对象存储服务: Minio

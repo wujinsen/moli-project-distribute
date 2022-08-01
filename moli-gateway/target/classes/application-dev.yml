@@ -18,8 +18,8 @@ spring:
       - id: nacos-route
         uri: lb://order-server
         predicates:
-        - Path=/chat/**
+        - Path=/OrderServer/**
         filters:
-        - StripPrefix=2
+        - StripPrefix=1
 
 

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @MapperScan(basePackages = {"com.moli.order.server.mapper"})
-@ComponentScan(basePackages = {"com.moli.order.*"})
+@ComponentScan(basePackages = {"com.moli.order.server.*"})
 @EnableDiscoveryClient
 //@EnableFeignClients(clients = { UserCenterClient.class})
 public class OrderApplication {

@@ -1,7 +1,0 @@
-com/moli/order/server/controller/OrderController.class
-com/moli/order/server/exception/BaseException.class
-com/moli/order/server/swagger/Swagger2Config.class
-com/moli/order/server/exception/MoliResult.class
-com/moli/order/server/exception/ResponseCodeEnums.class
-com/moli/order/server/exception/GlobalExceptionHandler.class
-com/moli/order/server/OrderApplication.class
