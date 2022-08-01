@@ -3,6 +3,9 @@ package com.moli.user.center.common.constant;
 
 public class CommonPermissionConstant {
 
+    //定义常量
+    public static final String AUTHORIZATION = "Authorization";
+
     public static final String  SYS_USER_CRATE = "sys:user:create";
 
     public static final String  SYS_USER_UPDATE = "sys:user:update";

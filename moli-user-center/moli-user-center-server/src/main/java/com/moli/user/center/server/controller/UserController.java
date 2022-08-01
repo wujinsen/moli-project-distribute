@@ -120,7 +120,7 @@ public class UserController {
     }
 
     /**
-     * 查询单个用户
+     * 根据用户名查询用户信息
      */
     @GetMapping(value = "/getInfoByUserName/{userName}")
     public MoliResult<User> getInfoByUserName(@PathVariable("userName") String userName) {

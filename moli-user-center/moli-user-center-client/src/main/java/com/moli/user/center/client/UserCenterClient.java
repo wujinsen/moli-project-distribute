@@ -16,8 +16,9 @@ public interface UserCenterClient {
      * 根据用户名获取用户
      * @return
      */
-    @GetMapping(path = "/user/{userName}")
+    @GetMapping(path = "/user/getInfoByUserName/{userName}")
     MoliResult<User> getInfoByUserName(@PathVariable("userName") String userName);
+
 
 }
 

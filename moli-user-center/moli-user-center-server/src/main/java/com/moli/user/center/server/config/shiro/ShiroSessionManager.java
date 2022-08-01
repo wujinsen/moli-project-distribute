@@ -1,5 +1,6 @@
 package com.moli.user.center.server.config.shiro;
 
+import com.moli.user.center.common.constant.CommonPermissionConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
@@ -11,8 +12,7 @@ import java.io.Serializable;
 
 public class ShiroSessionManager extends DefaultWebSessionManager {
 
-    //定义常量
-    private static final String AUTHORIZATION = "Authorization";
+
     private static final String REFERENCED_SESSION_ID_SOURCE = "Stateless request";
     //重写构造器
     public ShiroSessionManager() {
@@ -26,7 +26,7 @@ public class ShiroSessionManager extends DefaultWebSessionManager {
      */
     @Override
     public Serializable getSessionId(ServletRequest request, ServletResponse response) {
-        String token = WebUtils.toHttp(request).getHeader(AUTHORIZATION);
+        String token = WebUtils.toHttp(request).getHeader(CommonPermissionConstant.AUTHORIZATION);
         //如果请求头中存在token 则从请求头中获取token
         if (!StringUtils.isEmpty(token)) {
             request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID_SOURCE, REFERENCED_SESSION_ID_SOURCE);
