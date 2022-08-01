@@ -16,20 +16,21 @@ spring:
         namespace: 52300aa3-03a1-4e26-87a1-52591d381ef7
 
 
+
 ---
 
+
 spring:
-  profiles:
-    active: test
+  profiles: test
   cloud:
     nacos:
       username: nacos
       password: nacos
-#        config:
-#          prefix: application
-#            server-addr: http://127.0.0.1:8848
-#              namespace: 52300aa3-03a1-4e26-87a1-52591d381ef7
-#              file-extension: yml
+      #        config:
+      #          prefix: application
+      #            server-addr: http://127.0.0.1:8848
+      #              namespace: 52300aa3-03a1-4e26-87a1-52591d381ef7
+      #              file-extension: yml
       discovery:
         server-addr: http://127.0.0.1:8848
         namespace: 8cf9fb08-7e7c-4084-9ba5-b87ac9da2f78

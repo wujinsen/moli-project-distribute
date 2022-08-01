@@ -28,7 +28,7 @@ public class Dept{
 
     @ApiModelProperty("创建人")
     @TableField(fill = FieldFill.INSERT)
-    private String createId;
+    private Long createId;
 
     @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -36,7 +36,7 @@ public class Dept{
 
     @ApiModelProperty("修改人")
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private String updateId;
+    private Long updateId;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @ApiModelProperty("修改时间")

@@ -1,6 +1,7 @@
 package com.moli.order.server.controller;
 
 
+import com.moli.user.center.client.UserCenterClient;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,8 +14,8 @@ import javax.annotation.Resource;
 @Api(tags = "订单管理")
 public class OrderController {
 
-//    @Resource
-//    private UserCenterClient userCenterClient;
+    @Resource
+    private UserCenterClient userCenterClient;
 
     @GetMapping("/aaa")
     public String aaa() {
@@ -23,7 +24,7 @@ public class OrderController {
 //        }
         System.out.println("order aaa");
 
-     //  System.out.println("request usercenter: " + userCenterClient.aaa());
+     System.out.println("request usercenter: " + userCenterClient.getInfoByUserName("admin"));
 
         return "order aaa";
     }

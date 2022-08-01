@@ -2,6 +2,7 @@ package com.moli.order.server;
 
 
 
+import com.moli.user.center.client.UserCenterClient;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 @MapperScan(basePackages = {"com.moli.order.server.mapper"})
 @ComponentScan(basePackages = {"com.moli.order.server.*"})
 @EnableDiscoveryClient
-//@EnableFeignClients(clients = { UserCenterClient.class})
+@EnableFeignClients(clients = { UserCenterClient.class})
 public class OrderApplication {
 
     public static void main(String[] args) {

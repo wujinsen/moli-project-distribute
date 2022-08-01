@@ -2,6 +2,7 @@ package com.moli.user.center.server.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.MoliResult;
@@ -61,7 +62,7 @@ public class UserController {
             lambdaQueryWrapper.eq(User::getDeptId, userVo.getDeptId());
         }
         if (StringUtils.isNotBlank(userVo.getUserName())) {
-            lambdaQueryWrapper.eq(User::getUserName,userVo.getUserName());
+            lambdaQueryWrapper.eq(User::getUserName, userVo.getUserName());
         }
         if (StringUtils.isNotBlank(userVo.getTelephone())) {
             lambdaQueryWrapper.eq(User::getTelephone, userVo.getTelephone());
@@ -113,9 +114,17 @@ public class UserController {
      * 查询单个用户
      */
     @GetMapping(value = "/{id}")
-    public MoliResult<User> getInfo(@PathVariable Long id) {
+    public MoliResult<User> getInfo(@PathVariable("id") Long id) {
 
         return MoliResult.success(userMapper.selectById(id));
+    }
+
+    /**
+     * 查询单个用户
+     */
+    @GetMapping(value = "/getInfoByUserName/{userName}")
+    public MoliResult<User> getInfoByUserName(@PathVariable("userName") String userName) {
+        return MoliResult.success(userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserName, userName).eq(User::getIsDelete, CommonConstant.UN_DELETE)));
     }
 
     /**
