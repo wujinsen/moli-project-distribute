@@ -1,9 +1,0 @@
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/shiro/AuthenticationFilter.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/shiro/CORSConfiguration.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/shiro/SystemLogoutFilter.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/UserCenterClient.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/shiro/ShiroConfig.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/shiro/ShiroRealm.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/shiro/ShiroSessionIdGenerator.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/shiro/ShiroSessionManager.java
-/Users/wujinsen/my-project/moli-project-distrbute/moli-user-center/moli-user-center-client/src/main/java/com/moli/user/center/client/config/FeignConfiguration.java
