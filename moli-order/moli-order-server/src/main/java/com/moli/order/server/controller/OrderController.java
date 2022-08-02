@@ -2,7 +2,9 @@ package com.moli.order.server.controller;
 
 
 import com.moli.user.center.client.UserCenterClient;
+import com.moli.user.center.client.UserCenterServer;
 import io.swagger.annotations.Api;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +18,9 @@ public class OrderController {
 
     @Resource
     private UserCenterClient userCenterClient;
+
+    @DubboReference(version = "1.0.0", group = "moli", protocol = "dubbo")
+    private UserCenterServer userCenterServer;
 
     @GetMapping("/aaa")
     public String aaa() {
@@ -32,8 +37,9 @@ public class OrderController {
     @GetMapping("bbb")
     public String bbb() {
 
-        System.out.println("order aaa");
+        System.out.println("order bbb");
 
+        System.out.println("request usercenter: " + userCenterServer.getInfoByUserName("admin"));
         return "order bbb";
     }
 }
