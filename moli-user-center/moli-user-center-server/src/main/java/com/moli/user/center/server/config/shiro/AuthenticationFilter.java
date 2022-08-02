@@ -29,7 +29,7 @@ public class AuthenticationFilter extends FormAuthenticationFilter {
         httpServletResponse.setHeader("X-Frame-Options", "SAMEORIGIN");
         httpServletResponse.setCharacterEncoding("UTF-8");
         httpServletResponse.setContentType("application/json; charset=utf-8");
-        httpServletResponse.getWriter().write(JSON.toJSONString(MoliResult.errorMsg(ResponseCodeEnums.TOKEN_INVALID_ERROR_CODE.getCode(), ResponseCodeEnums.TOKEN_INVALID_ERROR_CODE.getMessage())));
+        httpServletResponse.getWriter().write(JSON.toJSONString(MoliResult.error(ResponseCodeEnums.TOKEN_INVALID_ERROR_CODE.getCode(), ResponseCodeEnums.TOKEN_INVALID_ERROR_CODE.getMessage())));
         return false;
     }
 
