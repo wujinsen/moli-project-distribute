@@ -29,4 +29,11 @@ public class OrderController {
         return "order aaa";
     }
 
+    @GetMapping("bbb")
+    public String bbb() {
+
+        System.out.println("order aaa");
+
+        return "order bbb";
+    }
 }
