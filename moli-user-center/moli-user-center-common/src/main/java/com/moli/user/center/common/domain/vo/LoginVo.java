@@ -1,6 +1,6 @@
-package com.moli.common.domain.vo;
+package com.moli.user.center.common.domain.vo;
 
-import com.moli.common.domain.entity.User;
+import com.moli.user.center.common.domain.entity.User;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

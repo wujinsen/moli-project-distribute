@@ -1,4 +1,4 @@
-package com.moli.common.domain.vo;
+package com.moli.user.center.common.domain.vo;
 
 import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;

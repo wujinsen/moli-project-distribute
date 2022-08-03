@@ -2,7 +2,7 @@ package com.moli.user.center.server.provider;
 
 
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.User;
+import com.moli.user.center.common.domain.entity.User;
 import com.moli.user.center.client.UserCenterServer;
 import com.moli.user.center.server.service.UserService;
 import lombok.extern.slf4j.Slf4j;

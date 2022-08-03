@@ -1,7 +1,7 @@
 package com.moli.user.center.common.utils;
 
 
-import com.moli.common.domain.entity.User;
+import com.moli.user.center.common.domain.entity.User;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.LogoutAware;

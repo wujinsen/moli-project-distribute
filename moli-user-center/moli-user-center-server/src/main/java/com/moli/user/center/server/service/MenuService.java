@@ -1,7 +1,7 @@
 package com.moli.user.center.server.service;
 
-import com.moli.common.domain.entity.Menu;
-import com.moli.common.domain.vo.MenuVo;
+import com.moli.user.center.common.domain.entity.Menu;
+import com.moli.user.center.common.domain.vo.MenuVo;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.moli.user.center.client.shiro;
 
 
-import com.moli.common.domain.entity.User;
+import com.moli.user.center.common.domain.entity.User;
 import com.moli.user.center.client.UserCenterClient;
 import com.moli.user.center.common.utils.ShiroUtils;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.moli.common.domain.entity;
+package com.moli.user.center.common.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;

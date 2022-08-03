@@ -1,8 +1,8 @@
 package com.moli.user.center.server.controller;
 
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.Menu;
-import com.moli.common.domain.vo.MenuVo;
+import com.moli.user.center.common.domain.entity.Menu;
+import com.moli.user.center.common.domain.vo.MenuVo;
 import com.moli.user.center.server.config.util.ShiroUtils;
 import com.moli.user.center.server.mapper.MenuMapper;
 import com.moli.user.center.server.mapper.UserMapper;

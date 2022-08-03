@@ -2,8 +2,8 @@ package com.moli.user.center.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.core.MoliResult;
-import com.moli.common.domain.entity.Dept;
-import com.moli.common.domain.vo.DeptVo;
+import com.moli.user.center.common.domain.entity.Dept;
+import com.moli.user.center.common.domain.vo.DeptVo;
 import com.moli.user.center.server.mapper.DeptMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
