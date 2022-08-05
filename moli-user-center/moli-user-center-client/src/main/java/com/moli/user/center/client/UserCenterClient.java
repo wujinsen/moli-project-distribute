@@ -2,7 +2,7 @@ package com.moli.user.center.client;
 
 
 import com.moli.common.core.MoliResult;
-import com.moli.user.center.common.domain.entity.User;
+import com.moli.user.center.common.domain.entity.SysUser;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,7 @@ public interface UserCenterClient {
      * @return
      */
     @GetMapping(path = "/user/getInfoByUserName/{userName}")
-    MoliResult<User> getInfoByUserName(@PathVariable("userName") String userName);
+    MoliResult<SysUser> getInfoByUserName(@PathVariable("userName") String userName);
 
 
 }

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @MapperScan(basePackages = {"com.moli.user.center.server.mapper"})
-@ComponentScan(basePackages = {"com.moli.user.center.server.*"})
+@ComponentScan(basePackages = {"com.moli.user.center.server.*","com.moli.common.*"})
 @EnableDiscoveryClient
 public class UserCenterApplication {
     public static void main(String[] args) {

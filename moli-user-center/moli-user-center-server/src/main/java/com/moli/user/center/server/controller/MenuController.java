@@ -1,7 +1,7 @@
 package com.moli.user.center.server.controller;
 
 import com.moli.common.core.MoliResult;
-import com.moli.user.center.common.domain.entity.Menu;
+import com.moli.user.center.common.domain.entity.SysMenu;
 import com.moli.user.center.common.domain.vo.MenuVo;
 import com.moli.user.center.server.config.util.ShiroUtils;
 import com.moli.user.center.server.mapper.MenuMapper;
@@ -63,8 +63,8 @@ public class MenuController {
      * @return
      */
     @PostMapping
-    public MoliResult<Boolean> insert(@RequestBody Menu menu) {
-        menuService.insert(menu);
+    public MoliResult<Boolean> insert(@RequestBody SysMenu sysMenu) {
+        menuService.insert(sysMenu);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -74,8 +74,8 @@ public class MenuController {
      * @return
      */
     @PutMapping
-    public MoliResult<Boolean> update(@RequestBody Menu menu) {
-        menuService.update(menu);
+    public MoliResult<Boolean> update(@RequestBody SysMenu sysMenu) {
+        menuService.update(sysMenu);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -83,7 +83,7 @@ public class MenuController {
      * 查询菜单
      */
     @GetMapping(value = "/{id}")
-    public MoliResult<Menu> getInfo(@PathVariable Long id) {
+    public MoliResult<SysMenu> getInfo(@PathVariable Long id) {
 
         return MoliResult.success(menuMapper.selectById(id));
     }

@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class User extends BaseEntity {
+public class SysUser extends BaseEntity {
 
     private Long deptId;
 

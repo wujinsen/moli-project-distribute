@@ -1,9 +1,9 @@
 package com.moli.user.center.server.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.moli.user.center.common.domain.entity.Post;
+import com.moli.user.center.common.domain.entity.SysPost;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface PostMapper  extends BaseMapper<Post> {
+public interface PostMapper  extends BaseMapper<SysPost> {
 }

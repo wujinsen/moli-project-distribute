@@ -1,13 +1,15 @@
 package com.moli.user.center.common.domain.entity;
 
+
 import lombok.Data;
 
 @Data
-public class UserRole {
+public class SysRoleMenu {
 
     private Long id;
 
-    private Long userId;
-
     private Long roleId;
+
+    private Long menuId;
+
 }

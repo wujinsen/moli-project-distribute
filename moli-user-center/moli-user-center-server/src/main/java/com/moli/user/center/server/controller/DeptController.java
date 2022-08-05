@@ -2,7 +2,7 @@ package com.moli.user.center.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.core.MoliResult;
-import com.moli.user.center.common.domain.entity.Dept;
+import com.moli.user.center.common.domain.entity.SysDept;
 import com.moli.user.center.common.domain.vo.DeptVo;
 import com.moli.user.center.server.mapper.DeptMapper;
 import io.swagger.annotations.Api;
@@ -30,23 +30,23 @@ public class DeptController {
     /**
      * 部门列表
      *
-     * @param dept
+     * @param sysDept
      * @return
      */
     @GetMapping("/list")
     @ApiOperation(value = "部门列表", notes = "部门列表")
-    public MoliResult<List<DeptVo>> list(Dept dept) {
+    public MoliResult<List<DeptVo>> list(SysDept sysDept) {
 
-        LambdaQueryWrapper<Dept> lambdaQueryWrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<SysDept> lambdaQueryWrapper = new LambdaQueryWrapper();
         List<DeptVo> deptVoList = new ArrayList();
-        if (StringUtils.isNotBlank(dept.getDeptName())) {
-            lambdaQueryWrapper.like(Dept::getDeptName, dept.getDeptName());
+        if (StringUtils.isNotBlank(sysDept.getDeptName())) {
+            lambdaQueryWrapper.like(SysDept::getDeptName, sysDept.getDeptName());
         }
-        if (dept.getStatus() != null) {
-            lambdaQueryWrapper.like(Dept::getStatus, dept.getStatus());
+        if (sysDept.getStatus() != null) {
+            lambdaQueryWrapper.like(SysDept::getStatus, sysDept.getStatus());
         }
-        List<Dept> deptList = deptMapper.selectList(lambdaQueryWrapper);
-        for (Dept entity : deptList) {
+        List<SysDept> sysDeptList = deptMapper.selectList(lambdaQueryWrapper);
+        for (SysDept entity : sysDeptList) {
             DeptVo deptVo = new DeptVo();
             BeanUtils.copyProperties(entity, deptVo);
             deptVoList.add(deptVo);
@@ -64,12 +64,12 @@ public class DeptController {
     @ApiOperation(value = "部门列表", notes = "部门列表")
     public MoliResult<List<DeptVo>> getDeptTreeList() {
 
-        LambdaQueryWrapper<Dept> lambdaQueryWrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<SysDept> lambdaQueryWrapper = new LambdaQueryWrapper();
         List<DeptVo> deptVoList = new ArrayList();
-        List<Dept> deptList = deptMapper.selectList(lambdaQueryWrapper);
-        for (Dept dept : deptList) {
+        List<SysDept> sysDeptList = deptMapper.selectList(lambdaQueryWrapper);
+        for (SysDept sysDept : sysDeptList) {
             DeptVo deptVo = new DeptVo();
-            BeanUtils.copyProperties(dept, deptVo);
+            BeanUtils.copyProperties(sysDept, deptVo);
             deptVoList.add(deptVo);
         }
 
@@ -82,8 +82,8 @@ public class DeptController {
      * @return 添加用户
      */
     @PostMapping
-    public MoliResult<Boolean> insert(@RequestBody Dept dept) {
-        deptMapper.insert(dept);
+    public MoliResult<Boolean> insert(@RequestBody SysDept sysDept) {
+        deptMapper.insert(sysDept);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -93,8 +93,8 @@ public class DeptController {
      * @return
      */
     @PutMapping
-    public MoliResult<Boolean> update(@RequestBody Dept dept) {
-        deptMapper.updateById(dept);
+    public MoliResult<Boolean> update(@RequestBody SysDept sysDept) {
+        deptMapper.updateById(sysDept);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -102,7 +102,7 @@ public class DeptController {
      * 查询单个用户
      */
     @GetMapping(value = "/{id}")
-    public MoliResult<Dept> getInfo(@PathVariable Long id) {
+    public MoliResult<SysDept> getInfo(@PathVariable Long id) {
 
         return MoliResult.success(deptMapper.selectById(id));
     }

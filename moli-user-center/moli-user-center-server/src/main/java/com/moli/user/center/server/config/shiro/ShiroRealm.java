@@ -3,7 +3,7 @@ package com.moli.user.center.server.config.shiro;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
-import com.moli.user.center.common.domain.entity.User;
+import com.moli.user.center.common.domain.entity.SysUser;
 import com.moli.user.center.server.config.util.ShiroUtils;
 import com.moli.user.center.server.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,7 @@ public class ShiroRealm extends AuthorizingRealm {
         String userName = (String) authenticationToken.getPrincipal();
         //通过username从数据库中查找 User对象，如果找到进行验证
         //实际项目中,这里可以根据实际情况做缓存,如果不做,Shiro自己也是有时间间隔机制,2分钟内不会重复执行该方法
-        User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserName, userName).eq(User::getIsDelete, CommonConstant.UN_DELETE));
+        SysUser user = userMapper.selectOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getUserName, userName).eq(SysUser::getIsDelete, CommonConstant.UN_DELETE));
 //        //判断账号是否存在
 //        if (user == null) {
 //            throw new AuthenticationException();

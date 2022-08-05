@@ -2,10 +2,10 @@ package com.moli.user.center.server.mapper;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.moli.user.center.common.domain.entity.User;
+import com.moli.user.center.common.domain.entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface UserMapper extends BaseMapper<User> {
+public interface UserMapper extends BaseMapper<SysUser> {
 
 }
