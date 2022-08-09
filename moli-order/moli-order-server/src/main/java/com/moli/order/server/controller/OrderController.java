@@ -16,30 +16,37 @@ import javax.annotation.Resource;
 @Api(tags = "订单管理")
 public class OrderController {
 
-    @Resource
-    private UserCenterClient userCenterClient;
+//    @Resource
+//    private UserCenterClient userCenterClient;
 
     @DubboReference(version = "1.0.0", group = "moli", protocol = "dubbo")
     private UserCenterServer userCenterServer;
 
-    @GetMapping("/aaa")
-    public String aaa() {
-//        if(1==1){
-//            throw new BaseException("111", "出错啦");
-//        }
-        System.out.println("order aaa");
+//    @GetMapping("/aaa")
+//    public String aaa() {
+////        if(1==1){
+////            throw new BaseException("111", "出错啦");
+////        }
+//        System.out.println("order aaa");
+//
+//     System.out.println("request usercenter: " + userCenterClient.getInfoByUserName("admin"));
+//
+//        return "order aaa";
+//    }
+//
+//    @GetMapping("bbb")
+//    public String bbb() {
+//
+//        System.out.println("order bbb");
+//
+//        System.out.println("request usercenter: " + userCenterServer.getInfoByUserName("admin"));
+//        return "order bbb";
+//    }
 
-     System.out.println("request usercenter: " + userCenterClient.getInfoByUserName("admin"));
-
-        return "order aaa";
-    }
-
-    @GetMapping("bbb")
-    public String bbb() {
-
-        System.out.println("order bbb");
-
-        System.out.println("request usercenter: " + userCenterServer.getInfoByUserName("admin"));
+    @GetMapping("ccc")
+    public String ccc() {
+        System.out.println("order ccc");
         return "order bbb";
     }
+
 }
