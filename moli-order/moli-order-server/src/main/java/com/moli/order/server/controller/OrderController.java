@@ -1,6 +1,7 @@
 package com.moli.order.server.controller;
 
 
+import com.alibaba.nacos.api.config.annotation.NacosValue;
 import com.moli.user.center.client.UserCenterClient;
 import com.moli.user.center.client.UserCenterServer;
 import io.swagger.annotations.Api;
@@ -20,6 +21,7 @@ public class OrderController {
 //    private UserCenterClient userCenterClient;
 
     @DubboReference(version = "1.0.0", group = "moli", protocol = "dubbo")
+    @NacosValue("")
     private UserCenterServer userCenterServer;
 
 //    @GetMapping("/aaa")

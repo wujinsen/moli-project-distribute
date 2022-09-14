@@ -13,7 +13,7 @@ spring:
 #        file-extension: yml
       discovery:
         server-addr: http://127.0.0.1:8848
-        namespace: 52300aa3-03a1-4e26-87a1-52591d381ef7
+        namespace: 4fa85588-6ab5-479b-aea2-2b1d2e52db7a
 
 dubbo:
   registry:
