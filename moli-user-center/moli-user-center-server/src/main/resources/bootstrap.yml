@@ -6,11 +6,14 @@ spring:
     nacos:
       username: nacos
       password: nacos
-#      config:
-#        prefix: user-center-server
-#        server-addr: http://127.0.0.1:8848
-#        namespace: 52300aa3-03a1-4e26-87a1-52591d381ef7
-#        file-extension: yml
+      config:
+        server-addr: http://127.0.0.1:8848
+        namespace: 4fa85588-6ab5-479b-aea2-2b1d2e52db7a
+        extension-configs:
+          - data-id: aaa-dev.yaml
+            refresh: true
+          - data-id: bbb-dev.yaml
+            refresh: true
       discovery:
         server-addr: http://127.0.0.1:8848
         namespace: 4fa85588-6ab5-479b-aea2-2b1d2e52db7a
