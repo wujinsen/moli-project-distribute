@@ -5,6 +5,8 @@ server:
 
 ### 选择环境
 spring:
+  profiles:
+    active: dev
   application:
     name: order-server
   lifecycle:

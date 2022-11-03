@@ -9,14 +9,17 @@
         <outputRelativeToContentRoot value="true" />
         <module name="moli-user-center-client" />
         <module name="moli-order-server" />
+        <module name="moli-bi-server" />
+        <module name="moli-user-center-common" />
         <module name="moli-user-center-server" />
         <module name="moli-distribute-common" />
-        <module name="moli-user-center-common" />
         <module name="moli-gateway" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="moli-project-distrbute" target="8" />
+      <module name="moli-test" target="8" />
+      <module name="moli-test-server" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

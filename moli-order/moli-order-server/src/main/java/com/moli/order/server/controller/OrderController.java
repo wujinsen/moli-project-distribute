@@ -2,10 +2,11 @@ package com.moli.order.server.controller;
 
 
 import com.alibaba.nacos.api.config.annotation.NacosValue;
-import com.moli.user.center.client.UserCenterClient;
 import com.moli.user.center.client.UserCenterServer;
+import com.moli.user.center.common.domain.entity.SysUser;
 import io.swagger.annotations.Api;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,9 @@ public class OrderController {
 
 //    @Resource
 //    private UserCenterClient userCenterClient;
+
+//    @Autowired
+//    private ZhangsanClient zhangsanClient;
 
     @DubboReference(version = "1.0.0", group = "moli", protocol = "dubbo")
     @NacosValue("")
@@ -46,9 +50,10 @@ public class OrderController {
 //    }
 
     @GetMapping("ccc")
-    public String ccc() {
+    public Object getUserInfo() {
+        //  ShiroUtils.getUserInfo();
         System.out.println("order ccc");
-        return "order bbb";
+        return (SysUser) SecurityUtils.getSubject().getPrincipal();
     }
 
 }

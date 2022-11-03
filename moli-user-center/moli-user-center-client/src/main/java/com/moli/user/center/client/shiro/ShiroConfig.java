@@ -27,15 +27,20 @@ public class ShiroConfig {
     private final String SESSION_KEY = "shiro:session:";
 
     //Redis配置
-    @Value("${spring.redis.host}")
-    private String host;
-    @Value("${spring.redis.port}")
-    private int port;
-    @Value("${spring.redis.timeout}")
-    private int timeout;
+//    @Value("${spring.redis.host}")
+//    private String host;
+//    @Value("${spring.redis.port}")
+//    private int port;
+//    @Value("${spring.redis.timeout}")
+//    private int timeout;
+//
+//    @Value("${spring.redis.password}")
+//    private String password;
 
-    @Value("${spring.redis.password}")
-    private String password;
+    private String host = "localhost";
+    private int port = 6379;
+    private int timeout = 86400;
+    private String password = "123456";
 
     /**
      * 开启Shiro-aop注解支持

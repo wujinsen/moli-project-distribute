@@ -12,6 +12,8 @@
         <option value="$PROJECT_DIR$/moli-user-center-client/pom.xml" />
         <option value="$PROJECT_DIR$/moli-gateway/pom.xml" />
         <option value="$PROJECT_DIR$/moli-test/pom.xml" />
+        <option value="$PROJECT_DIR$/moli-demo/pom.xml" />
+        <option value="$PROJECT_DIR$/moli-bi/pom.xml" />
       </list>
     </option>
   </component>
