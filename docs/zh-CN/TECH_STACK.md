@@ -1,5 +1,7 @@
 # 茉莉项目微服务 — 技术栈文档
 
+**Languages / 语言 / 言語**: [中文](TECH_STACK.md) | [English](../en/TECH_STACK.md) | [日本語](../ja/TECH_STACK.md)
+
 > 本文档基于项目 `README.md` 与微服务技术选型规范整理，描述茉莉分布式项目（moli-project-distribute）所采用的技术体系、版本要求及组件职责。
 
 ---

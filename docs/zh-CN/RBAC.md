@@ -1,5 +1,7 @@
 # RBAC 权限设计文档
 
+**Languages / 语言 / 言語**: [中文](RBAC.md) | [English](../en/RBAC.md) | [日本語](../ja/RBAC.md)
+
 > 本文档描述茉莉项目用户中心（`moli-user-center`）基于 **RBAC（Role-Based Access Control，基于角色的访问控制）** 的权限模型、认证授权流程及接口设计。
 
 ---
