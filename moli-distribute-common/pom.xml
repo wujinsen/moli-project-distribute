@@ -6,7 +6,8 @@
     <parent>
         <artifactId>moli-distribute-parent</artifactId>
         <groupId>com.moli</groupId>
-        <version>1.0.0-RELEASE</version>
+        <version>1.0-RELEASE</version>
+        <relativePath>../moli-distribute-parent/pom.xml</relativePath>
     </parent>
 
     <groupId>com.moli</groupId>

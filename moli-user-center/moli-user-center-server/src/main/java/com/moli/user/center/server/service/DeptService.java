@@ -1,0 +1,17 @@
+package com.moli.user.center.server.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.moli.user.center.common.domain.entity.SysDept;
+
+import java.util.List;
+
+public interface DeptService extends IService<SysDept> {
+
+    void findChildrenDeptIdTree(List<Long> result, List<SysDept> deptList, Long deptId);
+
+    /**
+     * 删除部门及其所有子部门。
+     */
+    boolean deleteWithChildren(Long deptId);
+
+}

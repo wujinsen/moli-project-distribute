@@ -21,12 +21,16 @@ Built on **Spring Cloud + Spring Cloud Alibaba**, covering service discovery, AP
 | API Gateway | **Spring Cloud Gateway** | Unified entry (`moli-gateway`) |
 | Load Balancing | **Spring Cloud Ribbon** | Client-side LB with Nacos (Hoxton built-in) |
 | Circuit Breaking | **Sentinel** | Rate limiting, circuit breaking, degradation |
-| Service Invocation | **Dubbo** + **OpenFeign** | Dubbo for RPC; OpenFeign for HTTP REST calls |
+| Service Invocation | **Spring Cloud Dubbo** | All service-to-service calls use Dubbo RPC; external traffic uses HTTP/REST via gateway |
 
 ### Invocation Patterns
 
-- **Dubbo**: High-performance RPC for stable internal calls (`UserServerProvider`, `@DubboReference`)
-- **OpenFeign**: Declarative HTTP client for REST-style calls (`UserCenterClient`)
+- **Service ↔ Service uses Dubbo only**: high-performance binary RPC, not exposed over HTTP, which avoids the risk of internal endpoints being reachable from outside.
+  - Provider: user-center `UserServerProvider` (`@DubboService(version="1.0.0", group="moli")`).
+  - Consumers: `order-server` / `bi-server` use `@DubboReference` in `ShiroConfig`, then inject into `ShiroRealm` for login authentication.
+  - Registry: Dubbo mounts to Nacos via `spring-cloud://`, sharing the Spring Cloud registry.
+- **External traffic uses HTTP/REST**: browser / `meiling-ui` → gateway → service controllers, unified `MoliResult<T>` response.
+- Note: the earlier OpenFeign example (`UserCenterClient`) has been removed to avoid exposing REST endpoints for internal calls. See `docs/en/ARCHITECTURE.md`.
 
 ---
 
@@ -97,9 +101,9 @@ Built on **Spring Cloud + Spring Cloud Alibaba**, covering service discovery, AP
 |--------|------------------|
 | moli-gateway | Nacos Discovery, Spring Cloud Gateway |
 | moli-user-center-server | Nacos, Sentinel, Dubbo, MyBatis-Plus, Shiro, Redis, MinIO |
-| moli-user-center-client | Nacos Discovery, OpenFeign |
-| moli-order-server | Nacos, Sentinel, Dubbo, OpenFeign, MyBatis-Plus |
-| moli-bi-server | OpenFeign (calls user center) |
+| moli-user-center-client | Nacos Discovery, Spring Cloud Dubbo, `UserCenterServer` contract, Shiro integration |
+| moli-order-server | Nacos, Sentinel, Dubbo, MyBatis-Plus, Shiro (client module) |
+| moli-bi-server | Nacos, Dubbo, Shiro (client module) |
 
 ---
 

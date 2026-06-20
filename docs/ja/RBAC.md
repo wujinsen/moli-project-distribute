@@ -190,9 +190,16 @@ Shiro 認可有効化後、`@RequiresPermissions("sys:user:create")` で API 検
 
 他サービスは **`moli-user-center-client`** を利用：
 
-- `ShiroRealm` が `UserCenterClient`（Feign）でユーザー取得
-- Redis Session 共有
-- `FeignConfiguration` が `Authorization` ヘッダーを透過
+```
+業務サービス                      ユーザーセンター
+    │── Dubbo: getInfoByUserName ──▶│  UserServerProvider（RPC、HTTP 非公開）
+    │── Redis セッション共有 ────────│  shiro:session:* / shiro:cache:*
+    │── Authorization ヘッダー ──────│  外部トラフィックはゲートウェイ経由
+```
+
+- **`ShiroConfig`**：`@DubboReference` で `UserCenterServer` を注入し、`ShiroRealm` へ setter で渡す
+- **`ShiroRealm`**：ログイン時 Dubbo でユーザー取得、ローカルでパスワード検証
+- 詳細は [アーキテクチャ / 呼び出し / 認証](ARCHITECTURE.md)
 
 ---
 
@@ -220,4 +227,4 @@ Shiro 認可有効化後、`@RequiresPermissions("sys:user:create")` で API 検
 | Realm | `.../config/shiro/ShiroRealm.java` | 認証・認可 |
 | メニューサービス | `.../MenuServiceImpl.java` | メニューツリー・RBAC クエリ |
 | ログイン | `.../LoginController.java` | ログイン/ログアウト |
-| Client | `moli-user-center-client/` | Feign + Shiro 統合 |
+| Client | `moli-user-center-client/` | Dubbo 契約 + Shiro 統合 |

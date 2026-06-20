@@ -3,6 +3,7 @@ package com.moli.user.center.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.user.center.common.domain.entity.SysDictData;
 import com.moli.user.center.common.domain.entity.SysDictType;
@@ -12,13 +13,20 @@ import com.moli.common.page.PageRes;
 import com.moli.common.utils.MoliDateUtils;
 import com.moli.user.center.server.mapper.DictDataMapper;
 import com.moli.user.center.server.mapper.DictTypeMapper;
+import com.moli.common.utils.I18nUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("dict")
@@ -32,12 +40,10 @@ public class DictController {
     @Autowired
     private DictTypeMapper dictTypeMapper;
 
-    /**
-     * 字典类型列表
-     *
-     * @return 菜单列表
-     */
+
     @GetMapping("/type/list")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @ApiOperation(value = "字典类型分页", notes = "字典类型分页")
     public MoliResult<PageRes<SysDictType>> list(DictTypeVo dictTypeVo) {
 
         PageRes<SysDictType> result = new PageRes<>();
@@ -57,7 +63,7 @@ public class DictController {
         }
 
         Page page = new Page();
-        page.setPages(dictTypeVo.getPageNum());
+        page.setCurrent(dictTypeVo.getPageNum());
         page.setSize(dictTypeVo.getPageSize());
         dictTypeMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
@@ -69,40 +75,31 @@ public class DictController {
 
     }
 
-    /**
-     * 字典类型列表
-     *
-     * @return 菜单列表
-     */
     @GetMapping("/type/listAll")
-    public MoliResult<List<SysDictType>> listAll(DictTypeVo dictTypeVo) {
+    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @ApiOperation(value = "字典类型列表", notes = "字典类型列表")
+    public MoliResult<List<SysDictType>> listAll() {
         return MoliResult.success(dictTypeMapper.selectList(new LambdaQueryWrapper<>()));
     }
 
-    /**
-     * 添加字典类型
-     *
-     * @return 添加字典类型
-     */
+
     @PostMapping("/type")
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_ADD, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
+    @ApiOperation(value = "添加字典类型", notes = "添加字典类型")
     public MoliResult<Boolean> insert(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.insert(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    /**
-     * 获取字典类型列表
-     *
-     * @return 菜单列表
-     */
     @PutMapping("/type")
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_EDIT, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
+    @ApiOperation(value = "更新字典类型", notes = "更新字典类型")
     public MoliResult<Boolean> update(@RequestBody SysDictType dictType) {
         return MoliResult.success(dictTypeMapper.updateById(dictType) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
-    /**
-     * 查询字典类型
-     */
     @GetMapping(value = "/type/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
+    @ApiOperation(value = "查询字典类型", notes = "查询字典类型")
     public MoliResult<SysDictType> getDictTypeInfo(@PathVariable Long id) {
 
         return MoliResult.success(dictTypeMapper.selectById(id));
@@ -112,6 +109,7 @@ public class DictController {
      * 删除字典类型
      */
     @DeleteMapping("/type/{dictIds}")
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_REMOVE, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
     public MoliResult delete(@PathVariable Long[] dictIds) {
         for (Long id : dictIds) {
             dictTypeMapper.deleteById(id);
@@ -121,11 +119,35 @@ public class DictController {
 
 
     /**
+     * 根据字典类型查询字典数据（前端下拉/标签）
+     */
+    @GetMapping("/data/type/{dictType}")
+    @ApiOperation(value = "按类型查询字典", notes = "按类型查询字典")
+    public MoliResult<List<Map<String, Object>>> dictType(@PathVariable String dictType) {
+        String lang = I18nUtils.resolveLanguage();
+        List<SysDictData> list = dictDataMapper.selectList(new LambdaQueryWrapper<SysDictData>()
+                .eq(SysDictData::getDictType, dictType)
+                .eq(SysDictData::getStatus, 1)
+                .orderByAsc(SysDictData::getSort));
+        List<Map<String, Object>> result = list.stream().map(item -> {
+            Map<String, Object> map = new HashMap<>(4);
+            map.put("dictLabel", I18nUtils.resolveLocalizedText(
+                    item.getDictValue(), item.getDictValueEn(), item.getDictValueJa(), lang));
+            map.put("dictValue", item.getDictKey());
+            map.put("dictType", item.getDictType());
+            map.put("status", item.getStatus());
+            return map;
+        }).collect(Collectors.toList());
+        return MoliResult.success(result);
+    }
+
+    /**
      * 字典数据列表
      *
      * @return 菜单数据列表
      */
     @GetMapping("/data/list")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
     public MoliResult<PageRes<SysDictData>> list(DictDataVo dictDataVo) {
 
         PageRes<SysDictData> result = new PageRes<>();
@@ -134,7 +156,7 @@ public class DictController {
         lambdaQueryWrapper.eq(SysDictData::getDictType, dictDataVo.getDictType());
 
         if (StringUtils.isNotBlank(dictDataVo.getDictValue())) {
-            lambdaQueryWrapper.like(SysDictData::getDictValue, dictDataVo.getDictValue());
+            lambdaQueryWrapper.eq(SysDictData::getDictValue, dictDataVo.getDictValue());
         }
         if (dictDataVo.getStatus() != null) {
             lambdaQueryWrapper.eq(SysDictData::getStatus, dictDataVo.getStatus());
@@ -144,7 +166,7 @@ public class DictController {
         }
 
         Page page = new Page();
-        page.setPages(dictDataVo.getPageNum());
+        page.setCurrent(dictDataVo.getPageNum());
         page.setSize(dictDataVo.getPageSize());
         dictDataMapper.selectPage(page, lambdaQueryWrapper);
         Long total = page.getTotal();
@@ -160,27 +182,37 @@ public class DictController {
      * 查询字典类型
      */
     @GetMapping(value = "/data/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DICT_LIST)
     public MoliResult<SysDictData> getDictDataInfo(@PathVariable Long id) {
 
         return MoliResult.success(dictDataMapper.selectById(id));
     }
 
+    @PostMapping("/data")
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_ADD, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
+    @ApiOperation(value = "添加字典数据", notes = "添加字典数据")
+    public MoliResult<Boolean> insertData(@RequestBody SysDictData dictData) {
+        return MoliResult.success(dictDataMapper.insert(dictData) > 0 ? Boolean.TRUE : Boolean.FALSE);
+    }
+
     /**
-     * 查询字典类型
+     * 修改字典数据
      */
     @PutMapping(value = "/data")
-    public MoliResult<Boolean> getDictDataInfo(@RequestBody SysDictData sysDictData) {
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_EDIT, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
+    public MoliResult<Boolean> getDictDataInfo(@RequestBody SysDictData dictData) {
 
-        return MoliResult.success(dictDataMapper.updateById(sysDictData) > 0 ? Boolean.TRUE : Boolean.FALSE);
+        return MoliResult.success(dictDataMapper.updateById(dictData) > 0 ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /**
      * 删除用户
      */
     @DeleteMapping("/data/{dictIds}")
-    public MoliResult deleteData(@PathVariable Long[] dataIds) {
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DICT_REMOVE, PermissionConstants.SYSTEM_DICT_LIST}, logical = Logical.AND)
+    public MoliResult deleteData(@PathVariable("dictIds") Long[] dataIds) {
         for (Long id : dataIds) {
-            dictTypeMapper.deleteById(id);
+            dictDataMapper.deleteById(id);
         }
         return MoliResult.success(Boolean.TRUE);
     }

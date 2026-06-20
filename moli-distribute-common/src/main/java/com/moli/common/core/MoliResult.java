@@ -41,7 +41,9 @@ public class MoliResult<T> implements Serializable {
     }
 
     public static <T> MoliResult<T> success() {
-        return new MoliResult(SUCCESS_CODE);
+        MoliResult<T> result = new MoliResult<>();
+        result.setCode(SUCCESS_CODE);
+        return result;
     }
 
 
@@ -62,7 +64,7 @@ public class MoliResult<T> implements Serializable {
     }
 
     public static <T> MoliResult<T> error() {
-        return new MoliResult(SUCCESS_CODE);
+        return new MoliResult(ResponseCodeEnums.ERROR.getCode());
     }
 
     public static <T> MoliResult<T> error(T t) {

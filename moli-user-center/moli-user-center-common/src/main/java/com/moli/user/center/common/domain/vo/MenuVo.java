@@ -1,9 +1,8 @@
 package com.moli.user.center.common.domain.vo;
 
-import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
+import com.moli.common.core.BaseEntity;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -14,8 +13,11 @@ public class MenuVo  extends BaseEntity {
     @ApiModelProperty(value = "菜单名称")
     private String menuName;
 
-    @ApiModelProperty(value = "路由名称")
+    @ApiModelProperty(value = "路由名称（Vue Router name，返回给前端路由）")
     private String name;
+
+    @ApiModelProperty(value = "路由名称配置（库表 route_name，菜单管理可编辑）")
+    private String routeName;
 
     @ApiModelProperty(value = "父级菜单ID")
     private Long parentId;
@@ -40,7 +42,7 @@ public class MenuVo  extends BaseEntity {
     private String icon;
 
     @ApiModelProperty(value = "显示顺序")
-    private Integer sort;
+    private Integer orderNum;
 
     @ApiModelProperty(value = "下级菜单集合")
     private List<MenuVo> children;

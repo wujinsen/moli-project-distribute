@@ -1,6 +1,7 @@
 package com.moli.user.center.server.config.shiro;
 
 import com.moli.user.center.server.config.util.SHA256Util;
+import com.moli.user.center.server.service.PermissionService;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.mgt.SessionManager;
@@ -37,6 +38,9 @@ public class ShiroConfig {
     @Value("${spring.redis.password}")
     private String password;
 
+    @Value("${spring.redis.database}")
+    private int database;
+
     /**
      * 开启Shiro-aop注解支持
      * @Attention 使用代理方式所以需要开启代码支持
@@ -63,6 +67,7 @@ public class ShiroConfig {
         // 注意过滤器配置顺序不能颠倒
         // 配置过滤:不会被拦截的链接
         //Swagger接口
+        filterChainDefinitionMap.put("/doc.html", "anon");
         filterChainDefinitionMap.put("/swagger-ui.html", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
         filterChainDefinitionMap.put("/v2/**", "anon");
@@ -70,6 +75,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/", "anon");
         filterChainDefinitionMap.put("/static/**", "anon");
         filterChainDefinitionMap.put("/login", "anon");
+        filterChainDefinitionMap.put("/sso/validate", "anon");
         filterChainDefinitionMap.put("/**", "authc");
         //未授权界面
         //配置shiro默认登录界面地址，前后端分离中登录界面跳转应由前端路由控制，后台仅返回json数据
@@ -87,14 +93,14 @@ public class ShiroConfig {
      * @CreateTime 2019/6/12 10:34
      */
     @Bean
-    public SecurityManager securityManager() {
+    public SecurityManager securityManager(ShiroRealm shiroRealm) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         // 自定义Ssession管理
         securityManager.setSessionManager(sessionManager());
         // 自定义Cache实现
         securityManager.setCacheManager(cacheManager());
         // 自定义Realm验证
-        securityManager.setRealm(shiroRealm());
+        securityManager.setRealm(shiroRealm);
         return securityManager;
     }
 
@@ -104,9 +110,10 @@ public class ShiroConfig {
      * @CreateTime 2019/6/12 10:37
      */
     @Bean
-    public ShiroRealm shiroRealm() {
+    public ShiroRealm shiroRealm(PermissionService permissionService) {
         ShiroRealm shiroRealm = new ShiroRealm();
         shiroRealm.setCredentialsMatcher(hashedCredentialsMatcher());
+        shiroRealm.setPermissionService(permissionService);
         return shiroRealm;
     }
 
@@ -138,6 +145,7 @@ public class ShiroConfig {
         redisManager.setPort(port);
         redisManager.setTimeout(timeout);
         redisManager.setPassword(password);
+        redisManager.setDatabase(database);
         return redisManager;
     }
 
@@ -194,7 +202,7 @@ public class ShiroConfig {
     public SessionManager sessionManager() {
         ShiroSessionManager shiroSessionManager = new ShiroSessionManager();
         shiroSessionManager.setSessionDAO(redisSessionDAO());
-
+        shiroSessionManager.setGlobalSessionTimeout(timeout * 1000L);
         return shiroSessionManager;
     }
 

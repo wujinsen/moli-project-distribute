@@ -8,17 +8,24 @@ spring:
           lower-case-service-id: true
       # spring cloud route config -- UserCenter Server
       routes:
-      - id: nacos-route
+      - id: user-center-route
         uri: lb://user-center-server
         predicates:
         - Path=/UserCenter/**
         filters:
         - StripPrefix=1
       # spring cloud route config -- Order Server
-      - id: nacos-route
+      - id: order-route
         uri: lb://order-server
         predicates:
         - Path=/OrderServer/**
+        filters:
+        - StripPrefix=1
+      # spring cloud route config -- BI Server
+      - id: bi-route
+        uri: lb://bi-server
+        predicates:
+        - Path=/BiServer/**
         filters:
         - StripPrefix=1
 

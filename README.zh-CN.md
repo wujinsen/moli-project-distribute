@@ -17,7 +17,7 @@
 
 - **统一网关入口**：基于 Spring Cloud Gateway，按路径转发至各业务服务
 - **注册与配置中心**：Nacos 实现服务发现与集中配置管理
-- **多种服务调用方式**：Dubbo RPC + OpenFeign HTTP 声明式调用
+- **服务调用分层**：外部流量走 Gateway + HTTP/REST；服务间统一 Spring Cloud Dubbo RPC
 - **流量保护**：Sentinel 熔断降级与限流
 - **权限与安全**：Apache Shiro + Redis 分布式 Session + JWT
 - **数据层**：MySQL + MyBatis-Plus + Druid 连接池
@@ -34,7 +34,7 @@ moli-project-distribute/
 ├── moli-gateway/                 # API 网关
 ├── moli-user-center/             # 用户中心
 │   ├── moli-user-center-common/  # 实体、VO 等公共定义
-│   ├── moli-user-center-client/  # Feign 客户端，供其他服务调用
+│   ├── moli-user-center-client/  # Dubbo 契约 + Shiro 集成，供 order/bi 依赖
 │   └── moli-user-center-server/  # 用户中心主服务（Shiro、Dubbo Provider）
 ├── moli-order/                   # 订单服务
 │   └── moli-order-server/
@@ -52,7 +52,7 @@ moli-project-distribute/
 |------|--------|----------|------|
 | moli-gateway | `moli-gateway` | 21000 | 统一 API 网关 |
 | moli-user-center-server | `user-center-server` | 1127 | 用户、角色、菜单、字典等基础能力 |
-| moli-order-server | `order-server` | 8087 | 订单业务，通过 Dubbo/Feign 调用用户中心 |
+| moli-order-server | `order-server` | 8087 | 订单业务，通过 Dubbo 调用用户中心 |
 | moli-bi-server | `bi-server` | 1128 | BI 相关服务 |
 
 ### 网关路由
@@ -75,7 +75,7 @@ moli-project-distribute/
 | 服务网关 | Spring Cloud Gateway |
 | 负载均衡 | Spring Cloud Ribbon |
 | 熔断降级 | Spring Cloud Alibaba Sentinel |
-| 服务调用 | Spring Cloud Dubbo + OpenFeign |
+| 服务调用 | 外部 HTTP/REST（Gateway）+ 服务间 Spring Cloud Dubbo |
 | 数据库 | MySQL |
 | 缓存 | Redis |
 | 对象存储 | MinIO |
@@ -207,7 +207,7 @@ http://localhost:21000/OrderServer/...
 - **登录**：`POST /login` → Shiro 校验密码 → 返回 `token`（Session ID）+ 用户信息 + 菜单树
 - **菜单授权**：按用户角色聚合菜单，用户名为 `admin` 时拥有全部菜单
 - **接口权限**：权限标识格式 `sys:模块:操作`（如 `sys:user:create`），Shiro 注解校验逻辑已预留
-- **跨服务**：`moli-user-center-client` 模块供订单、BI 等服务复用，Feign 透传 `Authorization` Header
+- **跨服务**：`moli-user-center-client` 模块供订单、BI 等服务复用，Dubbo 获取用户 + Redis 共享 Session
 
 ### 管理接口概览
 
@@ -224,6 +224,7 @@ http://localhost:21000/OrderServer/...
 
 ## 相关文档
 
+- [架构 / 调用 / 鉴权设计](docs/zh-CN/ARCHITECTURE.md)
 - [技术栈详细文档](docs/zh-CN/TECH_STACK.md)
 - [RBAC 权限设计文档](docs/zh-CN/RBAC.md)
 - [用户中心模块](moli-user-center/README.md)

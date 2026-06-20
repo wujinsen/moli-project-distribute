@@ -21,14 +21,16 @@
 | 服务网关 | **Spring Cloud Gateway** | 统一入口、路由转发（如 `moli-gateway` 模块） |
 | 负载均衡 | **Spring Cloud Ribbon** | 配合 Nacos 实现客户端负载均衡（Spring Cloud Hoxton 内置） |
 | 熔断降级 | Spring Cloud Alibaba **Sentinel** | 流量控制、熔断与降级保护 |
-| 服务调用 | **Spring Cloud Dubbo** + **OpenFeign** | Dubbo 用于 RPC 服务暴露与引用；OpenFeign 用于 HTTP 声明式调用 |
+| 服务调用 | **Spring Cloud Dubbo** | 服务间调用统一采用 Dubbo RPC；前端流量经网关走 HTTP/REST |
 
 ### 服务调用说明
 
-项目中两种调用方式并存，职责互补：
-
-- **Dubbo**：高性能 RPC，适用于服务间强耦合、接口稳定的内部调用（如 `UserServerProvider` 暴露、`OrderController` 通过 `@DubboReference` 引用）。
-- **OpenFeign**：基于 HTTP 的声明式客户端，适用于 REST 风格跨服务调用（如 `UserCenterClient`）。
+- **服务间（Service ↔ Service）统一走 Dubbo**：高性能二进制 RPC、不对外暴露 HTTP，天然规避“内部接口被外部直连”的风险。
+  - 提供方：用户中心 `UserServerProvider`（`@DubboService(version="1.0.0", group="moli")`）。
+  - 消费方：`order-server` / `bi-server`，在 `ShiroConfig` 中通过 `@DubboReference` 引用 `UserCenterServer`，再注入 `ShiroRealm` 完成登录认证。
+  - 注册/发现：Dubbo 以 `spring-cloud://` 挂载到 Nacos，与 Spring Cloud 共用注册中心。
+- **外部流量走 HTTP/REST**：浏览器/`meiling-ui` → 网关 → 各服务 Controller，统一 `MoliResult<T>` 返回。
+- 说明：早期示例中的 OpenFeign（`UserCenterClient`）已移除，避免为内部调用额外暴露 REST 接口。详见 `docs/zh-CN/ARCHITECTURE.md`。
 
 ---
 
@@ -106,7 +108,7 @@ moli-project-distribute/
 ├── moli-gateway/               # API 网关（Gateway + Nacos Discovery）
 ├── moli-user-center/           # 用户中心
 │   ├── moli-user-center-common/
-│   ├── moli-user-center-client/  # Feign 客户端
+│   ├── moli-user-center-client/  # Dubbo 契约 + Shiro 集成（供 order/bi 依赖）
 │   └── moli-user-center-server/  # Nacos + Sentinel + Dubbo + Shiro
 ├── moli-order/                 # 订单服务
 │   └── moli-order-server/
@@ -120,9 +122,9 @@ moli-project-distribute/
 |------|----------|
 | moli-gateway | Nacos Discovery、Spring Cloud Gateway |
 | moli-user-center-server | Nacos Discovery/Config、Sentinel、Dubbo、MyBatis-Plus、Shiro、Redis、MinIO |
-| moli-user-center-client | Nacos Discovery、OpenFeign |
-| moli-order-server | Nacos、Sentinel、Dubbo、OpenFeign、MyBatis-Plus |
-| moli-bi-server | OpenFeign（调用用户中心） |
+| moli-user-center-client | Nacos Discovery、Spring Cloud Dubbo、`UserCenterServer` 契约、Shiro 集成 |
+| moli-order-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro（client 模块） |
+| moli-bi-server | Nacos、Dubbo、Shiro（client 模块） |
 
 ---
 
@@ -166,14 +168,14 @@ Spring Boot **2.3.12**、Spring Cloud **Hoxton.SR12**、Spring Cloud Alibaba **2
 
 ---
 
-## 10. 附录：README 与代码差异说明
+## 10. 附录：调用方式说明
 
-`README.md` 中将「服务发现」写为 OpenFeign，实际项目中：
+- **服务发现**：由 **Nacos Discovery** 承担（网关 `lb://`、Dubbo `spring-cloud://` 均依赖 Nacos）。
+- **外部调用**：浏览器 / `meiling-ui` → **Spring Cloud Gateway** → 各服务 **HTTP/REST**。
+- **服务间调用**：统一 **Spring Cloud Dubbo**，不再使用 OpenFeign。
+- 完整链路、鉴权分层、Dubbo 集成细节见 [架构 / 调用 / 鉴权设计](ARCHITECTURE.md)。
 
-- **服务发现**由 **Nacos Discovery** 承担；
-- **OpenFeign** 属于 **HTTP 服务调用** 方式，与 Dubbo 并列使用。
-
-建议以本文档及 `moli-distribute-parent/pom.xml`、各服务 `pom.xml` 为准进行环境搭建与版本对齐。
+建议以本文档、`docs/zh-CN/ARCHITECTURE.md` 及 `moli-distribute-parent/pom.xml` 为准进行环境搭建。
 
 ---
 

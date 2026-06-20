@@ -17,7 +17,7 @@
 
 - **統一 API ゲートウェイ** — Spring Cloud Gateway によるパスベースルーティング
 - **登録・設定センター** — Nacos によるサービス発見と集中設定管理
-- **サービス呼び出し** — Dubbo RPC + OpenFeign HTTP 宣言型クライアント
+- **サービス呼び出し** — 外部は Gateway + HTTP/REST；サービス間は Spring Cloud Dubbo RPC
 - **トラフィック保護** — Sentinel によるサーキットブレーカー・降格・限流
 - **セキュリティ** — Apache Shiro + Redis 分散 Session + JWT
 - **データ層** — MySQL + MyBatis-Plus + Druid コネクションプール
@@ -34,7 +34,7 @@ moli-project-distribute/
 ├── moli-gateway/                 # API ゲートウェイ
 ├── moli-user-center/             # ユーザーセンター
 │   ├── moli-user-center-common/
-│   ├── moli-user-center-client/  # 他サービス向け Feign クライアント
+│   ├── moli-user-center-client/  # Dubbo 契約 + Shiro 統合（order/bi 向け）
 │   └── moli-user-center-server/  # Shiro、Dubbo Provider
 ├── moli-order/
 │   └── moli-order-server/
@@ -52,7 +52,7 @@ moli-project-distribute/
 |-----------|-----------|----------------|------|
 | moli-gateway | `moli-gateway` | 21000 | 統一 API ゲートウェイ |
 | moli-user-center-server | `user-center-server` | 1127 | ユーザー・ロール・メニュー・辞書 |
-| moli-order-server | `order-server` | 8087 | 注文；Dubbo/Feign でユーザーセンター呼び出し |
+| moli-order-server | `order-server` | 8087 | 注文；Dubbo でユーザーセンター呼び出し |
 | moli-bi-server | `bi-server` | 1128 | BI サービス |
 
 ### ゲートウェイルート
@@ -73,7 +73,7 @@ moli-project-distribute/
 | API ゲートウェイ | Spring Cloud Gateway |
 | ロードバランシング | Spring Cloud Ribbon |
 | サーキットブレーカー | Spring Cloud Alibaba Sentinel |
-| サービス呼び出し | Spring Cloud Dubbo + OpenFeign |
+| サービス呼び出し | 外部 HTTP/REST（Gateway）+ サービス間 Spring Cloud Dubbo |
 | データベース | MySQL |
 | キャッシュ | Redis |
 | オブジェクトストレージ | MinIO |
@@ -189,7 +189,7 @@ http://localhost:21000/OrderServer/...
 - **ログイン**：`POST /login` → Shiro でパスワード検証 → `token` + ユーザー + メニューツリー返却
 - **メニュー認可**：ユーザーロールでメニュー集約；ユーザー名 `admin` は全メニュー
 - **API 権限**：形式 `sys:モジュール:操作`（例：`sys:user:create`）；Shiro アノテーションは予約済み
-- **サービス間**：`moli-user-center-client` モジュール；Feign で `Authorization` ヘッダー透過
+- **サービス間**：`moli-user-center-client` モジュール；Dubbo でユーザー取得 + Redis セッション共有
 
 | モジュール | パス | 機能 |
 |-----------|------|------|
@@ -204,6 +204,7 @@ http://localhost:21000/OrderServer/...
 
 ## 関連ドキュメント
 
+- [アーキテクチャ / 呼び出し / 認証（日本語）](docs/ja/ARCHITECTURE.md)
 - [技術スタック（日本語）](docs/ja/TECH_STACK.md)
 - [RBAC 設計（日本語）](docs/ja/RBAC.md)
 - [Tech Stack (English)](docs/en/TECH_STACK.md)

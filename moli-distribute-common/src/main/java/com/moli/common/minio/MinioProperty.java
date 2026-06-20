@@ -1,4 +1,4 @@
-package com.moli.common.minio;//package com.moli.common.minio;
+//package com.moli.common.minio;
 //
 //import lombok.Data;
 //import org.springframework.boot.context.properties.ConfigurationProperties;

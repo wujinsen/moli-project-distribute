@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.moli.common.core.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
 import java.util.Date;
 
 @Data
@@ -24,6 +23,10 @@ public class SysUser extends BaseEntity {
 
     @ApiModelProperty(value = "密码")
     private String password;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "原密码（本人修改密码时可选校验）")
+    private String oldPassword;
 
     @ApiModelProperty(value = "身份证号码")
     private String identityCard;
@@ -46,7 +49,7 @@ public class SysUser extends BaseEntity {
     @ApiModelProperty(value = "是否在职(0-在职；1-离职)")
     private Integer isJob;
 
-    @ApiModelProperty(value = "是否锁定(0-未锁；1-已锁)")
+    @ApiModelProperty(value = "账号状态(1-正常；0-停用，停用不可登录)")
     private Integer status;
 
     @ApiModelProperty(value = "密码错误数量")
@@ -55,11 +58,11 @@ public class SysUser extends BaseEntity {
     @ApiModelProperty(value = "头像")
     private String avatar;
 
+    @ApiModelProperty(value = "界面语言 zh-CN/en-US/ja-JP")
+    private String language;
+
     @ApiModelProperty(value = "盐值")
     private String salt;
-
-    @ApiModelProperty(value = "初始密码")
-    private String initPassword;
 
     @TableField(fill = FieldFill.INSERT)
     @ApiModelProperty("是否删除(0-未删除；1-已删除)")

@@ -9,8 +9,27 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class SysRole extends BaseEntity {
+public class SysRole {
 
+    @ApiModelProperty("ID")
+    @TableField(fill = FieldFill.INSERT)
+    private Long id;
+
+    @ApiModelProperty("创建人")
+    @TableField(fill = FieldFill.INSERT)
+    private Long createId;
+
+    @ApiModelProperty("创建时间")
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+
+    @ApiModelProperty("修改人")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Long updateId;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @ApiModelProperty("修改时间")
+    private Date updateTime;
 
     @ApiModelProperty(value = "角色名称")
     private String roleName;

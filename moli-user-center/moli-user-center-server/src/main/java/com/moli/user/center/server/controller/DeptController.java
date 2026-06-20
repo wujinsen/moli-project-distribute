@@ -1,10 +1,13 @@
 package com.moli.user.center.server.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.user.center.common.domain.entity.SysDept;
 import com.moli.user.center.common.domain.vo.DeptVo;
+import com.moli.user.center.common.domain.vo.PostVo;
 import com.moli.user.center.server.mapper.DeptMapper;
+import com.moli.user.center.server.service.DeptService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +16,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -27,26 +34,24 @@ public class DeptController {
     @Autowired
     private DeptMapper deptMapper;
 
-    /**
-     * 部门列表
-     *
-     * @param sysDept
-     * @return
-     */
+    @Autowired
+    private DeptService deptService;
+
     @GetMapping("/list")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
     @ApiOperation(value = "部门列表", notes = "部门列表")
-    public MoliResult<List<DeptVo>> list(SysDept sysDept) {
+    public MoliResult<List<DeptVo>> list(SysDept dept) {
 
         LambdaQueryWrapper<SysDept> lambdaQueryWrapper = new LambdaQueryWrapper();
         List<DeptVo> deptVoList = new ArrayList();
-        if (StringUtils.isNotBlank(sysDept.getDeptName())) {
-            lambdaQueryWrapper.like(SysDept::getDeptName, sysDept.getDeptName());
+        if (StringUtils.isNotBlank(dept.getDeptName())) {
+            lambdaQueryWrapper.like(SysDept::getDeptName, dept.getDeptName());
         }
-        if (sysDept.getStatus() != null) {
-            lambdaQueryWrapper.like(SysDept::getStatus, sysDept.getStatus());
+        if (dept.getStatus() != null) {
+            lambdaQueryWrapper.eq(SysDept::getStatus, dept.getStatus());
         }
-        List<SysDept> sysDeptList = deptMapper.selectList(lambdaQueryWrapper);
-        for (SysDept entity : sysDeptList) {
+        List<SysDept> deptList = deptMapper.selectList(lambdaQueryWrapper);
+        for (SysDept entity : deptList) {
             DeptVo deptVo = new DeptVo();
             BeanUtils.copyProperties(entity, deptVo);
             deptVoList.add(deptVo);
@@ -54,71 +59,58 @@ public class DeptController {
         return MoliResult.success(deptVoList);
     }
 
-    /**
-     * 部门列表
-     *
-     * @param
-     * @return
-     */
+
     @GetMapping("/getDeptTreeList")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
     @ApiOperation(value = "部门列表", notes = "部门列表")
     public MoliResult<List<DeptVo>> getDeptTreeList() {
 
         LambdaQueryWrapper<SysDept> lambdaQueryWrapper = new LambdaQueryWrapper();
         List<DeptVo> deptVoList = new ArrayList();
-        List<SysDept> sysDeptList = deptMapper.selectList(lambdaQueryWrapper);
-        for (SysDept sysDept : sysDeptList) {
+        List<SysDept> deptList = deptMapper.selectList(lambdaQueryWrapper);
+        for (SysDept dept : deptList) {
             DeptVo deptVo = new DeptVo();
-            BeanUtils.copyProperties(sysDept, deptVo);
+            BeanUtils.copyProperties(dept, deptVo);
             deptVoList.add(deptVo);
         }
 
         return MoliResult.success(createTree(deptVoList));
     }
 
-    /**
-     * 添加用户
-     *
-     * @return 添加用户
-     */
+
     @PostMapping
-    public MoliResult<Boolean> insert(@RequestBody SysDept sysDept) {
-        deptMapper.insert(sysDept);
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DEPT_ADD, PermissionConstants.SYSTEM_DEPT_LIST}, logical = Logical.AND)
+    @ApiOperation(value = "添加部门", notes = "添加部门")
+    public MoliResult<Boolean> insert(@RequestBody SysDept dept) {
+        deptMapper.insert(dept);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 更新用户
-     *
-     * @return
-     */
+
     @PutMapping
-    public MoliResult<Boolean> update(@RequestBody SysDept sysDept) {
-        deptMapper.updateById(sysDept);
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DEPT_EDIT, PermissionConstants.SYSTEM_DEPT_LIST}, logical = Logical.AND)
+    @ApiOperation(value = "更新部门", notes = "更新部门")
+    public MoliResult<Boolean> update(@RequestBody SysDept dept) {
+        deptMapper.updateById(dept);
         return MoliResult.success(Boolean.TRUE);
     }
 
-    /**
-     * 查询单个用户
-     */
     @GetMapping(value = "/{id}")
+    @RequiresPermissions(PermissionConstants.SYSTEM_DEPT_LIST)
+    @ApiOperation(value = "查询单个部门", notes = "查询单个部门")
     public MoliResult<SysDept> getInfo(@PathVariable Long id) {
 
         return MoliResult.success(deptMapper.selectById(id));
     }
 
-    /**
-     * 删除用户
-     */
+
     @DeleteMapping("/{id}")
-    public MoliResult remove(@PathVariable("id") Long id) {
-        deptMapper.deleteById(id);
-        return MoliResult.success(Boolean.TRUE);
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_DEPT_REMOVE, PermissionConstants.SYSTEM_DEPT_LIST}, logical = Logical.AND)
+    @ApiOperation(value = "删除单个部门", notes = "删除指定部门，并级联删除其下所有子部门")
+    public MoliResult<Boolean> remove(@PathVariable("id") Long id) {
+        return MoliResult.success(deptService.deleteWithChildren(id));
     }
 
-    /**
-     * 递归查询一级节点
-     */
     private static List<DeptVo> createTree(List<DeptVo> deptList) {
         List<DeptVo> list = new ArrayList<>();
         for (DeptVo treeNode : deptList) {

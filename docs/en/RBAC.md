@@ -192,9 +192,16 @@ Department CRUD; linked via `deptId`, independent from RBAC roles.
 
 Other services use **`moli-user-center-client`**:
 
-- `ShiroRealm` fetches user via `UserCenterClient` (Feign)
-- Shared Redis Session across services
-- `FeignConfiguration` forwards `Authorization` header
+```
+Business service                  User center
+    │── Dubbo: getInfoByUserName ──▶│  UserServerProvider (RPC, no HTTP)
+    │── Shared Redis Session ────────│  shiro:session:* / shiro:cache:*
+    │── Authorization header ────────│  External traffic via gateway
+```
+
+- **`ShiroConfig`**: `@DubboReference UserCenterServer`, passed to `ShiroRealm` via setter
+- **`ShiroRealm`**: fetches user via Dubbo during login, validates password locally
+- See [Architecture / Invocation / Auth](ARCHITECTURE.md)
 
 ---
 
@@ -222,4 +229,4 @@ Other services use **`moli-user-center-client`**:
 | Realm | `.../config/shiro/ShiroRealm.java` | Authentication & authorization |
 | Menu Service | `.../MenuServiceImpl.java` | Menu tree & RBAC queries |
 | Login | `.../LoginController.java` | Login/logout |
-| Client | `moli-user-center-client/` | Feign + Shiro integration |
+| Client | `moli-user-center-client/` | Dubbo contract + Shiro integration |

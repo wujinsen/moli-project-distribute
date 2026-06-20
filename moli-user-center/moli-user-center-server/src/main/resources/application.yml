@@ -1,6 +1,6 @@
 ### 配置端口号
 server:
-  port: 1127
+  port: 8888
   shutdown: graceful #优雅停机配置, springboot 2.3.0开始提供
 
 ### 选择环境
@@ -8,6 +8,18 @@ spring:
   application:
     name: user-center-server
   lifecycle:
-    timeout-per-shutdown-phase: 30s #优雅停机配置, 设置缓冲器， 最大等待时间  cloud:
+    timeout-per-shutdown-phase: 30s
   profiles:
     active: dev
+
+captcha:
+  enabled: false
+
+shiro:
+  single-session: false
+
+sso:
+  enabled: true
+  ticket-ttl-seconds: 60
+  entry-path: /sso/login
+  shared-secret: ${SSO_SHARED_SECRET:}

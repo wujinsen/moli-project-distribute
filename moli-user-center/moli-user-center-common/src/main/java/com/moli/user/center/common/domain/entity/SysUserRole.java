@@ -1,5 +1,6 @@
 package com.moli.user.center.common.domain.entity;
 
+import com.moli.common.core.BaseEntity;
 import lombok.Data;
 
 @Data

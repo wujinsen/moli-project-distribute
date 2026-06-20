@@ -7,7 +7,6 @@ public interface UserCenterServer {
 
     /**
      * 根据用户名获取用户
-     * @return
      */
     MoliResult<SysUser> getInfoByUserName(String userName);
 

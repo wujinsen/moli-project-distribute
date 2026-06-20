@@ -21,12 +21,16 @@
 | API ゲートウェイ | **Spring Cloud Gateway** | 統一入口（`moli-gateway`） |
 | ロードバランシング | **Spring Cloud Ribbon** | Nacos 連携クライアント LB |
 | サーキットブレーカー | **Sentinel** | 限流・熔断・降格 |
-| サービス呼び出し | **Dubbo** + **OpenFeign** | RPC と HTTP REST 呼び出し |
+| サービス呼び出し | **Spring Cloud Dubbo** | サービス間呼び出しは Dubbo RPC に統一；外部トラフィックはゲートウェイ経由の HTTP/REST |
 
 ### 呼び出し方式
 
-- **Dubbo**：高性能 RPC（`UserServerProvider`、`@DubboReference`）
-- **OpenFeign**：REST 向け宣言型 HTTP クライアント（`UserCenterClient`）
+- **サービス間はすべて Dubbo**：高性能なバイナリ RPC で HTTP 非公開のため、内部 API が外部から直接呼ばれるリスクを回避。
+  - プロバイダ：ユーザーセンター `UserServerProvider`（`@DubboService(version="1.0.0", group="moli")`）。
+  - コンシューマ：`order-server` / `bi-server` は `ShiroConfig` で `@DubboReference` し、`ShiroRealm` へ注入してログイン認証。
+  - レジストリ：Dubbo は `spring-cloud://` で Nacos に登録し、Spring Cloud と共用。
+- **外部トラフィックは HTTP/REST**：ブラウザ/`meiling-ui` → ゲートウェイ → 各サービス Controller、統一 `MoliResult<T>` レスポンス。
+- 備考：初期サンプルの OpenFeign（`UserCenterClient`）は、内部呼び出しのために REST を公開しないよう削除。詳細は `docs/ja/ARCHITECTURE.md`。
 
 ---
 
@@ -97,9 +101,9 @@
 |-----------|---------|
 | moli-gateway | Nacos Discovery、Spring Cloud Gateway |
 | moli-user-center-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro、Redis、MinIO |
-| moli-user-center-client | Nacos Discovery、OpenFeign |
-| moli-order-server | Nacos、Sentinel、Dubbo、OpenFeign、MyBatis-Plus |
-| moli-bi-server | OpenFeign（ユーザーセンター呼び出し） |
+| moli-user-center-client | Nacos Discovery、Spring Cloud Dubbo、`UserCenterServer` 契約、Shiro 統合 |
+| moli-order-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro（client モジュール） |
+| moli-bi-server | Nacos、Dubbo、Shiro（client モジュール） |
 
 ---
 

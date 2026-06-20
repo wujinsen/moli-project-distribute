@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 public class ShiroSessionIdGenerator implements SessionIdGenerator {
     /**
-     * 实现SessionId生成
+     * 瀹炵幇SessionId鐢熸垚
      * @Author Sans
      * @CreateTime 2019/6/11 11:54
      */

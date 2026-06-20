@@ -17,7 +17,7 @@ The user center serves as the core foundation, with order and BI modules built o
 
 - **Unified API Gateway** — Spring Cloud Gateway with path-based routing
 - **Registry & Config** — Nacos for discovery and centralized configuration
-- **Service Invocation** — Dubbo RPC + OpenFeign HTTP declarative clients
+- **Service Invocation** — External HTTP/REST via Gateway; inter-service Spring Cloud Dubbo RPC
 - **Traffic Protection** — Sentinel circuit breaking, degradation, and rate limiting
 - **Security** — Apache Shiro + Redis distributed Session + JWT
 - **Data Layer** — MySQL + MyBatis-Plus + Druid connection pool
@@ -34,7 +34,7 @@ moli-project-distribute/
 ├── moli-gateway/                 # API Gateway
 ├── moli-user-center/             # User Center
 │   ├── moli-user-center-common/
-│   ├── moli-user-center-client/  # Feign client for other services
+│   ├── moli-user-center-client/  # Dubbo contract + Shiro integration for order/bi
 │   └── moli-user-center-server/  # Shiro, Dubbo Provider
 ├── moli-order/
 │   └── moli-order-server/
@@ -52,7 +52,7 @@ moli-project-distribute/
 |--------|--------------|--------------|-------------|
 | moli-gateway | `moli-gateway` | 21000 | Unified API Gateway |
 | moli-user-center-server | `user-center-server` | 1127 | Users, roles, menus, dictionaries |
-| moli-order-server | `order-server` | 8087 | Orders; calls user center via Dubbo/Feign |
+| moli-order-server | `order-server` | 8087 | Orders; calls user center via Dubbo |
 | moli-bi-server | `bi-server` | 1128 | BI service |
 
 ### Gateway Routes
@@ -73,7 +73,7 @@ moli-project-distribute/
 | API Gateway | Spring Cloud Gateway |
 | Load Balancing | Spring Cloud Ribbon |
 | Circuit Breaking | Spring Cloud Alibaba Sentinel |
-| Service Invocation | Spring Cloud Dubbo + OpenFeign |
+| Service Invocation | External HTTP/REST (Gateway) + inter-service Spring Cloud Dubbo |
 | Database | MySQL |
 | Cache | Redis |
 | Object Storage | MinIO |
@@ -189,7 +189,7 @@ User (SysUser) ──N:N──▶ Role (SysRole) ──N:N──▶ Menu (SysMen
 - **Login**: `POST /login` → Shiro validates password → returns `token` + user + menu tree
 - **Menu auth**: menus aggregated by user roles; username `admin` gets all menus
 - **API permissions**: format `sys:module:action` (e.g. `sys:user:create`); Shiro annotations reserved
-- **Cross-service**: `moli-user-center-client` module; Feign passes `Authorization` header
+- **Cross-service**: `moli-user-center-client` module; Dubbo user lookup + shared Redis session
 
 | Module | Path Prefix | Capabilities |
 |--------|-------------|--------------|
@@ -204,6 +204,7 @@ User (SysUser) ──N:N──▶ Role (SysRole) ──N:N──▶ Menu (SysMen
 
 ## Documentation
 
+- [Architecture / Invocation / Auth (EN)](docs/en/ARCHITECTURE.md)
 - [Tech Stack (EN)](docs/en/TECH_STACK.md)
 - [RBAC Design (EN)](docs/en/RBAC.md)
 - [Tech Stack (中文)](docs/zh-CN/TECH_STACK.md)

@@ -8,5 +8,7 @@ spring:
   application:
     name: moli-gateway
   lifecycle:
-    timeout-per-shutdown-phase: 30s #优雅停机配置, 设置缓冲器， 最大等待时间  cloud:
+    timeout-per-shutdown-phase: 30s #优雅停机配置, 设置缓冲器， 最大等待时间
+  profiles:
+    active: dev
 

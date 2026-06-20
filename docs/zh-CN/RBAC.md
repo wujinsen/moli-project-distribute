@@ -262,21 +262,22 @@ public MoliResult delete(@PathVariable Long[] userIds) { ... }
 
 ## 7. 跨服务认证
 
-其他微服务（如 `moli-order`、`moli-bi`）通过 **`moli-user-center-client`** 模块集成 Shiro：
+其他微服务（如 `moli-order`、`moli-bi`）通过 **`moli-user-center-client`** 模块集成 Shiro 与 Dubbo：
 
 ```
 业务服务                         用户中心
     │                               │
-    │── Feign: getInfoByUserName ──▶│  查询用户信息
+    │── Dubbo: getInfoByUserName ──▶│  UserServerProvider（RPC，不暴露 HTTP）
     │                               │
     │── 共享 Redis Session ──────────│  shiro:session:* / shiro:cache:*
     │                               │
-    │── FeignConfiguration ─────────│  透传 Authorization Header
+    │── Authorization 请求头 ────────│  外部流量经网关透传 sessionId
 ```
 
-- **client 模块 ShiroRealm**：通过 `UserCenterClient` 远程获取用户信息完成认证
-- **FeignConfiguration**：服务间调用自动传递 `Authorization` 请求头
+- **`ShiroConfig`**：在 Spring `@Configuration` 上使用 `@DubboReference` 注入 `UserCenterServer`，创建 `ShiroRealm` 时通过 `setUserCenterServer()` 传入
+- **`ShiroRealm`**：登录认证时调用 Dubbo 获取用户，本地校验密码
 - 各业务服务与用户中心共用 Redis，实现 Session 共享
+- 详见 [架构 / 调用 / 鉴权设计](ARCHITECTURE.md)
 
 ---
 
@@ -411,4 +412,4 @@ CREATE TABLE sys_dept (
 | 认证 Realm | `moli-user-center-server/.../config/shiro/ShiroRealm.java` | 身份认证与授权 |
 | 菜单服务 | `moli-user-center-server/.../service/impl/MenuServiceImpl.java` | 菜单树与 RBAC 查询 |
 | 登录 | `moli-user-center-server/.../controller/LoginController.java` | 登录/登出 |
-| 跨服务 Client | `moli-user-center-client/` | Feign + Shiro 集成 |
+| 跨服务 Client | `moli-user-center-client/` | Dubbo 契约 + Shiro 集成 |

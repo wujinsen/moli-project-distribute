@@ -65,13 +65,13 @@ public class Swagger2Config extends WebMvcConfigurerAdapter {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 //页面标题
-                .title("moli接口文档")
+                .title("CRM接口文档")
                 //创建人
                 .contact(new Contact("", "", ""))
                 //版本号
                 .version("1.0")
                 //描述
-                .description("moli接口文档")
+                .description("CRM接口文档")
                 .build();
     }
 

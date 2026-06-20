@@ -7,8 +7,9 @@ spring:
       username: nacos
       password: nacos
       config:
+        enabled: false
         server-addr: http://127.0.0.1:8848
-        namespace: 4fa85588-6ab5-479b-aea2-2b1d2e52db7a
+        namespace: dev
         extension-configs:
           - data-id: aaa-dev.yaml
             refresh: true
@@ -16,7 +17,7 @@ spring:
             refresh: true
       discovery:
         server-addr: http://127.0.0.1:8848
-        namespace: 4fa85588-6ab5-479b-aea2-2b1d2e52db7a
+        namespace: dev
 
 dubbo:
   registry:
@@ -49,5 +50,4 @@ spring:
 #              file-extension: yml
       discovery:
         server-addr: http://127.0.0.1:8848
-        namespace: 8cf9fb08-7e7c-4084-9ba5-b87ac9da2f78
-
+        namespace: d2f630f6-de08-49fb-8ec7-47afe7ee51c5

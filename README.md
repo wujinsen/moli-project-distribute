@@ -11,25 +11,25 @@
 
 ## 中文 | Chinese
 
-**茉莉项目微服务** — 基于 Spring Cloud + Spring Cloud Alibaba 的分布式微服务工程，包含网关、用户中心、订单、BI 等模块，支持 Nacos、Dubbo、OpenFeign、Shiro RBAC 权限等能力。
+**茉莉项目微服务** — 基于 Spring Cloud + Spring Cloud Alibaba 的分布式微服务工程，包含网关、用户中心、订单、BI 等模块，支持 Nacos、Dubbo（服务间 RPC）、Gateway HTTP（外部流量）、Shiro RBAC 权限等能力。
 
-📖 [完整中文文档](README.zh-CN.md) · [技术栈](docs/zh-CN/TECH_STACK.md) · [RBAC 权限设计](docs/zh-CN/RBAC.md)
+📖 [完整中文文档](README.zh-CN.md) · [架构 / 调用 / 鉴权](docs/zh-CN/ARCHITECTURE.md) · [技术栈](docs/zh-CN/TECH_STACK.md) · [RBAC 权限设计](docs/zh-CN/RBAC.md)
 
 ---
 
 ## English
 
-**Moli Microservices** — A distributed microservices project built on Spring Cloud + Spring Cloud Alibaba, featuring API gateway, user center, order and BI modules, with Nacos, Dubbo, OpenFeign, and Shiro RBAC.
+**Moli Microservices** — A distributed microservices project built on Spring Cloud + Spring Cloud Alibaba, featuring API gateway, user center, order and BI modules, with Nacos, Dubbo (inter-service RPC), Gateway HTTP (external traffic), and Shiro RBAC.
 
-📖 [Full English README](README.en.md) · [Tech Stack](docs/en/TECH_STACK.md) · [RBAC Design](docs/en/RBAC.md)
+📖 [Full English README](README.en.md) · [Architecture / Invocation / Auth](docs/en/ARCHITECTURE.md) · [Tech Stack](docs/en/TECH_STACK.md) · [RBAC Design](docs/en/RBAC.md)
 
 ---
 
 ## 日本語 | Japanese
 
-**茉莉マイクロサービス** — Spring Cloud + Spring Cloud Alibaba ベースの分散マイクロサービス。API ゲートウェイ、ユーザーセンター、注文、BI モジュール、Nacos、Dubbo、OpenFeign、Shiro RBAC をサポート。
+**茉莉マイクロサービス** — Spring Cloud + Spring Cloud Alibaba ベースの分散マイクロサービス。API ゲートウェイ、ユーザーセンター、注文、BI モジュール、Nacos、Dubbo（サービス間 RPC）、Gateway HTTP（外部トラフィック）、Shiro RBAC をサポート。
 
-📖 [日本語 README](README.ja.md) · [技術スタック](docs/ja/TECH_STACK.md) · [RBAC 権限設計](docs/ja/RBAC.md)
+📖 [日本語 README](README.ja.md) · [アーキテクチャ / 呼び出し / 認証](docs/ja/ARCHITECTURE.md) · [技術スタック](docs/ja/TECH_STACK.md) · [RBAC 権限設計](docs/ja/RBAC.md)
 
 ---
 
@@ -38,6 +38,7 @@
 | | 中文 | English | 日本語 |
 |---|------|---------|--------|
 | README | [README.zh-CN.md](README.zh-CN.md) | [README.en.md](README.en.md) | [README.ja.md](README.ja.md) |
+| Architecture | [docs/zh-CN/ARCHITECTURE.md](docs/zh-CN/ARCHITECTURE.md) | [docs/en/ARCHITECTURE.md](docs/en/ARCHITECTURE.md) | [docs/ja/ARCHITECTURE.md](docs/ja/ARCHITECTURE.md) |
 | Tech Stack | [docs/zh-CN/TECH_STACK.md](docs/zh-CN/TECH_STACK.md) | [docs/en/TECH_STACK.md](docs/en/TECH_STACK.md) | [docs/ja/TECH_STACK.md](docs/ja/TECH_STACK.md) |
 | RBAC | [docs/zh-CN/RBAC.md](docs/zh-CN/RBAC.md) | [docs/en/RBAC.md](docs/en/RBAC.md) | [docs/ja/RBAC.md](docs/ja/RBAC.md) |
 
