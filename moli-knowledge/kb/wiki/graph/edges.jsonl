@@ -1,0 +1,36 @@
+{"from":"services/订单服务","to":"services/用户中心","type":"depends_on","evidence":"订单服务通过 Spring Cloud Dubbo 调用用户中心进行鉴权与权限拉取","date":"2026-06-22"}
+{"from":"services/bi服务","to":"services/用户中心","type":"depends_on","evidence":"BI 服务复用 user-center-shiro-starter 校验 Session","date":"2026-06-22"}
+{"from":"services/知识库服务","to":"services/用户中心","type":"depends_on","evidence":"知识库服务复用 shiro-starter + Dubbo 鉴权","date":"2026-06-22"}
+{"from":"services/网关","to":"services/用户中心","type":"relates_to","evidence":"网关按 /UserCenter/** 路由转发至用户中心","date":"2026-06-22"}
+{"from":"services/网关","to":"services/订单服务","type":"relates_to","evidence":"网关按 /OrderServer/** 路由转发至订单服务","date":"2026-06-22"}
+{"from":"services/网关","to":"services/bi服务","type":"relates_to","evidence":"网关按 /BiServer/** 路由转发","date":"2026-06-22"}
+{"from":"services/网关","to":"services/知识库服务","type":"relates_to","evidence":"网关按 /KnowledgeServer/** 路由转发","date":"2026-06-22"}
+{"from":"services/用户中心","to":"concepts/rbac-权限模型","type":"part_of","evidence":"用户中心实现 RBAC 权限模型","date":"2026-06-22"}
+{"from":"services/用户中心","to":"concepts/认证与会话机制","type":"part_of","evidence":"用户中心负责登录与会话签发","date":"2026-06-22"}
+{"from":"concepts/认证与会话机制","to":"concepts/rbac-权限模型","type":"relates_to","evidence":"认证通过后按 RBAC 计算授权","date":"2026-06-22"}
+{"from":"concepts/秒杀设计","to":"services/订单服务","type":"part_of","evidence":"秒杀子系统属于订单服务","date":"2026-06-22"}
+{"from":"concepts/服务调用与架构","to":"concepts/技术栈与版本","type":"relates_to","evidence":"架构选型对应技术栈版本","date":"2026-06-22"}
+{"from":"guides/本地启动指南","to":"services/用户中心","type":"relates_to","evidence":"启动顺序首位为用户中心","date":"2026-06-22"}
+{"from":"guides/登录与鉴权指南","to":"concepts/认证与会话机制","type":"derived_from","evidence":"登录操作指南基于认证会话机制","date":"2026-06-22"}
+{"from":"guides/权限管理操作指南","to":"concepts/rbac-权限模型","type":"derived_from","evidence":"权限管理操作基于 RBAC 模型","date":"2026-06-22"}
+{"from":"interview/分布式锁面试题","to":"concepts/分布式锁","type":"part_of","evidence":"面试题页隶属分布式锁主题","date":"2026-06-22"}
+{"from":"articles/redis分布式锁实现","to":"concepts/分布式锁","type":"part_of","evidence":"Redis 实现文章隶属分布式锁主题","date":"2026-06-22"}
+{"from":"concepts/分布式锁","to":"concepts/秒杀设计","type":"relates_to","evidence":"秒杀用 Redis+Lua 原子操作，与分布式锁同源思路","date":"2026-06-22"}
+{"from":"concepts/b-plus树与-innodb索引结构","to":"concepts/mysql-索引","type":"part_of","evidence":"B+Tree 与 InnoDB 结构是 MySQL 索引主题子页","date":"2026-06-22"}
+{"from":"articles/mysql-复合索引与最左前缀","to":"concepts/mysql-索引","type":"part_of","evidence":"复合索引文章隶属 MySQL 索引主题","date":"2026-06-22"}
+{"from":"articles/mysql-覆盖索引与回表优化","to":"concepts/mysql-索引","type":"part_of","evidence":"覆盖索引文章隶属 MySQL 索引主题","date":"2026-06-22"}
+{"from":"articles/mysql-索引失效场景","to":"concepts/mysql-索引","type":"part_of","evidence":"索引失效文章隶属 MySQL 索引主题","date":"2026-06-22"}
+{"from":"interview/mysql-索引面试题","to":"concepts/mysql-索引","type":"part_of","evidence":"面试题页隶属 MySQL 索引主题","date":"2026-06-22"}
+{"from":"concepts/mysql-索引","to":"concepts/技术栈与版本","type":"relates_to","evidence":"茉莉项目 MySQL 8.0 慢 SQL 排查依赖索引设计","date":"2026-06-22"}
+{"from":"articles/mysql-覆盖索引与回表优化","to":"concepts/b-plus树与-innodb索引结构","type":"derived_from","evidence":"回表定义依赖二级索引叶子存主键的结构说明","date":"2026-06-22"}
+{"from":"articles/mysql-索引失效场景","to":"articles/mysql-复合索引与最左前缀","type":"relates_to","evidence":"违反最左前缀是索引失效常见原因之一","date":"2026-06-22"}
+{"from":"interview/mysql-索引面试题","to":"articles/mysql-覆盖索引与回表优化","type":"relates_to","evidence":"Q3-Q4 覆盖索引与回表考点指向文章页","date":"2026-06-22"}
+{"from":"concepts/jmm与happens-before","to":"concepts/java-并发","type":"part_of","evidence":"JMM 是 Java 并发主题子页","date":"2026-06-22"}
+{"from":"articles/synchronized与锁原理","to":"concepts/java-并发","type":"part_of","evidence":"synchronized 文章隶属 Java 并发主题","date":"2026-06-22"}
+{"from":"articles/volatile与可见性","to":"concepts/java-并发","type":"part_of","evidence":"volatile 文章隶属 Java 并发主题","date":"2026-06-22"}
+{"from":"articles/concurrenthashmap原理","to":"concepts/java-并发","type":"part_of","evidence":"CHM 文章隶属 Java 并发主题","date":"2026-06-22"}
+{"from":"interview/java-并发面试题","to":"concepts/java-并发","type":"part_of","evidence":"面试题页隶属 Java 并发主题","date":"2026-06-22"}
+{"from":"concepts/java-并发","to":"concepts/认证与会话机制","type":"relates_to","evidence":"多服务共享 Redis Session 涉及并发可见性","date":"2026-06-22"}
+{"from":"concepts/java-并发","to":"concepts/秒杀设计","type":"relates_to","evidence":"秒杀用 Redis 原子操作替代 JVM 锁扛高并发","date":"2026-06-22"}
+{"from":"articles/volatile与可见性","to":"concepts/jmm与happens-before","type":"derived_from","evidence":"volatile 语义由 happens-before 规则解释","date":"2026-06-22"}
+{"from":"articles/concurrenthashmap原理","to":"articles/volatile与可见性","type":"derived_from","evidence":"CHM 无锁 get 依赖 Node 上 volatile 域","date":"2026-06-22"}

@@ -1,0 +1,71 @@
+# k6-operator TestRun for million-QPS seckill (Kubernetes)
+# Prerequisites: https://k6.io/docs/testing-tools/k6-operator/
+#
+#   kubectl apply -f load-test/k8s/k6-configmap.yaml
+#   kubectl apply -f load-test/k8s/k6-seckill-testrun.yaml
+#
+# Scale parallelism to reach target aggregate RPS (e.g. 100 runners x 10k RPS = 1M RPS)
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moli-seckill-k6-scripts
+  namespace: default
+data:
+  seckill-million.js: |
+    import http from 'k6/http';
+    import { check } from 'k6';
+    const BASE = __ENV.BASE_URL || 'http://moli-gateway.default.svc:21000';
+    const ACTIVITY_ID = Number(__ENV.ACTIVITY_ID || 1);
+    const targetRps = Number(__ENV.TARGET_RPS || 10000);
+    export const options = {
+      scenarios: {
+        spike: {
+          executor: 'constant-arrival-rate',
+          rate: targetRps,
+          timeUnit: '1s',
+          duration: __ENV.DURATION || '10m',
+          preAllocatedVUs: Math.min(targetRps * 2, 50000),
+          maxVUs: Math.min(targetRps * 5, 200000),
+        },
+      },
+      discardResponseBodies: true,
+    };
+    export function setup() {
+      http.post(`${BASE}/OrderServer/seckill/admin/init?activityId=${ACTIVITY_ID}&stock=5000000&name=k8s-million`);
+    }
+    export default function () {
+      const uid = `k8s-${__VU}-${__ITER}-${Date.now()}`;
+      const body = JSON.stringify({ activityId: ACTIVITY_ID, userId: uid, requestId: uid });
+      const res = http.post(`${BASE}/OrderServer/seckill/order`, body, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: '3s',
+      });
+      check(res, { ok: (r) => r.status === 200 || r.status === 409 || r.status === 429 });
+    }
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: moli-seckill-million
+  namespace: default
+spec:
+  parallelism: 100
+  script:
+    configMap:
+      name: moli-seckill-k6-scripts
+      file: seckill-million.js
+  arguments: >-
+    -e BASE_URL=http://moli-gateway:21000
+    -e TARGET_RPS=10000
+    -e DURATION=10m
+    -e ACTIVITY_ID=1
+  runner:
+    image: grafana/k6:0.51.0
+    resources:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi

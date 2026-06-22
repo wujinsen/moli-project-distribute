@@ -1,0 +1,2 @@
+htps⽅式每次都要输⼊密码，按照如下设置即可输⼊⼀次就不⽤再⼿输⼊密码的困扰⽽且⼜享受htps 带来的极速 设置记住密码（默认15分钟）： git config-global credential.helper cache 如果想⾃⼰设置时间，可以这样做： git config credential.helper 'cache-timeout=360' 这样就设置⼀个⼩时之后失效 ⻓期存储密码： git config-global credential.helper store 增加远程地址的时候带上密码也是可以的。(推荐) htp:/yourname:pasword@git.oschina.net/name/project.git 补充：使⽤客户端也可以存储密码的。 如果你正在使⽤ sh⽽且想体验htps带来的⾼速，那么你可以这样做： 切换到项⽬⽬录下 ： cd projectfile/ 移除远程 sh⽅式的仓库地址 git remote rm origin 增加htps远程仓库地址 git remote ad origin htp:/yourname:pasword@git.oschina.net/name/project.git 搞定，enjoy the sped！
+

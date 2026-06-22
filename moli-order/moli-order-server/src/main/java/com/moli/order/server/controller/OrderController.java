@@ -1,7 +1,7 @@
 package com.moli.order.server.controller;
 
 
-import com.moli.user.center.client.UserCenterServer;
+import com.moli.user.center.api.UserCenterServer;
 import com.moli.user.center.common.domain.entity.SysUser;
 import io.swagger.annotations.Api;
 import org.apache.dubbo.config.annotation.DubboReference;

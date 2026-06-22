@@ -262,7 +262,7 @@ public MoliResult delete(@PathVariable Long[] userIds) { ... }
 
 ## 7. 跨服务认证
 
-其他微服务（如 `moli-order`、`moli-bi`）通过 **`moli-user-center-client`** 模块集成 Shiro 与 Dubbo：
+其他微服务（如 `moli-order`、`moli-bi`）通过 **`moli-user-center-shiro-starter`** 集成会话校验与 Dubbo：
 
 ```
 业务服务                         用户中心
@@ -275,7 +275,7 @@ public MoliResult delete(@PathVariable Long[] userIds) { ... }
 ```
 
 - **`ShiroConfig`**：在 Spring `@Configuration` 上使用 `@DubboReference` 注入 `UserCenterServer`，创建 `ShiroRealm` 时通过 `setUserCenterServer()` 传入
-- **`ShiroRealm`**：登录认证时调用 Dubbo 获取用户，本地校验密码
+- **`ShiroRealm`（starter）**：不在业务服务登录；仅还原 user-center 签发的 Session，授权时 Dubbo 拉权限
 - 各业务服务与用户中心共用 Redis，实现 Session 共享
 - 详见 [架构 / 调用 / 鉴权设计](ARCHITECTURE.md)
 
@@ -412,4 +412,4 @@ CREATE TABLE sys_dept (
 | 认证 Realm | `moli-user-center-server/.../config/shiro/ShiroRealm.java` | 身份认证与授权 |
 | 菜单服务 | `moli-user-center-server/.../service/impl/MenuServiceImpl.java` | 菜单树与 RBAC 查询 |
 | 登录 | `moli-user-center-server/.../controller/LoginController.java` | 登录/登出 |
-| 跨服务 Client | `moli-user-center-client/` | Dubbo 契约 + Shiro 集成 |
+| 跨服务 Starter | `moli-user-center-shiro-starter/` | Shiro 会话校验 + Dubbo 消费 |

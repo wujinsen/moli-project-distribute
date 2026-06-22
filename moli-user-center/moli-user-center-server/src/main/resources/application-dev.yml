@@ -8,12 +8,16 @@ spring:
     password: 12345678
     druid:
       min-idle: 10
-      max-active: 20
-      initial-size: 5
-      max-wait: 6000
+      max-active: 100
+      initial-size: 10
+      max-wait: 10000
       min-evictable-idle-time-millis: 600000
       max-evictable-idle-time-millis: 900000
       validation-query: SELECT 1
+      test-while-idle: true
+      remove-abandoned: true
+      remove-abandoned-timeout: 120
+      log-abandoned: true
 
   servlet:
     multipart:

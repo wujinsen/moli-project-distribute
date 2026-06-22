@@ -191,13 +191,31 @@
             <artifactId>jedis</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.moli</groupId>
-            <artifactId>moli-user-center-client</artifactId>
+            <artifactId>moli-distribute-common</artifactId>
+            <version>1.0.0-RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.moli</groupId>
+            <artifactId>moli-user-center-shiro-starter</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

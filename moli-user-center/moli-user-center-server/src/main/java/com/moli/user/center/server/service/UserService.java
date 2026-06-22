@@ -18,4 +18,6 @@ public interface UserService{
 
     SysUser getInfoByUserName(String userName);
 
+    SysUser getUserById(Long userId);
+
 }

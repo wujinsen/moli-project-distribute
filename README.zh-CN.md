@@ -34,7 +34,7 @@ moli-project-distribute/
 ├── moli-gateway/                 # API 网关
 ├── moli-user-center/             # 用户中心
 │   ├── moli-user-center-common/  # 实体、VO 等公共定义
-│   ├── moli-user-center-client/  # Dubbo 契约 + Shiro 集成，供 order/bi 依赖
+│   ├── moli-user-center-shiro-starter/  # Shiro Starter，供 order/bi 依赖
 │   └── moli-user-center-server/  # 用户中心主服务（Shiro、Dubbo Provider）
 ├── moli-order/                   # 订单服务
 │   └── moli-order-server/
@@ -207,7 +207,7 @@ http://localhost:21000/OrderServer/...
 - **登录**：`POST /login` → Shiro 校验密码 → 返回 `token`（Session ID）+ 用户信息 + 菜单树
 - **菜单授权**：按用户角色聚合菜单，用户名为 `admin` 时拥有全部菜单
 - **接口权限**：权限标识格式 `sys:模块:操作`（如 `sys:user:create`），Shiro 注解校验逻辑已预留
-- **跨服务**：`moli-user-center-client` 模块供订单、BI 等服务复用，Dubbo 获取用户 + Redis 共享 Session
+- **跨服务**：`moli-user-center-shiro-starter` 供订单、BI 等服务复用，校验 user-center 签发的 Session + Dubbo 拉权限
 
 ### 管理接口概览
 

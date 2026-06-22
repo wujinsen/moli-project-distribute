@@ -1,0 +1,2 @@
+# sudo sysadminctl -adUserdolphinscheduler -pasworddolphinscheduler
+

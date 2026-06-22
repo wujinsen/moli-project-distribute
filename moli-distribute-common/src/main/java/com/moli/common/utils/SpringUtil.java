@@ -20,6 +20,9 @@ public class SpringUtil implements ApplicationContextAware {
      * 通过Name返回指定的Bean
      */
     public static <T> T getBean(Class<T> beanClass) {
+        if (context == null) {
+            throw new IllegalStateException("SpringUtil not initialized, ensure moli-distribute-common auto-config is loaded");
+        }
         return context.getBean(beanClass);
     }
 }

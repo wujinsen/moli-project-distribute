@@ -1,0 +1,132 @@
+# 企业级知识库 · 功能规划（LLM-Wiki 范式）
+
+> 更新：2026-06-22
+> 范式：Karpathy「LLM-Wiki」为主、AutoSci 为辅。知识 = 由 Agent 维护的、持久互链的 markdown wiki。
+> 规则契约见 [AGENTS.md](AGENTS.md)。本文件是功能规划的**唯一入口**。
+>
+> 状态标记：✅ 已做 ｜ 🔜 近期规划 ｜ 💤 后期/按需
+>
+> 目标形态（已确认）：**做成给团队/对外的多人 Web 知识库产品**。
+
+---
+
+## 〇、两项目分工（kb ↔ moli-knowledge-server）
+
+本知识库由两个项目协作，**职责严格分离、单一写入源**：
+
+| | `kb/`（LLM-Wiki） | `moli-knowledge-server/`（Java 微服务） |
+|---|---|---|
+| 角色 | 知识的**生产与治理层**（大脑） | **服务与展示层**（门面） |
+| 形态 | markdown + git，Agent 维护 | Spring Cloud + MySQL + Web/API |
+| 谁写知识 | Agent（ingest/lint/synthesis） | **不写知识**，只读展示（评论/反馈不回写正文） |
+| 谁使用 | 我 + Agent（Cursor/Obsidian） | 多人、对外、其它微服务 |
+| 权限 | 文件级 | Shiro + Dubbo 细粒度 ACL |
+
+**铁律**：知识只在 `kb/`（markdown）里产生和维护，Java 服务是**下游只读**。绝不双写入源。
+
+### 数据流
+
+```
+kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_document(MySQL)
+                                                       │
+                                       moli-knowledge-server REST/Dubbo
+                                                       │
+                                  Web UI / 其它微服务 / 多人访问 + ACL
+```
+
+### kb → kb_document 同步方案（单向、增量、幂等）
+
+| 项 | 设计 |
+|----|------|
+| 方向 | 严格单向 kb → DB；DB 侧不编辑知识正文 |
+| 触发 | ✅ 手动跑 `sync_to_db.py`；后续可挂 git hook / 定时 / CI |
+| 主键 | ✅ `kb_document.slug`（= wiki 相对路径去扩展名）+ `(space_id,slug)` 唯一键，幂等 upsert |
+| 字段映射 | ✅ `title→title`、`type→kb_type`、`tags→domain` 推断、`tags→kb_tag(+关联)`、正文`→content`、`doc_type=markdown`、`status:active→1已发布` |
+| 关系 | ✅ `[[..]]→links_to`、`related→related`、`edges.jsonl→边 type` 写入 `kb_relation`（断链记 `resolved=0`） |
+| 增量 | ✅ 按 `content_hash`(SHA-256) 比对，未变 skip，只同步变更页 |
+| 删除 | ✅ kb 删页 → DB 置 `is_delete=1`；每条动作记 `kb_sync_log` |
+
+### 两项目集成里程碑
+
+| 里程碑 | 项目 | 内容 |
+|--------|------|------|
+| **M1 知识跑厚** | kb | ingest P0/P1/P2、跑通 Query、Lint；先不碰 Java |
+| **M2 同步打通** | kb + server | ✅ 同步脚本 [`kb/tools/sync_to_db.py`](tools/sync_to_db.py)（dry-run 已通）；✅ `kb_document` 加 `slug` 唯一键 + 同步三件套；🔜 Java 只读查询/详情 API |
+| **M3 Web 门面** | server | 前端展示（目录树/页面/关系图/搜索）+ 接 Shiro ACL |
+| **M4 检索后端** | server | 文档量大时接 Meilisearch/ES（按§五信号） |
+
+---
+
+## 一、核心操作（Agent 四件套）
+
+| 能力 | 说明 | 状态 |
+|------|------|------|
+| **Ingest 吸收** | 读源 → 抽要点 → 写/更新页 → 建交叉引用，边写边去重 | ✅ 骨架+示范（5 页） |
+| **Query 问答** | 读 index → 按 type/tags 限定作用域 → 选 ≤15 页 → 带 `[[]]` 引用作答 → 好答案回写 | 🔜 契约已定，待跑通 |
+| **Lint 体检** | 扫全库找：重复 / 矛盾 / 过时 / 孤儿页 / 断链 / 缺来源 | 🔜 契约已定 |
+| **Synthesis 综合** | 去重提炼、重编排成"系列"（如面试题系列）、生成综述页 | 🔜 待补为第四操作 |
+
+---
+
+## 二、知识治理（范式核心价值）
+
+| 功能 | 实现方式 | 状态 |
+|------|----------|------|
+| 去重 | 写入时查 `index.md` 合并 + Lint 扫描近似重复 | 🔜 |
+| 提炼/精炼 | Ingest 抽要点、归一化；发现更优解则更新覆盖 | 🔜 |
+| 交叉引用 | `[[slug]]` 链接 + `graph/edges.jsonl` 类型化关系边 | ✅ 已用 |
+| 版本与时间线 | `log.md`（append-only）+ git 历史 | ✅ |
+| 冲突/过时标记 | `supersedes` 边 + Lint 提示 | 🔜 |
+| 反哺闭环（P1） | 发现更优解 → 更新文章页 → 同步索引 | 🔜 |
+
+---
+
+## 三、分类与过滤（无需数据库）
+
+| 功能 | 实现方式 | 状态 |
+|------|----------|------|
+| 类型隔离 | 目录 `guides/services/concepts/articles/interview/outputs` | ✅ |
+| 元数据 | frontmatter `type` / `tags` / `domain`(FE/AP/…) / `sources` | ✅ |
+| 查询作用域过滤 | 按 `type`/`tags` 预过滤（等价 RAG 元数据预过滤） | ✅ 契约已定 |
+| 同主题跨类型组织 | 同名 slug 分目录 + `concepts/` 枢纽页串联 | ✅ 契约已定 |
+
+---
+
+## 四、场景落地（按优先级）
+
+| 优先级 | 场景 | 内容 | 状态 |
+|--------|------|------|------|
+| **P0** | 微服务用户指导手册 | 聚合各服务文档 → guides + services + concepts | ✅ 已示范，🔜 批量铺开 |
+| **P1** | 技术文章沉淀 | 文章入库、提炼、发现更优解反哺 | 🔜 |
+| **P2** | 面试题系列 | 杂乱源 → 去重提炼 → 按主题/域(FE/AP)编成系列 | 🔜 |
+
+---
+
+## 五、检索演进（信号驱动，不过早优化）
+
+| 阶段 | 触发信号 | 用什么 | 状态 |
+|------|----------|--------|------|
+| ① 纯 index | < ~300 页 | `index.md` 直读 + 全文读 | ✅ 现在 |
+| ② 本地混合检索 | ~300–1000 页 / 召回变差 | qmd（本地 BM25+小向量+rerank，无服务） | 💤 |
+| ③ 检索后端 | >1000–2000 页 / 多人产品 | Meilisearch/Typesense（首选）→ ES（海量）→ 向量库（语义） | 💤 |
+
+> 详见 [AGENTS.md §7](AGENTS.md)。原则：先把 markdown wiki 跑厚，搜不准再上 qmd，产品化才谈服务端。
+
+---
+
+## 六、可视化与产品化（已确认要做，见 §〇）
+
+| 功能 | 说明 | 状态 |
+|------|------|------|
+| 图谱浏览 | Obsidian 打开 `kb/` 看关系图；或基于 `edges.jsonl` 自渲染 | 🔜 |
+| 多人 Web | kb → `kb_document` 单向同步，Java `moli-knowledge-server` 对外服务（M2/M3） | 🔜 |
+| 权限隔离 | 复用现有 Shiro + Dubbo，在服务层/检索选页时做 ACL 过滤 | 🔜 |
+| 评测 | 标准问答集 + 答对率/命中率/引用可追溯，回归看改动好坏 | 💤 |
+
+---
+
+## 七、当前进度小结
+
+- ✅ 已定范式、写好 `AGENTS.md` 契约、搭好 wiki 骨架。
+- ✅ 已示范 ingest 顶层 README → 5 页（guides/services/concepts），含关系边。
+- 🔜 下一步候选：批量 ingest P0 文档 / 跑通一次 Query / 投喂 P1 文章或 P2 面试题做提炼成系列。

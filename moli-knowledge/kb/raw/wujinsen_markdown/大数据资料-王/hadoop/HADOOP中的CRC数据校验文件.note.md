@@ -1,0 +1,12 @@
+Hadop系统为了保证数据的⼀致性，会对⽂件⽣成相应的校验⽂件，并在读写的时候进⾏校验，确保 数据的准确性。 ⽐如我们遇到的这个Case： 执⾏的命令： hadop jar dw-hadop-2010_7_23.jar jobDriver -files tb_steps_url_path_dim.txt multisteps_output 201-01-25 出错⽇志的提示： org.apache.hadop.fs.ChecksumException: Checksum eror: at 0 at org.apache.hadop.fs.FSInputChecker.verifySum(FSInputChecker.java:27) at org.apache.hadop.fs.FSInputChecker.readChecksumChunk(FSInputChecker.java:241) at org.apache.hadop.fs.FSInputChecker.read1(FSInputChecker.java:189) at org.apache.hadop.fs.FSInputChecker.read(FSInputChecker.java:158) at java.io.DataInputStream.read(DataInputStream.java:83) at org.apache.hadop.io.IOUtils.copyBytes(IOUtils.java:49) at org.apache.hadop.io.IOUtils.copyBytes(IOUtils.java:87) at org.apache.hadop.fs.FileUtil.copy(FileUtil.java:209) at org.apache.hadop.fs.FileUtil.copy(FileUtil.java:142) at org.apache.hadop.mapred.JobClient.copyRemoteFiles(JobClient.java:565) at org.apache.hadop.mapred.JobClient.configureComandLineOptions(JobClient.java:627) at org.apache.hadop.mapred.JobClient.submitJobInternal(JobClient.java:802) at org.apache.hadop.mapred.JobClient.submitJob(JobClient.java:71) at org.apache.hadop.mapred.JobClient.runJob(JobClient.java:1290) at jobDriver.run(jobDriver.java:85) at org.apache.hadop.util.TolRuner.run(TolRuner.java:65) at org.apache.hadop.util.TolRuner.run(TolRuner.java:79) at jobDriver.main(jobDriver.java:124) at sun.reflect.NativeMethodAcesorImpl.invoke0(Native Method) at sun.reflect.NativeMethodAcesorImpl.invoke(NativeMethodAcesorImpl.java:39) at sun.reflect.DelegatingMethodAcesorImpl.invoke(DelegatingMethodAcesorImpl.java:25) at java.lang.reflect.Method.invoke(Method.java:597) 错误原因： 启动任务的命令中包含⼀个参数“-files tb_steps_url_path_dim.txt” Hadop客户端需要将机器本地磁盘中的tb_steps_url_path_dim.txt⽂件上传到DFS中。 在上传的过程中，Hadop将通过FSInputChecker判断需要上传的⽂件是否存在进⾏校验的crc⽂件， 即.tb_steps_url_path_dim.txt.crc，如果存在crc⽂件，将会对其内容⼀致性进⾏校验，如果校验 失 败，则停⽌上传该⽂件。最终导致整个MR任务⽆法执⾏。 crc⽂件来源
+
+file:tb_steps_url_path_dim.txt
+
+DFS命令：hadop fs -getmerge srcDir destFile 这类命令在执⾏的时候，会将srcDir⽬录下的所有⽂件合并成⼀个⽂件，保存在destFile中，同时会在 本地磁盘⽣成⼀个. destFile.crc的校验⽂件。 DFS命令：hadop fs -get -crc src dest 这类命令在执⾏的时候，会将src⽂件，保存在dest中，同时会在本地磁盘⽣成⼀个. dest.crc的校验⽂ 件。 如何避免 在使⽤hadop fs -getmerge srcDir destFile命令时，本地磁盘⼀定会（没有参数可以关闭）⽣成相应 的.crc⽂件。 所以如果需要修改getmerge获取的⽂件的内容，再次上传到DFS时，可以采取以下2种策略进⾏规避：
+
+- 1. 删除.crc⽂件
+- 2. 将getmerge获取的⽂件修改后重新命名，如使⽤mv操作，再次上传到DFS中。 更多关于Hadop的⽂章，可以参考： 延伸阅读： 更多内容
+
+
+htp:/ w.cnblogs.com/gpcuster/tag/Hadop/ 上⼀篇Casandra就要迎来1.0版本啦下⼀篇分布式实时统计系统 -Rainbird
+

@@ -1,0 +1,98 @@
+# user-center 压测专用配置
+# 启动: mvn spring-boot:run -Dspring-boot.run.profiles=loadtest
+
+server:
+  port: 8888
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 800
+      min-spare: 200
+    accept-count: 10000
+    max-connections: 20000
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/moli?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    username: root
+    password: 12345678
+    druid:
+      min-idle: 50
+      max-active: 200
+      initial-size: 50
+      max-wait: 10000
+      test-while-idle: true
+      remove-abandoned: true
+      remove-abandoned-timeout: 120
+      log-abandoned: true
+  redis:
+    host: localhost
+    port: 6379
+    password: 123456
+    timeout: 3000
+    database: 1
+    lettuce:
+      pool:
+        max-active: 500
+        max-idle: 100
+        min-idle: 50
+        max-wait: 3000ms
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+logging:
+  level:
+    root: WARN
+    com.moli.user.center: INFO
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+captcha:
+  enabled: false
+
+shiro:
+  single-session: false
+
+moli:
+  user-center:
+    shiro:
+      session-expire-seconds: 86400
+
+swagger:
+  show: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      profile: loadtest
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+id:
+  snowflake:
+    worker_id: 2
+    data_center_id: 1

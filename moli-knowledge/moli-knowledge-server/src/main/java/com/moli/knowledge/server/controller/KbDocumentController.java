@@ -1,0 +1,72 @@
+package com.moli.knowledge.server.controller;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.core.MoliResult;
+import com.moli.knowledge.server.dto.DocumentDetailVo;
+import com.moli.knowledge.server.dto.DocumentSaveRequest;
+import com.moli.knowledge.server.dto.DocumentSearchRequest;
+import com.moli.knowledge.server.entity.KbDocument;
+import com.moli.knowledge.server.entity.KbDocumentVersion;
+import com.moli.knowledge.server.service.KbDocumentService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+
+@RestController
+@RequestMapping("/kb/document")
+@Api(tags = "知识文档")
+public class KbDocumentController {
+
+    @Resource
+    private KbDocumentService kbDocumentService;
+
+    @GetMapping("/search")
+    @ApiOperation("搜索文档")
+    public MoliResult<Page<KbDocument>> search(DocumentSearchRequest request) {
+        return MoliResult.success(kbDocumentService.search(request));
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation("文档详情")
+    public MoliResult<DocumentDetailVo> detail(@PathVariable Long id) {
+        return MoliResult.success(kbDocumentService.detail(id));
+    }
+
+    @PostMapping
+    @ApiOperation("保存文档")
+    public MoliResult<Long> save(@Validated @RequestBody DocumentSaveRequest request) {
+        return MoliResult.success(kbDocumentService.save(request));
+    }
+
+    @PutMapping("/{id}/publish")
+    @ApiOperation("发布文档")
+    public MoliResult<Boolean> publish(@PathVariable Long id) {
+        kbDocumentService.publish(id);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @PutMapping("/{id}/archive")
+    @ApiOperation("归档文档")
+    public MoliResult<Boolean> archive(@PathVariable Long id) {
+        kbDocumentService.archive(id);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @DeleteMapping("/{id}")
+    @ApiOperation("删除文档")
+    public MoliResult<Boolean> delete(@PathVariable Long id) {
+        kbDocumentService.delete(id);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @GetMapping("/{id}/versions")
+    @ApiOperation("版本历史")
+    public MoliResult<Page<KbDocumentVersion>> versions(@PathVariable Long id,
+                                                        @RequestParam(defaultValue = "1") int pageNum,
+                                                        @RequestParam(defaultValue = "10") int pageSize) {
+        return MoliResult.success(kbDocumentService.versions(id, pageNum, pageSize));
+    }
+}

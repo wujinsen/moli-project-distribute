@@ -94,14 +94,14 @@ sequenceDiagram
 | 场景 | 调用方式 | 鉴权 |
 |------|----------|------|
 | 浏览器 / `meiling-ui` → 网关 → 任意服务 | **HTTP/REST** | Shiro `authc` + `Authorization` 头（sessionId） |
-| 业务服务登录时查用户（无用户会话） | **Dubbo RPC** | 内网 RPC，不暴露 HTTP |
-| 业务服务带用户上下文调用户中心 | **Dubbo RPC**（如需） | 共享 Redis Session + 各服务本地 Shiro |
+| user-center 登录 / SSO | **HTTP/REST**（仅 user-center） | 本地 Shiro + DB，写入共享 Redis Session |
+| 业务服务校验会话 / 拉权限 | **Dubbo RPC** | 读共享 Redis Session + `getUserById` / `getPermissionsByUserId` |
 
 > **不再使用 OpenFeign 做服务间调用**。已移除 `UserCenterClient` 及 `/user/getInfoByUserName` HTTP 端点，避免为内部能力额外暴露 REST 接口。
 
 #### 契约与坐标
 
-- **契约接口**：`moli-user-center-client` 模块的 `UserCenterServer`
+- **契约接口**：`moli-user-center-api` 模块的 `UserCenterServer`
 - **提供方**：`user-center-server` → `UserServerProvider`
 
 ```java
@@ -112,24 +112,16 @@ public class UserServerProvider implements UserCenterServer {
 }
 ```
 
-- **消费方**：`order-server` / `bi-server` 依赖 `moli-user-center-client`，在 Spring `@Configuration` 中引用：
+- **消费方**：`order-server` / `bi-server` 依赖 `moli-user-center-shiro-starter`（传递依赖 `moli-user-center-api`），Starter 自动装配会话校验，无需手动 `@ComponentScan`：
 
-```java
-@Configuration
-public class ShiroConfig {
-    @DubboReference(version = "1.0.0", group = "moli", protocol = "dubbo", check = false)
-    private UserCenterServer userCenterServer;
-
-    @Bean
-    public ShiroRealm shiroRealm() {
-        ShiroRealm realm = new ShiroRealm();
-        realm.setUserCenterServer(userCenterServer);  // 注入后传给 Realm
-        return realm;
-    }
-}
+```xml
+<dependency>
+    <groupId>com.moli</groupId>
+    <artifactId>moli-user-center-shiro-starter</artifactId>
+</dependency>
 ```
 
-> **`@DubboReference` 必须写在 Spring 管理的 Bean 上**（如 `ShiroConfig`），不要写在 `new ShiroRealm()` 的普通类字段上，否则 Dubbo 无法完成代理注入。
+> 自动配置类：`UserCenterShiroAutoConfiguration`（`META-INF/spring.factories`）。
 
 #### 注册与端口
 
@@ -137,14 +129,14 @@ public class ShiroConfig {
 - 消费端订阅：`dubbo.cloud.subscribed-services: user-center-server`
 - Dubbo 协议端口：user-center `20881`、order `20882`、bi `20883`
 
-#### client 模块职责（`moli-user-center-client`）
+#### Shiro Starter 模块职责（`moli-user-center-shiro-starter`）
 
 | 内容 | 说明 |
 |------|------|
-| `UserCenterServer` | Dubbo 契约接口 |
-| `shiro/*` | 业务服务复用的 Shiro 配置（Realm、SessionManager、Filter） |
-| 依赖 | `spring-cloud-starter-dubbo`、`spring-context-support`、Nacos Discovery |
-| 不含 | OpenFeign、HTTP 内部接口 |
+| `UserCenterShiroAutoConfiguration` | Spring Boot 自动配置 |
+| `shiro/*` | 会话校验 Filter、Realm、SessionManager（不提供 `/login`） |
+| 依赖 | `moli-user-center-api`、Nacos Discovery、Dubbo、shiro-redis |
+| 不含 | 登录接口、OpenFeign |
 
 ---
 
@@ -192,20 +184,20 @@ flowchart TB
 
 ---
 
-## 6. 登录认证链路（业务服务示例）
+## 6. 单点登录链路（统一经 user-center）
 
-以 `order-server` 用户登录为例：
+**登录 / 登出 / SSO 只在 user-center-server 完成**，order/bi 仅校验 user-center 写入的共享 Session。
 
 ```
-1. 前端 POST /OrderServer/login  →  网关  →  order-server LoginController
-2. Shiro UsernamePasswordToken  →  client/ShiroRealm.doGetAuthenticationInfo()
-3. ShiroConfig 中 @DubboReference 注入的 userCenterServer.getInfoByUserName(userName)
-4. Dubbo RPC  →  user-center-server/UserServerProvider  →  UserService  →  MySQL
-5. 返回 SysUser（密码+盐）→  Shiro 本地校验密码  →  写入 Redis Session（shiro:session:*）
-6. 响应 LoginVo，token = sessionId，前端后续请求带 Authorization 头
+1. 前端 POST /UserCenter/login  →  网关  →  user-center-server LoginController
+2. Shiro UsernamePasswordToken  →  server/ShiroRealm（本地 DB 查用户 + 校验密码）
+3. 写入 Redis Session（shiro:session:*）→  返回 token = sessionId
+4. 前端调业务 API：GET /OrderServer/order/list，Header: Authorization=<token>
+5. 网关  →  order-server  →  shiro-starter 从 Redis 还原 Session（不在业务服务登录）
+6. Dubbo getUserById / getPermissionsByUserId  →  user-center-server
 ```
 
-各业务服务与用户中心**共用同一 Redis**，因此同一 sessionId 可在 user-center / order / bi 间通用。
+各业务服务与 user-center **共用同一 Redis**，同一 sessionId 可在 user-center / order / bi 间通用。
 
 ---
 

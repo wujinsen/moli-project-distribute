@@ -1,7 +1,6 @@
 package com.moli.bi.server.controller;
 
 
-import com.moli.user.center.client.shiro.ShiroConfig;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

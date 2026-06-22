@@ -4,11 +4,9 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@MapperScan(basePackages = {"com.moli.order.server.mapper"})
-@ComponentScan(basePackages = {"com.moli.order.server.*","com.moli.user.center.client.*"})
+@MapperScan(basePackages = {"com.moli.order.server.mapper", "com.moli.order.server.seckill.mapper"})
 @EnableDiscoveryClient
 public class OrderApplication {
 

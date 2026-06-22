@@ -1,0 +1,135 @@
+# 企业知识库 · 表结构设计
+
+> 更新：2026-06-22 · 配套脚本 [`03_knowledge_schema.sql`](03_knowledge_schema.sql)
+> 范式：LLM-Wiki —— `kb/`（markdown）是**唯一写入源**，`moli-knowledge-server` 是**下游只读门面 + 对外 Web/API**。
+> 规划见 [`../../moli-knowledge/kb/ROADMAP.md`](../../moli-knowledge/kb/ROADMAP.md)。
+
+---
+
+## 1. 设计目标
+
+表结构同时覆盖**已做功能**与 ROADMAP 上**后面要做的功能**：
+
+| 功能 | 状态 | 涉及的表 |
+|------|------|----------|
+| 空间 / 分类 / 文档 / 标签 / 评论 / 版本 / 收藏 / 附件 CRUD | ✅ 已做 | `kb_space` `kb_category` `kb_document` `kb_tag` `kb_document_tag` `kb_comment` `kb_document_version` `kb_favorite` `kb_attachment` |
+| 图谱 `/kb/graph`、体检 `/kb/lint` | ✅ 已做（运行时算） | 落库到 `kb_relation` `kb_lint_issue` |
+| **kb → kb_document 单向增量同步（M2）** | 🔜 | `kb_document`(+slug/source_path/content_hash) `kb_sync_log` |
+| **Query `/kb/ask`（带引用 + 反馈）** | 🔜 | `kb_qa_log` |
+| **空间级 ACL（复用 Shiro/Dubbo）** | 🔜 | `kb_space_member` |
+| 面试题系列 / 作用域过滤（type/domain） | 🔜 | `kb_document`(+kb_type/domain) |
+| 全文检索（先 MySQL FULLTEXT，量大再外置） | 🔜 | `kb_document` ngram 全文索引 |
+
+通用约定：`bigint` 雪花主键；`create_id/create_time/update_id/update_time` 审计字段（MyBatis-Plus 自动填充）；`is_delete` 逻辑删除；`utf8mb4`。
+
+---
+
+## 2. 表清单（14 张）
+
+### 核心内容（9）
+
+| 表 | 说明 | 本次变化 |
+|----|------|----------|
+| `kb_space` | 知识空间（多租户 / 权限边界） | 不变 |
+| `kb_category` | 分类树（`parent_id` 自关联） | +`icon` |
+| `kb_document` | **知识文档（核心）** | +`slug` +`source` +`source_path` +`content_hash` +`kb_type` +`domain`，+全文索引 |
+| `kb_tag` | 标签 | +`(space_id,tag_name)` 唯一 |
+| `kb_document_tag` | 文档-标签关联 | +`tag_id` 索引 |
+| `kb_comment` | 评论（`parent_id` 楼中楼） | 不变 |
+| `kb_document_version` | 版本历史 | +`content_hash`，+`(document_id,version_no)` 唯一 |
+| `kb_favorite` | 个人收藏 | +`document_id` 索引 |
+| `kb_attachment` | 附件（MinIO） | 不变 |
+
+### 图谱治理（2）
+
+| 表 | 说明 |
+|----|------|
+| `kb_relation` | 文档关系/图谱边落库：`links_to`（正文 `[[]]` 引用）/ `same_tag` / `related` / `supersedes` / `references`。`resolved=0` 即断链（`target_title` 保留原始标题） |
+| `kb_lint_issue` | 体检问题持久化：`broken_link`/`orphan`/`no_summary`/`duplicate`/`stale`/`conflict`，带处理状态（待处理/已忽略/已修复） |
+
+### 同步 / 权限 / 问答（3）
+
+| 表 | 说明 |
+|----|------|
+| `kb_sync_log` | kb→DB 单向增量同步审计：批次、原始路径、`action`(insert/update/delete/skip)、内容 hash、结果 |
+| `kb_space_member` | 空间级 ACL：成员可为**用户或角色**（复用用户中心），角色 `viewer/editor/admin` |
+| `kb_qa_log` | Query 历史：问题、答案、`citations`(JSON 引用)、作用域、provider/model、token、`useful` 反馈 |
+
+> **向量库刻意不建**：ROADMAP §五把向量/ES 列为「按需」。先用 MySQL `ngram` 全文索引，文档量过千且召回变差时再外置 Meilisearch/ES/向量库，届时新增 `kb_chunk`/`kb_embedding` 即可，不影响现有表。
+
+---
+
+## 3. 关键字段设计说明
+
+### 3.1 `kb_document` 的两个「类型」
+
+容易混淆，明确区分：
+
+| 字段 | 含义 | 取值 |
+|------|------|------|
+| `doc_type` | **内容格式** | `markdown` / `rich` |
+| `kb_type` | **知识类型**（对应 kb frontmatter `type`） | `guide`/`service`/`concept`/`article`/`interview`/`output` |
+
+`kb_type` + `domain`(FE/AP/DB…) 用于 Query 的**作用域过滤**（例如"只搜文章不搜面试题"），等价于 RAG 的元数据预过滤。
+
+### 3.2 同步三件套：`slug` + `source_path` + `content_hash`
+
+支撑 M2「单向、增量、幂等」同步：
+
+- `slug`：空间内唯一（`uk_kb_document_slug(space_id, slug)`），作为 kb→DB 的**幂等 upsert 主键**，同时是干净 URL。
+- `source_path`：kb/ 中 markdown 的相对路径，便于回溯与删除（kb 删页 → DB 置 `is_delete`）。
+- `content_hash`：正文+frontmatter 的 SHA-256，**只同步变更页**（hash 未变则 `skip`）。
+- `source`：`kb`（同步来源，界面只读）/ `manual`（界面创建，可编辑）。
+
+### 3.3 图谱/体检从「运行时算」到「落库」
+
+当前 `KbInsightServiceImpl` 是查文档后**运行时**正则解析 `[[标题]]` + 同标签两两配对，文档多时较重且每次重算。新表把结果落库：
+
+- 同步/编辑时写 `kb_relation`，`/kb/graph` 直接读边表。
+- 断链不再只在内存里，存为 `kb_relation.resolved=0`，也可固化进 `kb_lint_issue` 供跟踪与「忽略/修复」。
+
+> 过渡期：`/kb/graph`、`/kb/lint` 可继续走运行时实现；落库为后续优化项，两者结果语义一致。
+
+### 3.4 ACL：成员既能是用户也能是角色
+
+`kb_space_member(member_type, member_id, role)`：
+- `member_type=0` → `member_id` 是用户中心用户 ID；`=1` → 是角色 ID。
+- 服务层 / 检索选页时按 `space_id` + 当前登录用户（经 Shiro/Dubbo 取角色）过滤，实现空间级可见性与编辑权限。
+
+---
+
+## 4. 执行方式
+
+```powershell
+# 仓库根目录：先建基础库
+.\scripts\init-db.ps1 -SkipSeckill
+# 追加知识库表（含演示数据 + SSO 注册）
+Get-Content docs\sql\03_knowledge_schema.sql -Raw | mysql -u root -p12345678 moli
+```
+
+> `ngram` 全文索引需 MySQL 5.7.6+（项目用 8.0.3，满足）。
+> 已存在旧表时，本脚本用 `CREATE TABLE IF NOT EXISTS`，**不会改动已建旧表**；如需应用新列，请对 `kb_document` 等手动 `ALTER TABLE` 或先 drop 再重建（开发环境）。
+
+---
+
+## 5. 表关系图
+
+```
+kb_space 1───n kb_category（parent_id 自关联成树）
+   │                │
+   │ 1              │ n
+   ▼ n              ▼
+kb_document ─────── category_id
+   │  │  │  │  │
+   │  │  │  │  └─ n kb_attachment
+   │  │  │  └──── n kb_favorite (user_id)
+   │  │  └─────── n kb_comment（parent_id 楼中楼）
+   │  └────────── n kb_document_version
+   └─ n kb_document_tag n ─ kb_tag
+
+kb_relation：source_doc_id ──relation_type──▶ target_doc_id（图谱边 / 断链）
+kb_lint_issue：document_id ── issue_type（体检结果）
+kb_sync_log：source_path / document_id（同步审计）
+kb_space_member：space_id × (user|role)（ACL）
+kb_qa_log：space_id / user_id（问答历史 + 引用）
+```

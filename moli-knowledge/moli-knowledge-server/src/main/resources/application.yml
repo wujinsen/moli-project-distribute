@@ -1,0 +1,16 @@
+server:
+  port: 8090
+  shutdown: graceful
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: knowledge-server
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+id:
+  snowflake:
+    worker_id: 4
+    data_center_id: 1

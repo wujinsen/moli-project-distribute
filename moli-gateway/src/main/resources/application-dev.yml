@@ -28,5 +28,12 @@ spring:
         - Path=/BiServer/**
         filters:
         - StripPrefix=1
+      # spring cloud route config -- Knowledge Server
+      - id: knowledge-route
+        uri: lb://knowledge-server
+        predicates:
+        - Path=/KnowledgeServer/**
+        filters:
+        - StripPrefix=1
 
 

@@ -1,0 +1,164 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"moli-gateway\"}[1m]))",
+          "legendFormat": "gateway total RPS"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"order-server\"}[1m]))",
+          "legendFormat": "order total RPS"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"user-center-server\"}[1m]))",
+          "legendFormat": "user-center total RPS"
+        }
+      ],
+      "title": "HTTP RPS (Gateway / Order)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"moli-gateway\"}[1m])) by (le))",
+          "legendFormat": "gateway P95"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"order-server\"}[1m])) by (le))",
+          "legendFormat": "order P95"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"user-center-server\"}[1m])) by (le))",
+          "legendFormat": "user-center P95"
+        }
+      ],
+      "title": "HTTP Latency P95",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum(rate(spring_cloud_gateway_requests_seconds_count[1m])) by (routeId)",
+          "legendFormat": "{{routeId}}"
+        }
+      ],
+      "title": "Gateway RPS by Route",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "process_cpu_usage{application=\"moli-gateway\"}",
+          "legendFormat": "gateway CPU"
+        },
+        {
+          "expr": "process_cpu_usage{application=\"order-server\"}",
+          "legendFormat": "order CPU"
+        }
+      ],
+      "title": "JVM CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{application=\"moli-gateway\", area=\"heap\"}",
+          "legendFormat": "gateway heap {{id}}"
+        },
+        {
+          "expr": "jvm_memory_used_bytes{application=\"order-server\", area=\"heap\"}",
+          "legendFormat": "order heap {{id}}"
+        }
+      ],
+      "title": "JVM Heap Memory",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "druid_pool_active{application=\"user-center-server\"}",
+          "legendFormat": "active"
+        },
+        {
+          "expr": "druid_pool_max{application=\"user-center-server\"}",
+          "legendFormat": "max"
+        },
+        {
+          "expr": "druid_pool_waiting{application=\"user-center-server\"}",
+          "legendFormat": "waiting"
+        }
+      ],
+      "title": "User-center Druid Pool",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.85 },
+              { "color": "red", "value": 0.95 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "druid_pool_active{application=\"user-center-server\"} / druid_pool_max{application=\"user-center-server\"}",
+          "legendFormat": "pool usage"
+        }
+      ],
+      "title": "Druid Pool Usage %",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["moli", "loadtest", "seckill"],
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "Moli Load Test / Seckill",
+  "uid": "moli-loadtest-seckill",
+  "version": 1
+}

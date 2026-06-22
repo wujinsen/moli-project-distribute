@@ -1,0 +1,2 @@
+不少⼈在打开LR示例⻚⾯的时候会显示如下错误： Internal eror: your request was unsucesful CanotcreateCGIproces – program not found 解决⽅法： 打开WebTours⽂件夹下的run.bat，编辑其中的路径名 假如你的LR路径是：E:/LR/ 你bat中的函数可能会是： SET PATH=/bin cd /WebTours start xigui32.exe 更改⼀下，改成： SET PATH=E:/LR/bin cd E:/LR/WebTours start xigui32.exe 保存⽂件，退出 关闭服务，然后运⾏run.bat，重新打开示例⻚⾯，搞定。 原理应该是xitami运⾏站点的时候需要调⽤lr bin中的⼀些东⻄吧，不太清楚。 这个问题⼀般出现的原因是你在安装的时候没有选择默认的标准路径,也就是⽐如D:/Program Files/Mercury/LoadRuner/WebTours 这种标准路径，有可能你⽤的是D:/LR 等。 LR在安装的时候没有正确更改run其中的参数，这应该算是LR的⼀个⼩⼩bug，呵呵。
+

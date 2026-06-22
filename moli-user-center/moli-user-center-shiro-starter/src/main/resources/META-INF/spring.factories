@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.moli.user.center.starter.autoconfigure.UserCenterShiroAutoConfiguration

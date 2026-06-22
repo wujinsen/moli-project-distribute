@@ -11,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
         "com.moli.user.center.server.mapper",
         "com.moli.user.center.server.operation.mapper"
 })
-@ComponentScan(basePackages = {"com.moli.user.center.server", "com.moli.common"})
+@ComponentScan(basePackages = {"com.moli.user.center.server"})
 @EnableDiscoveryClient
 public class UserCenterApplication {
     public static void main(String[] args) {

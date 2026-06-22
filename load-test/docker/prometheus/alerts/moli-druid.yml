@@ -1,0 +1,68 @@
+groups:
+  - name: moli-druid-pool
+    rules:
+      - alert: DruidPoolWaiting
+        expr: druid_pool_waiting{application="user-center-server"} > 0
+        for: 30s
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "user-center Druid 连接池出现等待线程"
+          description: "有线程在等待 JDBC 连接超过 30s，可能即将出现 Could not get a resource from the pool。当前 waiting={{ $value }}"
+
+      - alert: DruidPoolHighUsage
+        expr: |
+          druid_pool_active{application="user-center-server"}
+          / druid_pool_max{application="user-center-server"} > 0.85
+        for: 1m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "user-center Druid 连接池使用率 > 85%"
+          description: "active/max = {{ $value | humanizePercentage }}，请检查慢 SQL、泄漏或考虑扩容/调大 max-active"
+
+      - alert: DruidPoolCritical
+        expr: |
+          druid_pool_active{application="user-center-server"}
+          / druid_pool_max{application="user-center-server"} > 0.95
+        for: 30s
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "user-center Druid 连接池即将耗尽"
+          description: "active/max > 95% 持续 30s，登录/写库可能失败。优先限流，排查泄漏，必要时滚动重启实例"
+
+      - alert: DruidPoolCreateErrors
+        expr: increase(druid_pool_create_error{application="user-center-server"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "user-center Druid 创建连接失败"
+          description: "5 分钟内出现新建连接错误，检查 MySQL 可用性与 max_connections"
+
+  - name: moli-http-errors
+    rules:
+      - alert: UserCenterLogin5xxRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{
+            application="user-center-server",
+            uri=~".*/login.*",
+            status=~"5.."
+          }[2m]))
+          /
+          sum(rate(http_server_requests_seconds_count{
+            application="user-center-server",
+            uri=~".*/login.*"
+          }[2m])) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "user-center 登录接口 5xx 比例 > 5%"
+          description: "可能与连接池耗尽或下游故障有关，请结合 druid_pool_* 指标排查"

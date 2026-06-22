@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+
+scrape_configs:
+  - job_name: moli-gateway
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:21000
+        labels:
+          service: moli-gateway
+          env: loadtest
+
+  - job_name: moli-order
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:8087
+        labels:
+          service: moli-order-server
+          env: loadtest
+
+  - job_name: moli-user-center
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:8888
+        labels:
+          service: user-center-server
+          env: loadtest
+
+  # Optional: scrape Prometheus itself
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090

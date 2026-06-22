@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: moli-loadtest
+    orgId: 1
+    folder: Moli
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

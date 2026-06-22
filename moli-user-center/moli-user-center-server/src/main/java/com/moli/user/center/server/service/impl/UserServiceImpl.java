@@ -239,6 +239,18 @@ public class UserServiceImpl implements UserService {
                 .eq(SysUser::getIsDelete, CommonConstant.UN_DELETE));
     }
 
+    @Override
+    public SysUser getUserById(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user == null || CommonConstant.IS_DELETE.equals(user.getIsDelete())) {
+            return null;
+        }
+        return user;
+    }
+
     private Map<Long, String> resolveUserRoleNames(List<Long> userIds) {
         if (CollectionUtils.isEmpty(userIds)) {
             return Collections.emptyMap();
