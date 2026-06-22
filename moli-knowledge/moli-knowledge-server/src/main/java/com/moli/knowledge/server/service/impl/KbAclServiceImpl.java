@@ -17,7 +17,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class KbAclServiceImpl implements KbAclService {
@@ -139,6 +144,24 @@ public class KbAclServiceImpl implements KbAclService {
     @Override
     public void assertCanEditDocument(Long documentId) {
         assertCanEdit(requireDocumentSpaceId(documentId));
+    }
+
+    @Override
+    public List<Long> resolveReadableSpaceIds(Long spaceId, List<Long> spaceIds) {
+        if (spaceIds != null && !spaceIds.isEmpty()) {
+            Set<Long> distinct = spaceIds.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            for (Long id : distinct) {
+                assertCanRead(id);
+            }
+            return new ArrayList<>(distinct);
+        }
+        if (spaceId != null) {
+            assertCanRead(spaceId);
+            return Collections.singletonList(spaceId);
+        }
+        return accessibleSpaceIds();
     }
 
     @Override

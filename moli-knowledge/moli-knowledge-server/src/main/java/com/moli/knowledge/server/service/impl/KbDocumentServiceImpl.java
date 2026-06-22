@@ -54,15 +54,13 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
     @Override
     public Page<KbDocument> search(DocumentSearchRequest request) {
-        List<Long> accessible = null;
-        if (request.getSpaceId() != null) {
-            kbAclService.assertCanRead(request.getSpaceId());
-        } else {
-            accessible = kbAclService.accessibleSpaceIds();
-            if (accessible.isEmpty()) {
-                return new Page<>(request.getPageNum(), request.getPageSize(), 0);
-            }
+        List<Long> scopeSpaces = kbAclService.resolveReadableSpaceIds(
+                request.getSpaceId(), request.getSpaceIds());
+        if (scopeSpaces.isEmpty()) {
+            return new Page<>(request.getPageNum(), request.getPageSize(), 0);
         }
+        Long singleSpaceId = scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null;
+        List<Long> multiSpaceIds = scopeSpaces.size() == 1 ? null : scopeSpaces;
 
         List<Long> documentIds = null;
         if (request.getTagId() != null) {
@@ -78,8 +76,8 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             try {
                 return kbDocumentMapper.searchFullText(
                         new Page<>(request.getPageNum(), request.getPageSize()),
-                        request.getSpaceId(),
-                        accessible,
+                        singleSpaceId,
+                        multiSpaceIds,
                         request.getCategoryId(),
                         request.getStatus(),
                         documentIds,
@@ -91,10 +89,10 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
-        if (request.getSpaceId() != null) {
-            wrapper.eq(KbDocument::getSpaceId, request.getSpaceId());
+        if (singleSpaceId != null) {
+            wrapper.eq(KbDocument::getSpaceId, singleSpaceId);
         } else {
-            wrapper.in(KbDocument::getSpaceId, accessible);
+            wrapper.in(KbDocument::getSpaceId, scopeSpaces);
         }
         if (request.getCategoryId() != null) {
             wrapper.eq(KbDocument::getCategoryId, request.getCategoryId());

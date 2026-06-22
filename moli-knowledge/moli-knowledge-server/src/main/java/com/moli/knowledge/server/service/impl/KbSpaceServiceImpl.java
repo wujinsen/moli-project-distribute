@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.dto.KbAccessibleSpaceVo;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.enums.SpaceVisibility;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -45,6 +47,33 @@ public class KbSpaceServiceImpl implements KbSpaceService {
         }
         wrapper.orderByAsc(KbSpace::getSort).orderByDesc(KbSpace::getCreateTime);
         return kbSpaceMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+    }
+
+    @Override
+    public List<KbAccessibleSpaceVo> listAccessible() {
+        List<Long> accessible = kbAclService.accessibleSpaceIds();
+        if (accessible.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<KbSpace> spaces = kbSpaceMapper.selectList(new LambdaQueryWrapper<KbSpace>()
+                .eq(KbSpace::getIsDelete, CommonConstant.UN_DELETE)
+                .in(KbSpace::getId, accessible)
+                .orderByAsc(KbSpace::getSort)
+                .orderByDesc(KbSpace::getCreateTime));
+        List<KbAccessibleSpaceVo> result = new ArrayList<>();
+        for (KbSpace s : spaces) {
+            KbAccessibleSpaceVo vo = new KbAccessibleSpaceVo();
+            vo.setId(s.getId());
+            vo.setSpaceCode(s.getSpaceCode());
+            vo.setSpaceName(s.getSpaceName());
+            vo.setDescription(s.getDescription());
+            vo.setIcon(s.getIcon());
+            vo.setVisibility(s.getVisibility());
+            vo.setCanEdit(kbAclService.canEdit(s.getId()));
+            vo.setCanAdmin(kbAclService.canAdmin(s.getId()));
+            result.add(vo);
+        }
+        return result;
     }
 
     @Override

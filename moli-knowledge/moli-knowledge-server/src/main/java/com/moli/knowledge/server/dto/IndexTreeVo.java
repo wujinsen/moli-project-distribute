@@ -44,12 +44,15 @@ public class IndexTreeVo {
         private String title;
         @ApiModelProperty("摘要")
         private String summary;
+        @ApiModelProperty("所属空间ID")
+        private Long spaceId;
 
-        public Item(Long id, String slug, String title, String summary) {
+        public Item(Long id, String slug, String title, String summary, Long spaceId) {
             this.id = id;
             this.slug = slug;
             this.title = title;
             this.summary = summary;
+            this.spaceId = spaceId;
         }
     }
 }

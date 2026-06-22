@@ -75,7 +75,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         for (KbDocument d : docs) {
             IndexTreeVo.Group g = d.getKbType() == null ? other
                     : groups.getOrDefault(d.getKbType(), other);
-            g.getItems().add(new IndexTreeVo.Item(d.getId(), d.getSlug(), d.getTitle(), d.getSummary()));
+            g.getItems().add(new IndexTreeVo.Item(d.getId(), d.getSlug(), d.getTitle(), d.getSummary(), d.getSpaceId()));
         }
 
         IndexTreeVo vo = new IndexTreeVo();
@@ -110,6 +110,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
 
         PageDetailVo vo = new PageDetailVo();
         vo.setDocId(d.getId());
+        vo.setSpaceId(d.getSpaceId());
         vo.setSlug(d.getSlug());
         vo.setTitle(d.getTitle());
         vo.setSummary(d.getSummary());

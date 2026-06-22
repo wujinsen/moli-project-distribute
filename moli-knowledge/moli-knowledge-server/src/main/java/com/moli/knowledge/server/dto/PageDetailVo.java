@@ -15,6 +15,9 @@ public class PageDetailVo {
     @ApiModelProperty("文档ID")
     private Long docId;
 
+    @ApiModelProperty("所属空间ID")
+    private Long spaceId;
+
     @ApiModelProperty("slug")
     private String slug;
 

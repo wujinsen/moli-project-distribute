@@ -30,7 +30,9 @@ INSERT INTO `sys_menu` VALUES
 (903, 1, NOW(), 1, NOW(), '关系图谱', 'Graph', 'グラフ', 900,
  'graph', 'knowledge/graph/index', 'KnowledgeGraph', 'C', 'kb:graph:list', 1, 'graph', 3),
 (904, 1, NOW(), 1, NOW(), '健康体检', 'Health Check', 'ヘルスチェック', 900,
- 'lint', 'knowledge/lint/index', 'KnowledgeLint', 'C', 'kb:lint:list', 1, 'health', 4)
+ 'lint', 'knowledge/lint/index', 'KnowledgeLint', 'C', 'kb:lint:list', 1, 'health', 4),
+(909, 1, NOW(), 1, NOW(), '空间管理', 'Spaces', 'スペース管理', 900,
+ 'spaces', 'knowledge/spaces/index', 'KnowledgeSpaces', 'C', 'kb:space:admin', 1, 'peoples', 5)
 ON DUPLICATE KEY UPDATE
   menu_name = VALUES(menu_name), menu_name_en = VALUES(menu_name_en), menu_name_ja = VALUES(menu_name_ja),
   parent_id = VALUES(parent_id), path = VALUES(path), component = VALUES(component), route_name = VALUES(route_name),
@@ -57,7 +59,7 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`) VALUES
 -- 系统管理员：全部页面 + 管理按钮
-(910900002, 2, 900), (910900902, 2, 901), (910900903, 2, 902), (910900904, 2, 903), (910900905, 2, 904),
+(910900002, 2, 900), (910900902, 2, 901), (910900903, 2, 902), (910900904, 2, 903), (910900905, 2, 904), (910900910, 2, 909),
 (910900906, 2, 905), (910900907, 2, 906), (910900908, 2, 907), (910900909, 2, 908),
 -- 研发工程师
 (910903900, 3, 900), (910903901, 3, 901), (910903902, 3, 902), (910903903, 3, 903), (910903904, 3, 904),

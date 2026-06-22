@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """kb -> kb_document 单向增量同步脚本。
 
-把 kb/wiki/ 下 Agent 维护的 markdown 知识页，单向、增量、幂等地写入
+把 kb/wiki/（或 --wiki-dir 指定目录）下 Agent 维护的 markdown 知识页，单向、增量、幂等地写入
 moli-knowledge-server 的 MySQL（kb_document / kb_tag / kb_document_tag /
 kb_relation / kb_sync_log）。方向严格单向：kb(markdown) -> DB；DB 侧不回写。
 
@@ -26,6 +26,9 @@ kb_relation / kb_sync_log）。方向严格单向：kb(markdown) -> DB；DB 侧�
     python kb/tools/sync_to_db.py \
         --host 127.0.0.1 --port 3306 --user root --password 12345678 \
         --db moli --space enterprise-kb
+
+    # 独立 wiki 目录 → 指定空间（如日本語試験）
+    python kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam --dry-run
 
     # CI 统一入口（GitHub Actions 同款）
     bash kb/tools/ci/run_sync.sh dry-run
@@ -55,8 +58,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 HERE = Path(__file__).resolve().parent          # kb/tools
 KB_DIR = HERE.parent                             # kb
-WIKI_DIR = KB_DIR / "wiki"
-EDGES_FILE = WIKI_DIR / "graph" / "edges.jsonl"
+DEFAULT_WIKI_DIR = KB_DIR / "wiki"
 
 SPECIAL = {"index", "log"}
 
@@ -150,7 +152,7 @@ def extract_wikilinks(body: str):
 # ---------------------------------------------------------------------------
 
 class Doc:
-    __slots__ = ("slug", "stem", "title", "kb_type", "status", "tags",
+    __slots__ = ("slug", "stem", "title", "kb_type", "status", "tags", "domain",
                  "sources", "related", "rel_path", "body", "content_hash",
                  "wikilinks")
 
@@ -159,12 +161,12 @@ class Doc:
             setattr(self, k, kw.get(k))
 
 
-def load_docs():
-    """扫描 wiki，返回 (docs:list[Doc], by_slug, by_stem)。"""
+def load_docs(wiki_dir: Path, rel_prefix: str):
+    """扫描 wiki 目录，返回 (docs:list[Doc], by_slug, by_stem)。"""
     docs = []
-    if not WIKI_DIR.exists():
+    if not wiki_dir.exists():
         return docs, {}, {}
-    for path in sorted(WIKI_DIR.rglob("*.md")):
+    for path in sorted(wiki_dir.rglob("*.md")):
         if path.stem in SPECIAL:
             continue
         try:
@@ -173,13 +175,18 @@ def load_docs():
             print(f"[warn] 读取失败 {path}: {e}")
             continue
         meta, body = parse_frontmatter(text)
-        rel = path.relative_to(WIKI_DIR).as_posix()
+        rel = path.relative_to(wiki_dir).as_posix()
         slug = rel[:-3] if rel.endswith(".md") else rel   # 去 .md，如 services/用户中心
         stem = path.stem
         kb_type = meta.get("type") or "concept"
         if kb_type not in KB_TYPES:
             kb_type = "concept"
         tags = meta.get("tags") if isinstance(meta.get("tags"), list) else []
+        domain = meta.get("domain")
+        if isinstance(domain, str):
+            domain = domain.strip() or None
+        else:
+            domain = None
         docs.append(Doc(
             slug=slug,
             stem=stem,
@@ -187,9 +194,10 @@ def load_docs():
             kb_type=kb_type,
             status=STATUS_MAP.get(str(meta.get("status", "")).lower(), 1),
             tags=[t for t in tags if t],
+            domain=domain,
             sources=meta.get("sources", []) or [],
             related=meta.get("related", []) or [],
-            rel_path="wiki/" + rel,
+            rel_path=rel_prefix + "/" + rel,
             body=body,
             content_hash=hashlib.sha256(text.encode("utf-8")).hexdigest(),
             wikilinks=extract_wikilinks(body),
@@ -215,12 +223,12 @@ def resolve(target: str, by_slug: dict, by_stem: dict):
     return None
 
 
-def load_edges():
+def load_edges(edges_file: Path):
     """读取 graph/edges.jsonl，返回 [(from, to, type), ...]。"""
     edges = []
-    if not EDGES_FILE.exists():
+    if not edges_file.exists():
         return edges
-    for line in EDGES_FILE.read_text(encoding="utf-8").splitlines():
+    for line in edges_file.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
             continue
@@ -280,9 +288,9 @@ def build_relations(docs, by_slug, by_stem, edges):
 # Dry-run 报告
 # ---------------------------------------------------------------------------
 
-def report_dry_run(docs, rels):
+def report_dry_run(docs, rels, wiki_dir: Path):
     print("=" * 60)
-    print(f"扫描 wiki：{len(docs)} 个文档页（已排除 index.md / log.md）")
+    print(f"扫描 {wiki_dir}：{len(docs)} 个文档页（已排除 index.md / log.md）")
     print("=" * 60)
     by_type: dict = {}
     for d in docs:
@@ -433,14 +441,20 @@ def _summary(d: "Doc") -> str:
 
 
 def _domain(d: "Doc") -> str | None:
-    """从 tags 粗略推断领域；无则留空。"""
+    """frontmatter domain 优先；否则从 tags 粗略推断。"""
+    if d.domain:
+        return d.domain
     low = [t.lower() for t in d.tags]
-    if any(t in low for t in ("前端", "vue", "react", "fe")):
+    if any(t in low for t in ("jp-fe", "基本情報", "日本語fe")):
+        return "JP-FE"
+    if any(t in low for t in ("jp-ap", "応用情報", "日本語ap")):
+        return "JP-AP"
+    if any(t in low for t in ("前端", "vue", "react")):
         return "FE"
     if any(t in low for t in ("mysql", "数据库", "db", "redis")):
         return "DB"
     if any(t in low for t in ("微服务", "spring", "java", "分布式")):
-        return "AP"
+        return "MOLI"
     return None
 
 
@@ -509,9 +523,20 @@ def _sync_relations(cur, idgen, space_id, rels, slug_to_id, operator, now):
 # main
 # ---------------------------------------------------------------------------
 
+def resolve_wiki_dir(path_arg: str) -> Path:
+    p = Path(path_arg)
+    if not p.is_absolute():
+        p = KB_DIR / p
+    return p.resolve()
+
+
 def main():
     ap = argparse.ArgumentParser(description="kb -> kb_document 单向增量同步")
     ap.add_argument("--dry-run", action="store_true", help="仅解析并打印计划，不连库")
+    ap.add_argument("--wiki-dir", default="wiki",
+                    help="wiki 根目录，相对 kb/ 或绝对路径（默认 wiki）")
+    ap.add_argument("--edges", default=None,
+                    help="graph/edges.jsonl 路径（默认 <wiki-dir>/graph/edges.jsonl）")
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=3306)
     ap.add_argument("--user", default="root")
@@ -521,15 +546,19 @@ def main():
     ap.add_argument("--operator", type=int, default=1, help="写入审计用的 create_id/update_id")
     args = ap.parse_args()
 
-    docs, by_slug, by_stem = load_docs()
+    wiki_dir = resolve_wiki_dir(args.wiki_dir)
+    rel_prefix = wiki_dir.name
+    edges_file = Path(args.edges).resolve() if args.edges else wiki_dir / "graph" / "edges.jsonl"
+
+    docs, by_slug, by_stem = load_docs(wiki_dir, rel_prefix)
     if not docs:
-        print(f"[warn] {WIKI_DIR} 下没有可同步的文档页。")
+        print(f"[warn] {wiki_dir} 下没有可同步的文档页。")
         return 0
-    edges = load_edges()
+    edges = load_edges(edges_file)
     rels = build_relations(docs, by_slug, by_stem, edges)
 
     if args.dry_run:
-        report_dry_run(docs, rels)
+        report_dry_run(docs, rels, wiki_dir)
         return 0
     return sync_to_db(docs, rels, args)
 

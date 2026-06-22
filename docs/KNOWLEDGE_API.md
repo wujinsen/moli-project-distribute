@@ -1,6 +1,6 @@
 # 企业知识库 · 前端对接 API 文档
 
-> 更新：2026-06-22 · 后端：`moli-knowledge-server`（:8090）
+> 更新：2026-06-21 · 后端：`moli-knowledge-server`（:8090）
 > 供 `meiling-ui` 前端对接知识库模块（浏览 / Query / 图谱 / 体检 / 文档管理）。
 > 表结构见 [`sql/KNOWLEDGE_SCHEMA.md`](sql/KNOWLEDGE_SCHEMA.md)；后端实现见 [`../moli-knowledge/moli-knowledge-server/README.md`](../moli-knowledge/moli-knowledge-server/README.md)。
 
@@ -38,7 +38,9 @@
 
 分页统一用 MyBatis-Plus `Page<T>`：`data.records[]`、`data.total`、`data.current`、`data.size`。
 
-> 默认演示空间 `spaceId = 900000000000000001`（`space_code=enterprise-kb`）。多数浏览/检索接口 `spaceId` 省略表示**全库**。
+> 默认演示空间 `spaceId = 900000000000000001`（`space_code=enterprise-kb`，公开）。  
+> 日本語試験私有空间 `spaceId = 900000000000000002`（`space_code=jp-fe-ap-exam`），种子见 [`sql/04_kb_space_jp_exam.sql`](sql/04_kb_space_jp_exam.sql)。  
+> 多数浏览/检索接口 `spaceId` 省略表示**当前用户可读的全部空间**（非字面「全库」）。
 
 ### 1.4 空间级权限（ACL）
 
@@ -50,8 +52,9 @@
 | 成员角色 `role` | `viewer` 只读 / `editor` 可编辑文档 / `admin` 可管理成员；空间 `owner_id` 等同 admin |
 | 全局管理员 | 拥有 Shiro 权限 `kb:admin`（或通配 `*`）的用户对所有空间可读可写可管理 |
 
-- **省略 `spaceId`** 的列表/检索/问答接口：后端自动收敛到「当前用户可读的空间集合」，无可读空间时返回空结果。
-- **指定 `spaceId`** 时：不可读会直接报错。
+- **省略 `spaceId` / `spaceIds`** 的列表/检索/问答接口：后端自动收敛到「当前用户可读的空间集合」，无可读空间时返回空结果。
+- **指定 `spaceId`** 时：不可读会直接报错（`无权访问该知识空间`）。
+- **指定 `spaceIds[]`**（问答、文档搜索）：对每个 ID 校验读权限，仅在所列空间内检索；与 `spaceId` 同时传时 **`spaceIds` 优先**。
 - 写操作（文档保存/发布/归档/删除、空间更新/删除、成员管理）按上表校验编辑/管理权限。
 - ⚠️ 当前仅 **用户型成员**（`memberType=0`）在运行时生效；角色型成员（`memberType=1`）可录入但暂不参与运行时鉴权。
 
@@ -63,11 +66,12 @@
 
 | menu_id | 类型 | 名称 | path | component（对齐 meiling-ui viewRegistry） |
 |---------|------|------|------|-------------------------------------------|
-| 900 | M 目录 | 企业知识库 | `/knowledge` | `Layout` |
+| 900 | M 目录 | 知识库 | `/knowledge` | `Layout` |
 | 901 | C 菜单 | 文档浏览 | `browse` | `knowledge/browse/index` |
 | 902 | C 菜单 | 智能问答 | `ask` | `knowledge/ask/index` |
 | 903 | C 菜单 | 关系图谱 | `graph` | `knowledge/graph/index` |
 | 904 | C 菜单 | 健康体检 | `lint` | `knowledge/lint/index` |
+| 909 | C 菜单 | 空间管理 | `spaces` | `knowledge/spaces/index` |
 
 按钮权限（F，不出现在侧栏，供 Shiro / `v-hasPermi`）：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:sync:trigger`、`kb:admin`、`kb:lint:scan`、`kb:space:admin`。
 
@@ -106,6 +110,7 @@
 
 ```bash
 mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
+mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語試験私有空间
 ```
 
 执行后**重新登录**，前端会重新拉取 `getRouters`。
@@ -120,9 +125,9 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
-| `spaceId` | query | 否 | 省略=全库 |
+| `spaceId` | query | 否 | 省略=可读的全部空间 |
 
-响应 `data`：
+响应 `data.groups[].items[]` 每项含 `id/slug/title/summary/spaceId`（合并多空间浏览时 **`spaceId` 必传** 给 `/kb/page`）。
 
 ```json
 {
@@ -131,11 +136,9 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
     {
       "type": "guide", "label": "操作指导",
       "items": [
-        { "id": 90001, "slug": "guides/本地启动指南", "title": "本地启动指南", "summary": "..." }
+        { "id": 90001, "slug": "guides/本地启动指南", "title": "本地启动指南", "summary": "...", "spaceId": 900000000000000001 }
       ]
-    },
-    { "type": "service", "label": "微服务", "items": [ ] },
-    { "type": "concept", "label": "概念", "items": [ ] }
+    }
   ]
 }
 ```
@@ -149,13 +152,14 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `slug` | query | 是 | 如 `services/用户中心` |
-| `spaceId` | query | 否 | |
+| `spaceId` | query | 否 | 多空间合并浏览或 slug 冲突时**建议必传** |
 
-响应 `data`：
+响应 `data` 含 `spaceId`（所属空间），引用跳转时需一并带上。
 
 ```json
 {
   "docId": 90010,
+  "spaceId": 900000000000000001,
   "slug": "services/用户中心",
   "title": "用户中心",
   "summary": "...",
@@ -185,10 +189,21 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 { "question": "Spring 事务在什么情况下会失效？", "spaceId": 900000000000000001, "topK": 8 }
 ```
 
+多空间（须对每个 space 有读权限）：
+
+```json
+{
+  "question": "对比企业规范与日本语考试要点",
+  "spaceIds": [900000000000000001, 900000000000000002],
+  "topK": 8
+}
+```
+
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `question` | 是 | 问题 |
-| `spaceId` | 否 | 省略=全库 |
+| `spaceId` | 否 | 单空间；省略=全部可读空间 |
+| `spaceIds` | 否 | 多空间数组；非空时优先于 `spaceId` |
 | `topK` | 否 | 候选页上限，默认 8 |
 
 响应 `data`：
@@ -202,7 +217,7 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
   "provider": "deepseek",
   "model": "deepseek-chat",
   "citations": [
-    { "docId": 90020, "slug": "interview/spring-事务", "title": "Spring 事务（面试题系列）", "kbType": "interview", "snippet": "..." }
+    { "docId": 90020, "spaceId": 900000000000000001, "slug": "interview/spring-事务", "title": "Spring 事务（面试题系列）", "kbType": "interview", "snippet": "..." }
   ],
   "qaLogId": 901234567890123456
 }
@@ -300,7 +315,7 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/document/search` | 搜索（query：`spaceId/categoryId/keyword/status/tagId/pageNum/pageSize`），返回 `Page<KbDocument>` |
+| GET | `/kb/document/search` | 搜索（query：`spaceId` / `spaceIds[]` / `categoryId/keyword/status/tagId/pageNum/pageSize`），返回 `Page<KbDocument>` |
 | GET | `/kb/document/{id}` | 详情 `DocumentDetailVo`（含 `tagIds`、`favorited`，会自增浏览数） |
 | POST | `/kb/document` | 保存（`DocumentSaveRequest`：`id?/spaceId/categoryId/title/summary/content/docType/status/tagIds[]/changeLog`） |
 | PUT | `/kb/document/{id}/publish` | 发布 |
@@ -371,10 +386,25 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/space/page?pageNum=&pageSize=` | 分页（query 可带 `KbSpace` 字段过滤） |
+| GET | `/kb/space/accessible` | **推荐** 当前用户可读空间列表 `KbAccessibleSpaceVo[]`（含 `canEdit`/`canAdmin`，供前端空间选择器） |
+| GET | `/kb/space/page?pageNum=&pageSize=` | 分页（仅可读空间；query 可带 `KbSpace` 字段过滤） |
 | GET | `/kb/space/{id}` | 详情 |
 | POST / PUT | `/kb/space` | 创建 / 更新（更新需空间管理权限） |
 | DELETE | `/kb/space/{id}` | 删除（需空间管理权限） |
+
+`KbAccessibleSpaceVo` 示例：
+
+```json
+{
+  "id": 900000000000000002,
+  "spaceCode": "jp-fe-ap-exam",
+  "spaceName": "日本語試験（FE/AP）",
+  "description": "基本情報・応用情報备考",
+  "visibility": 0,
+  "canEdit": false,
+  "canAdmin": true
+}
+```
 
 ### 5.8 空间成员 `/kb/space/member`（T9 · ACL）
 
@@ -404,7 +434,14 @@ mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 
 ## 6. kb→DB 同步管理（T10）
 
-> 需**空间管理权限**（owner / 空间 admin）或全局 `kb:admin`。用于把 `kb/wiki/` markdown 同步进 MySQL。
+> 需**空间管理权限**（owner / 空间 admin）或全局 `kb:admin`。用于把 `kb/wiki/`（或独立目录）markdown 同步进 MySQL。
+
+CLI 多空间同步：
+
+```bash
+python moli-knowledge/kb/tools/sync_to_db.py --dry-run
+python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam
+```
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -461,14 +498,16 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ---
 
-## 7. 前端页面建议（对应 serve.py 的 Tab）
+## 7. 前端页面（meiling-ui）
 
-| 页面 | 主要接口 | 备注 |
-|------|----------|------|
-| 知识库首页（浏览） | `/kb/index` + `/kb/page` | 左侧类型分组树，右侧 markdown 正文 + 出/入链 |
-| 问答 | `/kb/ask` | 输入框 + 答案区 + 引用列表（点引用跳 `/kb/page`） |
-| 关系图谱 | `/kb/graph` | 力导向图，按 `type` 着色，`deg` 定大小 |
-| 体检 | `/kb/lint` 或 `/kb/lint/scan` + `/kb/lint/issues` | 断链/孤儿/缺摘要分区，支持"忽略/修复"改状态 |
-| 文档管理（可选） | `/kb/document/*` + `/kb/category/*` + `/kb/tag/*` | 后台 CRUD（注意：kb 同步来的文档为只读源，编辑建议仅对 `source=manual` 的文档开放） |
+| 页面 | 路由 component | 主要接口 | 备注 |
+|------|----------------|----------|------|
+| 文档浏览 | `knowledge/browse/index` | `/kb/space/accessible` + `/kb/index` + `/kb/page` | 顶部**空间选择器**；`spaceId` 随 API 传递；无权限时 `KbAccessDenied` |
+| 智能问答 | `knowledge/ask/index` | `/kb/ask` + history/feedback | 空间选择器 + **跨空间多选**（`spaceIds[]`）；引用含 `spaceId` |
+| 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
+| 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
+| 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
-> 参考实现：本地零依赖 viewer `kb/tools/serve.py`（`python kb/tools/serve.py` → `http://127.0.0.1:8765`）已实现浏览/Query/图谱/体检/提炼的交互，可直接照其布局做前端。
+前端实现：`meiling-ui/src/composables/useKbSpace.ts`（共享空间上下文）、`src/components/knowledge/KbSpaceSelector.vue`。
+
+> 参考实现：本地零依赖 viewer `kb/tools/serve.py`（`python kb/tools/serve.py` → `http://127.0.0.1:8765`）。

@@ -2,6 +2,7 @@ package com.moli.knowledge.server.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
+import com.moli.knowledge.server.dto.KbAccessibleSpaceVo;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.service.KbSpaceService;
 import io.swagger.annotations.Api;
@@ -9,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RestController
 @RequestMapping("/kb/space")
@@ -17,6 +19,12 @@ public class KbSpaceController {
 
     @Resource
     private KbSpaceService kbSpaceService;
+
+    @GetMapping("/accessible")
+    @ApiOperation("当前用户可读空间（含权限摘要，供前端选择器）")
+    public MoliResult<List<KbAccessibleSpaceVo>> accessible() {
+        return MoliResult.success(kbSpaceService.listAccessible());
+    }
 
     @GetMapping("/page")
     @ApiOperation("分页查询空间")

@@ -42,6 +42,12 @@ public interface KbAclService {
     /** 当前用户可读的全部空间ID（用于列表/检索的统一过滤）。 */
     List<Long> accessibleSpaceIds();
 
+    /**
+     * 解析问答/检索的空间范围：{@code spaceIds} 非空优先，其次 {@code spaceId}，否则全部可读空间。
+     * 对每个目标空间执行 {@link #assertCanRead(Long)}。
+     */
+    List<Long> resolveReadableSpaceIds(Long spaceId, List<Long> spaceIds);
+
     /** 按文档 ID 断言可读（查 kb_document.space_id 后校验空间权限）。 */
     void assertCanReadDocument(Long documentId);
 

@@ -40,6 +40,8 @@ public class AskResponse {
     public static class Citation {
         @ApiModelProperty("文档ID")
         private Long docId;
+        @ApiModelProperty("所属空间ID")
+        private Long spaceId;
         @ApiModelProperty("slug")
         private String slug;
         @ApiModelProperty("标题")
@@ -52,8 +54,9 @@ public class AskResponse {
         public Citation() {
         }
 
-        public Citation(Long docId, String slug, String title, String kbType, String snippet) {
+        public Citation(Long docId, Long spaceId, String slug, String title, String kbType, String snippet) {
             this.docId = docId;
+            this.spaceId = spaceId;
             this.slug = slug;
             this.title = title;
             this.kbType = kbType;

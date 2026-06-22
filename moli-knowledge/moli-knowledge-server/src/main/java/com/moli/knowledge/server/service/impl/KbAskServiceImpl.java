@@ -78,25 +78,26 @@ public class KbAskServiceImpl implements KbAskService {
         List<String> terms = buildTerms(question);
 
         // 候选页：已发布 + 空间过滤 + 作用域类型过滤（叠加 ACL 可读空间）
+        List<Long> scopeSpaces = kbAclService.resolveReadableSpaceIds(
+                request.getSpaceId(), request.getSpaceIds());
+        if (scopeSpaces.isEmpty()) {
+            AskResponse empty = new AskResponse();
+            empty.setAnswer("无可访问的知识空间。");
+            empty.setMode("retrieval");
+            empty.setScope(scope.include.isEmpty() ? "全部类型" : scope.include.toString());
+            empty.setScopeReason(scope.reason);
+            empty.setProvider(llm.getProvider());
+            empty.setModel(llm.getModel());
+            return empty;
+        }
+
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
         wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
-        if (request.getSpaceId() != null) {
-            kbAclService.assertCanRead(request.getSpaceId());
-            wrapper.eq(KbDocument::getSpaceId, request.getSpaceId());
+        if (scopeSpaces.size() == 1) {
+            wrapper.eq(KbDocument::getSpaceId, scopeSpaces.get(0));
         } else {
-            List<Long> accessible = kbAclService.accessibleSpaceIds();
-            if (accessible.isEmpty()) {
-                AskResponse empty = new AskResponse();
-                empty.setAnswer("无可访问的知识空间。");
-                empty.setMode("retrieval");
-                empty.setScope(scope.include.isEmpty() ? "全部类型" : scope.include.toString());
-                empty.setScopeReason(scope.reason);
-                empty.setProvider(llm.getProvider());
-                empty.setModel(llm.getModel());
-                return empty;
-            }
-            wrapper.in(KbDocument::getSpaceId, accessible);
+            wrapper.in(KbDocument::getSpaceId, scopeSpaces);
         }
         if (!scope.include.isEmpty()) {
             wrapper.in(KbDocument::getKbType, scope.include);
@@ -125,7 +126,7 @@ public class KbAskServiceImpl implements KbAskService {
         List<AskResponse.Citation> citations = new ArrayList<>();
         for (int i = 0; i < scored.size() && i < topK; i++) {
             KbDocument d = scored.get(i).doc;
-            citations.add(new AskResponse.Citation(d.getId(), d.getSlug(), d.getTitle(),
+            citations.add(new AskResponse.Citation(d.getId(), d.getSpaceId(), d.getSlug(), d.getTitle(),
                     d.getKbType(), snippet(d, terms)));
         }
         resp.setCitations(citations);
@@ -151,7 +152,7 @@ public class KbAskServiceImpl implements KbAskService {
             resp.setMode("retrieval");
         }
 
-        Long qaLogId = saveLog(request, resp);
+        Long qaLogId = saveLog(request, resp, scopeSpaces);
         resp.setQaLogId(qaLogId);
         return resp;
     }
@@ -470,12 +471,12 @@ public class KbAskServiceImpl implements KbAskService {
         return sb.toString();
     }
 
-    private Long saveLog(AskRequest request, AskResponse resp) {
+    private Long saveLog(AskRequest request, AskResponse resp, List<Long> scopeSpaces) {
         try {
             KbQaLog qa = new KbQaLog();
             Long id = com.moli.common.core.IdGenerator.getId();
             qa.setId(id);
-            qa.setSpaceId(request.getSpaceId());
+            qa.setSpaceId(scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null);
             qa.setUserId(ShiroUtils.getUserId());
             qa.setQuestion(request.getQuestion());
             qa.setAnswer(resp.getAnswer());

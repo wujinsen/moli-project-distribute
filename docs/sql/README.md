@@ -10,6 +10,7 @@
 | **`../scripts/moli.sql`** | **推荐** 最新全库（结构+数据） |
 | `02_seckill_schema.sql` | 秒杀压测表（在 moli.sql 之后追加） |
 | `03_knowledge_schema.sql` | 企业知识库表（在 moli.sql 之后追加） |
+| `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 03 之后追加） |
 
 ## 新环境初始化
 
