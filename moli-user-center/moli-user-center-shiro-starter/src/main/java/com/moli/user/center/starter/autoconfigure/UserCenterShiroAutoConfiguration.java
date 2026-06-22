@@ -1,11 +1,9 @@
 package com.moli.user.center.starter.autoconfigure;
 
-import com.moli.user.center.api.UserCenterServer;
 import com.moli.user.center.starter.shiro.AuthenticationFilter;
 import com.moli.user.center.starter.shiro.ShiroRealm;
 import com.moli.user.center.starter.shiro.ShiroSessionIdGenerator;
 import com.moli.user.center.starter.shiro.ShiroSessionManager;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -22,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -51,20 +50,23 @@ public class UserCenterShiroAutoConfiguration {
     @Value("${spring.redis.database:0}")
     private int redisDatabase;
 
-    @DubboReference(version = "1.0.0", group = "moli", protocol = "dubbo", check = false)
-    private UserCenterServer userCenterServer;
+    @Bean
+    @ConditionalOnMissingBean
+    public UserCenterServerRef userCenterServerRef() {
+        return new UserCenterServerRef();
+    }
 
     @Bean
     @ConditionalOnMissingBean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Lazy SecurityManager securityManager) {
         AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
         advisor.setSecurityManager(securityManager);
         return advisor;
     }
 
-    @Bean
+    @Bean("shiroFilter")
     @ConditionalOnMissingBean(name = "shiroFilter")
-    public ShiroFilterFactoryBean shiroFilterFactory(SecurityManager securityManager,
+    public ShiroFilterFactoryBean shiroFilterFactory(DefaultWebSecurityManager securityManager,
                                                      AuthenticationFilter authenticationFilter,
                                                      UserCenterShiroProperties properties) {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
@@ -91,16 +93,17 @@ public class UserCenterShiroAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public AuthenticationFilter authenticationFilter() {
+    public AuthenticationFilter authenticationFilter(UserCenterServerRef userCenterServerRef) {
         AuthenticationFilter filter = new AuthenticationFilter();
-        filter.setUserCenterServer(userCenterServer);
+        filter.setUserCenterServer(userCenterServerRef.get());
         return filter;
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public SecurityManager securityManager(ShiroRealm shiroRealm, SessionManager sessionManager,
-                                           RedisCacheManager cacheManager) {
+    public DefaultWebSecurityManager securityManager(ShiroRealm shiroRealm,
+                                                     SessionManager sessionManager,
+                                                     RedisCacheManager cacheManager) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setSessionManager(sessionManager);
         securityManager.setCacheManager(cacheManager);
@@ -110,9 +113,9 @@ public class UserCenterShiroAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ShiroRealm shiroRealm() {
+    public ShiroRealm shiroRealm(UserCenterServerRef userCenterServerRef) {
         ShiroRealm shiroRealm = new ShiroRealm();
-        shiroRealm.setUserCenterServer(userCenterServer);
+        shiroRealm.setUserCenterServer(userCenterServerRef.get());
         return shiroRealm;
     }
 
