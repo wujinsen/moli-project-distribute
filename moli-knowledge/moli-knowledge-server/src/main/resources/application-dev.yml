@@ -75,3 +75,13 @@ kb:
     model: deepseek-chat
     temperature: 0.3
     timeout-seconds: 90
+  search:
+    mode: fulltext
+  sync:
+    enabled: true
+    python: python
+    script-path: moli-knowledge/kb/tools/sync_to_db.py
+    space-code: enterprise-kb
+    timeout-seconds: 300
+    schedule-enabled: false
+    schedule-cron: "0 0 2 * * ?"

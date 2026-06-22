@@ -8,6 +8,7 @@ import com.moli.knowledge.server.entity.KbAttachment;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.mapper.KbAttachmentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.testsupport.MybatisPlusTestSupport;
 import io.minio.MinioClient;
 import io.minio.PutObjectOptions;
@@ -55,6 +56,9 @@ public class KbAttachmentServiceImplTest {
 
     @Mock
     private MinioProperties minioProperties;
+
+    @Mock
+    private KbAclService kbAclService;
 
     @BeforeClass
     public static void initMybatisPlus() {

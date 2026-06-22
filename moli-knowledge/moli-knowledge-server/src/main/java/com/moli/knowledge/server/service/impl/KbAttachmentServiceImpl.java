@@ -1,5 +1,6 @@
 package com.moli.knowledge.server.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
@@ -8,6 +9,7 @@ import com.moli.knowledge.server.entity.KbAttachment;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.mapper.KbAttachmentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbAttachmentService;
 import io.minio.MinioClient;
 import io.minio.PutObjectOptions;
@@ -24,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -42,6 +45,17 @@ public class KbAttachmentServiceImpl implements KbAttachmentService {
 
     @Resource
     private MinioProperties minioProperties;
+    @Resource
+    private KbAclService kbAclService;
+
+    @Override
+    public List<KbAttachment> listByDocument(Long documentId) {
+        kbAclService.assertCanReadDocument(documentId);
+        return kbAttachmentMapper.selectList(new LambdaQueryWrapper<KbAttachment>()
+                .eq(KbAttachment::getDocumentId, documentId)
+                .eq(KbAttachment::getIsDelete, CommonConstant.UN_DELETE)
+                .orderByDesc(KbAttachment::getCreateTime));
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -49,6 +63,7 @@ public class KbAttachmentServiceImpl implements KbAttachmentService {
         if (documentId == null) {
             throw new BaseException("文档ID不能为空");
         }
+        kbAclService.assertCanEditDocument(documentId);
         if (file == null || file.isEmpty()) {
             throw new BaseException("上传文件不能为空");
         }
@@ -91,6 +106,7 @@ public class KbAttachmentServiceImpl implements KbAttachmentService {
     @Override
     public void download(Long id, HttpServletResponse response) {
         KbAttachment attachment = getActiveAttachment(id);
+        kbAclService.assertCanReadDocument(attachment.getDocumentId());
         try (InputStream inputStream = minioClient.getObject(minioProperties.getBucket(), attachment.getObjectKey())) {
             String encodedName = URLEncoder.encode(attachment.getFileName(), StandardCharsets.UTF_8.name())
                     .replace("+", "%20");
@@ -119,6 +135,7 @@ public class KbAttachmentServiceImpl implements KbAttachmentService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         KbAttachment attachment = getActiveAttachment(id);
+        kbAclService.assertCanEditDocument(attachment.getDocumentId());
         attachment.setIsDelete(CommonConstant.IS_DELETE);
         kbAttachmentMapper.updateById(attachment);
     }

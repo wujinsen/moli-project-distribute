@@ -39,7 +39,7 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 | 项 | 设计 |
 |----|------|
 | 方向 | 严格单向 kb → DB；DB 侧不编辑知识正文 |
-| 触发 | ✅ 手动跑 `sync_to_db.py`；后续可挂 git hook / 定时 / CI |
+| 触发 | ✅ 手动 `sync_to_db.py`；git hook；定时任务；**GitHub Actions**（PR dry-run / main 写库） |
 | 主键 | ✅ `kb_document.slug`（= wiki 相对路径去扩展名）+ `(space_id,slug)` 唯一键，幂等 upsert |
 | 字段映射 | ✅ `title→title`、`type→kb_type`、`tags→domain` 推断、`tags→kb_tag(+关联)`、正文`→content`、`doc_type=markdown`、`status:active→1已发布` |
 | 关系 | ✅ `[[..]]→links_to`、`related→related`、`edges.jsonl→边 type` 写入 `kb_relation`（断链记 `resolved=0`） |

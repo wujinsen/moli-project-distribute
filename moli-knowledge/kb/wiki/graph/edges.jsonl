@@ -34,3 +34,155 @@
 {"from":"concepts/java-并发","to":"concepts/秒杀设计","type":"relates_to","evidence":"秒杀用 Redis 原子操作替代 JVM 锁扛高并发","date":"2026-06-22"}
 {"from":"articles/volatile与可见性","to":"concepts/jmm与happens-before","type":"derived_from","evidence":"volatile 语义由 happens-before 规则解释","date":"2026-06-22"}
 {"from":"articles/concurrenthashmap原理","to":"articles/volatile与可见性","type":"derived_from","evidence":"CHM 无锁 get 依赖 Node 上 volatile 域","date":"2026-06-22"}
+{"from":"articles/cache-aside与缓存更新模式","to":"concepts/redis-缓存","type":"part_of","evidence":"Cache-Aside 文章隶属 Redis 缓存主题","date":"2026-06-22"}
+{"from":"articles/redis-数据结构与使用场景","to":"concepts/redis-缓存","type":"part_of","evidence":"数据结构文章隶属 Redis 缓存主题","date":"2026-06-22"}
+{"from":"articles/redis-持久化与高可用","to":"concepts/redis-缓存","type":"part_of","evidence":"持久化文章隶属 Redis 缓存主题","date":"2026-06-22"}
+{"from":"interview/redis-面试题","to":"concepts/redis-缓存","type":"part_of","evidence":"Redis 面试题隶属 Redis 缓存主题","date":"2026-06-22"}
+{"from":"concepts/redis-缓存","to":"concepts/认证与会话机制","type":"relates_to","evidence":"Shiro Session 存储在 Redis","date":"2026-06-22"}
+{"from":"concepts/redis-缓存","to":"concepts/秒杀设计","type":"relates_to","evidence":"秒杀库存与队列使用 Redis","date":"2026-06-22"}
+{"from":"articles/redis分布式锁实现","to":"concepts/redis-缓存","type":"part_of","evidence":"分布式锁是 Redis 典型用法","date":"2026-06-22"}
+{"from":"articles/jvm-垃圾收集算法与收集器","to":"concepts/jvm-内存与gc","type":"part_of","evidence":"GC 文章隶属 JVM 主题","date":"2026-06-22"}
+{"from":"articles/jvm-oom与排查入门","to":"concepts/jvm-内存与gc","type":"part_of","evidence":"OOM 排查隶属 JVM 主题","date":"2026-06-22"}
+{"from":"interview/jvm-面试题","to":"concepts/jvm-内存与gc","type":"part_of","evidence":"JVM 面试题隶属 JVM 主题","date":"2026-06-22"}
+{"from":"concepts/jvm-内存与gc","to":"concepts/jmm与happens-before","type":"relates_to","evidence":"JVM 内存模型与 JMM 并发语义相关","date":"2026-06-22"}
+{"from":"articles/enableautoconfiguration原理","to":"concepts/spring-boot-自动配置","type":"part_of","evidence":"自动配置原理文章隶属 Spring Boot 主题","date":"2026-06-22"}
+{"from":"articles/spring-application启动流程","to":"concepts/spring-boot-自动配置","type":"part_of","evidence":"启动流程与自动配置在同一启动 refresh 交汇","date":"2026-06-22"}
+{"from":"interview/spring-boot-面试题","to":"concepts/spring-boot-自动配置","type":"part_of","evidence":"Spring Boot 面试题隶属该主题","date":"2026-06-22"}
+{"from":"concepts/spring-声明式事务","to":"concepts/spring-boot-自动配置","type":"relates_to","evidence":"TransactionManager 由 Boot 自动配置","date":"2026-06-22"}
+{"from":"interview/spring-事务","to":"concepts/spring-声明式事务","type":"part_of","evidence":"Spring 事务面试题对应声明式事务概念枢纽","date":"2026-06-22"}
+{"from":"articles/dubbo-调用原理与分层","to":"concepts/dubbo-与-nacos","type":"part_of","evidence":"Dubbo 原理文章隶属 Dubbo+Nacos 主题","date":"2026-06-22"}
+{"from":"articles/nacos-注册与配置","to":"concepts/dubbo-与-nacos","type":"part_of","evidence":"Nacos 文章隶属 Dubbo+Nacos 主题","date":"2026-06-22"}
+{"from":"interview/dubbo-面试题","to":"concepts/dubbo-与-nacos","type":"part_of","evidence":"Dubbo 面试题隶属该主题","date":"2026-06-22"}
+{"from":"concepts/dubbo-与-nacos","to":"concepts/服务调用与架构","type":"part_of","evidence":"Dubbo 与 Nacos 是茉莉服务调用架构的核心组件","date":"2026-06-22"}
+{"from":"services/订单服务","to":"concepts/dubbo-与-nacos","type":"depends_on","evidence":"订单服务通过 Dubbo+Nacos 调用用户中心","date":"2026-06-22"}
+{"from":"guides/故障排查指南","to":"guides/本地启动指南","type":"derived_from","evidence":"故障排查指南基于本地启动环境假设","date":"2026-06-22"}
+{"from":"guides/故障排查指南","to":"concepts/redis-缓存","type":"relates_to","evidence":"登录 500 常见根因为 Redis 未启动","date":"2026-06-22"}
+{"from":"guides/故障排查指南","to":"articles/nacos-注册与配置","type":"relates_to","evidence":"注册发现故障指向 Nacos 排查","date":"2026-06-22"}
+{"from":"articles/mysql-隔离级别与mvcc","to":"concepts/mysql-事务与锁","type":"part_of","evidence":"MVCC 文章隶属 MySQL 事务与锁主题","date":"2026-06-22"}
+{"from":"articles/mysql-innodb锁机制","to":"concepts/mysql-事务与锁","type":"part_of","evidence":"InnoDB 锁文章隶属该主题","date":"2026-06-22"}
+{"from":"articles/mysql-死锁与排查","to":"concepts/mysql-事务与锁","type":"part_of","evidence":"死锁排查隶属该主题","date":"2026-06-22"}
+{"from":"articles/mysql-深分页与慢sql优化","to":"concepts/mysql-事务与锁","type":"relates_to","evidence":"慢 SQL 与锁等待同属 DB 性能排查","date":"2026-06-22"}
+{"from":"interview/mysql-事务面试题","to":"concepts/mysql-事务与锁","type":"part_of","evidence":"MySQL 事务面试题隶属该主题","date":"2026-06-22"}
+{"from":"concepts/mysql-事务与锁","to":"concepts/mysql-索引","type":"relates_to","evidence":"行锁范围与索引密切相关","date":"2026-06-22"}
+{"from":"concepts/mysql-事务与锁","to":"concepts/spring-声明式事务","type":"relates_to","evidence":"Spring 事务建立在 DB 事务之上","date":"2026-06-22"}
+{"from":"articles/mysql-深分页与慢sql优化","to":"articles/mysql-覆盖索引与回表优化","type":"derived_from","evidence":"延迟关联优化依赖覆盖索引减少回表","date":"2026-06-22"}
+{"from":"articles/mysql-死锁与排查","to":"articles/mysql-innodb锁机制","type":"derived_from","evidence":"死锁分析基于 Next-Key 等行锁机制","date":"2026-06-22"}
+{"from":"articles/spring-三级缓存与循环依赖","to":"concepts/spring-ioc与bean生命周期","type":"part_of","evidence":"循环依赖文章隶属 IoC 主题","date":"2026-06-22"}
+{"from":"articles/spring-mvc请求流程","to":"concepts/spring-ioc与bean生命周期","type":"relates_to","evidence":"DispatcherServlet 由 IoC 容器管理","date":"2026-06-22"}
+{"from":"interview/spring-容器面试题","to":"concepts/spring-ioc与bean生命周期","type":"part_of","evidence":"Spring 容器面试题隶属 IoC 主题","date":"2026-06-22"}
+{"from":"articles/gateway-路由与过滤器","to":"concepts/spring-cloud-gateway","type":"part_of","evidence":"路由配置文章隶属 Gateway 主题","date":"2026-06-22"}
+{"from":"concepts/spring-cloud-gateway","to":"services/网关","type":"part_of","evidence":"Gateway 概念对应 moli-gateway 微服务","date":"2026-06-22"}
+{"from":"concepts/spring-cloud-gateway","to":"concepts/服务调用与架构","type":"part_of","evidence":"Gateway 是架构全链路入口层","date":"2026-06-22"}
+{"from":"articles/spring-mvc请求流程","to":"concepts/spring-cloud-gateway","type":"relates_to","evidence":"Gateway 转发到下游 Spring MVC","date":"2026-06-22"}
+{"from":"concepts/spring-ioc与bean生命周期","to":"concepts/spring-boot-自动配置","type":"relates_to","evidence":"AutoConfiguration 向 IoC 容器注册 Bean","date":"2026-06-22"}
+{"from":"articles/gateway-路由与过滤器","to":"concepts/秒杀设计","type":"relates_to","evidence":"loadtest 路由与秒杀压测相关","date":"2026-06-22"}
+{"from":"guides/秒杀压测指南","to":"concepts/秒杀设计","type":"derived_from","evidence":"压测指南基于秒杀子系统设计","date":"2026-06-22"}
+{"from":"articles/loadtest-profile与压测登录","to":"guides/秒杀压测指南","type":"part_of","evidence":"loadtest 登录是压测指南子话题","date":"2026-06-22"}
+{"from":"articles/压测监控与prometheus","to":"guides/秒杀压测指南","type":"part_of","evidence":"监控是压测指南子话题","date":"2026-06-22"}
+{"from":"guides/秒杀压测指南","to":"guides/本地启动指南","type":"relates_to","evidence":"压测前需先满足基础启动环境","date":"2026-06-22"}
+{"from":"guides/秒杀压测指南","to":"guides/故障排查指南","type":"relates_to","evidence":"压测失败常涉及 Redis/登录排查","date":"2026-06-22"}
+{"from":"articles/loadtest-profile与压测登录","to":"concepts/认证与会话机制","type":"relates_to","evidence":"压测登录仍走 Shiro Session","date":"2026-06-22"}
+{"from":"articles/字段级数据权限设计","to":"concepts/rbac-权限模型","type":"relates_to","evidence":"字段级权限是 RBAC 之上的扩展","date":"2026-06-22"}
+{"from":"articles/字段级数据权限设计","to":"services/bi服务","type":"relates_to","evidence":"报表场景可能需要列级权限","date":"2026-06-22"}
+{"from":"articles/shiro-starter与跨服务校验","to":"concepts/shiro-鉴权体系","type":"part_of","evidence":"Starter 文章隶属 Shiro 鉴权主题","date":"2026-06-22"}
+{"from":"articles/sso与系统门户","to":"concepts/shiro-鉴权体系","type":"part_of","evidence":"SSO 门户是鉴权体系的用户入口层","date":"2026-06-22"}
+{"from":"interview/shiro-面试题","to":"concepts/shiro-鉴权体系","type":"part_of","evidence":"Shiro 面试题隶属该主题","date":"2026-06-22"}
+{"from":"concepts/shiro-鉴权体系","to":"concepts/认证与会话机制","type":"relates_to","evidence":"Session 机制是 Shiro 鉴权的基础","date":"2026-06-22"}
+{"from":"concepts/shiro-鉴权体系","to":"concepts/rbac-权限模型","type":"relates_to","evidence":"RequiresPermissions 依赖 RBAC 权限集","date":"2026-06-22"}
+{"from":"articles/shiro-starter与跨服务校验","to":"services/订单服务","type":"part_of","evidence":"订单服务通过 Starter 校验 Session","date":"2026-06-22"}
+{"from":"articles/sso与系统门户","to":"services/知识库服务","type":"relates_to","evidence":"moli-knowledge 在 sys_system 注册为 EXTERNAL","date":"2026-06-22"}
+{"from":"guides/知识库使用指南","to":"services/知识库服务","type":"derived_from","evidence":"使用指南基于 knowledge-server API","date":"2026-06-22"}
+{"from":"guides/知识库使用指南","to":"guides/登录与鉴权指南","type":"relates_to","evidence":"知识库 API 需 Authorization token","date":"2026-06-22"}
+{"from":"guides/wiki同步指南","to":"concepts/知识库三操作","type":"part_of","evidence":"sync 是 Ingest 后的标准后续步骤","date":"2026-06-22"}
+{"from":"guides/查询与体检指南","to":"concepts/知识库三操作","type":"part_of","evidence":"Query/Lint 是三操作之二","date":"2026-06-22"}
+{"from":"guides/wiki同步指南","to":"guides/数据库初始化指南","type":"depends_on","evidence":"sync 需 kb_space 等表已存在","date":"2026-06-22"}
+{"from":"guides/wiki同步指南","to":"services/知识库服务","type":"relates_to","evidence":"同步目标为 knowledge-server 的 kb_document","date":"2026-06-22"}
+{"from":"guides/查询与体检指南","to":"guides/wiki同步指南","type":"relates_to","evidence":"生产 Query 前应先 sync wiki","date":"2026-06-22"}
+{"from":"guides/数据库初始化指南","to":"guides/本地启动指南","type":"relates_to","evidence":"启动前需先建库导数","date":"2026-06-22"}
+{"from":"guides/数据库初始化指南","to":"guides/秒杀压测指南","type":"relates_to","evidence":"压测需秒杀表与演示账号","date":"2026-06-22"}
+{"from":"concepts/知识库三操作","to":"services/知识库服务","type":"relates_to","evidence":"三操作产出经 sync 供 Java API 消费","date":"2026-06-22"}
+{"from":"articles/production-jvm启动参数","to":"concepts/jvm-内存与gc","type":"part_of","evidence":"生产 JVM 参数隶属 JVM 主题","date":"2026-06-22"}
+{"from":"articles/生产环境服务启停脚本","to":"articles/production-jvm启动参数","type":"depends_on","evidence":"启停脚本注入 JAVA_OPTS","date":"2026-06-22"}
+{"from":"articles/production-jvm启动参数","to":"guides/故障排查指南","type":"relates_to","evidence":"OOM/GC 问题联动排查指南","date":"2026-06-22"}
+{"from":"guides/知识库使用指南","to":"guides/wiki同步指南","type":"relates_to","evidence":"使用指南指向 sync 详细步骤","date":"2026-06-22"}
+{"from":"guides/知识库使用指南","to":"guides/查询与体检指南","type":"relates_to","evidence":"API ask/lint 与 Viewer 对照","date":"2026-06-22"}
+{"from":"articles/限流算法与令牌桶","to":"concepts/sentinel-限流与熔断","type":"part_of","evidence":"限流算法是 Sentinel 理论基础","date":"2026-06-22"}
+{"from":"articles/sentinel-接入与规则配置","to":"concepts/sentinel-限流与熔断","type":"part_of","evidence":"接入文章隶属 Sentinel 主题","date":"2026-06-22"}
+{"from":"interview/sentinel-面试题","to":"concepts/sentinel-限流与熔断","type":"part_of","evidence":"Sentinel 面试题隶属该主题","date":"2026-06-22"}
+{"from":"concepts/sentinel-限流与熔断","to":"concepts/spring-cloud-gateway","type":"relates_to","evidence":"Gateway 是 Sentinel 首选接入层","date":"2026-06-22"}
+{"from":"concepts/sentinel-限流与熔断","to":"concepts/秒杀设计","type":"relates_to","evidence":"秒杀入口需限流保护","date":"2026-06-22"}
+{"from":"articles/sentinel-接入与规则配置","to":"articles/gateway-路由与过滤器","type":"derived_from","evidence":"Gateway 接入步骤补充路由文章","date":"2026-06-22"}
+{"from":"articles/mybatis-plus-用法与注入防护","to":"concepts/mybatis-与-druid持久层","type":"part_of","evidence":"MyBatis 用法文章隶属持久层主题","date":"2026-06-22"}
+{"from":"articles/druid连接池与监控","to":"concepts/mybatis-与-druid持久层","type":"part_of","evidence":"Druid 监控文章隶属持久层主题","date":"2026-06-22"}
+{"from":"concepts/mybatis-与-druid持久层","to":"concepts/技术栈与版本","type":"part_of","evidence":"MyBatis+Druid 是技术栈持久层映射","date":"2026-06-22"}
+{"from":"articles/druid连接池与监控","to":"articles/压测监控与prometheus","type":"relates_to","evidence":"Druid 指标接入 Prometheus 看板","date":"2026-06-22"}
+{"from":"articles/druid连接池与监控","to":"guides/故障排查指南","type":"relates_to","evidence":"池耗尽是常见故障场景","date":"2026-06-22"}
+{"from":"concepts/sentinel-限流与熔断","to":"articles/druid连接池与监控","type":"relates_to","evidence":"入口限流可减轻连接池压力","date":"2026-06-22"}
+{"from":"articles/限流算法与令牌桶","to":"concepts/redis-缓存","type":"relates_to","evidence":"Redis Lua 分布式限流与秒杀","date":"2026-06-22"}
+{"from":"articles/es-索引与写入流程","to":"concepts/elasticsearch-搜索","type":"part_of","evidence":"写入流程隶属 ES 主题","date":"2026-06-22"}
+{"from":"articles/es-搜索与分片路由","to":"concepts/elasticsearch-搜索","type":"part_of","evidence":"搜索流程隶属 ES 主题","date":"2026-06-22"}
+{"from":"articles/es-match与bool查询","to":"concepts/elasticsearch-搜索","type":"part_of","evidence":"DSL 文章隶属 ES 主题","date":"2026-06-22"}
+{"from":"interview/elasticsearch-面试题","to":"concepts/elasticsearch-搜索","type":"part_of","evidence":"ES 面试题隶属该主题","date":"2026-06-22"}
+{"from":"concepts/elasticsearch-搜索","to":"services/知识库服务","type":"relates_to","evidence":"知识库检索可升级 ES","date":"2026-06-22"}
+{"from":"concepts/elasticsearch-搜索","to":"articles/mysql-索引失效场景","type":"relates_to","evidence":"LIKE 模糊搜是 ES 替代场景","date":"2026-06-22"}
+{"from":"articles/kafka-与-mq选型","to":"concepts/消息队列","type":"part_of","evidence":"MQ 选型文章隶属消息队列主题","date":"2026-06-22"}
+{"from":"concepts/消息队列","to":"concepts/秒杀设计","type":"relates_to","evidence":"秒杀异步落库应演进 MQ","date":"2026-06-22"}
+{"from":"concepts/消息队列","to":"concepts/elasticsearch-搜索","type":"relates_to","evidence":"Kafka 日志流常入 ES","date":"2026-06-22"}
+{"from":"guides/minio-附件存储指南","to":"services/知识库服务","type":"derived_from","evidence":"MinIO 指南基于 knowledge-server 附件 API","date":"2026-06-22"}
+{"from":"guides/minio-附件存储指南","to":"guides/知识库使用指南","type":"relates_to","evidence":"附件上传需知识库鉴权","date":"2026-06-22"}
+{"from":"guides/minio-附件存储指南","to":"guides/本地启动指南","type":"relates_to","evidence":"本地需先启 MinIO","date":"2026-06-22"}
+{"from":"outputs/茉莉登录与鉴权故障根因汇总","to":"guides/故障排查指南","type":"derived_from","evidence":"crystallize 综合故障排查指南","date":"2026-06-22"}
+{"from":"outputs/茉莉登录与鉴权故障根因汇总","to":"guides/登录与鉴权指南","type":"derived_from","evidence":"crystallize 综合登录指南","date":"2026-06-22"}
+{"from":"outputs/茉莉登录与鉴权故障根因汇总","to":"concepts/认证与会话机制","type":"derived_from","evidence":"crystallize 综合 Session 机制","date":"2026-06-22"}
+{"from":"outputs/茉莉登录与鉴权故障根因汇总","to":"guides/数据库初始化指南","type":"derived_from","evidence":"密码问题指向 DB 初始化","date":"2026-06-22"}
+{"from":"guides/故障排查指南","to":"outputs/茉莉登录与鉴权故障根因汇总","type":"relates_to","evidence":"故障指南指向登录专项汇总","date":"2026-06-22"}
+{"from":"guides/登录与鉴权指南","to":"outputs/茉莉登录与鉴权故障根因汇总","type":"relates_to","evidence":"登录指南指向故障汇总","date":"2026-06-22"}
+{"from":"articles/nacos-config动态配置实践","to":"articles/nacos-注册与配置","type":"part_of","evidence":"Config 实践补充注册与配置文章","date":"2026-06-22"}
+{"from":"guides/swagger接口调试指南","to":"guides/登录与鉴权指南","type":"depends_on","evidence":"Swagger 调试需先 login token","date":"2026-06-22"}
+{"from":"guides/swagger接口调试指南","to":"services/用户中心","type":"relates_to","evidence":"用户中心 Swagger2Config 为参考实现","date":"2026-06-22"}
+{"from":"guides/swagger接口调试指南","to":"outputs/茉莉登录与鉴权故障根因汇总","type":"relates_to","evidence":"Swagger 401 指向登录故障汇总","date":"2026-06-22"}
+{"from":"articles/bio-nio-aio对比","to":"concepts/io模型与-netty","type":"part_of","evidence":"BIO/NIO 对比隶属 IO 主题","date":"2026-06-22"}
+{"from":"articles/netty-reactor与线程模型","to":"concepts/io模型与-netty","type":"part_of","evidence":"Reactor 文章隶属 Netty 主题","date":"2026-06-22"}
+{"from":"articles/netty-pipeline与编解码","to":"concepts/io模型与-netty","type":"part_of","evidence":"Pipeline 文章隶属 Netty 主题","date":"2026-06-22"}
+{"from":"interview/netty-与-io面试题","to":"concepts/io模型与-netty","type":"part_of","evidence":"IO/Netty 面试题隶属该主题","date":"2026-06-22"}
+{"from":"concepts/io模型与-netty","to":"concepts/spring-cloud-gateway","type":"relates_to","evidence":"Gateway 基于 Reactor Netty","date":"2026-06-22"}
+{"from":"concepts/io模型与-netty","to":"concepts/dubbo-与-nacos","type":"relates_to","evidence":"Dubbo 默认 Netty 传输","date":"2026-06-22"}
+{"from":"articles/netty-reactor与线程模型","to":"articles/dubbo-调用原理与分层","type":"relates_to","evidence":"Dubbo Transport 层用 Netty","date":"2026-06-22"}
+{"from":"outputs/秒杀全链路与压测要点汇总","to":"concepts/秒杀设计","type":"derived_from","evidence":"crystallize 综合秒杀设计","date":"2026-06-22"}
+{"from":"outputs/秒杀全链路与压测要点汇总","to":"guides/秒杀压测指南","type":"derived_from","evidence":"crystallize 综合压测指南","date":"2026-06-22"}
+{"from":"guides/秒杀压测指南","to":"outputs/秒杀全链路与压测要点汇总","type":"relates_to","evidence":"压测指南指向汇总 checklist","date":"2026-06-22"}
+{"from":"articles/servlet生命周期与请求流程","to":"concepts/tomcat与-servlet容器","type":"part_of","evidence":"Servlet 流程隶属 Tomcat 主题","date":"2026-06-22"}
+{"from":"interview/http与-servlet面试题","to":"concepts/tomcat与-servlet容器","type":"part_of","evidence":"HTTP/Servlet 面试题隶属该主题","date":"2026-06-22"}
+{"from":"articles/bi报表服务演进路线","to":"services/bi服务","type":"part_of","evidence":"演进路线隶属 BI 服务","date":"2026-06-22"}
+{"from":"concepts/tomcat与-servlet容器","to":"concepts/spring-cloud-gateway","type":"relates_to","evidence":"Tomcat 业务服务 vs Netty 网关","date":"2026-06-22"}
+{"from":"articles/bi报表服务演进路线","to":"articles/字段级数据权限设计","type":"relates_to","evidence":"BI 列级权限场景","date":"2026-06-22"}
+{"from":"services/bi服务","to":"articles/bi报表服务演进路线","type":"relates_to","evidence":"骨架服务指向演进路线","date":"2026-06-22"}
+{"from":"guides/本地启动指南","to":"guides/swagger接口调试指南","type":"relates_to","evidence":"本地调试 API 用 Swagger","date":"2026-06-22"}
+{"from":"concepts/shiro-鉴权体系","to":"interview/shiro-面试题","type":"relates_to","evidence":"鉴权枢纽链到面试题","date":"2026-06-22"}
+{"from":"outputs/秒杀全链路与压测要点汇总","to":"outputs/茉莉登录与鉴权故障根因汇总","type":"relates_to","evidence":"压测 401 指向登录汇总","date":"2026-06-22"}
+{"from":"concepts/设计模式","to":"articles/spring框架中的设计模式","type":"part_of","evidence":"Spring 9 模式详解","date":"2026-06-22"}
+{"from":"concepts/设计模式","to":"interview/设计模式面试题","type":"relates_to","evidence":"设计模式枢纽链面试","date":"2026-06-22"}
+{"from":"concepts/容器与-docker","to":"guides/docker部署指南","type":"relates_to","evidence":"概念到操作指南","date":"2026-06-22"}
+{"from":"guides/docker部署指南","to":"guides/本地启动指南","type":"relates_to","evidence":"Docker 替代本地裸装依赖","date":"2026-06-22"}
+{"from":"articles/https与-tls基础","to":"concepts/spring-cloud-gateway","type":"relates_to","evidence":"网关终结 TLS","date":"2026-06-22"}
+{"from":"outputs/茉莉微服务全链路一张图","to":"concepts/服务调用与架构","type":"summarizes","evidence":"crystallize 架构总览","date":"2026-06-22"}
+{"from":"outputs/茉莉微服务全链路一张图","to":"guides/登录与鉴权指南","type":"relates_to","evidence":"Happy Path 含登录","date":"2026-06-22"}
+{"from":"concepts/前端技术栈","to":"guides/前端开发与联调指南","type":"relates_to","evidence":"概念到操作","date":"2026-06-22"}
+{"from":"guides/前端开发与联调指南","to":"articles/跨域与前后端分离","type":"relates_to","evidence":"联调跨域","date":"2026-06-22"}
+{"from":"articles/跨域与前后端分离","to":"concepts/spring-cloud-gateway","type":"relates_to","evidence":"Gateway CORS","date":"2026-06-22"}
+{"from":"guides/nginx反向代理与前端部署指南","to":"guides/前端开发与联调指南","type":"relates_to","evidence":"build 后部署","date":"2026-06-22"}
+{"from":"concepts/linux-运维基础","to":"articles/moli生产部署拓扑备忘","type":"relates_to","evidence":"运维到拓扑","date":"2026-06-22"}
+{"from":"concepts/分布式理论基础","to":"articles/接口幂等性实践","type":"relates_to","evidence":"理论到实践","date":"2026-06-22"}
+{"from":"articles/接口幂等性实践","to":"concepts/秒杀设计","type":"relates_to","evidence":"秒杀幂等","date":"2026-06-22"}
+{"from":"guides/git协作指南","to":"concepts/jenkins-ci入门","type":"relates_to","evidence":"push 触发 CI","date":"2026-06-22"}
+{"from":"concepts/jenkins-ci入门","to":"concepts/k8s入门与茉莉关系","type":"relates_to","evidence":"CI 到 K8s 部署","date":"2026-06-22"}
+{"from":"concepts/k8s入门与茉莉关系","to":"concepts/容器与-docker","type":"relates_to","evidence":"容器到编排","date":"2026-06-22"}
+{"from":"concepts/mongodb与文档库选型","to":"concepts/elasticsearch-搜索","type":"relates_to","evidence":"文档库与搜索对照","date":"2026-06-22"}
+{"from":"interview/前端基础面试题","to":"interview/http与-servlet面试题","type":"relates_to","evidence":"HTTP 前后端","date":"2026-06-22"}
+{"from":"interview/分布式理论面试题","to":"interview/dubbo-面试题","type":"relates_to","evidence":"微服务理论","date":"2026-06-22"}
+{"from":"outputs/茉莉新人上手checklist","to":"guides/本地启动指南","type":"derived_from","evidence":"crystallize Day-1 启动","date":"2026-06-22"}
+{"from":"outputs/茉莉新人上手checklist","to":"guides/数据库初始化指南","type":"derived_from","evidence":"crystallize 建库","date":"2026-06-22"}
+{"from":"outputs/茉莉新人上手checklist","to":"guides/登录与鉴权指南","type":"derived_from","evidence":"crystallize 登录","date":"2026-06-22"}
+{"from":"outputs/茉莉新人上手checklist","to":"outputs/茉莉微服务全链路一张图","type":"relates_to","evidence":"checklist 引用全链路","date":"2026-06-22"}
+{"from":"guides/增量ingest与raw投喂指南","to":"concepts/知识库三操作","type":"part_of","evidence":"增量 ingest 隶属三操作","date":"2026-06-22"}
+{"from":"guides/增量ingest与raw投喂指南","to":"guides/wiki同步指南","type":"relates_to","evidence":"ingest 后 sync","date":"2026-06-22"}

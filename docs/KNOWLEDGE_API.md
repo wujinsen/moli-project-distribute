@@ -55,6 +55,61 @@
 - 写操作（文档保存/发布/归档/删除、空间更新/删除、成员管理）按上表校验编辑/管理权限。
 - ⚠️ 当前仅 **用户型成员**（`memberType=0`）在运行时生效；角色型成员（`memberType=1`）可录入但暂不参与运行时鉴权。
 
+### 1.5 左侧菜单（getRouters）
+
+知识库**不在前端写死路由**，由用户中心维护 `sys_menu`，登录后前端调用 **`GET /UserCenter/menu/getRouters`** 拉取整棵菜单树。
+
+种子数据：[`docs/sql/04_knowledge_menu.sql`](sql/04_knowledge_menu.sql)（`scripts/init-db.ps1` 在导入 `03_knowledge_schema.sql` 后会自动执行）。
+
+| menu_id | 类型 | 名称 | path | component（对齐 meiling-ui viewRegistry） |
+|---------|------|------|------|-------------------------------------------|
+| 900 | M 目录 | 企业知识库 | `/knowledge` | `Layout` |
+| 901 | C 菜单 | 文档浏览 | `browse` | `knowledge/browse/index` |
+| 902 | C 菜单 | 智能问答 | `ask` | `knowledge/ask/index` |
+| 903 | C 菜单 | 关系图谱 | `graph` | `knowledge/graph/index` |
+| 904 | C 菜单 | 健康体检 | `lint` | `knowledge/lint/index` |
+
+按钮权限（F，不出现在侧栏，供 Shiro / `v-hasPermi`）：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:sync:trigger`、`kb:admin`、`kb:lint:scan`、`kb:space:admin`。
+
+`getRouters` 返回片段示例：
+
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "path": "/knowledge",
+      "name": "Knowledge",
+      "component": "Layout",
+      "alwaysShow": true,
+      "meta": { "title": "企业知识库", "icon": "knowledge" },
+      "children": [
+        {
+          "path": "browse",
+          "name": "KnowledgeBrowse",
+          "component": "knowledge/browse/index",
+          "meta": { "title": "文档浏览", "icon": "documentation" }
+        },
+        {
+          "path": "ask",
+          "name": "KnowledgeAsk",
+          "component": "knowledge/ask/index",
+          "meta": { "title": "智能问答", "icon": "query" }
+        }
+      ]
+    }
+  ]
+}
+```
+
+已有库单独补菜单：
+
+```bash
+mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
+```
+
+执行后**重新登录**，前端会重新拉取 `getRouters`。
+
 ---
 
 ## 2. 浏览（T3）—— 前端知识库主页面用
@@ -148,7 +203,8 @@
   "model": "deepseek-chat",
   "citations": [
     { "docId": 90020, "slug": "interview/spring-事务", "title": "Spring 事务（面试题系列）", "kbType": "interview", "snippet": "..." }
-  ]
+  ],
+  "qaLogId": 901234567890123456
 }
 ```
 
@@ -157,6 +213,23 @@
 | `mode` | `generative`（已配 LLM，带引用作答）/ `retrieval`（未配 key，降级为检索式列出相关页） |
 | `scope` / `scopeReason` | 自动识别的作用域及理由（如"面试题"→ interview） |
 | `citations` | 引用来源；前端可渲染为可点链接，跳到 `/kb/page?slug=`。`answer` 里的 `[[slug]]` 也对应这些页 |
+| `qaLogId` | 本次问答日志 ID，用于提交反馈 |
+
+### `GET /kb/ask/history`
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `spaceId` | query | 否 | 省略=可读空间内全部 |
+| `pageNum` / `pageSize` | query | 否 | 分页 |
+
+响应 `data`：`Page<QaHistoryVo>`，含 `question/answer/mode/scope/citations/useful/createTime`。
+
+### `PUT /kb/ask/feedback/{id}?useful=`
+
+| 参数 | 说明 |
+|------|------|
+| `id` | 问答日志 ID（`qaLogId`） |
+| `useful` | `1` 有用 / `0` 无用 |
 
 > 后端是否走生成式取决于 `application-dev.yml` 的 `kb.llm.enabled + api-key`。前端无需关心，按 `mode` 展示即可（generative 显示富文本答案；retrieval 提示"检索式"并列出引用）。
 
@@ -235,7 +308,7 @@
 | DELETE | `/kb/document/{id}` | 删除（逻辑） |
 | GET | `/kb/document/{id}/versions?pageNum=&pageSize=` | 版本历史 `Page<KbDocumentVersion>` |
 
-> 注意：`/kb/document/search` 当前是 MySQL `LIKE`。前端"知识库浏览"建议用 `/kb/index` + `/kb/page`；"管理后台搜索"用 `/kb/document/search`。
+> 注意：`/kb/document/search` 默认使用 MySQL **ngram 全文索引**（`MATCH AGAINST`），配置 `kb.search.mode=like` 可回退旧行为。前端"知识库浏览"建议用 `/kb/index` + `/kb/page`；"管理后台搜索"用 `/kb/document/search`。
 
 ### 5.2 分类 `/kb/category`
 
@@ -269,7 +342,32 @@
 | DELETE | `/kb/favorite/{documentId}` | 取消 |
 | GET | `/kb/favorite/my?pageNum=&pageSize=` | 我的收藏 `Page<KbDocument>` |
 
-### 5.6 空间 `/kb/space`
+### 5.6 附件 `/kb/attachment`（T4）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/kb/attachment/list?documentId=` | 文档附件列表 `KbAttachment[]` |
+| POST | `/kb/attachment/upload` | 上传（`multipart/form-data`：`documentId` + `file`） |
+| GET | `/kb/attachment/{id}` | 下载（直接写 response 流，非 JSON） |
+| DELETE | `/kb/attachment/{id}` | 删除（软删 `kb_attachment`，MinIO 对象保留） |
+
+上传成功响应 `data` 为 `KbAttachment`：
+
+```json
+{
+  "id": 1001,
+  "documentId": 900,
+  "fileName": "demo.pdf",
+  "objectKey": "kb/attachment/900/1001/demo.pdf",
+  "fileSize": 12345,
+  "contentType": "application/pdf"
+}
+```
+
+> 前端上传示例：`FormData` 追加 `documentId` 与 `file` 字段；下载用 `window.open` 或带 `Authorization` 的 blob 请求。
+> ⚠️ 附件接口已接入空间 ACL（读/写随文档空间权限）。
+
+### 5.7 空间 `/kb/space`
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -278,7 +376,7 @@
 | POST / PUT | `/kb/space` | 创建 / 更新（更新需空间管理权限） |
 | DELETE | `/kb/space/{id}` | 删除（需空间管理权限） |
 
-### 5.7 空间成员 `/kb/space/member`（T9 · ACL）
+### 5.8 空间成员 `/kb/space/member`（T9 · ACL）
 
 > 均需**空间管理权限**（owner / 空间 admin / 全局 `kb:admin`）。
 
@@ -304,7 +402,66 @@
 
 ---
 
-## 6. 前端页面建议（对应 serve.py 的 Tab）
+## 6. kb→DB 同步管理（T10）
+
+> 需**空间管理权限**（owner / 空间 admin）或全局 `kb:admin`。用于把 `kb/wiki/` markdown 同步进 MySQL。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/kb/sync/logs?spaceId=&batchNo=&pageNum=&pageSize=` | 同步日志分页 `Page<KbSyncLog>` |
+| GET | `/kb/sync/status?spaceId=` | 最近一批统计 `SyncStatusVo` |
+| POST | `/kb/sync/trigger?spaceId=&spaceCode=` | 触发 `sync_to_db.py`，返回 `SyncTriggerVo` |
+
+`SyncStatusVo` 示例：
+
+```json
+{
+  "batchNo": "20260622153000",
+  "spaceId": 900000000000000001,
+  "lastSyncTime": "2026-06-22 15:30:00",
+  "total": 54,
+  "actionCounts": { "insert": 2, "update": 10, "skip": 42 },
+  "failCount": 0
+}
+```
+
+`SyncTriggerVo`：`success`、`exitCode`、`spaceCode`、`outputTail`（脚本输出末尾）。
+
+配置见 `application-dev.yml` → `kb.sync.*`（`script-path` / `python` / `space-code` / `timeout-seconds` / `schedule-enabled` / `schedule-cron`）。
+
+**Git hook（commit 后自动 sync）**：
+
+```bash
+# Linux / Git Bash
+bash moli-knowledge/kb/tools/install_git_hook.sh
+
+# Windows PowerShell
+powershell -ExecutionPolicy Bypass -File moli-knowledge/kb/tools/install_git_hook.ps1
+```
+
+仅当 commit 变更 `moli-knowledge/kb/wiki/` 下文件时触发 `sync_to_db.py`。
+
+### 6.1 GitHub Actions CI
+
+工作流：[`.github/workflows/kb-sync.yml`](../.github/workflows/kb-sync.yml)
+
+| 场景 | 行为 |
+|------|------|
+| PR / push（wiki 或 sync 脚本变更） | `dry-run`：解析 wiki，不连库 |
+| merge 到 `main`/`master` | MySQL 容器内真实 sync + 校验文档数 |
+| Actions → Run workflow → `remote` | 写远程库（需配置 Secrets） |
+
+必填 Secrets：`KB_SYNC_DB_HOST`、`KB_SYNC_DB_USER`、`KB_SYNC_DB_PASSWORD`。
+
+本地与 CI 同款脚本：
+
+```bash
+bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
+```
+
+---
+
+## 7. 前端页面建议（对应 serve.py 的 Tab）
 
 | 页面 | 主要接口 | 备注 |
 |------|----------|------|

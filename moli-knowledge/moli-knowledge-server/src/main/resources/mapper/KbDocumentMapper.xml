@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moli.knowledge.server.mapper.KbDocumentMapper">
+
+    <!-- 使用 kb_document 上的 ngram 全文索引 ftx_kb_document -->
+    <select id="searchFullText" resultType="com.moli.knowledge.server.entity.KbDocument">
+        SELECT *
+        FROM kb_document
+        WHERE is_delete = 0
+        <if test="spaceId != null">
+            AND space_id = #{spaceId}
+        </if>
+        <if test="spaceIds != null and spaceIds.size() &gt; 0">
+            AND space_id IN
+            <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+        </if>
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="documentIds != null and documentIds.size() &gt; 0">
+            AND id IN
+            <foreach collection="documentIds" item="did" open="(" separator="," close=")">
+                #{did}
+            </foreach>
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
+        </if>
+        ORDER BY
+        <if test="keyword != null and keyword != ''">
+            MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) DESC,
+        </if>
+        update_time DESC
+    </select>
+
+</mapper>

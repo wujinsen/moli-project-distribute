@@ -11,14 +11,14 @@ sources:
   - raw/wujinsen_markdown/面试笔试/Spring/@transactional注解在什么情况下会失效，为什么。.note.md
   - raw/wujinsen_markdown/Spring/事务/@Transactional失效的几种场景.note.md
   - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
-related: []
+related: [spring-声明式事务, spring-boot-自动配置]
 created: 2026-06-22
 updated: 2026-06-22
 ---
 
 # Spring 事务（面试题系列）
 
-> 本页由 6 篇杂乱原文**去重提炼**而成（传播级别、隔离级别、失效场景在多篇中重复，已合并）。
+> 概念枢纽 [[spring-声明式事务]]。本页由 6 篇杂乱原文**去重提炼**而成（传播级别、隔离级别、失效场景在多篇中重复，已合并）。
 > 按面试高频顺序组织，每题给「要点 + 关键陷阱」。
 
 ## Q1. 事务的四大特性 ACID？

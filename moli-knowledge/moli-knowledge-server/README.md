@@ -18,7 +18,7 @@
 | Redis | Shiro Session 共享，`database=2`，密码 `123456` |
 | Nacos | 服务注册，`127.0.0.1:8848`，namespace `dev` |
 | user-center-server | Dubbo 提供方（鉴权）+ 共享 Redis 会话 |
-| MinIO（可选） | 附件存储，`127.0.0.1:9000`（当前无上传 API） |
+| MinIO（可选） | 附件存储，`127.0.0.1:9000` |
 
 ### 2. 初始化数据库
 
@@ -100,7 +100,7 @@ moli-knowledge-server/
 | `kb_comment` | 评论（parentId 楼中楼） |
 | `kb_document_version` | 版本历史（+content_hash） |
 | `kb_favorite` | 个人收藏 |
-| `kb_attachment` | 附件（MinIO，仅 entity+mapper） |
+| `kb_attachment` | 附件（MinIO，`/kb/attachment` 上传/下载/删除） |
 
 **图谱治理（2）** · **同步/权限/问答（3）** —— 为后续功能预留：
 
@@ -138,7 +138,7 @@ moli-knowledge-server/
 ### 文档 `/kb/document`
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/search` | 搜索（`DocumentSearchRequest`：spaceId/categoryId/keyword/status…） |
+| GET | `/search` | 搜索（`DocumentSearchRequest`：spaceId/categoryId/keyword/status…）；**默认 MySQL ngram 全文索引**，`kb.search.mode=like` 可回退 LIKE |
 | GET | `/{id}` | 详情（`DocumentDetailVo`） |
 | POST | `` | 保存（`DocumentSaveRequest`） |
 | PUT | `/{id}/publish` | 发布 |
@@ -161,7 +161,9 @@ moli-knowledge-server/
 ### 问答 Query `/kb`（T2）
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/ask` | 提问。请求 `AskRequest{question, spaceId?, topK?}`；定作用域→选 ≤topK 已发布页→**有 LLM key 调模型带引用作答 / 无 key 降级检索式**；返回 `AskResponse{answer, mode, scope, citations[]}`，并记 `kb_qa_log`。LLM 配置见 `application-dev.yml` 的 `kb.llm.*`（OpenAI 兼容，支持 DeepSeek/Qwen/GLM） |
+| POST | `/ask` | 提问。返回 `AskResponse`（含 `qaLogId` 供反馈） |
+| GET | `/ask/history?spaceId=&pageNum=&pageSize=` | 我的问答历史 `Page<QaHistoryVo>` |
+| PUT | `/ask/feedback/{id}?useful=` | 问答反馈（1有用/0无用） |
 
 ### 浏览 `/kb`（T3）
 | 方法 | 路径 | 说明 |
@@ -169,13 +171,23 @@ moli-knowledge-server/
 | GET | `/index?spaceId=` | 目录树：已发布文档按知识类型（guide/service/concept/article/interview/output）分组，返回 `IndexTreeVo{total, groups[]}` |
 | GET | `/page?slug=&spaceId=` | 按 slug 取单页（slug 形如 `services/用户中心` 含斜杠，故用查询参数），返回 `PageDetailVo{...content, tags, outLinks, backLinks}`。出/入链读 `kb_relation`（需先跑同步脚本） |
 
+### 同步管理 `/kb/sync`（T10）
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/sync/logs?spaceId=&batchNo=&pageNum=&pageSize=` | 同步日志分页（需空间 admin 或 `kb:admin`） |
+| GET | `/sync/status?spaceId=` | 最近一批同步统计（insert/update/delete/skip 计数） |
+| POST | `/sync/trigger?spaceId=&spaceCode=` | 触发 `kb/tools/sync_to_db.py` 写库 |
+| — | 定时任务 | `kb.sync.schedule-enabled=true` 时按 cron 自动 sync |
+| — | Git hook | `kb/tools/install_git_hook.sh` 安装 post-commit 自动 sync |
+| — | **GitHub Actions** | [`.github/workflows/kb-sync.yml`](../../.github/workflows/kb-sync.yml)：PR dry-run；main 写库；可手动 sync 远程库 |
+
 > 与 viewer 的差异：viewer 基于 `kb/` markdown 的 frontmatter（`tags`/`related`）+ `edges.jsonl` + `[[slug]]`；
 > 本服务基于自身 DB——wikilink 按**文档标题**解析，`related/edges` 用 **同标签**近似，`sources` 用 **summary** 近似。
 > `spaceId` 省略则全库。
 
 ### 请求示例
 ```bash
-# 搜索文档（当前为 MySQL LIKE）
+# 搜索文档（MySQL ngram 全文索引，失败自动降级 LIKE）
 GET /kb/document/search?spaceId=900000000000000001&keyword=上手
 
 # 保存文档
@@ -208,8 +220,8 @@ POST /kb/document
 
 ## 现状与已知限制（实事求是）
 
-- **检索是 MySQL `LIKE`**（title/summary/content 三字段 OR），非全文索引，无 ES / 向量。
-- `KbAttachment` 仅有 entity + mapper，**无 Service / Controller**，MinIO 配了但无上传 API。
+- ~~**检索是 MySQL `LIKE`**~~ → **默认 ngram 全文索引**（`kb.search.mode=fulltext`），索引缺失或异常时自动降级 LIKE。
+- ~~`KbAttachment` 仅有 entity + mapper，无 Service / Controller~~ → **已落地** `/kb/attachment`。
 - ~~Shiro 已开，但未见空间级 ACL 过滤~~ → **已落地**（见上「空间级 ACL」）。
 - 仍是全功能 CRUD，**尚未对齐**「kb/ 为源、本服务只读门面」的目标。
 
@@ -224,7 +236,7 @@ POST /kb/document
 | M2 | `kb`（markdown）→ `kb_document` **单向同步**；`kb_document` 加 `slug` 唯一键 |
 | Query | 新增 `POST /kb/ask`：检索选页 → 拼上下文 → 调 LLM → **带引用答案 + 来源列表**（先中等模型，可随时换 `key+base-url+model`） |
 | 浏览 | `/kb/index` 目录树、`/kb/page/{slug}`（`/kb/graph`、`/kb/lint` 已落地，见上 [REST API](#图谱与体检-kb移植自-kbtoolsservepy)） |
-| 后期 | ~~空间级 ACL（复用 Shiro）~~ ✅ 已落地、附件上传（MinIO）、检索升级（Meilisearch/向量，按量触发） |
+| 后期 | ~~空间级 ACL（复用 Shiro）~~ ✅、~~附件上传（MinIO）~~ ✅、检索升级（Meilisearch/向量，按量触发） |
 
 > 想先在界面看 Query 效果，无需改 Java：用上层零依赖 viewer [`../kb/tools/serve.py`](../kb/tools/serve.py)（`python ../kb/tools/serve.py`）即可浏览 wiki、试检索式 Query。
 

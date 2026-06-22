@@ -7,6 +7,7 @@ import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.dto.CategoryTreeVo;
 import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.mapper.KbCategoryMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbCategoryService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -23,9 +24,12 @@ public class KbCategoryServiceImpl implements KbCategoryService {
 
     @Resource
     private KbCategoryMapper kbCategoryMapper;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public List<CategoryTreeVo> tree(Long spaceId) {
+        kbAclService.assertCanRead(spaceId);
         List<KbCategory> categories = kbCategoryMapper.selectList(new LambdaQueryWrapper<KbCategory>()
                 .eq(KbCategory::getSpaceId, spaceId)
                 .eq(KbCategory::getIsDelete, CommonConstant.UN_DELETE)
@@ -53,6 +57,7 @@ public class KbCategoryServiceImpl implements KbCategoryService {
         if (category.getSpaceId() == null) {
             throw new BaseException("空间ID不能为空");
         }
+        kbAclService.assertCanEdit(category.getSpaceId());
         if (StringUtils.isBlank(category.getCategoryName())) {
             throw new BaseException("分类名称不能为空");
         }
@@ -73,6 +78,7 @@ public class KbCategoryServiceImpl implements KbCategoryService {
         if (existing == null || !CommonConstant.UN_DELETE.equals(existing.getIsDelete())) {
             throw new BaseException("分类不存在");
         }
+        kbAclService.assertCanEdit(existing.getSpaceId());
         kbCategoryMapper.updateById(category);
     }
 
@@ -82,6 +88,7 @@ public class KbCategoryServiceImpl implements KbCategoryService {
         if (category == null || !CommonConstant.UN_DELETE.equals(category.getIsDelete())) {
             throw new BaseException("分类不存在");
         }
+        kbAclService.assertCanEdit(category.getSpaceId());
         Integer childCount = kbCategoryMapper.selectCount(new LambdaQueryWrapper<KbCategory>()
                 .eq(KbCategory::getParentId, id)
                 .eq(KbCategory::getIsDelete, CommonConstant.UN_DELETE));

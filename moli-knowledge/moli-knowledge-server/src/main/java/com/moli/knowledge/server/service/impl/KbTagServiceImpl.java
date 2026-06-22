@@ -6,6 +6,7 @@ import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.entity.KbTag;
 import com.moli.knowledge.server.mapper.KbTagMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbTagService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,12 @@ public class KbTagServiceImpl implements KbTagService {
 
     @Resource
     private KbTagMapper kbTagMapper;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public List<KbTag> listBySpace(Long spaceId) {
+        kbAclService.assertCanRead(spaceId);
         return kbTagMapper.selectList(new LambdaQueryWrapper<KbTag>()
                 .eq(KbTag::getSpaceId, spaceId)
                 .eq(KbTag::getIsDelete, CommonConstant.UN_DELETE)
@@ -32,6 +36,7 @@ public class KbTagServiceImpl implements KbTagService {
         if (tag.getSpaceId() == null || StringUtils.isBlank(tag.getTagName())) {
             throw new BaseException("空间ID和标签名不能为空");
         }
+        kbAclService.assertCanEdit(tag.getSpaceId());
         tag.setId(IdGenerator.getId());
         kbTagMapper.insert(tag);
         return tag.getId();
@@ -43,6 +48,7 @@ public class KbTagServiceImpl implements KbTagService {
         if (existing == null || !CommonConstant.UN_DELETE.equals(existing.getIsDelete())) {
             throw new BaseException("标签不存在");
         }
+        kbAclService.assertCanEdit(existing.getSpaceId());
         kbTagMapper.updateById(tag);
     }
 
@@ -52,6 +58,7 @@ public class KbTagServiceImpl implements KbTagService {
         if (tag == null || !CommonConstant.UN_DELETE.equals(tag.getIsDelete())) {
             throw new BaseException("标签不存在");
         }
+        kbAclService.assertCanEdit(tag.getSpaceId());
         tag.setIsDelete(CommonConstant.IS_DELETE);
         kbTagMapper.updateById(tag);
     }

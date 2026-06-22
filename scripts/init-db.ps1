@@ -13,6 +13,7 @@ $Root = Split-Path -Parent $PSScriptRoot
 $MoliSql = Join-Path $Root "scripts\moli.sql"
 $SeckillSql = Join-Path $Root "docs\sql\02_seckill_schema.sql"
 $KnowledgeSql = Join-Path $Root "docs\sql\03_knowledge_schema.sql"
+$KnowledgeMenuSql = Join-Path $Root "docs\sql\04_knowledge_menu.sql"
 
 if (-not (Test-Path $Mysql)) {
     Write-Error "mysql.exe not found: $Mysql"
@@ -39,6 +40,10 @@ if (-not $SkipKnowledge) {
     if (Test-Path $KnowledgeSql) {
         Write-Host "Importing docs/sql/03_knowledge_schema.sql ..."
         Get-Content $KnowledgeSql -Raw -Encoding UTF8 | & $Mysql -u $User "-p$Password" $Database
+    }
+    if (Test-Path $KnowledgeMenuSql) {
+        Write-Host "Importing docs/sql/04_knowledge_menu.sql ..."
+        Get-Content $KnowledgeMenuSql -Raw -Encoding UTF8 | & $Mysql -u $User "-p$Password" $Database
     }
 }
 

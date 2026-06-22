@@ -8,14 +8,14 @@ sources:
   - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
   - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
   - raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md
-related: [b-plus树与-innodb索引结构, mysql-复合索引与最左前缀, mysql-覆盖索引与回表优化, mysql-索引失效场景, mysql-索引面试题]
+related: [b-plus树与-innodb索引结构, mysql-复合索引与最左前缀, mysql-覆盖索引与回表优化, mysql-索引失效场景, mysql-索引面试题, mysql-事务与锁]
 created: 2026-06-22
 updated: 2026-06-22
 ---
 
 # MySQL 索引（概念枢纽）
 
-> 本页是「MySQL 索引」主题枢纽。结构原理见 [[b-plus树与-innodb索引结构]]；复合索引与最左前缀见 [[mysql-复合索引与最左前缀]]；覆盖索引与回表见 [[mysql-覆盖索引与回表优化]]；失效场景见 [[mysql-索引失效场景]]；面试速记见 [[mysql-索引面试题]]。
+> 本页是「MySQL 索引」主题枢纽。结构原理见 [[b-plus树与-innodb索引结构]]；复合索引与最左前缀见 [[mysql-复合索引与最左前缀]]；覆盖索引与回表见 [[mysql-覆盖索引与回表优化]]；失效场景见 [[mysql-索引失效场景]]；面试速记见 [[mysql-索引面试题]]；事务与锁见 [[mysql-事务与锁]]。
 > 由 `DataBase/mysql/索引/` 簇 7 篇 + 面试题整理 2 篇 + B+Tree 原理 1 篇去重提炼（与「分布式锁」批次同范式）。
 
 ## 索引是什么？

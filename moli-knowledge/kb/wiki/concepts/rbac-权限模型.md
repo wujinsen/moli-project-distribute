@@ -8,7 +8,7 @@ sources:
   - docs/zh-CN/RBAC.md
   - docs/api-iteration-map.md
   - moli-user-center/moli-user-center-server/
-related: [用户中心, 认证与会话机制, 权限管理操作指南]
+related: [用户中心, 认证与会话机制, 权限管理操作指南, 字段级数据权限设计]
 created: 2026-06-22
 updated: 2026-06-22
 ---
@@ -61,6 +61,8 @@ updated: 2026-06-22
 ```
 
 授权变更后清 `shiro:cache` 缓存（`PermissionAuthUtils.clearUserAuthorizationCache`）。
+
+> 列级/字段级数据权限**未实现**；BI 扩展思路见 [[字段级数据权限设计]]。
 
 ## 相关
 

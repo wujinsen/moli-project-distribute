@@ -32,6 +32,9 @@ public class AskResponse {
     @ApiModelProperty("引用来源")
     private List<Citation> citations = new ArrayList<>();
 
+    @ApiModelProperty("本次问答日志ID（用于提交反馈）")
+    private Long qaLogId;
+
     @Data
     @ApiModel("引用")
     public static class Citation {

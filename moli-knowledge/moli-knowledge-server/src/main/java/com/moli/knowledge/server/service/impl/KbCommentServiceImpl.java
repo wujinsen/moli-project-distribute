@@ -7,6 +7,7 @@ import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.entity.KbComment;
 import com.moli.knowledge.server.mapper.KbCommentMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbCommentService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,12 @@ public class KbCommentServiceImpl implements KbCommentService {
 
     @Resource
     private KbCommentMapper kbCommentMapper;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public Page<KbComment> page(Long documentId, int pageNum, int pageSize) {
+        kbAclService.assertCanReadDocument(documentId);
         return kbCommentMapper.selectPage(new Page<>(pageNum, pageSize),
                 new LambdaQueryWrapper<KbComment>()
                         .eq(KbComment::getDocumentId, documentId)
@@ -33,6 +37,7 @@ public class KbCommentServiceImpl implements KbCommentService {
         if (comment.getDocumentId() == null || StringUtils.isBlank(comment.getContent())) {
             throw new BaseException("文档ID和评论内容不能为空");
         }
+        kbAclService.assertCanReadDocument(comment.getDocumentId());
         comment.setId(IdGenerator.getId());
         if (comment.getParentId() == null) {
             comment.setParentId(0L);
@@ -47,6 +52,7 @@ public class KbCommentServiceImpl implements KbCommentService {
         if (comment == null || !CommonConstant.UN_DELETE.equals(comment.getIsDelete())) {
             throw new BaseException("评论不存在");
         }
+        kbAclService.assertCanEditDocument(comment.getDocumentId());
         comment.setIsDelete(CommonConstant.IS_DELETE);
         kbCommentMapper.updateById(comment);
     }

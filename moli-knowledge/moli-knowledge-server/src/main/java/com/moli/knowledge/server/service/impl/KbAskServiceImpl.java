@@ -8,6 +8,9 @@ import com.moli.common.constant.CommonConstant;
 import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.dto.AskRequest;
 import com.moli.knowledge.server.dto.AskResponse;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.dto.QaHistoryVo;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbQaLog;
 import com.moli.knowledge.server.enums.DocumentStatus;
@@ -148,8 +151,101 @@ public class KbAskServiceImpl implements KbAskService {
             resp.setMode("retrieval");
         }
 
-        saveLog(request, resp);
+        Long qaLogId = saveLog(request, resp);
+        resp.setQaLogId(qaLogId);
         return resp;
+    }
+
+    @Override
+    public Page<QaHistoryVo> history(Long spaceId, int pageNum, int pageSize) {
+        Long userId = ShiroUtils.getUserId();
+        if (userId == null) {
+            throw new BaseException("请先登录");
+        }
+        LambdaQueryWrapper<KbQaLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(KbQaLog::getUserId, userId);
+        if (spaceId != null) {
+            kbAclService.assertCanRead(spaceId);
+            wrapper.eq(KbQaLog::getSpaceId, spaceId);
+        } else {
+            List<Long> accessible = kbAclService.accessibleSpaceIds();
+            if (accessible.isEmpty()) {
+                return new Page<>(pageNum, pageSize, 0);
+            }
+            wrapper.and(w -> w.in(KbQaLog::getSpaceId, accessible).or().isNull(KbQaLog::getSpaceId));
+        }
+        wrapper.orderByDesc(KbQaLog::getCreateTime);
+        Page<KbQaLog> page = kbQaLogMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+        Page<QaHistoryVo> result = new Page<>(pageNum, pageSize, page.getTotal());
+        List<QaHistoryVo> rows = new ArrayList<>();
+        for (KbQaLog row : page.getRecords()) {
+            rows.add(toHistoryVo(row));
+        }
+        result.setRecords(rows);
+        return result;
+    }
+
+    @Override
+    public void feedback(Long id, Integer useful) {
+        if (id == null || useful == null) {
+            throw new BaseException("日志ID与反馈值不能为空");
+        }
+        if (useful != 0 && useful != 1) {
+            throw new BaseException("反馈值只能为 0 或 1");
+        }
+        KbQaLog row = kbQaLogMapper.selectById(id);
+        if (row == null) {
+            throw new BaseException("问答记录不存在");
+        }
+        Long userId = ShiroUtils.getUserId();
+        if (userId == null) {
+            throw new BaseException("请先登录");
+        }
+        if (!userId.equals(row.getUserId()) && !kbAclService.isAdmin()) {
+            throw new BaseException("无权评价该问答");
+        }
+        row.setUseful(useful);
+        kbQaLogMapper.updateById(row);
+    }
+
+    private QaHistoryVo toHistoryVo(KbQaLog row) {
+        QaHistoryVo vo = new QaHistoryVo();
+        vo.setId(row.getId());
+        vo.setSpaceId(row.getSpaceId());
+        vo.setQuestion(row.getQuestion());
+        vo.setAnswer(row.getAnswer());
+        vo.setProvider(row.getProvider());
+        vo.setModel(row.getModel());
+        vo.setUseful(row.getUseful());
+        vo.setCreateTime(row.getCreateTime());
+        unpackScope(row.getScope(), vo);
+        if (StringUtils.isNotBlank(row.getCitations())) {
+            try {
+                vo.setCitations(JSON.parseArray(row.getCitations(), AskResponse.Citation.class));
+            } catch (Exception ignored) {
+                vo.setCitations(new ArrayList<>());
+            }
+        }
+        return vo;
+    }
+
+    private String packScope(String mode, String scope) {
+        return (mode == null ? "retrieval" : mode) + "|" + (scope == null ? "" : scope);
+    }
+
+    private void unpackScope(String packed, QaHistoryVo vo) {
+        if (StringUtils.isBlank(packed)) {
+            vo.setMode("retrieval");
+            return;
+        }
+        int idx = packed.indexOf('|');
+        if (idx > 0 && ("generative".equals(packed.substring(0, idx)) || "retrieval".equals(packed.substring(0, idx)))) {
+            vo.setMode(packed.substring(0, idx));
+            vo.setScope(packed.substring(idx + 1));
+        } else {
+            vo.setMode("retrieval");
+            vo.setScope(packed);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -374,22 +470,25 @@ public class KbAskServiceImpl implements KbAskService {
         return sb.toString();
     }
 
-    private void saveLog(AskRequest request, AskResponse resp) {
+    private Long saveLog(AskRequest request, AskResponse resp) {
         try {
             KbQaLog qa = new KbQaLog();
-            qa.setId(com.moli.common.core.IdGenerator.getId());
+            Long id = com.moli.common.core.IdGenerator.getId();
+            qa.setId(id);
             qa.setSpaceId(request.getSpaceId());
             qa.setUserId(ShiroUtils.getUserId());
             qa.setQuestion(request.getQuestion());
             qa.setAnswer(resp.getAnswer());
             qa.setCitations(JSON.toJSONString(resp.getCitations()));
-            qa.setScope(resp.getScope());
+            qa.setScope(packScope(resp.getMode(), resp.getScope()));
             qa.setProvider(resp.getProvider());
             qa.setModel(resp.getModel());
             qa.setCreateTime(new Date());
             kbQaLogMapper.insert(qa);
+            return id;
         } catch (Exception e) {                            // noqa: 记录日志失败不影响问答
             log.warn("写 kb_qa_log 失败: {}", e.getMessage());
+            return null;
         }
     }
 

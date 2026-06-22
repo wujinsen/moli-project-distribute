@@ -20,6 +20,18 @@ public class DocumentDetailVo {
     @ApiModelProperty("分类ID")
     private Long categoryId;
 
+    @ApiModelProperty("slug")
+    private String slug;
+
+    @ApiModelProperty("知识类型 guide/service/concept/article/interview/output")
+    private String kbType;
+
+    @ApiModelProperty("领域")
+    private String domain;
+
+    @ApiModelProperty("来源 kb/manual")
+    private String source;
+
     @ApiModelProperty("标题")
     private String title;
 

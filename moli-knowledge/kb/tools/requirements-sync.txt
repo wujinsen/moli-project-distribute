@@ -1,0 +1,2 @@
+# kb/tools/sync_to_db.py 依赖（CI / 本地写库）
+pymysql>=1.1.0

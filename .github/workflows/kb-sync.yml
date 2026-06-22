@@ -1,0 +1,152 @@
+# kb/wiki markdown → MySQL 同步 CI
+#
+# - PR / push：dry-run（解析 wiki，不连库）
+# - push main/master：MySQL 服务容器 + 真实 sync + 行数校验
+# - workflow_dispatch：可选连远程库（Repository Secrets）
+#
+# 远程库 Secrets（手动 sync 时用，均可选，有默认值）：
+#   KB_SYNC_DB_HOST / KB_SYNC_DB_PORT / KB_SYNC_DB_USER
+#   KB_SYNC_DB_PASSWORD / KB_SYNC_DB_NAME / KB_SYNC_SPACE
+
+name: KB Wiki Sync
+
+on:
+  push:
+    branches: [main, master]
+    paths: &kb_paths
+      - 'moli-knowledge/kb/wiki/**'
+      - 'moli-knowledge/kb/tools/**'
+      - 'docs/sql/03_knowledge_schema.sql'
+      - '.github/workflows/kb-sync.yml'
+  pull_request:
+    paths: *kb_paths
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Sync target'
+        required: true
+        default: ci
+        type: choice
+        options:
+          - ci
+          - remote
+
+concurrency:
+  group: kb-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dry-run:
+    name: Dry-run (parse wiki)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Install pymysql
+        run: pip install -r moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: sync_to_db.py --dry-run
+        run: bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
+
+  sync-mysql:
+    name: Sync to MySQL (CI)
+    needs: dry-run
+    if: >
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+      || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'ci')
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci_kb_sync
+          MYSQL_DATABASE: moli
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci_kb_sync"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      KB_SYNC_HOST: 127.0.0.1
+      KB_SYNC_PORT: 3306
+      KB_SYNC_USER: root
+      KB_SYNC_PASSWORD: ci_kb_sync
+      KB_SYNC_DB: moli
+      KB_SYNC_SPACE: enterprise-kb
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mysql-client
+          pip install -r moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Wait for MySQL
+        run: |
+          for i in $(seq 1 30); do
+            if mysqladmin ping -h127.0.0.1 -P3306 -uroot -pci_kb_sync --silent; then
+              echo "MySQL is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL not ready" >&2
+          exit 1
+
+      - name: Init kb schema
+        run: bash moli-knowledge/kb/tools/ci/run_sync.sh init-schema
+
+      - name: Run sync_to_db.py
+        run: bash moli-knowledge/kb/tools/ci/run_sync.sh sync
+
+      - name: Verify synced documents
+        run: bash moli-knowledge/kb/tools/ci/run_sync.sh verify
+
+  sync-remote:
+    name: Sync to remote MySQL
+    needs: dry-run
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'remote'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Install pymysql
+        run: pip install -r moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: sync_to_db.py (remote)
+        env:
+          KB_SYNC_HOST: ${{ secrets.KB_SYNC_DB_HOST }}
+          KB_SYNC_PORT: ${{ secrets.KB_SYNC_DB_PORT }}
+          KB_SYNC_USER: ${{ secrets.KB_SYNC_DB_USER }}
+          KB_SYNC_PASSWORD: ${{ secrets.KB_SYNC_DB_PASSWORD }}
+          KB_SYNC_DB: ${{ secrets.KB_SYNC_DB_NAME }}
+          KB_SYNC_SPACE: ${{ secrets.KB_SYNC_SPACE }}
+        run: |
+          if [[ -z "${KB_SYNC_HOST}" || -z "${KB_SYNC_USER}" || -z "${KB_SYNC_PASSWORD}" ]]; then
+            echo "Missing secrets: KB_SYNC_DB_HOST, KB_SYNC_DB_USER, KB_SYNC_DB_PASSWORD" >&2
+            exit 1
+          fi
+          bash moli-knowledge/kb/tools/ci/run_sync.sh sync

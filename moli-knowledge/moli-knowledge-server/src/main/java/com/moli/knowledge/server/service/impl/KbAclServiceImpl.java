@@ -3,8 +3,10 @@ package com.moli.knowledge.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.entity.KbSpaceMember;
+import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.enums.SpaceVisibility;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMemberMapper;
@@ -27,6 +29,8 @@ public class KbAclServiceImpl implements KbAclService {
     private KbSpaceMapper kbSpaceMapper;
     @Resource
     private KbSpaceMemberMapper kbSpaceMemberMapper;
+    @Resource
+    private KbDocumentMapper kbDocumentMapper;
 
     @Override
     public boolean isAdmin() {
@@ -128,6 +132,16 @@ public class KbAclServiceImpl implements KbAclService {
     }
 
     @Override
+    public void assertCanReadDocument(Long documentId) {
+        assertCanRead(requireDocumentSpaceId(documentId));
+    }
+
+    @Override
+    public void assertCanEditDocument(Long documentId) {
+        assertCanEdit(requireDocumentSpaceId(documentId));
+    }
+
+    @Override
     public List<Long> accessibleSpaceIds() {
         List<KbSpace> spaces = kbSpaceMapper.selectList(new LambdaQueryWrapper<KbSpace>()
                 .eq(KbSpace::getIsDelete, CommonConstant.UN_DELETE));
@@ -140,6 +154,17 @@ public class KbAclServiceImpl implements KbAclService {
             }
         }
         return ids;
+    }
+
+    private Long requireDocumentSpaceId(Long documentId) {
+        if (documentId == null) {
+            throw new BaseException("文档ID不能为空");
+        }
+        KbDocument doc = kbDocumentMapper.selectById(documentId);
+        if (doc == null || !CommonConstant.UN_DELETE.equals(doc.getIsDelete())) {
+            throw new BaseException("文档不存在");
+        }
+        return doc.getSpaceId();
     }
 
     // ------------------------------------------------------------------

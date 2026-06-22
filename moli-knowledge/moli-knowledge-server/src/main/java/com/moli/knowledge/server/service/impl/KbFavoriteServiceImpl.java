@@ -9,6 +9,7 @@ import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbFavorite;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbFavoriteMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbFavoriteService;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.springframework.stereotype.Service;
@@ -26,10 +27,13 @@ public class KbFavoriteServiceImpl implements KbFavoriteService {
     private KbFavoriteMapper kbFavoriteMapper;
     @Resource
     private KbDocumentMapper kbDocumentMapper;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public void add(Long documentId) {
         Long userId = requireUserId();
+        kbAclService.assertCanReadDocument(documentId);
         Integer count = kbFavoriteMapper.selectCount(new LambdaQueryWrapper<KbFavorite>()
                 .eq(KbFavorite::getUserId, userId)
                 .eq(KbFavorite::getDocumentId, documentId));
@@ -66,9 +70,15 @@ public class KbFavoriteServiceImpl implements KbFavoriteService {
         }
         List<Long> docIds = favoritePage.getRecords().stream()
                 .map(KbFavorite::getDocumentId).collect(Collectors.toList());
+        List<Long> accessible = kbAclService.accessibleSpaceIds();
+        if (accessible.isEmpty()) {
+            result.setRecords(new ArrayList<>());
+            return result;
+        }
         List<KbDocument> documents = kbDocumentMapper.selectList(new LambdaQueryWrapper<KbDocument>()
                 .in(KbDocument::getId, docIds)
-                .eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE));
+                .eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE)
+                .in(KbDocument::getSpaceId, kbAclService.accessibleSpaceIds()));
         result.setRecords(documents);
         return result;
     }

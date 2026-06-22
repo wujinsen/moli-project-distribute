@@ -48,7 +48,7 @@ SELECT * FROM t WHERE security_code = '688688'; -- ✅
 | `'abc%'` | ✅ 可用（前缀匹配） |
 | `'%abc'` / `'%abc%'` | ❌ 通常全表扫 |
 
-高频模糊搜考虑 Elasticsearch 等（本项目 BI/搜索扩展方向）。
+高频模糊搜考虑 [[elasticsearch-搜索]]（知识库/BI 扩展方向）。
 
 ## 4. OR 条件
 

@@ -16,6 +16,7 @@ import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbInsightService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -49,9 +50,12 @@ public class KbInsightServiceImpl implements KbInsightService {
     private KbRelationMapper kbRelationMapper;
     @Resource
     private KbLintIssueMapper kbLintIssueMapper;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public GraphVo graph(Long spaceId) {
+        assertSpaceReadable(spaceId);
         Ctx ctx = build(spaceId);
         GraphVo vo = new GraphVo();
         Set<Long> idSet = new HashSet<>();
@@ -107,6 +111,7 @@ public class KbInsightServiceImpl implements KbInsightService {
 
     @Override
     public LintVo lint(Long spaceId) {
+        assertSpaceReadable(spaceId);
         Ctx ctx = build(spaceId);
         LintVo vo = new LintVo();
         vo.setBroken(ctx.broken);
@@ -129,6 +134,11 @@ public class KbInsightServiceImpl implements KbInsightService {
 
     @Override
     public LintVo scan(Long spaceId) {
+        if (spaceId != null) {
+            kbAclService.assertCanEdit(spaceId);
+        } else if (!kbAclService.isAdmin()) {
+            throw new com.moli.common.exception.BaseException("全库体检需全局管理员权限");
+        }
         LintVo vo = lint(spaceId);
         Date now = new Date();
 
@@ -155,6 +165,7 @@ public class KbInsightServiceImpl implements KbInsightService {
 
     @Override
     public List<KbLintIssue> issues(Long spaceId, Integer status) {
+        assertSpaceReadable(spaceId);
         LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<>();
         if (spaceId != null) {
             w.eq(KbLintIssue::getSpaceId, spaceId);
@@ -170,6 +181,11 @@ public class KbInsightServiceImpl implements KbInsightService {
     public void updateIssueStatus(Long id, Integer status) {
         KbLintIssue issue = kbLintIssueMapper.selectById(id);
         if (issue != null) {
+            if (issue.getSpaceId() != null) {
+                kbAclService.assertCanEdit(issue.getSpaceId());
+            } else if (!kbAclService.isAdmin()) {
+                throw new com.moli.common.exception.BaseException("无权处理该体检问题");
+            }
             issue.setStatus(status);
             issue.setUpdateTime(new Date());
             kbLintIssueMapper.updateById(issue);
@@ -275,9 +291,21 @@ public class KbInsightServiceImpl implements KbInsightService {
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
         if (spaceId != null) {
             wrapper.eq(KbDocument::getSpaceId, spaceId);
+        } else {
+            List<Long> accessible = kbAclService.accessibleSpaceIds();
+            if (accessible.isEmpty()) {
+                return Collections.emptyList();
+            }
+            wrapper.in(KbDocument::getSpaceId, accessible);
         }
         wrapper.orderByAsc(KbDocument::getId);
         return kbDocumentMapper.selectList(wrapper);
+    }
+
+    private void assertSpaceReadable(Long spaceId) {
+        if (spaceId != null) {
+            kbAclService.assertCanRead(spaceId);
+        }
     }
 
     private void addLink(Ctx ctx, Long source, Long target, String type) {

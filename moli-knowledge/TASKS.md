@@ -13,11 +13,11 @@
 | 模块 | 已完成 | 未完成 |
 |------|--------|--------|
 | 表结构 | ✅ 14 张表 SQL + 设计文档；**14 个 entity/mapper 全部就绪**（T1 完成） | — |
-| 同步 | ✅ `kb/tools/sync_to_db.py`（dry-run 通过） | 真正写库验证、挂自动触发 |
-| Java API | ✅ CRUD、`/kb/graph`、`/kb/lint`、`/kb/ask`(T2)、`/kb/index`+`/kb/page`(T3)、图谱/体检落库(T5)、**空间级 ACL(T9)** | 附件上传(T4)、全文检索 |
-| 文档 | ✅ **`docs/KNOWLEDGE_API.md`(T8)** 前端对接文档 | — |
-| kb 知识 | ✅ 17 页示范 + 关系边 | 批量 ingest、Query 闭环、全库 lint、面试题系列 |
-| 前端 meiling-ui | ❌ 无知识库页面 | 浏览/Query/图谱/体检全套 |
+| 同步 | ✅ sync API + git hook + 定时任务 + **GitHub Actions CI(T12)** | — |
+| Java API | ✅ CRUD、Query(+**历史/反馈 T11**)、Browse、Graph/Lint、ACL、附件(+**列表 T11**)、全文检索 | Meilisearch/向量（量大时） |
+| 文档 | ✅ **`docs/KNOWLEDGE_API.md`(T8)** 含附件 API §5.6 + **菜单 getRouters(T13)** | — |
+| kb 知识 | ✅ **54 页 wiki**（P0 批次 ingest 完成，T7）+ 关系边 | 持续 ingest raw 语料、Query 闭环、全库 lint |
+| 前端 meiling-ui | 🔄 **T6 进行中** | 浏览/Query/图谱/体检全套 |
 
 ---
 
@@ -88,16 +88,66 @@
 - **开工提示词**：
   > 读 `moli-knowledge-server` 的 `KbDocumentController`/`KbCategoryController` 和 `docs/sql/KNOWLEDGE_SCHEMA.md`。新增 `KbBrowseController`：`/kb/index`（按 kb_type/分类组织目录树）、`/kb/page/{slug}`（按 `(spaceId,slug)` 取单页，附出链/入链）。不要改动现有 Controller，单独建类。
 
-## T4 · 附件上传（MinIO）
+## T4 · 附件上传（MinIO） ✅ 已完成
+
+> 产出：`MinioConfig` + `MinioProperties` + `KbAttachmentService`(+Impl) + `KbAttachmentController`；
+> `POST /kb/attachment/upload`（multipart）→ MinIO + `kb_attachment`；`GET /{id}` 下载；`DELETE /{id}` 软删。
+> 单测 10 条通过（Controller 3 + Service 7）。
 
 - **目标**：补全 `KbAttachment` 的 Service/Controller，接 MinIO 上传/下载/删除。
 - **涉及文件**（全新增）：
   - `service/KbAttachmentService(+Impl).java`、`controller/KbAttachmentController.java`、`config/MinioConfig.java`（若无）
   - 复用现有 `entity/KbAttachment` + mapper
 - **依赖**：无。
-- **验收**：`POST /kb/attachment/upload`（multipart）→ 存 MinIO + 写 `kb_attachment`；`GET /kb/attachment/{id}` 下载；删除置 `is_delete`。
-- **开工提示词**：
-  > 读 `moli-knowledge-server` 的 `application-dev.yml`(MinIO 配置)、`entity/KbAttachment.java`、`pom.xml`(确认 minio 依赖)。补全附件上传：新增 MinioConfig（如缺）、KbAttachmentService、KbAttachmentController，支持 upload/download/delete，元数据写 `kb_attachment`。统一 `MoliResult`。
+- **验收**：`POST /kb/attachment/upload`（multipart）→ 存 MinIO + 写 `kb_attachment`；`GET /kb/attachment/{id}` 下载；删除置 `is_delete`。✅
+- **已知小缺口**：~~附件接口尚未接入 T9 空间 ACL~~ → **已补全**（2026-06-22）。
+
+## T10 · 全文检索 + ACL 补全 + 同步管理 API ✅ 已完成（2026-06-22）
+
+> 产出：
+> - **全文检索**：`KbDocumentMapper.searchFullText` + ngram `MATCH AGAINST`；`kb.search.mode=fulltext|like`（失败自动降级 LIKE）。
+> - **ACL 补全**：`assertCanReadDocument/assertCanEditDocument`；接入 分类/标签/评论/收藏/附件/图谱体检。
+> - **同步管理**：`GET /kb/sync/logs`、`GET /kb/sync/status`、`POST /kb/sync/trigger`（调 `sync_to_db.py`，需空间 admin 或 `kb:admin`）。
+
+- **验收**：文档搜索走全文索引；私有空间附件/评论/分类等越权拦截；管理员可 API 触发同步并查日志。✅
+
+## T11 · 问答历史 + 附件列表 + 自动同步 ✅ 已完成（2026-06-22）
+
+> 产出：
+> - **问答闭环**：`GET /kb/ask/history`、`PUT /kb/ask/feedback/{id}?useful=`；`POST /kb/ask` 响应增加 `qaLogId`。
+> - **附件列表**：`GET /kb/attachment/list?documentId=`。
+> - **文档详情增强**：`DocumentDetailVo` 补 `slug/kbType/domain/source`。
+> - **自动同步**：`KbSyncScheduler`（`kb.sync.schedule-enabled`）；git hook `kb/tools/install_git_hook.{sh,ps1}`。
+
+- **验收**：前端可展示问答历史并点赞/点踩；文档详情页可列附件；wiki commit 后可自动 sync（装 hook 后）。✅
+
+## T12 · CI pipeline 挂 sync ✅ 已完成（2026-06-22）
+
+> 产出：`.github/workflows/kb-sync.yml` + `kb/tools/ci/run_sync.sh` + `requirements-sync.txt`。
+
+| Job | 触发 | 行为 |
+|-----|------|------|
+| `dry-run` | PR / push（`kb/wiki` 等路径变更） | 解析 wiki，不连库 |
+| `sync-mysql` | push `main`/`master` 或手动选 `ci` | MySQL 8 服务容器 → 导入 schema → 真实 sync → 校验 `kb_document` 行数 |
+| `sync-remote` | 手动 workflow_dispatch 选 `remote` | 连仓库 Secrets 配置的远程库 |
+
+**远程 Secrets**（Settings → Secrets → Actions）：
+`KB_SYNC_DB_HOST`、`KB_SYNC_DB_USER`、`KB_SYNC_DB_PASSWORD`（必填）；
+`KB_SYNC_DB_PORT`、`KB_SYNC_DB_NAME`、`KB_SYNC_SPACE`（可选）。
+
+本地等价命令：
+```bash
+bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
+```
+
+## T13 · 知识库菜单种子（sys_menu） ✅ 已完成（2026-06-22）
+
+> 产出：`docs/sql/04_knowledge_menu.sql`；`init-db.ps1` 自动导入；`docs/KNOWLEDGE_API.md` §1.5 说明。
+
+- **目标**：知识库左侧树由 **`GET /UserCenter/menu/getRouters`** 下发，不在 meiling-ui 写死。
+- **菜单 ID 段**：900~908（目录 + 4 页面 + 4 按钮权限）。
+- **角色绑定**：role 2/3/4/6/7；超管 role 1 走全菜单无需绑定。
+- **已有库补数据**：`mysql -u root -p moli < docs/sql/04_knowledge_menu.sql`，然后重新登录。
 
 ## T5 · 图谱/体检落库重构 ✅ 已完成（2026-06-22）
 
@@ -113,23 +163,25 @@
 - **开工提示词**：
   > 读 `moli-knowledge-server` 的 `service/impl/KbInsightServiceImpl.java`、`dto/GraphVo.java`/`LintVo.java`、`docs/sql/KNOWLEDGE_SCHEMA.md` 的 `kb_relation`/`kb_lint_issue`。把图谱/体检从运行时正则解析改为读边表（`kb_relation`）；新增一个 lint 扫描方法把问题落 `kb_lint_issue` 并支持 status 更新。返回结构与现有 VO 兼容。
 
-## T6 · 前端知识库页面（meiling-ui）
+## T6 · 前端知识库页面（meiling-ui） 🔄 进行中
 
 - **目标**：在 `D:\work\moli_project\meiling-ui`（独立 Vue3+Vite 工作区）新增知识库模块：文档列表/详情、Query 问答、图谱、体检。
-- **涉及文件**：meiling-ui 自己的 `src/views/knowledge/*`、路由、菜单、api 封装 —— **与后端仓库零冲突**。
+- **涉及文件**：meiling-ui 自己的 `src/views/knowledge/*`、路由、api 封装 —— **菜单由后端 `sys_menu` + getRouters 下发（T13）**，与后端仓库零冲突。
 - **依赖**：后端 API（可先用 mock，等 T2/T3 ready 再联调）；强烈建议先做 T8。
 - **验收**：能调网关 `/KnowledgeServer/kb/...` 展示文档树/详情、提交问答、渲染图谱与体检。
 - **开工提示词**（在 meiling-ui 工作区开对话）：
   > 读本仓库 `docs/KNOWLEDGE_API.md`（若未生成，先读 `moli-knowledge/moli-knowledge-server/README.md` 的 REST API 章节）。参照本项目现有 `src/views/system/UserManageView.vue` 的风格与 api 封装方式，新增「知识库」菜单与页面：文档列表+详情、Query 问答框、关系图谱、体检报告。接口前缀走网关 `/KnowledgeServer`。
 
-## T7 · kb 批量 Ingest（充实知识库）
+## T7 · kb 批量 Ingest（充实知识库） ✅ 已完成（P0 批次）
+
+> 产出：wiki 从 17 页扩至 **54 内容页**（+ index/log）；`edges.jsonl` 69 条边；
+> log 记录批次 #6~#11：Redis 缓存、JVM、Spring Boot、Dubbo+Nacos、故障排查、MySQL 事务锁等 P0 主题簇。
+> 每批遵守 `AGENTS.md`：concept 枢纽 + articles + interview 互链，更新 index/log/edges。
 
 - **目标**：把 `kb/raw/` 大批语料按主题去重提炼成 wiki 页（控量省 token），充实知识库。
 - **涉及文件**：只在 `kb/wiki/**` 新增/编辑 markdown + `index.md`/`log.md`/`edges.jsonl` —— **与所有代码任务零冲突**。
 - **依赖**：无。
-- **验收**：每批产出若干互链 wiki 页，更新 index/log/edges；遵守 `AGENTS.md` 契约。
-- **开工提示词**：
-  > 读 `kb/AGENTS.md`（全文，尤其 §2 格式、§4 Ingest）。从 `kb/raw/` 挑一个主题（如 MySQL 索引、JVM、Spring Boot 自动配置）做 ingest：去重提炼成 concept/article/interview 页，建 `[[]]` 与 edges，更新 index/log。每批控制在 5~10 页内、汇报 token 量。
+- **验收**：每批产出若干互链 wiki 页，更新 index/log/edges；遵守 `AGENTS.md` 契约。✅（P0 核心技术栈已覆盖；`kb/raw/` 仍有大量语料可持续 ingest）
 
 ## T8 · 前端对接文档 `docs/KNOWLEDGE_API.md` ✅ 已完成（2026-06-22）
 

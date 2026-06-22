@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.config.KbSearchProperties;
 import com.moli.knowledge.server.dto.DocumentDetailVo;
 import com.moli.knowledge.server.dto.DocumentSaveRequest;
 import com.moli.knowledge.server.dto.DocumentSearchRequest;
@@ -22,6 +23,8 @@ import com.moli.knowledge.server.service.KbDocumentService;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +37,8 @@ import java.util.stream.Collectors;
 @Service
 public class KbDocumentServiceImpl implements KbDocumentService {
 
+    private static final Logger log = LoggerFactory.getLogger(KbDocumentServiceImpl.class);
+
     @Resource
     private KbDocumentMapper kbDocumentMapper;
     @Resource
@@ -44,20 +49,51 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     private KbFavoriteMapper kbFavoriteMapper;
     @Resource
     private KbAclService kbAclService;
+    @Resource
+    private KbSearchProperties kbSearchProperties;
 
     @Override
     public Page<KbDocument> search(DocumentSearchRequest request) {
-        LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
-        // ACL：指定空间则校验可读；否则限定到可读空间集合
+        List<Long> accessible = null;
         if (request.getSpaceId() != null) {
             kbAclService.assertCanRead(request.getSpaceId());
-            wrapper.eq(KbDocument::getSpaceId, request.getSpaceId());
         } else {
-            List<Long> accessible = kbAclService.accessibleSpaceIds();
+            accessible = kbAclService.accessibleSpaceIds();
             if (accessible.isEmpty()) {
                 return new Page<>(request.getPageNum(), request.getPageSize(), 0);
             }
+        }
+
+        List<Long> documentIds = null;
+        if (request.getTagId() != null) {
+            List<KbDocumentTag> relations = kbDocumentTagMapper.selectList(new LambdaQueryWrapper<KbDocumentTag>()
+                    .eq(KbDocumentTag::getTagId, request.getTagId()));
+            if (CollectionUtils.isEmpty(relations)) {
+                return new Page<>(request.getPageNum(), request.getPageSize(), 0);
+            }
+            documentIds = relations.stream().map(KbDocumentTag::getDocumentId).collect(Collectors.toList());
+        }
+
+        if (StringUtils.isNotBlank(request.getKeyword()) && kbSearchProperties.fullTextEnabled()) {
+            try {
+                return kbDocumentMapper.searchFullText(
+                        new Page<>(request.getPageNum(), request.getPageSize()),
+                        request.getSpaceId(),
+                        accessible,
+                        request.getCategoryId(),
+                        request.getStatus(),
+                        documentIds,
+                        request.getKeyword().trim());
+            } catch (Exception e) {
+                log.warn("Fulltext search failed, fallback to LIKE: {}", e.getMessage());
+            }
+        }
+
+        LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
+        if (request.getSpaceId() != null) {
+            wrapper.eq(KbDocument::getSpaceId, request.getSpaceId());
+        } else {
             wrapper.in(KbDocument::getSpaceId, accessible);
         }
         if (request.getCategoryId() != null) {
@@ -72,12 +108,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                     .or().like(KbDocument::getContent, request.getKeyword()));
         }
         if (request.getTagId() != null) {
-            List<KbDocumentTag> relations = kbDocumentTagMapper.selectList(new LambdaQueryWrapper<KbDocumentTag>()
-                    .eq(KbDocumentTag::getTagId, request.getTagId()));
-            if (CollectionUtils.isEmpty(relations)) {
-                return new Page<>(request.getPageNum(), request.getPageSize(), 0);
-            }
-            wrapper.in(KbDocument::getId, relations.stream().map(KbDocumentTag::getDocumentId).collect(Collectors.toList()));
+            wrapper.in(KbDocument::getId, documentIds);
         }
         wrapper.orderByDesc(KbDocument::getUpdateTime);
         return kbDocumentMapper.selectPage(new Page<>(request.getPageNum(), request.getPageSize()), wrapper);

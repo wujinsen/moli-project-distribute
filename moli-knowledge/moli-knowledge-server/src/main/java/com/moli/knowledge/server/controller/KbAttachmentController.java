@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @RestController
 @RequestMapping("/kb/attachment")
@@ -24,6 +25,12 @@ public class KbAttachmentController {
 
     @Resource
     private KbAttachmentService kbAttachmentService;
+
+    @GetMapping("/list")
+    @ApiOperation("文档附件列表")
+    public MoliResult<List<KbAttachment>> list(@RequestParam Long documentId) {
+        return MoliResult.success(kbAttachmentService.listByDocument(documentId));
+    }
 
     @PostMapping("/upload")
     @ApiOperation("上传附件")

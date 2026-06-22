@@ -41,4 +41,10 @@ public interface KbAclService {
 
     /** 当前用户可读的全部空间ID（用于列表/检索的统一过滤）。 */
     List<Long> accessibleSpaceIds();
+
+    /** 按文档 ID 断言可读（查 kb_document.space_id 后校验空间权限）。 */
+    void assertCanReadDocument(Long documentId);
+
+    /** 按文档 ID 断言可编辑。 */
+    void assertCanEditDocument(Long documentId);
 }

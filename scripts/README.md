@@ -8,7 +8,16 @@
 
 压测、联调、新环境初始化 **优先导入此文件**。
 
-## 秒杀压测补充表
+## 企业知识库表
+
+| 文件 | 说明 |
+|------|------|
+| `docs/sql/03_knowledge_schema.sql` | 知识库业务表 |
+| `docs/sql/04_knowledge_menu.sql` | 知识库 `sys_menu` + `sys_role_menu`（`getRouters` 下发给前端） |
+
+`init-db.ps1` 默认会依次导入上述两个文件（可用 `-SkipKnowledge` 跳过）。
+
+---
 
 | 文件 | 说明 |
 |------|------|

@@ -22,10 +22,15 @@ kb_relation / kb_sync_log）。方向严格单向：kb(markdown) -> DB；DB 侧�
     # 仅解析、打印计划，不连数据库（推荐先跑这个核对）
     python kb/tools/sync_to_db.py --dry-run
 
-    # 真正写库（需要 pymysql：pip install pymysql）
+    # 真正写库（需要 pymysql：pip install -r kb/tools/requirements-sync.txt）
     python kb/tools/sync_to_db.py \
         --host 127.0.0.1 --port 3306 --user root --password 12345678 \
         --db moli --space enterprise-kb
+
+    # CI 统一入口（GitHub Actions 同款）
+    bash kb/tools/ci/run_sync.sh dry-run
+    bash kb/tools/ci/run_sync.sh init-schema   # 需 mysql 客户端
+    bash kb/tools/ci/run_sync.sh sync
 
 参数默认值对齐 moli-knowledge-server 的 application-dev.yml 与建表种子数据。
 """
@@ -448,10 +453,20 @@ def _log(cur, idgen, batch_no, space_id, doc_id, path, action, chash, now):
 
 
 def _sync_tags(cur, idgen, space_id, docs, slug_to_id, operator, now):
-    # 现有标签 name -> id
+    # 现有标签 name -> id（MySQL utf8mb4_ci 下大小写不敏感，需合并）
     cur.execute("SELECT id, tag_name FROM kb_tag WHERE space_id=%s AND is_delete=0",
                 (space_id,))
-    tag_id = {r[1]: r[0] for r in cur.fetchall()}
+    tag_id: dict[str, int] = {r[1]: r[0] for r in cur.fetchall()}
+
+    def _tag_lookup(name: str) -> int | None:
+        if name in tag_id:
+            return tag_id[name]
+        low = name.lower()
+        for tn, tid in tag_id.items():
+            if tn.lower() == low:
+                return tid
+        return None
+
     for d in docs:
         doc_id = slug_to_id.get(d.slug)
         if not doc_id:
@@ -459,7 +474,7 @@ def _sync_tags(cur, idgen, space_id, docs, slug_to_id, operator, now):
         # 重建该文档的标签关联
         cur.execute("DELETE FROM kb_document_tag WHERE document_id=%s", (doc_id,))
         for name in d.tags:
-            tid = tag_id.get(name)
+            tid = _tag_lookup(name)
             if tid is None:
                 tid = idgen.next()
                 cur.execute(

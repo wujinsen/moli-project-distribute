@@ -8,7 +8,7 @@ sources:
   - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguration自动装配.note.md
   - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguraton自动装配原理.note.md
   - raw/wujinsen_markdown/Spring/SpringBoot源码解析/SpringApplication初始化阶段.note.md
-related: [enableautoconfiguration原理, spring-application启动流程, spring-声明式事务, spring-boot-面试题, 技术栈与版本]
+related: [enableautoconfiguration原理, spring-application启动流程, spring-声明式事务, spring-boot-面试题, 技术栈与版本, spring-ioc与bean生命周期]
 created: 2026-06-22
 updated: 2026-06-22
 ---
