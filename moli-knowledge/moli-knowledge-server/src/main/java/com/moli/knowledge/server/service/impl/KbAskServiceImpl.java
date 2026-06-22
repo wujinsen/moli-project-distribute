@@ -68,6 +68,8 @@ public class KbAskServiceImpl implements KbAskService {
     private KbLlmProperties llm;
     @Resource
     private KbAclService kbAclService;
+    @Resource
+    private com.moli.knowledge.server.config.KbSearchProperties kbSearchProperties;
 
     @Override
     public AskResponse ask(AskRequest request) {
@@ -91,30 +93,55 @@ public class KbAskServiceImpl implements KbAskService {
             return empty;
         }
 
-        LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
-        wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
-        if (scopeSpaces.size() == 1) {
-            wrapper.eq(KbDocument::getSpaceId, scopeSpaces.get(0));
-        } else {
-            wrapper.in(KbDocument::getSpaceId, scopeSpaces);
+        // 候选召回：优先 ngram 全文按相关度取 top-N（避免全量载入内存）；
+        // 全文未启用 / 异常 / 0 命中时，回退到原「全量扫描」保证召回。
+        int candidateLimit = kbSearchProperties.normalizedAskCandidateLimit();
+        List<KbDocument> candidates = null;
+        boolean usedFullText = false;
+        if (kbSearchProperties.fullTextEnabled() && StringUtils.isNotBlank(question)) {
+            try {
+                candidates = kbDocumentMapper.searchAskCandidates(
+                        scopeSpaces,
+                        DocumentStatus.PUBLISHED.getCode(),
+                        scope.include.isEmpty() ? null : scope.include,
+                        scope.exclude.isEmpty() ? null : new ArrayList<>(scope.exclude),
+                        question,
+                        candidateLimit);
+                usedFullText = candidates != null && !candidates.isEmpty();
+            } catch (Exception e) {
+                log.warn("ask 全文召回失败，回退全量扫描: {}", e.getMessage());
+                candidates = null;
+            }
         }
-        if (!scope.include.isEmpty()) {
-            wrapper.in(KbDocument::getKbType, scope.include);
+        if (candidates == null || candidates.isEmpty()) {
+            LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
+            wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
+            if (scopeSpaces.size() == 1) {
+                wrapper.eq(KbDocument::getSpaceId, scopeSpaces.get(0));
+            } else {
+                wrapper.in(KbDocument::getSpaceId, scopeSpaces);
+            }
+            if (!scope.include.isEmpty()) {
+                wrapper.in(KbDocument::getKbType, scope.include);
+            }
+            candidates = kbDocumentMapper.selectList(wrapper);
+            usedFullText = false;
         }
-        List<KbDocument> candidates = kbDocumentMapper.selectList(wrapper);
 
-        // 打分选页（排除指定类型）
+        // 内存 bigram 重排精排。全文召回集已按相关度排序，命中保留（score==0 用全文序兜底）；
+        // 全量扫描兜底则仍按 score>0 过滤，避免把全库零分页塞进结果。
         List<Scored> scored = new ArrayList<>();
         for (KbDocument d : candidates) {
             if (d.getKbType() != null && scope.exclude.contains(d.getKbType())) {
                 continue;
             }
             int s = score(d, terms);
-            if (s > 0) {
+            if (s > 0 || usedFullText) {
                 scored.add(new Scored(d, s));
             }
         }
+        // 稳定排序：分数降序，等分时保留全文相关度顺序
         scored.sort((a, b) -> Integer.compare(b.score, a.score));
 
         AskResponse resp = new AskResponse();

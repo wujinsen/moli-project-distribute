@@ -15,7 +15,17 @@ public class KbSearchProperties {
     /** fulltext：MATCH AGAINST；like：三字段 LIKE（兼容旧行为）。 */
     private String mode = "fulltext";
 
+    /**
+     * Query(/kb/ask) 候选页召回上限。开启 fulltext 时先用 ngram 索引按相关度召回
+     * 至多 N 页，再做内存 bigram 重排打分，避免把全空间已发布文档全量载入内存。
+     */
+    private int askCandidateLimit = 100;
+
     public boolean fullTextEnabled() {
         return "fulltext".equalsIgnoreCase(mode);
+    }
+
+    public int normalizedAskCandidateLimit() {
+        return askCandidateLimit <= 0 ? 100 : askCandidateLimit;
     }
 }

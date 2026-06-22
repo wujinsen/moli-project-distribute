@@ -39,4 +39,41 @@
         update_time DESC
     </select>
 
+    <!-- Query(/kb/ask) 候选召回：ngram 相关度 top-N + 作用域过滤；替代全量内存扫描 -->
+    <select id="searchAskCandidates" resultType="com.moli.knowledge.server.entity.KbDocument">
+        SELECT *
+        FROM kb_document
+        WHERE is_delete = 0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="spaceIds != null and spaceIds.size() &gt; 0">
+            AND space_id IN
+            <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+        </if>
+        <if test="includeTypes != null and includeTypes.size() &gt; 0">
+            AND kb_type IN
+            <foreach collection="includeTypes" item="it" open="(" separator="," close=")">
+                #{it}
+            </foreach>
+        </if>
+        <if test="excludeTypes != null and excludeTypes.size() &gt; 0">
+            AND kb_type NOT IN
+            <foreach collection="excludeTypes" item="et" open="(" separator="," close=")">
+                #{et}
+            </foreach>
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
+        </if>
+        ORDER BY
+        <if test="keyword != null and keyword != ''">
+            MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) DESC,
+        </if>
+        update_time DESC
+        LIMIT #{limit}
+    </select>
+
 </mapper>

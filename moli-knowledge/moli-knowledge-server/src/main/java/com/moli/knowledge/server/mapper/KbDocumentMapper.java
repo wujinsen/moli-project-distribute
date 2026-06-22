@@ -19,4 +19,15 @@ public interface KbDocumentMapper extends BaseMapper<KbDocument> {
                                     @Param("status") Integer status,
                                     @Param("documentIds") List<Long> documentIds,
                                     @Param("keyword") String keyword);
+
+    /**
+     * Query(/kb/ask) 候选召回：ngram 全文按相关度召回 top-N，叠加空间/状态/类型作用域过滤。
+     * 用于替代「全量 selectList + 内存打分」，把候选集从全库收敛到 limit 条再做精排。
+     */
+    List<KbDocument> searchAskCandidates(@Param("spaceIds") List<Long> spaceIds,
+                                         @Param("status") Integer status,
+                                         @Param("includeTypes") List<String> includeTypes,
+                                         @Param("excludeTypes") List<String> excludeTypes,
+                                         @Param("keyword") String keyword,
+                                         @Param("limit") int limit);
 }

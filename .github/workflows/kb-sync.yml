@@ -54,6 +54,12 @@ jobs:
       - name: sync_to_db.py --dry-run
         run: bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
+      # 知识治理体检（report-only）：当前 wiki 仍有断链/孤儿待治理，
+      # 故先观察不拦截。待清零后把本步改为 `lint-strict` 即可做门禁。
+      - name: Lint (knowledge governance)
+        continue-on-error: true
+        run: bash moli-knowledge/kb/tools/ci/run_sync.sh lint
+
   sync-mysql:
     name: Sync to MySQL (CI)
     needs: dry-run

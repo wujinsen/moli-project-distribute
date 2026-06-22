@@ -51,9 +51,9 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 | 里程碑 | 项目 | 内容 |
 |--------|------|------|
 | **M1 知识跑厚** | kb | ingest P0/P1/P2、跑通 Query、Lint；先不碰 Java |
-| **M2 同步打通** | kb + server | ✅ 同步脚本 [`kb/tools/sync_to_db.py`](tools/sync_to_db.py)（dry-run 已通）；✅ `kb_document` 加 `slug` 唯一键 + 同步三件套；🔜 Java 只读查询/详情 API |
-| **M3 Web 门面** | server | 前端展示（目录树/页面/关系图/搜索）+ 接 Shiro ACL |
-| **M4 检索后端** | server | 文档量大时接 Meilisearch/ES（按§五信号） |
+| **M2 同步打通** | kb + server | ✅ 同步脚本 [`kb/tools/sync_to_db.py`](tools/sync_to_db.py)（dry-run 已通）；✅ `kb_document` 加 `slug` 唯一键 + 同步三件套；✅ Java 只读查询/详情 API |
+| **M3 Web 门面** | server | ✅ 前端展示（目录树/页面/关系图/搜索）+ 接 Shiro ACL（见 TASKS T5/T6/T11） |
+| **M4 检索后端** | server | ✅ **第一阶段：MySQL ngram 全文索引**（browse `search` + Query `ask` 均走 `MATCH AGAINST`，ask 改为全文召回 top-N + 内存精排，去掉全量扫描）；🔜 信号触发再上 Meilisearch/ES（见 §五③） |
 
 ---
 
@@ -62,9 +62,9 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 | 能力 | 说明 | 状态 |
 |------|------|------|
 | **Ingest 吸收** | 读源 → 抽要点 → 写/更新页 → 建交叉引用，边写边去重 | ✅ 骨架+示范（5 页） |
-| **Query 问答** | 读 index → 按 type/tags 限定作用域 → 选 ≤15 页 → 带 `[[]]` 引用作答 → 好答案回写 | 🔜 契约已定，待跑通 |
-| **Lint 体检** | 扫全库找：重复 / 矛盾 / 过时 / 孤儿页 / 断链 / 缺来源 | 🔜 契约已定 |
-| **Synthesis 综合** | 去重提炼、重编排成"系列"（如面试题系列）、生成综述页 | 🔜 待补为第四操作 |
+| **Query 问答** | 读 index → 按 type/tags 限定作用域 → 选 ≤15 页 → 带 `[[]]` 引用作答 → 好答案回写 | ✅ serve.py + Java `/kb/ask`（作用域过滤+生成式/检索式） |
+| **Lint 体检** | 扫全库找：重复 / 矛盾 / 过时 / 孤儿页 / 断链 / 缺来源 | ✅ **自动化** [`kb/tools/lint.py`](tools/lint.py)（分级报告+CI 门禁，详见 [查询与体检指南](wiki/guides/查询与体检指南.md)） |
+| **Synthesis 综合** | 去重提炼、重编排成"系列"（如面试题系列）、生成综述页 | ✅ serve.py 提炼页（枢纽页/跨类型对照，LLM）；🔜 系列化重编排 |
 
 ---
 
@@ -72,11 +72,11 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 
 | 功能 | 实现方式 | 状态 |
 |------|----------|------|
-| 去重 | 写入时查 `index.md` 合并 + Lint 扫描近似重复 | 🔜 |
+| 去重 | 写入时查 `index.md` 合并 + Lint 扫描近似重复 | ✅ `lint.py --dups`（content_hash 全等 + MinHash 近似 Jaccard） |
 | 提炼/精炼 | Ingest 抽要点、归一化；发现更优解则更新覆盖 | 🔜 |
-| 交叉引用 | `[[slug]]` 链接 + `graph/edges.jsonl` 类型化关系边 | ✅ 已用 |
-| 版本与时间线 | `log.md`（append-only）+ git 历史 | ✅ |
-| 冲突/过时标记 | `supersedes` 边 + Lint 提示 | 🔜 |
+| 交叉引用 | `[[slug]]` 链接 + `graph/edges.jsonl` 类型化关系边 | ✅ 已用；`lint.py` 查断链/孤儿/缺概念/大小写写错 |
+| 版本与时间线 | `log.md`（append-only）+ git 历史 | ✅；`lint.py --log` 追加体检留痕 |
+| 冲突/过时标记 | `supersedes` 边 + Lint 提示 | ✅ `lint.py` outdated 检查（被 supersedes 取代仍 active 即告警） |
 | 反哺闭环（P1） | 发现更优解 → 更新文章页 → 同步索引 | 🔜 |
 
 ---
@@ -106,11 +106,18 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 
 | 阶段 | 触发信号 | 用什么 | 状态 |
 |------|----------|--------|------|
-| ① 纯 index | < ~300 页 | `index.md` 直读 + 全文读 | ✅ 现在 |
-| ② 本地混合检索 | ~300–1000 页 / 召回变差 | qmd（本地 BM25+小向量+rerank，无服务） | 💤 |
-| ③ 检索后端 | >1000–2000 页 / 多人产品 | Meilisearch/Typesense（首选）→ ES（海量）→ 向量库（语义） | 💤 |
+| ① 纯 index | < ~300 页 | `index.md` 直读 + 全文读 | ✅ Agent 层（kb/ + serve.py）现仍用 |
+| ② 本地混合检索 | ~300–1000 页 / 召回变差 | qmd（本地 BM25+小向量+rerank，无服务） | 💤 暂不需要（Agent 层 index 仍够用） |
+| ③ 检索后端 | >1000–2000 页 / 多人产品 | **MySQL ngram 全文（已上）** → Meilisearch/Typesense → ES（海量）→ 向量库（语义） | ✅ **MySQL ngram 全文已落地**（产品层 browse+ask）；Meilisearch/ES 留待召回/规模信号 |
 
 > 详见 [AGENTS.md §7](AGENTS.md)。原则：先把 markdown wiki 跑厚，搜不准再上 qmd，产品化才谈服务端。
+>
+> **M4 现状（2026-06-23）**：产品层（Java `moli-knowledge-server`）已用 MySQL 内建 ngram 全文索引
+> `ftx_kb_document(title,summary,content)`——属于 ③ 的「无独立搜索服务」轻量形态，1398 页绰绰有余。
+> 关键改动：把 Query(`/kb/ask`) 的候选选取从「全量 `selectList` + 内存打分」改为
+> 「ngram 全文按相关度召回 ≤`kb.search.ask-candidate-limit`(默认100) 页 → 内存 bigram 精排」，
+> 并保留全文未启用/0 命中时的全量扫描兜底。只有当召回明显变差或文档量再上一个量级、
+> 或需要语义检索时，才升级到 Meilisearch/Typesense（独立服务）或向量库。
 
 ---
 
@@ -129,4 +136,5 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 
 - ✅ 已定范式、写好 `AGENTS.md` 契约、搭好 wiki 骨架。
 - ✅ 已示范 ingest 顶层 README → 5 页（guides/services/concepts），含关系边。
-- 🔜 下一步候选：批量 ingest P0 文档 / 跑通一次 Query / 投喂 P1 文章或 P2 面试题做提炼成系列。
+- ✅ **Agent 知识治理自动化落地**：`kb/tools/lint.py` 分级体检（断链/孤儿/缺来源/缺概念/过时/重复/frontmatter），CI 已挂 report-only 步骤，详见 [查询与体检指南](wiki/guides/查询与体检指南.md)。
+- 🔜 下一步候选：治理 lint 报告里的 66 处断链（多为大小写写错，可批量修）与 988 孤儿页（批量页未进 index/未交叉引用）；之后把 CI 的 `lint` 升级为 `lint-strict` 门禁。

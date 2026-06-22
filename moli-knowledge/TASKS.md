@@ -14,10 +14,10 @@
 |------|--------|--------|
 | 表结构 | ✅ 14 张表 SQL + 设计文档；**14 个 entity/mapper 全部就绪**（T1 完成） | — |
 | 同步 | ✅ sync API + git hook + 定时任务 + **GitHub Actions CI(T12)** | — |
-| Java API | ✅ CRUD、Query(+**历史/反馈 T11**)、Browse、Graph/Lint、ACL、附件(+**列表 T11**)、全文检索 | Meilisearch/向量（量大时） |
+| Java API | ✅ CRUD、Query(+**历史/反馈 T11**)、Browse、Graph/Lint、ACL、附件(+**列表 T11**)、**MySQL ngram 全文检索（M4：browse+ask 走 MATCH AGAINST，ask 全文召回 top-N+内存精排）** | Meilisearch/向量（召回/量级信号触发再上） |
 | 文档 | ✅ **`docs/KNOWLEDGE_API.md`(T8)** 含附件 API §5.6 + **菜单 getRouters(T13)** | — |
-| kb 知识 | ✅ **54 页 wiki**（P0 批次 ingest 完成，T7）+ 关系边 | 持续 ingest raw 语料、Query 闭环、全库 lint |
-| 前端 meiling-ui | 🔄 **T6 进行中** | 浏览/Query/图谱/体检全套 |
+| kb 知识 | ✅ **1398 页 wiki** + 关系边；**Agent 治理自动化 [`kb/tools/lint.py`](kb/tools/lint.py)**（分级体检+CI report-only） | 治理 lint 报告（66 断链/988 孤儿）；CI 升级 lint-strict 门禁 |
+| 前端 meiling-ui | ✅ **T6 已完成**（2026-06-22） | 空间 CRUD 管理页（可选二期） |
 
 ---
 
@@ -163,14 +163,16 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 - **开工提示词**：
   > 读 `moli-knowledge-server` 的 `service/impl/KbInsightServiceImpl.java`、`dto/GraphVo.java`/`LintVo.java`、`docs/sql/KNOWLEDGE_SCHEMA.md` 的 `kb_relation`/`kb_lint_issue`。把图谱/体检从运行时正则解析改为读边表（`kb_relation`）；新增一个 lint 扫描方法把问题落 `kb_lint_issue` 并支持 status 更新。返回结构与现有 VO 兼容。
 
-## T6 · 前端知识库页面（meiling-ui） 🔄 进行中
+## T6 · 前端知识库页面（meiling-ui） ✅ 已完成（2026-06-22）
+
+> 产出：`KnowledgeBrowseView` / `KnowledgeAskView` / `KnowledgeGraphView` / `KnowledgeLintView`；
+> `KbSpaceSelector`、`KbDocPreviewModal`、`KbAttachmentsPanel`、`KbSyncPanel`；
+> API 封装覆盖 browse/ask/history/feedback/graph/lint/sync/attachment；markdown 表格+代码块渲染。
 
 - **目标**：在 `D:\work\moli_project\meiling-ui`（独立 Vue3+Vite 工作区）新增知识库模块：文档列表/详情、Query 问答、图谱、体检。
 - **涉及文件**：meiling-ui 自己的 `src/views/knowledge/*`、路由、api 封装 —— **菜单由后端 `sys_menu` + getRouters 下发（T13）**，与后端仓库零冲突。
 - **依赖**：后端 API（可先用 mock，等 T2/T3 ready 再联调）；强烈建议先做 T8。
-- **验收**：能调网关 `/KnowledgeServer/kb/...` 展示文档树/详情、提交问答、渲染图谱与体检。
-- **开工提示词**（在 meiling-ui 工作区开对话）：
-  > 读本仓库 `docs/KNOWLEDGE_API.md`（若未生成，先读 `moli-knowledge/moli-knowledge-server/README.md` 的 REST API 章节）。参照本项目现有 `src/views/system/UserManageView.vue` 的风格与 api 封装方式，新增「知识库」菜单与页面：文档列表+详情、Query 问答框、关系图谱、体检报告。接口前缀走网关 `/KnowledgeServer`。
+- **验收**：能调网关 `/KnowledgeServer/kb/...` 展示文档树/详情、提交问答、渲染图谱与体检。✅
 
 ## T7 · kb 批量 Ingest（充实知识库） ✅ 已完成（P0 批次）
 

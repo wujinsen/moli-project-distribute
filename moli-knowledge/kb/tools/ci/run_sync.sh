@@ -11,6 +11,7 @@ TOOLS="$(cd "${HERE}/.." && pwd)"
 REPO_ROOT="$(cd "${TOOLS}/../../.." && pwd)"
 SCHEMA="${REPO_ROOT}/docs/sql/03_knowledge_schema.sql"
 SYNC_PY="${TOOLS}/sync_to_db.py"
+LINT_PY="${TOOLS}/lint.py"
 
 MODE="${1:-dry-run}"
 
@@ -28,6 +29,14 @@ mysql_cli() {
 case "${MODE}" in
   dry-run)
     python "${SYNC_PY}" --dry-run
+    ;;
+  lint)
+    # 知识治理体检（report-only：不因 ERROR/WARN 失败，便于在 dry-run 里观察）
+    python "${LINT_PY}" "${@:2}"
+    ;;
+  lint-strict)
+    # 门禁模式：有 ERROR 即失败；加 --strict 时 WARN 也失败
+    python "${LINT_PY}" --strict "${@:2}"
     ;;
   init-schema)
     if [[ ! -f "${SCHEMA}" ]]; then
@@ -50,6 +59,24 @@ case "${MODE}" in
       --db "${KB_SYNC_DB}" \
       --space "${KB_SYNC_SPACE}"
     ;;
+  archive-raw)
+    python "${TOOLS}/ingest_raw_archive.py" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --space "${KB_SYNC_SPACE}"
+    ;;
+  archive-raw-dry)
+    python "${TOOLS}/ingest_raw_archive.py" --dry-run
+    ;;
+  l2-build)
+    python "${TOOLS}/ingest_parallel.py" --build-clusters
+    ;;
+  l2-run)
+    python "${TOOLS}/ingest_parallel.py" --workers "${KB_L2_WORKERS:-10}" "$@"
+    ;;
   verify)
     COUNT="$(mysql_cli -N -e "SELECT COUNT(*) FROM \`${KB_SYNC_DB}\`.kb_document WHERE is_delete=0 AND source='kb';")"
     echo "[ci] kb_document(source=kb, active)=${COUNT}"
@@ -59,7 +86,7 @@ case "${MODE}" in
     fi
     ;;
   *)
-    echo "Unknown mode: ${MODE} (dry-run | init-schema | sync | verify)" >&2
+    echo "Unknown mode: ${MODE} (dry-run | lint | lint-strict | init-schema | sync | archive-raw | archive-raw-dry | l2-build | l2-run | verify)" >&2
     exit 1
     ;;
 esac
