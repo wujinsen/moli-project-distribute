@@ -13,6 +13,7 @@ import com.moli.knowledge.server.entity.KbQaLog;
 import com.moli.knowledge.server.enums.DocumentStatus;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbQaLogMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbAskService;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +63,8 @@ public class KbAskServiceImpl implements KbAskService {
     private KbQaLogMapper kbQaLogMapper;
     @Resource
     private KbLlmProperties llm;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public AskResponse ask(AskRequest request) {
@@ -71,12 +74,26 @@ public class KbAskServiceImpl implements KbAskService {
         Scope scope = detectScope(question);
         List<String> terms = buildTerms(question);
 
-        // 候选页：已发布 + 空间过滤 + 作用域类型过滤
+        // 候选页：已发布 + 空间过滤 + 作用域类型过滤（叠加 ACL 可读空间）
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
         wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
         if (request.getSpaceId() != null) {
+            kbAclService.assertCanRead(request.getSpaceId());
             wrapper.eq(KbDocument::getSpaceId, request.getSpaceId());
+        } else {
+            List<Long> accessible = kbAclService.accessibleSpaceIds();
+            if (accessible.isEmpty()) {
+                AskResponse empty = new AskResponse();
+                empty.setAnswer("无可访问的知识空间。");
+                empty.setMode("retrieval");
+                empty.setScope(scope.include.isEmpty() ? "全部类型" : scope.include.toString());
+                empty.setScopeReason(scope.reason);
+                empty.setProvider(llm.getProvider());
+                empty.setModel(llm.getModel());
+                return empty;
+            }
+            wrapper.in(KbDocument::getSpaceId, accessible);
         }
         if (!scope.include.isEmpty()) {
             wrapper.in(KbDocument::getKbType, scope.include);

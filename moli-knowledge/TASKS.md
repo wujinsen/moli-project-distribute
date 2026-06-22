@@ -14,7 +14,8 @@
 |------|--------|--------|
 | 表结构 | ✅ 14 张表 SQL + 设计文档；**14 个 entity/mapper 全部就绪**（T1 完成） | — |
 | 同步 | ✅ `kb/tools/sync_to_db.py`（dry-run 通过） | 真正写库验证、挂自动触发 |
-| Java API | ✅ CRUD、`/kb/graph`、`/kb/lint`、**`/kb/ask`(T2)**、**`/kb/index`+`/kb/page`(T3)** | 附件上传(T4)、关系/体检落库(T5)、ACL(T9)、全文检索 |
+| Java API | ✅ CRUD、`/kb/graph`、`/kb/lint`、`/kb/ask`(T2)、`/kb/index`+`/kb/page`(T3)、图谱/体检落库(T5)、**空间级 ACL(T9)** | 附件上传(T4)、全文检索 |
+| 文档 | ✅ **`docs/KNOWLEDGE_API.md`(T8)** 前端对接文档 | — |
 | kb 知识 | ✅ 17 页示范 + 关系边 | 批量 ingest、Query 闭环、全库 lint、面试题系列 |
 | 前端 meiling-ui | ❌ 无知识库页面 | 浏览/Query/图谱/体检全套 |
 
@@ -98,7 +99,9 @@
 - **开工提示词**：
   > 读 `moli-knowledge-server` 的 `application-dev.yml`(MinIO 配置)、`entity/KbAttachment.java`、`pom.xml`(确认 minio 依赖)。补全附件上传：新增 MinioConfig（如缺）、KbAttachmentService、KbAttachmentController，支持 upload/download/delete，元数据写 `kb_attachment`。统一 `MoliResult`。
 
-## T5 · 图谱/体检落库重构
+## T5 · 图谱/体检落库重构 ✅ 已完成（2026-06-22）
+
+> 产出：`KbInsightServiceImpl` 重构（graph 优先读 `kb_relation`，空表回退运行时）；新增 `scan`/`issues`/`updateIssueStatus`；`KbInsightController` 加 `POST /kb/lint/scan`、`GET /kb/lint/issues`、`PUT /kb/lint/issue/{id}`。返回结构与 GraphVo/LintVo 兼容；`mvn compile` 通过。
 
 - **目标**：把现在运行时计算的 `/kb/graph`、`/kb/lint` 改为读 `kb_relation` / `kb_lint_issue`（同步时写入），大库更快、可跟踪「忽略/修复」。
 - **涉及文件**：
@@ -128,7 +131,9 @@
 - **开工提示词**：
   > 读 `kb/AGENTS.md`（全文，尤其 §2 格式、§4 Ingest）。从 `kb/raw/` 挑一个主题（如 MySQL 索引、JVM、Spring Boot 自动配置）做 ingest：去重提炼成 concept/article/interview 页，建 `[[]]` 与 edges，更新 index/log。每批控制在 5~10 页内、汇报 token 量。
 
-## T8 · 前端对接文档 `docs/KNOWLEDGE_API.md`
+## T8 · 前端对接文档 `docs/KNOWLEDGE_API.md` ✅ 已完成（2026-06-22）
+
+> 产出：[`docs/KNOWLEDGE_API.md`](../docs/KNOWLEDGE_API.md)，覆盖 浏览/Query/图谱/体检 + 文档/分类/标签/评论/收藏/空间 全部接口，含网关前缀、Authorization 头、MoliResult 结构、JSON 示例、前端页面建议。
 
 - **目标**：把知识库所有 REST 接口（路径、网关前缀、鉴权头、请求/响应 JSON 示例）整理成前端可直接照着写的文档。
 - **涉及文件**（全新增）：`docs/KNOWLEDGE_API.md`。
@@ -137,14 +142,25 @@
 - **开工提示词**：
   > 读 `moli-knowledge/moli-knowledge-server/README.md`、`controller/*.java`、`docs/sql/KNOWLEDGE_SCHEMA.md`。生成 `docs/KNOWLEDGE_API.md`：逐个接口给出 方法/路径/网关前缀/鉴权头/请求体/响应体 JSON 示例，供 meiling-ui 前端照着对接。
 
-## T9 · 空间级 ACL（建议单独做，勿与 T2~T5 并行）
+## T9 · 空间级 ACL ✅ 已完成（2026-06-22）
+
+> 产出：统一 ACL 服务 `KbAclService`(+impl) + 空间成员管理 `KbSpaceMemberService`(+impl) + `KbSpaceMemberController`；
+> 过滤/断言下沉到 service 层并接入 空间 / 文档 / 浏览 / 问答 四处。`mvn compile` 通过。
 
 - **目标**：基于 `kb_space_member`（用户/角色 + viewer/editor/admin）做空间级可见性与编辑权限，复用 Shiro/Dubbo。
-- **涉及文件**：会**改多个现有 Controller/Service**（空间、文档、分类的查询过滤）→ 冲突面大。
-- **依赖**：T1。
-- **验收**：非成员看不到私有空间内容；editor 以上才能改；过滤在 service 层统一做。
-- **开工提示词**：
-  > 读 `moli-knowledge-server` 的 `util/ShiroUtils.java`、各 Controller、`docs/sql/KNOWLEDGE_SCHEMA.md` 的 `kb_space_member`。实现空间级 ACL：新增成员服务 + 一个统一的空间可见性过滤，应用到空间/分类/文档查询。注意这会改多个现有类，独占式开发，避免与其他任务并行。
+- **权限模型**：
+  - 空间可见性 `visibility`：2 公开（人人可读）/ 1 内部（登录即可读）/ 0 私有（仅成员、负责人）。
+  - 成员角色 `role`：`viewer`(只读) / `editor`(可改) / `admin`(可管理成员)；`owner_id` 等同 admin。
+  - 全局管理员：Shiro 权限串 `kb:admin`（或通配 `*`）一票通过。
+- **统一接口** `KbAclService`：`canRead/canEdit/canAdmin` + `assertCanRead/assertCanEdit/assertCanAdmin` + `accessibleSpaceIds()`。
+- **接入点**（service 层统一过滤，非散落在 controller）：
+  - `KbSpaceServiceImpl`：列表只回可读空间；`getById` 断言可读；`update/delete` 断言可管理。
+  - `KbDocumentServiceImpl`：`search` 按可读空间集合过滤 / 指定空间断言可读；`detail`/`versions` 断言可读；`save/publish/archive/delete` 断言可编辑。
+  - `KbBrowseServiceImpl`：`index` 过滤可读空间；`page` 断言可读。
+  - `KbAskServiceImpl`：候选页限定到可读空间；无可读空间直接回退。
+- **成员管理 API**（`/kb/space/member`，均需空间管理权限）：`GET /list`、`POST`、`PUT`、`DELETE /{id}`。
+- **已知限制**：Dubbo 契约目前只透出权限串、不透出角色ID，**角色型成员(member_type=1)** 仅支持存储/管理，运行时不解析（用户型成员完整生效）。待 `UserCenterServer` 暴露角色后，在 `KbAclServiceImpl#memberRole` 处补一行即可。
+- **验收**：非成员看不到私有空间内容；editor 以上才能改；过滤在 service 层统一做。✅
 
 ---
 

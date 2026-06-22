@@ -14,6 +14,7 @@ import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
 import com.moli.knowledge.server.mapper.KbTagMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbBrowseService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -42,14 +43,24 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     private KbTagMapper kbTagMapper;
     @Resource
     private KbRelationMapper kbRelationMapper;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public IndexTreeVo index(Long spaceId) {
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
         wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
+        // ACL：指定空间校验可读；否则限定到可读空间集合
         if (spaceId != null) {
+            kbAclService.assertCanRead(spaceId);
             wrapper.eq(KbDocument::getSpaceId, spaceId);
+        } else {
+            List<Long> accessible = kbAclService.accessibleSpaceIds();
+            if (accessible.isEmpty()) {
+                return new IndexTreeVo();
+            }
+            wrapper.in(KbDocument::getSpaceId, accessible);
         }
         wrapper.orderByAsc(KbDocument::getTitle);
         List<KbDocument> docs = kbDocumentMapper.selectList(wrapper);
@@ -93,6 +104,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         if (d == null) {
             throw new BaseException("页面不存在: " + slug);
         }
+        kbAclService.assertCanRead(d.getSpaceId());
         d.setViewCount(d.getViewCount() == null ? 1 : d.getViewCount() + 1);
         kbDocumentMapper.updateById(d);
 

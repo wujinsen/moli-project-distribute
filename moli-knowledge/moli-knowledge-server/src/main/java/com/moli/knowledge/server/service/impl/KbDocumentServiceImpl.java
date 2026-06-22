@@ -17,6 +17,7 @@ import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
 import com.moli.knowledge.server.mapper.KbDocumentVersionMapper;
 import com.moli.knowledge.server.mapper.KbFavoriteMapper;
+import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbDocumentService;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -41,13 +42,23 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     private KbDocumentVersionMapper kbDocumentVersionMapper;
     @Resource
     private KbFavoriteMapper kbFavoriteMapper;
+    @Resource
+    private KbAclService kbAclService;
 
     @Override
     public Page<KbDocument> search(DocumentSearchRequest request) {
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
+        // ACL：指定空间则校验可读；否则限定到可读空间集合
         if (request.getSpaceId() != null) {
+            kbAclService.assertCanRead(request.getSpaceId());
             wrapper.eq(KbDocument::getSpaceId, request.getSpaceId());
+        } else {
+            List<Long> accessible = kbAclService.accessibleSpaceIds();
+            if (accessible.isEmpty()) {
+                return new Page<>(request.getPageNum(), request.getPageSize(), 0);
+            }
+            wrapper.in(KbDocument::getSpaceId, accessible);
         }
         if (request.getCategoryId() != null) {
             wrapper.eq(KbDocument::getCategoryId, request.getCategoryId());
@@ -75,6 +86,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     @Override
     public DocumentDetailVo detail(Long id) {
         KbDocument document = getActiveDocument(id);
+        kbAclService.assertCanRead(document.getSpaceId());
         document.setViewCount(document.getViewCount() == null ? 1 : document.getViewCount() + 1);
         kbDocumentMapper.updateById(document);
 
@@ -95,6 +107,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     }
 
     private Long createDocument(DocumentSaveRequest request) {
+        kbAclService.assertCanEdit(request.getSpaceId());
         KbDocument document = new KbDocument();
         BeanUtils.copyProperties(request, document);
         document.setId(IdGenerator.getId());
@@ -114,6 +127,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
     private Long updateDocument(DocumentSaveRequest request) {
         KbDocument existing = getActiveDocument(request.getId());
+        kbAclService.assertCanEdit(existing.getSpaceId());
         int nextVersion = existing.getVersionNo() == null ? 1 : existing.getVersionNo() + 1;
 
         KbDocument document = new KbDocument();
@@ -132,6 +146,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     @Override
     public void publish(Long id) {
         KbDocument document = getActiveDocument(id);
+        kbAclService.assertCanEdit(document.getSpaceId());
         document.setStatus(DocumentStatus.PUBLISHED.getCode());
         if (document.getPublishTime() == null) {
             document.setPublishTime(new Date());
@@ -142,6 +157,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     @Override
     public void archive(Long id) {
         KbDocument document = getActiveDocument(id);
+        kbAclService.assertCanEdit(document.getSpaceId());
         document.setStatus(DocumentStatus.ARCHIVED.getCode());
         kbDocumentMapper.updateById(document);
     }
@@ -149,13 +165,15 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     @Override
     public void delete(Long id) {
         KbDocument document = getActiveDocument(id);
+        kbAclService.assertCanEdit(document.getSpaceId());
         document.setIsDelete(CommonConstant.IS_DELETE);
         kbDocumentMapper.updateById(document);
     }
 
     @Override
     public Page<KbDocumentVersion> versions(Long documentId, int pageNum, int pageSize) {
-        getActiveDocument(documentId);
+        KbDocument document = getActiveDocument(documentId);
+        kbAclService.assertCanRead(document.getSpaceId());
         return kbDocumentVersionMapper.selectPage(new Page<>(pageNum, pageSize),
                 new LambdaQueryWrapper<KbDocumentVersion>()
                         .eq(KbDocumentVersion::getDocumentId, documentId)

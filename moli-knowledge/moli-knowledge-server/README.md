@@ -149,11 +149,14 @@ moli-knowledge-server/
 ### 标签 `/kb/tag` · 评论 `/kb/comment` · 收藏 `/kb/favorite`
 列表 / 增删（评论支持 `parentId`；收藏为「添加 / 取消 / 我的」）。
 
-### 图谱与体检 `/kb`（移植自 `../kb/tools/serve.py`）
+### 图谱与体检 `/kb`（T5，移植自 `../kb/tools/serve.py`）
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/graph?spaceId=` | 关系图谱：节点=文档，连线 = 正文 `[[标题]]` 引用（`links_to`）+ 同标签关联（`same_tag`）。返回 `GraphVo{nodes,links}` |
-| GET | `/lint?spaceId=` | 体检：断链（`[[..]]` 指向不存在文档）/ 孤儿页（无任何入链）/ 缺摘要，返回 `LintVo{broken,orphans,noSummary,counts}` |
+| GET | `/graph?spaceId=` | 关系图谱：节点=文档。连线**优先读 `kb_relation`**（同步脚本落库的 `links_to`/`related`/`depends_on`…），表为空时回退运行时（正文 `[[标题]]` + 同标签）。返回 `GraphVo{nodes,links}` |
+| GET | `/lint?spaceId=` | 体检（只算不落库）：断链 / 孤儿页 / 缺摘要，返回 `LintVo{broken,orphans,noSummary,counts}` |
+| POST | `/lint/scan?spaceId=` | 体检并落库 `kb_lint_issue`（清旧待处理项后重建），返回同 `LintVo` |
+| GET | `/lint/issues?spaceId=&status=` | 查询已落库体检问题（status：0待处理/1已忽略/2已修复），返回 `KbLintIssue[]` |
+| PUT | `/lint/issue/{id}?status=` | 更新某条体检问题状态 |
 
 ### 问答 Query `/kb`（T2）
 | 方法 | 路径 | 说明 |
@@ -190,13 +193,24 @@ POST /kb/document
 - `ShiroUtils` 取当前登录用户。
 - 已在 `sys_system` 注册 SSO 门户（`system_code=moli-knowledge`，`base_url=http://127.0.0.1:21000/KnowledgeServer`，`sso_mode=EXTERNAL`）。
 
+### 空间级 ACL（已落地）
+
+由 `KbAclService` 统一裁决，过滤/断言下沉到 service 层（空间 / 文档 / 浏览 / 问答）：
+
+- 可见性 `visibility`：`2` 公开 / `1` 内部（登录可读）/ `0` 私有（仅成员、负责人）。
+- 成员角色 `role`：`viewer` 只读 / `editor` 可改 / `admin` 可管成员；`owner_id` 等同 admin。
+- 全局管理员：Shiro 权限 `kb:admin`（或 `*`）一票通过。
+- 列表/检索/问答省略 `spaceId` 时自动收敛到「可读空间集合」；指定空间不可读则报错；写操作校验编辑/管理权限。
+- 成员管理：`/kb/space/member`（list/add/update/remove，需空间管理权限）。
+- 限制：Dubbo 契约暂只透出权限串，**角色型成员(member_type=1)** 运行时不解析，待 `UserCenterServer` 暴露角色后在 `KbAclServiceImpl#memberRole` 补全。
+
 ---
 
 ## 现状与已知限制（实事求是）
 
 - **检索是 MySQL `LIKE`**（title/summary/content 三字段 OR），非全文索引，无 ES / 向量。
 - `KbAttachment` 仅有 entity + mapper，**无 Service / Controller**，MinIO 配了但无上传 API。
-- Shiro 已开，但**未见空间级 ACL 过滤**。
+- ~~Shiro 已开，但未见空间级 ACL 过滤~~ → **已落地**（见上「空间级 ACL」）。
 - 仍是全功能 CRUD，**尚未对齐**「kb/ 为源、本服务只读门面」的目标。
 
 ---
@@ -210,7 +224,7 @@ POST /kb/document
 | M2 | `kb`（markdown）→ `kb_document` **单向同步**；`kb_document` 加 `slug` 唯一键 |
 | Query | 新增 `POST /kb/ask`：检索选页 → 拼上下文 → 调 LLM → **带引用答案 + 来源列表**（先中等模型，可随时换 `key+base-url+model`） |
 | 浏览 | `/kb/index` 目录树、`/kb/page/{slug}`（`/kb/graph`、`/kb/lint` 已落地，见上 [REST API](#图谱与体检-kb移植自-kbtoolsservepy)） |
-| 后期 | 空间级 ACL（复用 Shiro）、附件上传（MinIO）、检索升级（Meilisearch/向量，按量触发） |
+| 后期 | ~~空间级 ACL（复用 Shiro）~~ ✅ 已落地、附件上传（MinIO）、检索升级（Meilisearch/向量，按量触发） |
 
 > 想先在界面看 Query 效果，无需改 Java：用上层零依赖 viewer [`../kb/tools/serve.py`](../kb/tools/serve.py)（`python ../kb/tools/serve.py`）即可浏览 wiki、试检索式 Query。
 
