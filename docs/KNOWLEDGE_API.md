@@ -1,6 +1,6 @@
 # 企业知识库 · 前端对接 API 文档
 
-> 更新：2026-06-21 · 后端：`moli-knowledge-server`（:8090）
+> 更新：2026-06-23 · 后端：`moli-knowledge-server`（:8090）
 > 供 `meiling-ui` 前端对接知识库模块（浏览 / Query / 图谱 / 体检 / 文档管理）。
 > 表结构见 [`sql/KNOWLEDGE_SCHEMA.md`](sql/KNOWLEDGE_SCHEMA.md)；后端实现见 [`../moli-knowledge/moli-knowledge-server/README.md`](../moli-knowledge/moli-knowledge-server/README.md)。
 
@@ -17,7 +17,7 @@
 | Swagger | `http://127.0.0.1:8090/swagger-ui.html` | 在线接口文档 |
 
 > 前端 `meiling-ui` 通过 `VITE_API_BASE_URL` 配置 Base URL；本模块所有路径在下表均以**服务内路径**（不含 `/KnowledgeServer`）书写，经网关时自动加前缀。
-> 例：浏览目录树 = `GET {VITE_API_BASE_URL}/KnowledgeServer/kb/index`。
+> 例：浏览目录 meta = `GET {VITE_API_BASE_URL}/KnowledgeServer/kb/index`；展开分组 = `/kb/index/items`。
 
 ### 1.2 鉴权
 
@@ -55,14 +55,19 @@
 - **省略 `spaceId` / `spaceIds`** 的列表/检索/问答接口：后端自动收敛到「当前用户可读的空间集合」，无可读空间时返回空结果。
 - **指定 `spaceId`** 时：不可读会直接报错（`无权访问该知识空间`）。
 - **指定 `spaceIds[]`**（问答、文档搜索）：对每个 ID 校验读权限，仅在所列空间内检索；与 `spaceId` 同时传时 **`spaceIds` 优先**。
-- 写操作（文档保存/发布/归档/删除、空间更新/删除、成员管理）按上表校验编辑/管理权限。
+- 写操作（文档保存/发布/归档/删除、分类/标签/评论/附件、空间更新/删除、成员管理）按上表校验编辑/管理权限。
 - ⚠️ 当前仅 **用户型成员**（`memberType=0`）在运行时生效；角色型成员（`memberType=1`）可录入但暂不参与运行时鉴权。
 
 ### 1.5 左侧菜单（getRouters）
 
 知识库**不在前端写死路由**，由用户中心维护 `sys_menu`，登录后前端调用 **`GET /UserCenter/menu/getRouters`** 拉取整棵菜单树。
 
-种子数据：[`docs/sql/04_knowledge_menu.sql`](sql/04_knowledge_menu.sql)（`scripts/init-db.ps1` 在导入 `03_knowledge_schema.sql` 后会自动执行）。
+种子数据：
+
+| 脚本 | 说明 |
+|------|------|
+| [`docs/sql/04_knowledge_menu.sql`](sql/04_knowledge_menu.sql) | 侧栏菜单 + 角色菜单绑定（`init-db.ps1` 在 `03_knowledge_schema.sql` 后自动执行） |
+| [`docs/sql/05_knowledge_action_patch.sql`](sql/05_knowledge_action_patch.sql) | **动作权限** `sys_action`（空间 CRUD/批量授权、体检扫描、Wiki 同步）；**已有库需手动补一次** |
 
 | menu_id | 类型 | 名称 | path | component（对齐 meiling-ui viewRegistry） |
 |---------|------|------|------|-------------------------------------------|
@@ -117,7 +122,8 @@
 
 ```bash
 mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
-mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語試験私有空间
+mysql -u root -p moli < docs/sql/05_knowledge_action_patch.sql   # 动作权限（空间管理/体检按钮）
+mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql         # 可选：日本語試験私有空间
 ```
 
 执行后**重新登录**，前端会重新拉取 `getRouters`。
@@ -126,33 +132,72 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 ## 2. 浏览（T3）—— 前端知识库主页面用
 
-### 2.1 目录树 `GET /kb/index`
+### 2.1 目录 meta `GET /kb/index`
 
-按知识类型分组的目录（已发布文档）。
+按知识类型分组的**计数**（已发布文档；**不含 items**，轻量首屏）。
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
 
-响应 `data.groups[].items[]` 每项含 `id/slug/title/summary/spaceId`（合并多空间浏览时 **`spaceId` 必传** 给 `/kb/page`）。
+响应 `data.groups[]` 含 `type/label/count`；`items` 为空数组。展开分组时调 **2.2**。
 
 ```json
 {
-  "total": 17,
+  "total": 3308,
   "groups": [
-    {
-      "type": "guide", "label": "操作指导",
-      "items": [
-        { "id": 90001, "slug": "guides/本地启动指南", "title": "本地启动指南", "summary": "...", "spaceId": 900000000000000001 }
-      ]
-    }
+    { "type": "article", "label": "技术文章", "count": 1155, "items": [] }
   ]
 }
 ```
 
-> `type` 取值：`guide/service/concept/article/interview/output`（+ 兜底 `other`）。前端可据此渲染左侧分组导航。
+### 2.2 分组条目 `GET /kb/index/items`
 
-### 2.2 单页详情 `GET /kb/page`
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `spaceId` | query | 否 | 同 index |
+| `type` | query | 是 | guide/service/concept/article/interview/output/other |
+| `pageNum` | query | 否 | 默认 1 |
+| `pageSize` | query | 否 | 默认 50，最大 200 |
+
+响应轻量条目（`id/slug/title/spaceId`，无 `summary`）。
+
+### 2.3 目录搜索 `GET /kb/index/search`
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `spaceId` | query | 否 | 同 index |
+| `q` | query | 是 | 关键词（title/slug/summary LIKE） |
+| `limit` | query | 否 | 默认 200，最大 500 |
+
+### 2.4 slug 定位 `GET /kb/index/locate`
+
+深链展开：根据 slug 找到所属 kb_type 分组，供侧栏自动展开对应分组并高亮条目。
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `slug` | query | 是 | 如 `interview/spring-事务` |
+| `spaceId` | query | 否 | 多空间或 slug 冲突时建议必传 |
+
+响应 `data`（`IndexLocateVo`）：
+
+```json
+{
+  "type": "interview",
+  "label": "面试题",
+  "item": {
+    "id": 90020,
+    "slug": "interview/spring-事务",
+    "title": "Spring 事务（面试题系列）",
+    "summary": null,
+    "spaceId": 900000000000000001
+  }
+}
+```
+
+> 找不到 slug 时返回业务错误；`item.summary` 在 locate 场景通常为空（轻量）。
+
+### 2.5 单页详情 `GET /kb/page`
 
 按 slug 取单页（slug 形如 `services/用户中心`，**含斜杠故用查询参数**，不要拼进路径）。
 
@@ -265,7 +310,44 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 | `spaceId` | query | 否 | 省略=可读空间内全部 |
 | `pageNum` / `pageSize` | query | 否 | 分页 |
 
-响应 `data`：`Page<QaHistoryVo>`，含 `question/answer/mode/scope/citations/useful/createTime`。
+响应 `data`：`Page<QaHistoryVo>`。
+
+| 字段 | 说明 |
+|------|------|
+| `id` | 问答日志 ID（提交反馈时用） |
+| `spaceId` | 所属空间（省略 spaceId 查历史时可能有多个空间的结果） |
+| `question` / `answer` | 问题与答案 |
+| `mode` | `generative` / `retrieval` |
+| `scope` | 作用域标签 |
+| `provider` / `model` | LLM 提供方与模型（检索式时可能为空） |
+| `citations` | 引用列表，结构同 `POST /kb/ask` 的 `citations` |
+| `useful` | `1` 有用 / `0` 无用 / `null` 未评 |
+| `createTime` | 提问时间 |
+
+```json
+{
+  "records": [
+    {
+      "id": 901234567890123456,
+      "spaceId": 900000000000000001,
+      "question": "Spring 事务在什么情况下会失效？",
+      "answer": "结论... [[interview/spring-事务]]",
+      "mode": "retrieval",
+      "scope": "[interview]",
+      "provider": null,
+      "model": null,
+      "citations": [
+        { "docId": 90020, "spaceId": 900000000000000001, "slug": "interview/spring-事务", "title": "Spring 事务", "kbType": "interview", "snippet": "..." }
+      ],
+      "useful": 1,
+      "createTime": "2026-06-22 16:00:00"
+    }
+  ],
+  "total": 1,
+  "current": 1,
+  "size": 10
+}
+```
 
 ### `PUT /kb/ask/feedback/{id}?useful=`
 
@@ -282,21 +364,50 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 ### 4.1 关系图谱 `GET /kb/graph`
 
-| 参数 | 位置 | 必填 |
-|------|------|------|
-| `spaceId` | query | 否 |
+> **大库优化（2026-06-24）**：边只读 `kb_relation`（**不再扫正文**），节点只查 `id/title/kb_type/status`（**不含 content/summary**）。默认按**度数降序**裁剪到 `maxNodes`，并返回 `meta` 统计。前端**不要**默认渲染全库，应先画核心子图，点击节点再用 §4.1.1 `ego` 展开。
+
+| 参数 | 位置 | 必填 | 默认 | 说明 |
+|------|------|------|------|------|
+| `spaceId` | query | 否 | 全部可读空间 | |
+| `mode` | query | 否 | `full` | `full`=裁剪后子图；`summary`=只回 Top 枢纽 + 它们之间的边 |
+| `maxNodes` | query | 否 | `full`=300 / `summary`=50 | 最多返回节点数（按度数降序保留），上限 2000 |
+| `minDeg` | query | 否 | 0 | 仅保留度数 ≥ minDeg 的节点（过滤弱连接，减边） |
 
 响应 `data`：
 
 ```json
 {
   "nodes": [ { "id": "90010", "title": "用户中心", "type": "service", "deg": 6 } ],
-  "links": [ { "source": "90010", "target": "90011", "type": "related" } ]
+  "links": [ { "source": "90010", "target": "90011", "type": "related" } ],
+  "meta": {
+    "totalNodes": 3308,
+    "totalLinks": 12044,
+    "returnedNodes": 300,
+    "returnedLinks": 1820,
+    "truncated": true,
+    "source": "relation",
+    "mode": "full"
+  }
 }
 ```
 
-> `id` 为文档 ID 字符串；`type`（节点）= 分类名/状态；`type`（连线）= `links_to`/`same_tag`/`related`/`depends_on` 等。
-> 前端可用力导向图（d3-force / echarts graph）渲染；`deg` 可映射节点大小。
+> - `id` 为文档 ID 字符串；节点 `type` = **`kb_type`**（guide/service/concept/article/interview/output，与浏览分组一致；缺省回退分类名/状态）；连线 `type` = `links_to`/`same_tag`/`related`/`depends_on` 等。
+> - `deg` 可映射节点大小；`meta.truncated=true` 表示还有更多节点未返回（可提示用户用搜索或 ego 展开）。
+> - `meta.source`：`relation`=读已落库边；`runtime`=relation 表为空时回退运行时解析（仅小库/未同步时出现）。
+> - 节点数 > 几百时，前端建议默认 `mode=summary` 或带 `minDeg=2`，再配合 ego 探索。
+
+#### 4.1.1 邻域子图 `GET /kb/graph/ego`
+
+以某文档为中心做 BFS（探索式，点击节点再拉），逐层查 `kb_relation`，**不加载全图**。
+
+| 参数 | 位置 | 必填 | 默认 | 说明 |
+|------|------|------|------|------|
+| `spaceId` | query | 否 | 全部可读空间 | |
+| `docId` | query | **是** | — | 中心文档 ID |
+| `depth` | query | 否 | 1 | 跳数，1~3 |
+| `maxNodes` | query | 否 | 200 | 子图节点上限（上限 2000） |
+
+响应结构同 `/kb/graph`（含 `nodes/links/meta`，`meta.mode=ego`）。
 
 ### 4.2 体检（只算不落库）`GET /kb/lint`
 
@@ -343,15 +454,97 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/document/search` | 搜索（query：`spaceId` / `spaceIds[]` / `categoryId/keyword/status/tagId/pageNum/pageSize`），返回 `Page<KbDocument>` |
-| GET | `/kb/document/{id}` | 详情 `DocumentDetailVo`（含 `tagIds`、`favorited`，会自增浏览数） |
-| POST | `/kb/document` | 保存（`DocumentSaveRequest`：`id?/spaceId/categoryId/title/summary/content/docType/status/tagIds[]/changeLog`） |
+| GET | `/kb/document/search` | 管理侧文档搜索，返回 `Page<KbDocument>` |
+| GET | `/kb/document/{id}` | 详情 `DocumentDetailVo`（会自增浏览数） |
+| POST | `/kb/document` | 保存（`DocumentSaveRequest`） |
 | PUT | `/kb/document/{id}/publish` | 发布 |
 | PUT | `/kb/document/{id}/archive` | 归档 |
 | DELETE | `/kb/document/{id}` | 删除（逻辑） |
 | GET | `/kb/document/{id}/versions?pageNum=&pageSize=` | 版本历史 `Page<KbDocumentVersion>` |
 
-> 注意：`/kb/document/search` 默认使用 MySQL **ngram 全文索引**（`MATCH AGAINST`），配置 `kb.search.mode=like` 可回退旧行为。前端"知识库浏览"建议用 `/kb/index` + `/kb/page`；"管理后台搜索"用 `/kb/document/search`。
+> ⚠️ 文档接口已接入空间 ACL：搜索自动过滤不可读空间；详情/版本需读权限；保存/发布/归档/删除需编辑权限。
+
+#### `GET /kb/document/search` 参数（`DocumentSearchRequest`）
+
+| 参数 | 位置 | 必填 | 默认 | 说明 |
+|------|------|------|------|------|
+| `spaceId` | query | 否 | — | 单空间；与 `spaceIds` 同时传时 **`spaceIds` 优先** |
+| `spaceIds` | query | 否 | — | 多空间数组，如 `spaceIds=1&spaceIds=2` |
+| `categoryId` | query | 否 | — | 分类 ID |
+| `keyword` | query | 否 | — | 关键词 |
+| `status` | query | 否 | — | `0` 草稿 / `1` 已发布 / `2` 已归档 |
+| `tagId` | query | 否 | — | 按标签过滤 |
+| `pageNum` | query | 否 | `1` | 页码 |
+| `pageSize` | query | 否 | `10` | 每页条数 |
+
+**检索模式**（`application-dev.yml` → `kb.search.mode`）：
+
+| 值 | 行为 |
+|----|------|
+| `fulltext`（默认） | MySQL ngram 全文索引 `MATCH AGAINST`；索引异常时**自动降级**三字段 `LIKE` |
+| `like` | 始终用 `title`/`summary`/`content` 的 `LIKE` |
+
+> 前端「知识库浏览」侧栏用 `/kb/index` + `/kb/index/items|search|locate` + `/kb/page`；管理后台文档搜索用本接口。
+
+#### `GET /kb/document/{id}` 响应示例（`DocumentDetailVo`）
+
+```json
+{
+  "id": 90010,
+  "spaceId": 900000000000000001,
+  "categoryId": 900000000000000103,
+  "slug": "services/用户中心",
+  "kbType": "service",
+  "domain": "AP",
+  "source": "kb",
+  "title": "用户中心",
+  "summary": "用户中心服务说明",
+  "content": "# 用户中心\n...(markdown)...",
+  "docType": "markdown",
+  "status": 1,
+  "viewCount": 42,
+  "likeCount": 0,
+  "versionNo": 3,
+  "publishTime": "2026-06-10 12:00:00",
+  "createId": 1,
+  "createTime": "2026-06-09 10:00:00",
+  "tagIds": [900001, 900002],
+  "favorited": false
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `slug` | 空间内唯一路径，wiki 同步页有值 |
+| `kbType` | 知识类型：guide/service/concept/article/interview/output |
+| `domain` | 领域标签（如 AP/FE） |
+| `source` | `kb`（wiki 同步）/ `manual`（手工创建） |
+| `favorited` | 当前登录用户是否已收藏 |
+
+#### `POST /kb/document` 请求体（`DocumentSaveRequest`）
+
+```json
+{
+  "id": null,
+  "spaceId": 900000000000000001,
+  "categoryId": 900000000000000103,
+  "title": "新文档",
+  "summary": "摘要",
+  "content": "# Hello",
+  "docType": "markdown",
+  "status": 0,
+  "tagIds": [900001],
+  "changeLog": "初稿"
+}
+```
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `id` | 否 | 有值=更新，无值=新建 |
+| `spaceId` | 是 | 目标空间（需编辑权限） |
+| `status` | 否 | 默认草稿 `0` |
+| `tagIds` | 否 | 标签 ID 列表 |
+| `changeLog` | 否 | 版本变更说明 |
 
 ### 5.2 分类 `/kb/category`
 
@@ -361,6 +554,8 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 | POST / PUT | `/kb/category` | 创建 / 更新（body `KbCategory`） |
 | DELETE | `/kb/category/{id}` | 删除 |
 
+> ⚠️ 已接入空间 ACL：`tree` 需空间读权限；增删改需空间编辑权限。`spaceId` 不可读时直接报错。
+
 ### 5.3 标签 `/kb/tag`
 
 | 方法 | 路径 | 说明 |
@@ -368,6 +563,8 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 | GET | `/kb/tag/list?spaceId=` | 空间标签列表 `KbTag[]` |
 | POST / PUT | `/kb/tag` | 创建 / 更新（body `KbTag`：`spaceId/tagName/color`） |
 | DELETE | `/kb/tag/{id}` | 删除 |
+
+> ⚠️ 已接入空间 ACL：列表需读权限；增删改需编辑权限。
 
 ### 5.4 评论 `/kb/comment`
 
@@ -377,6 +574,8 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 | POST | `/kb/comment` | 发表（body `KbComment`：`documentId/parentId?/content`） |
 | DELETE | `/kb/comment/{id}` | 删除 |
 
+> ⚠️ 已接入空间 ACL：按文档所属空间校验——分页/发表需读权限；删除需**编辑**权限。
+
 ### 5.5 收藏 `/kb/favorite`
 
 | 方法 | 路径 | 说明 |
@@ -384,6 +583,8 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 | POST | `/kb/favorite/{documentId}` | 收藏 |
 | DELETE | `/kb/favorite/{documentId}` | 取消 |
 | GET | `/kb/favorite/my?pageNum=&pageSize=` | 我的收藏 `Page<KbDocument>` |
+
+> ⚠️ 已接入空间 ACL：收藏/取消需文档读权限；「我的收藏」仅返回当前用户可读空间内的文档。
 
 ### 5.6 附件 `/kb/attachment`（T4）
 
@@ -414,12 +615,15 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/space/mine` | **推荐** 当前用户可读空间列表 `KbAccessibleSpaceVo[]`（含 `canEdit`/`canAdmin`，供浏览/问答等空间选择器） |
-| GET | `/kb/space/manage` | 空间管理页列表（有 `kb:space:admin` 或任一 `kb:space:*` 动作权限=**全部空间**；否则 owner / 空间 admin 成员） |
+| GET | `/kb/space/mine` | **推荐** 当前用户可读空间列表 `KbAccessibleSpaceVo[]`（`canEdit`=内容编辑能力，供浏览/问答空间选择器） |
+| GET | `/kb/space/manage` | 空间管理页列表（菜单 `kb:space:admin` 或任一 `kb:space:*` 动作=**全部空间**；`canEdit`/`canAdmin` 反映动作权限，供按钮显隐） |
 | GET | `/kb/space/page?pageNum=&pageSize=` | 分页（仅可读空间；query 可带 `KbSpace` 字段过滤） |
 | GET | `/kb/space/{id}` | 详情 |
-| POST / PUT | `/kb/space` | 创建 / 更新（更新需空间管理权限） |
-| DELETE | `/kb/space/{id}` | 删除（需空间管理权限） |
+| POST | `/kb/space` | 创建（动作 `kb:space:add`） |
+| PUT | `/kb/space` | 更新（动作 `kb:space:edit`） |
+| DELETE | `/kb/space/{id}` | 删除（动作 `kb:space:remove`） |
+
+> **权限分层**：菜单 `kb:space:admin` 决定能否进入管理页并看到空间数据；动作 `kb:space:add/edit/remove/member` 控制具体按钮与对应写接口；空间成员角色（viewer/editor/admin）只作用于**内容侧**（浏览/问答/文档编辑），不参与管理页操作鉴权。平台超管（`superadmin`/`admin`/`*:*:*`）全通过。
 
 `KbAccessibleSpaceVo` 示例：
 
@@ -437,7 +641,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 ### 5.8 空间成员 `/kb/space/member`（T9 · ACL）
 
-> 均需**空间管理权限**（owner / 空间 admin / 平台超管）。
+> 均需 **`kb:space:member` 动作权限**（或平台超管）；与空间成员角色无关——成员管理是管理页能力，由动作权限控制。
 > 雪花 ID 在 JSON 中建议用**字符串**传递（与全局 Long 序列化策略一致）。
 
 | 方法 | 路径 | 说明 |
@@ -544,9 +748,32 @@ python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-
 
 `SyncTriggerVo`：`success`、`exitCode`、`spaceCode`、`outputTail`（脚本输出末尾）。
 
-配置见 `application-dev.yml` → `kb.sync.*`（`script-path` / `python` / `space-code` / `timeout-seconds` / `schedule-enabled` / `schedule-cron`）。
+### 6.1 同步配置 `kb.sync.*`
 
-**Git hook（commit 后自动 sync）**：
+| 配置项 | 默认（dev） | 说明 |
+|--------|-------------|------|
+| `kb.sync.enabled` | `true` | 总开关；`false` 时 API trigger 与定时任务均不执行 |
+| `kb.sync.python` | `python` | Python 解释器 |
+| `kb.sync.script-path` | `moli-knowledge/kb/tools/sync_to_db.py` | 同步脚本路径（相对进程 cwd） |
+| `kb.sync.space-code` | `enterprise-kb` | 默认同步目标空间编码 |
+| `kb.sync.timeout-seconds` | `300` | 脚本超时 |
+| `kb.sync.schedule-enabled` | **`false`** | 是否启用定时同步 |
+| `kb.sync.schedule-cron` | `0 0 2 * * ?` | 定时 cron（默认每天 02:00） |
+
+### 6.2 定时同步 `KbSyncScheduler`（T11）
+
+Spring `@Scheduled` 任务，**默认关闭**。与 Git hook、手动 `POST /kb/sync/trigger` 互不排斥，可并存：
+
+| 方式 | 触发时机 | 权限 |
+|------|----------|------|
+| **定时任务** | `schedule-enabled=true` 且 `kb.sync.enabled=true` 时按 cron 跑 | 无需登录（服务端后台） |
+| **Git hook** | commit 变更 `kb/wiki/` 后 post-commit | 本地开发机 |
+| **API trigger** | 前端/运维手动调 | 空间 admin 或平台超管 |
+| **GitHub Actions** | CI push main / 手动 workflow | 见 §6.3 |
+
+定时任务调用与 API 相同的 `sync_to_db.py`，使用 `kb.sync.space-code` 指定空间；日志写入 `kb_sync_log`，可通过 `/kb/sync/logs` 查询。
+
+### 6.3 Git hook（commit 后自动 sync）
 
 ```bash
 # Linux / Git Bash
@@ -558,7 +785,7 @@ powershell -ExecutionPolicy Bypass -File moli-knowledge/kb/tools/install_git_hoo
 
 仅当 commit 变更 `moli-knowledge/kb/wiki/` 下文件时触发 `sync_to_db.py`。
 
-### 6.1 GitHub Actions CI
+### 6.4 GitHub Actions CI（T12）
 
 工作流：[`.github/workflows/kb-sync.yml`](../.github/workflows/kb-sync.yml)
 
@@ -582,7 +809,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 页面 | 路由 component | 主要接口 | 备注 |
 |------|----------------|----------|------|
-| 文档浏览 | `knowledge/browse/index` | `/kb/space/accessible` + `/kb/index` + `/kb/page` | 顶部**空间选择器**；`spaceId` 随 API 传递；无权限时 `KbAccessDenied` |
+| 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index`（meta）+ `/kb/index/items|search|locate` + `/kb/page` | 顶部**空间选择器**；分组懒加载；`spaceId` 随 API 传递 |
 | 智能问答 | `knowledge/ask/index` | `/kb/ask` + history/feedback | 空间选择器 + **跨空间多选**（`spaceIds[]`）；引用含 `spaceId` |
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |

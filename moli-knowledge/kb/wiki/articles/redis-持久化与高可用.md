@@ -6,7 +6,7 @@ status: active
 tags: [redis, RDB, AOF, 高可用]
 sources:
   - raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
-related: [redis-缓存, redis-面试题]
+related: [redis-缓存, redis-集群与哨兵实践, redis-面试题]
 created: 2026-06-22
 updated: 2026-06-22
 ---
@@ -32,7 +32,7 @@ updated: 2026-06-22
 |------|------|
 | **主从复制** | 读扩展、故障手动切换 |
 | **哨兵 Sentinel** | 自动故障转移，选新 master |
-| **Cluster** | 16384 slot 分片，水平扩展 |
+| **Cluster** | 16384 slot 分片，水平扩展 | 详见 [[redis-集群与哨兵实践]] |
 
 ## 与缓存角色的关系
 

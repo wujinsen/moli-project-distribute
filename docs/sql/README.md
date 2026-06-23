@@ -14,6 +14,7 @@
 | [`KNOWLEDGE_SCHEMA_ER.png`](KNOWLEDGE_SCHEMA_ER.png) | ER 关系图 PNG（任意 MD 阅读器可看） |
 | `04_knowledge_menu.sql` | 知识库菜单 + sys_action 动作（在 03 之后追加） |
 | `05_knowledge_action_patch.sql` | 已有环境修正 sys_action 分组（空间 CRUD / 体检+同步） |
+| `06_remove_kb_admin.sql` | 移除废弃的 kb:admin 动作与菜单 906 |
 | `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 04_knowledge_menu 之后追加） |
 
 ## 新环境初始化

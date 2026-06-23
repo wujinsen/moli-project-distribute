@@ -31,4 +31,7 @@ public class KbAccessibleSpaceVo {
 
     @ApiModelProperty("当前用户是否可管理空间")
     private Boolean canAdmin;
+
+    @ApiModelProperty("当前用户在该空间的成员角色：platform/owner/admin/editor/viewer（管理页展示用）")
+    private String myRole;
 }

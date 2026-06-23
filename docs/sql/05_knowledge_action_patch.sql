@@ -9,8 +9,7 @@ INSERT INTO `sys_action` (`perm_code`, `resource`, `action`, `name`, `menu_id`, 
 ('kb:space:remove', 'kb', 'spaceRemove', '删除空间',           909, 3, 1),
 ('kb:space:member', 'kb', 'spaceMember', '批量授权',           909, 4, 1),
 ('kb:lint:scan',    'kb', 'lintScan',    '知识库体检扫描',     904, 1, 1),
-('kb:sync:trigger', 'kb', 'syncTrigger', '触发Wiki同步',       904, 2, 1),
-('kb:admin',        'kb', 'admin',       '知识库管理员（全局）', 901, 9, 1)
+('kb:sync:trigger', 'kb', 'syncTrigger', '触发Wiki同步',       904, 2, 1)
 ON DUPLICATE KEY UPDATE
   resource = VALUES(resource), action = VALUES(action), name = VALUES(name),
   menu_id = VALUES(menu_id), order_num = VALUES(order_num), status = VALUES(status);

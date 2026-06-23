@@ -20,11 +20,13 @@ public class IndexTreeVo {
     @Data
     @ApiModel("类型分组")
     public static class Group {
-        @ApiModelProperty("类型 guide/service/concept/article/interview/output")
+        @ApiModelProperty("类型 guide/service/concept/article/interview/output/other")
         private String type;
         @ApiModelProperty("类型中文名")
         private String label;
-        @ApiModelProperty("该类型下文档")
+        @ApiModelProperty("该类型文档数（meta 模式）")
+        private int count;
+        @ApiModelProperty("该类型下文档（meta 模式为空，展开分组后由 /index/items 拉取）")
         private List<Item> items = new ArrayList<>();
 
         public Group(String type, String label) {
@@ -42,7 +44,7 @@ public class IndexTreeVo {
         private String slug;
         @ApiModelProperty("标题")
         private String title;
-        @ApiModelProperty("摘要")
+        @ApiModelProperty("摘要（meta/items 轻量模式可能为空）")
         private String summary;
         @ApiModelProperty("所属空间ID")
         private Long spaceId;

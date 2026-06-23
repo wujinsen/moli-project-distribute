@@ -28,11 +28,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class KbInsightServiceImpl implements KbInsightService {
@@ -53,60 +55,289 @@ public class KbInsightServiceImpl implements KbInsightService {
     @Resource
     private KbAclService kbAclService;
 
+    /** 图谱默认最多返回节点数（按度数降序保留），避免一次性把全库推给前端。 */
+    private static final int GRAPH_DEFAULT_MAX_NODES = 300;
+    private static final int GRAPH_MAX_NODES_CAP = 2000;
+    /** summary 模式默认返回的 Top 枢纽数量。 */
+    private static final int GRAPH_SUMMARY_TOP = 50;
+    /** ego 子图默认节点上限与最大跳数。 */
+    private static final int EGO_DEFAULT_MAX_NODES = 200;
+    private static final int EGO_MAX_DEPTH = 3;
+
+    private static final String MODE_SUMMARY = "summary";
+    private static final String MODE_EGO = "ego";
+    private static final String MODE_FULL = "full";
+
     @Override
-    public GraphVo graph(Long spaceId) {
+    public GraphVo graph(Long spaceId, String mode, Integer maxNodes, Integer minDeg) {
         assertSpaceReadable(spaceId);
-        Ctx ctx = build(spaceId);
-        GraphVo vo = new GraphVo();
-        Set<Long> idSet = new HashSet<>();
-        for (KbDocument d : ctx.docs) {
-            idSet.add(d.getId());
+        List<Long> scope = resolveScopeSpaceIds(spaceId);
+        if (scope.isEmpty()) {
+            return emptyGraph(MODE_FULL, "relation");
         }
 
-        // 优先用 kb_relation 落库的边；为空时回退运行时计算（ctx.links）
-        List<GraphVo.Link> links = linksFromRelation(spaceId, idSet);
+        boolean summary = MODE_SUMMARY.equalsIgnoreCase(mode);
+
+        // 边来源：优先 kb_relation（已落库，不扫正文）；为空时回退运行时解析
+        List<GraphVo.Link> allLinks = linksFromRelation(scope);
+        String source = "relation";
         Map<Long, Integer> degree;
-        if (links.isEmpty()) {
-            links = ctx.links;
+        if (allLinks.isEmpty()) {
+            // 回退：小库 / 尚未同步关系。沿用运行时解析（含正文扫描，仅小库可接受）
+            Ctx ctx = build(spaceId);
+            allLinks = ctx.links;
             degree = ctx.degree;
+            source = "runtime";
         } else {
-            degree = new HashMap<>();
-            for (GraphVo.Link l : links) {
-                degree.merge(Long.valueOf(l.getSource()), 1, Integer::sum);
-                degree.merge(Long.valueOf(l.getTarget()), 1, Integer::sum);
+            degree = degreeOf(allLinks);
+        }
+
+        int effMax = summary
+                ? (maxNodes == null || maxNodes <= 0 ? GRAPH_SUMMARY_TOP : Math.min(maxNodes, GRAPH_MAX_NODES_CAP))
+                : (maxNodes == null || maxNodes <= 0 ? GRAPH_DEFAULT_MAX_NODES : Math.min(maxNodes, GRAPH_MAX_NODES_CAP));
+        int effMinDeg = minDeg == null ? 0 : Math.max(0, minDeg);
+
+        int totalNodesInScope = countDocs(scope);
+        int totalLinks = allLinks.size();
+
+        // 候选节点 = 出现在边里的节点（孤儿对图谱无意义），按度数降序、minDeg 过滤后截断
+        List<Long> ranked = degree.entrySet().stream()
+                .filter(e -> e.getValue() >= effMinDeg)
+                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        boolean truncated = ranked.size() > effMax;
+        List<Long> keepIds = truncated ? ranked.subList(0, effMax) : ranked;
+        Set<Long> keepSet = new HashSet<>(keepIds);
+
+        GraphVo vo = new GraphVo();
+        GraphVo.Meta meta = vo.getMeta();
+        meta.setTotalNodes(totalNodesInScope);
+        meta.setTotalLinks(totalLinks);
+        meta.setSource(source);
+        meta.setMode(summary ? MODE_SUMMARY : MODE_FULL);
+
+        // summary 模式只回 Top 枢纽节点 + 它们之间的边，供前端先画概览
+        Map<Long, KbDocument> nodeInfo = loadLightNodes(keepSet);
+        Map<Long, String> categoryName = loadCategoryNames();
+        for (Long id : keepIds) {
+            KbDocument d = nodeInfo.get(id);
+            if (d == null) {
+                continue;
+            }
+            vo.getNodes().add(buildNode(d, categoryName, degree.getOrDefault(id, 0)));
+        }
+
+        for (GraphVo.Link l : allLinks) {
+            if (keepSet.contains(Long.valueOf(l.getSource())) && keepSet.contains(Long.valueOf(l.getTarget()))) {
+                vo.getLinks().add(l);
             }
         }
 
-        for (KbDocument d : ctx.docs) {
-            GraphVo.Node node = new GraphVo.Node();
-            node.setId(String.valueOf(d.getId()));
-            node.setTitle(d.getTitle());
-            node.setType(nodeType(ctx, d));
-            node.setDeg(degree.getOrDefault(d.getId(), 0));
-            vo.getNodes().add(node);
-        }
-        vo.setLinks(links);
+        meta.setReturnedNodes(vo.getNodes().size());
+        meta.setReturnedLinks(vo.getLinks().size());
+        meta.setTruncated(truncated);
         return vo;
     }
 
-    /** 从 kb_relation 读 resolved=1 且两端都在当前文档集合内的边。 */
-    private List<GraphVo.Link> linksFromRelation(Long spaceId, Set<Long> idSet) {
-        LambdaQueryWrapper<KbRelation> w = new LambdaQueryWrapper<KbRelation>()
-                .eq(KbRelation::getIsDelete, CommonConstant.UN_DELETE)
-                .eq(KbRelation::getResolved, 1);
-        if (spaceId != null) {
-            w.eq(KbRelation::getSpaceId, spaceId);
+    @Override
+    public GraphVo ego(Long spaceId, Long docId, Integer depth, Integer maxNodes) {
+        if (docId == null) {
+            throw new com.moli.common.exception.BaseException("docId 不能为空");
         }
-        List<GraphVo.Link> links = new ArrayList<>();
-        for (KbRelation r : kbRelationMapper.selectList(w)) {
-            if (r.getTargetDocId() == null
-                    || !idSet.contains(r.getSourceDocId()) || !idSet.contains(r.getTargetDocId())) {
+        assertSpaceReadable(spaceId);
+        List<Long> scope = resolveScopeSpaceIds(spaceId);
+        if (scope.isEmpty()) {
+            return emptyGraph(MODE_EGO, "relation");
+        }
+        int effDepth = depth == null ? 1 : Math.min(Math.max(1, depth), EGO_MAX_DEPTH);
+        int effMax = maxNodes == null || maxNodes <= 0 ? EGO_DEFAULT_MAX_NODES : Math.min(maxNodes, GRAPH_MAX_NODES_CAP);
+
+        // 逐层向 kb_relation 查邻居（避免一次性加载全图）
+        Set<Long> visited = new LinkedHashSet<>();
+        visited.add(docId);
+        Set<Long> frontier = new HashSet<>();
+        frontier.add(docId);
+        for (int d = 0; d < effDepth && visited.size() < effMax && !frontier.isEmpty(); d++) {
+            Set<Long> next = neighborsOf(scope, frontier);
+            next.removeAll(visited);
+            for (Long id : next) {
+                if (visited.size() >= effMax) {
+                    break;
+                }
+                visited.add(id);
+            }
+            frontier = next;
+        }
+
+        List<GraphVo.Link> edges = edgesAmong(scope, visited);
+        Map<Long, Integer> degree = degreeOf(edges);
+
+        GraphVo vo = new GraphVo();
+        Map<Long, KbDocument> nodeInfo = loadLightNodes(visited);
+        Map<Long, String> categoryName = loadCategoryNames();
+        for (Long id : visited) {
+            KbDocument doc = nodeInfo.get(id);
+            if (doc == null) {
                 continue;
             }
+            vo.getNodes().add(buildNode(doc, categoryName, degree.getOrDefault(id, 0)));
+        }
+        vo.setLinks(edges);
+
+        GraphVo.Meta meta = vo.getMeta();
+        meta.setMode(MODE_EGO);
+        meta.setSource("relation");
+        meta.setTotalNodes(vo.getNodes().size());
+        meta.setTotalLinks(edges.size());
+        meta.setReturnedNodes(vo.getNodes().size());
+        meta.setReturnedLinks(edges.size());
+        meta.setTruncated(visited.size() >= effMax);
+        return vo;
+    }
+
+    // ------------------------------------------------------------------
+    // 图谱快路径辅助（只读 kb_relation + 轻量节点，绝不扫正文）
+    // ------------------------------------------------------------------
+
+    /** 作用域内已解析边（resolved=1），不限制两端是否在某子集。 */
+    private List<GraphVo.Link> linksFromRelation(List<Long> scope) {
+        LambdaQueryWrapper<KbRelation> w = new LambdaQueryWrapper<KbRelation>()
+                .eq(KbRelation::getIsDelete, CommonConstant.UN_DELETE)
+                .eq(KbRelation::getResolved, 1)
+                .isNotNull(KbRelation::getTargetDocId)
+                .in(KbRelation::getSpaceId, scope)
+                .select(KbRelation::getSourceDocId, KbRelation::getTargetDocId, KbRelation::getRelationType);
+        List<GraphVo.Link> links = new ArrayList<>();
+        for (KbRelation r : kbRelationMapper.selectList(w)) {
             links.add(new GraphVo.Link(String.valueOf(r.getSourceDocId()),
                     String.valueOf(r.getTargetDocId()), r.getRelationType()));
         }
         return links;
+    }
+
+    /** ego BFS：查 frontier 节点的一跳邻居（source/target 双向）。 */
+    private Set<Long> neighborsOf(List<Long> scope, Set<Long> frontier) {
+        Set<Long> result = new HashSet<>();
+        if (frontier.isEmpty()) {
+            return result;
+        }
+        List<KbRelation> rows = kbRelationMapper.selectList(new LambdaQueryWrapper<KbRelation>()
+                .eq(KbRelation::getIsDelete, CommonConstant.UN_DELETE)
+                .eq(KbRelation::getResolved, 1)
+                .isNotNull(KbRelation::getTargetDocId)
+                .in(KbRelation::getSpaceId, scope)
+                .and(q -> q.in(KbRelation::getSourceDocId, frontier).or().in(KbRelation::getTargetDocId, frontier))
+                .select(KbRelation::getSourceDocId, KbRelation::getTargetDocId));
+        for (KbRelation r : rows) {
+            result.add(r.getSourceDocId());
+            result.add(r.getTargetDocId());
+        }
+        return result;
+    }
+
+    /** 两端都在 ids 集合内的边。 */
+    private List<GraphVo.Link> edgesAmong(List<Long> scope, Set<Long> ids) {
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<KbRelation> rows = kbRelationMapper.selectList(new LambdaQueryWrapper<KbRelation>()
+                .eq(KbRelation::getIsDelete, CommonConstant.UN_DELETE)
+                .eq(KbRelation::getResolved, 1)
+                .in(KbRelation::getSourceDocId, ids)
+                .in(KbRelation::getTargetDocId, ids)
+                .select(KbRelation::getSourceDocId, KbRelation::getTargetDocId, KbRelation::getRelationType));
+        List<GraphVo.Link> links = new ArrayList<>();
+        for (KbRelation r : rows) {
+            links.add(new GraphVo.Link(String.valueOf(r.getSourceDocId()),
+                    String.valueOf(r.getTargetDocId()), r.getRelationType()));
+        }
+        return links;
+    }
+
+    private Map<Long, Integer> degreeOf(List<GraphVo.Link> links) {
+        Map<Long, Integer> degree = new HashMap<>();
+        for (GraphVo.Link l : links) {
+            degree.merge(Long.valueOf(l.getSource()), 1, Integer::sum);
+            degree.merge(Long.valueOf(l.getTarget()), 1, Integer::sum);
+        }
+        return degree;
+    }
+
+    /** 仅取图谱所需字段，绝不 select content（longtext）。 */
+    private Map<Long, KbDocument> loadLightNodes(Set<Long> ids) {
+        Map<Long, KbDocument> map = new HashMap<>();
+        if (ids.isEmpty()) {
+            return map;
+        }
+        List<KbDocument> docs = kbDocumentMapper.selectList(new LambdaQueryWrapper<KbDocument>()
+                .eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE)
+                .in(KbDocument::getId, ids)
+                .select(KbDocument::getId, KbDocument::getTitle, KbDocument::getKbType,
+                        KbDocument::getCategoryId, KbDocument::getStatus));
+        for (KbDocument d : docs) {
+            map.put(d.getId(), d);
+        }
+        return map;
+    }
+
+    private Map<Long, String> loadCategoryNames() {
+        Map<Long, String> map = new HashMap<>();
+        for (KbCategory c : kbCategoryMapper.selectList(new LambdaQueryWrapper<KbCategory>()
+                .eq(KbCategory::getIsDelete, CommonConstant.UN_DELETE)
+                .select(KbCategory::getId, KbCategory::getCategoryName))) {
+            map.put(c.getId(), c.getCategoryName());
+        }
+        return map;
+    }
+
+    /** 节点 type：优先 kbType（与浏览分组一致），否则分类名，再否则状态标签。 */
+    private GraphVo.Node buildNode(KbDocument d, Map<Long, String> categoryName, int deg) {
+        GraphVo.Node node = new GraphVo.Node();
+        node.setId(String.valueOf(d.getId()));
+        node.setTitle(d.getTitle());
+        node.setDeg(deg);
+        if (StringUtils.isNotBlank(d.getKbType())) {
+            node.setType(d.getKbType());
+        } else if (d.getCategoryId() != null && StringUtils.isNotBlank(categoryName.get(d.getCategoryId()))) {
+            node.setType(categoryName.get(d.getCategoryId()));
+        } else {
+            node.setType(statusLabel(d.getStatus()));
+        }
+        return node;
+    }
+
+    private String statusLabel(Integer status) {
+        if (status != null) {
+            for (DocumentStatus s : DocumentStatus.values()) {
+                if (s.getCode() == status) {
+                    return s.getLabel();
+                }
+            }
+        }
+        return "未分类";
+    }
+
+    private List<Long> resolveScopeSpaceIds(Long spaceId) {
+        if (spaceId != null) {
+            return Collections.singletonList(spaceId);
+        }
+        return kbAclService.accessibleSpaceIds();
+    }
+
+    private int countDocs(List<Long> scope) {
+        Integer c = kbDocumentMapper.selectCount(new LambdaQueryWrapper<KbDocument>()
+                .eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE)
+                .in(KbDocument::getSpaceId, scope));
+        return c == null ? 0 : c;
+    }
+
+    private GraphVo emptyGraph(String mode, String source) {
+        GraphVo vo = new GraphVo();
+        vo.getMeta().setMode(mode);
+        vo.getMeta().setSource(source);
+        return vo;
     }
 
     @Override
@@ -312,23 +543,6 @@ public class KbInsightServiceImpl implements KbInsightService {
         ctx.links.add(new GraphVo.Link(String.valueOf(source), String.valueOf(target), type));
         ctx.degree.merge(source, 1, Integer::sum);
         ctx.degree.merge(target, 1, Integer::sum);
-    }
-
-    private String nodeType(Ctx ctx, KbDocument d) {
-        if (d.getCategoryId() != null) {
-            String cat = ctx.categoryName.get(d.getCategoryId());
-            if (StringUtils.isNotBlank(cat)) {
-                return cat;
-            }
-        }
-        if (d.getStatus() != null) {
-            for (DocumentStatus s : DocumentStatus.values()) {
-                if (s.getCode() == d.getStatus()) {
-                    return s.getLabel();
-                }
-            }
-        }
-        return "未分类";
     }
 
     /** 一次构建、graph 与 lint 复用的中间结果。 */

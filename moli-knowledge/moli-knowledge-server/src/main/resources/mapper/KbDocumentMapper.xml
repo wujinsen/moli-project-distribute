@@ -76,4 +76,23 @@
         LIMIT #{limit}
     </select>
 
+    <select id="countPublishedByKbType" resultType="com.moli.knowledge.server.dto.KbTypeCountRow">
+        SELECT kb_type AS kbType, COUNT(*) AS cnt
+        FROM kb_document
+        WHERE is_delete = 0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="spaceId != null">
+            AND space_id = #{spaceId}
+        </if>
+        <if test="spaceIds != null and spaceIds.size() &gt; 0">
+            AND space_id IN
+            <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+        </if>
+        GROUP BY kb_type
+    </select>
+
 </mapper>

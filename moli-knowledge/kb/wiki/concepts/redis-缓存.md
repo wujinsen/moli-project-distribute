@@ -7,8 +7,7 @@ tags: [redis, 缓存, 性能, 会话]
 sources:
   - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
   - raw/wujinsen_markdown/moli项目/ES+Redis+MySQL架构轻松搞定10亿用户中心系统.note.md
-related: [cache-aside与缓存更新模式, redis-数据结构与使用场景, redis-持久化与高可用, redis分布式锁实现, 认证与会话机制, 秒杀设计, redis-面试题]
-created: 2026-06-22
+related: [cache-aside与缓存更新模式, redis-数据结构与使用场景, redis-持久化与高可用, redis-集群与哨兵实践, redis分布式锁实现, 认证与会话机制, 秒杀设计, redis-面试题]
 updated: 2026-06-22
 ---
 
@@ -30,7 +29,7 @@ Redis 在茉莉项目中是**基础设施级**组件，不只是「可选缓存�
 - **内存 KV**，读写延迟亚毫秒级
 - 丰富数据结构（String/Hash/List/Set/ZSet/Bitmap/HyperLogLog/Stream）
 - 单线程命令执行 → 无锁竞争（I/O 多线程另说）
-- 持久化 + 主从/哨兵/集群 → 可恢复、可扩展
+- 持久化 + 主从/哨兵/集群 → 可恢复、可扩展（详见 [[redis-集群与哨兵实践]]）
 
 ## 缓存设计三问
 

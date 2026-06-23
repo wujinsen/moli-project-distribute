@@ -1,0 +1,45 @@
+erDiagram
+    kb_space ||--o{ kb_category : space_id
+    kb_space ||--o{ kb_document : space_id
+    kb_space ||--o{ kb_tag : space_id
+    kb_space ||--o{ kb_relation : space_id
+    kb_space ||--o{ kb_lint_issue : space_id
+    kb_space ||--o{ kb_space_member : space_id
+    kb_space ||--o{ kb_qa_log : space_id
+    kb_space ||--o{ kb_sync_log : space_id
+
+    kb_category ||--o{ kb_category : parent_id
+    kb_category ||--o{ kb_document : category_id
+
+    kb_document ||--o{ kb_document_tag : document_id
+    kb_tag ||--o{ kb_document_tag : tag_id
+    kb_document ||--o{ kb_comment : document_id
+    kb_comment ||--o{ kb_comment : parent_id
+    kb_document ||--o{ kb_document_version : document_id
+    kb_document ||--o{ kb_favorite : document_id
+    kb_document ||--o{ kb_attachment : document_id
+    kb_document ||--o{ kb_relation : source_doc_id
+    kb_document |o--o{ kb_relation : target_doc_id
+    kb_document ||--o{ kb_lint_issue : document_id
+    kb_document ||--o{ kb_sync_log : document_id
+
+    kb_space {
+        bigint id PK
+        varchar space_code UK
+        varchar space_name
+    }
+
+    kb_document {
+        bigint id PK
+        bigint space_id
+        varchar slug UK
+        varchar kb_type
+        longtext content
+    }
+
+    kb_relation {
+        bigint source_doc_id
+        bigint target_doc_id
+        varchar relation_type
+        tinyint resolved
+    }

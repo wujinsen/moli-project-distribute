@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import com.moli.knowledge.server.dto.KbTypeCountRow;
 
 @Mapper
 public interface KbDocumentMapper extends BaseMapper<KbDocument> {
@@ -30,4 +31,9 @@ public interface KbDocumentMapper extends BaseMapper<KbDocument> {
                                          @Param("excludeTypes") List<String> excludeTypes,
                                          @Param("keyword") String keyword,
                                          @Param("limit") int limit);
+
+    /** 浏览目录 meta：按 kb_type 统计已发布文档数 */
+    List<KbTypeCountRow> countPublishedByKbType(@Param("spaceId") Long spaceId,
+                                                @Param("spaceIds") List<Long> spaceIds,
+                                                @Param("status") Integer status);
 }

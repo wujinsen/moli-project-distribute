@@ -13,8 +13,25 @@ import java.util.List;
  */
 public interface KbInsightService {
 
-    /** 关系图谱：节点=文档，连线优先取 kb_relation，缺省回退运行时（[[标题]] + 同标签）。 */
-    GraphVo graph(Long spaceId);
+    /**
+     * 关系图谱。大库下默认走 kb_relation 边表 + 轻量节点（不扫正文），并按度数裁剪。
+     *
+     * @param spaceId  空间ID，null=全部可读空间
+     * @param mode     full（默认，返回裁剪后子图）/ summary（仅统计 + Top 枢纽）
+     * @param maxNodes 最多返回节点数（按度数降序保留），&lt;=0 用默认值；summary 模式下为 topHubs 数量
+     * @param minDeg   仅保留度数 &gt;= minDeg 的节点，null/0 不过滤
+     */
+    GraphVo graph(Long spaceId, String mode, Integer maxNodes, Integer minDeg);
+
+    /**
+     * 以某文档为中心的邻域子图（探索式，点击节点再拉）。
+     *
+     * @param spaceId  空间ID
+     * @param docId    中心文档ID（必填）
+     * @param depth    跳数 1~3，默认 1
+     * @param maxNodes 子图节点上限
+     */
+    GraphVo ego(Long spaceId, Long docId, Integer depth, Integer maxNodes);
 
     /** 体检（只算不落库）：断链 / 孤儿页 / 缺摘要。 */
     LintVo lint(Long spaceId);

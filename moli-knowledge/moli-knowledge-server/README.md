@@ -152,7 +152,8 @@ moli-knowledge-server/
 ### 图谱与体检 `/kb`（T5，移植自 `../kb/tools/serve.py`）
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/graph?spaceId=` | 关系图谱：节点=文档。连线**优先读 `kb_relation`**（同步脚本落库的 `links_to`/`related`/`depends_on`…），表为空时回退运行时（正文 `[[标题]]` + 同标签）。返回 `GraphVo{nodes,links}` |
+| GET | `/graph?spaceId=&mode=&maxNodes=&minDeg=` | 关系图谱：节点=文档（轻量，**不查 content**），边读 `kb_relation`（空表回退运行时）。**大库按度数降序裁剪**到 `maxNodes`（full=300/summary=50，上限 2000），`minDeg` 过滤弱连接。返回 `GraphVo{nodes,links,meta}`，`meta` 含 `totalNodes/totalLinks/returnedNodes/returnedLinks/truncated/source/mode` |
+| GET | `/graph/ego?spaceId=&docId=&depth=&maxNodes=` | 以 `docId` 为中心 BFS（depth 1~3，逐层查 `kb_relation`，不加载全图）。供点击节点展开邻居。返回同 `GraphVo` |
 | GET | `/lint?spaceId=` | 体检（只算不落库）：断链 / 孤儿页 / 缺摘要，返回 `LintVo{broken,orphans,noSummary,counts}` |
 | POST | `/lint/scan?spaceId=` | 体检并落库 `kb_lint_issue`（清旧待处理项后重建），返回同 `LintVo` |
 | GET | `/lint/issues?spaceId=&status=` | 查询已落库体检问题（status：0待处理/1已忽略/2已修复），返回 `KbLintIssue[]` |
@@ -168,8 +169,11 @@ moli-knowledge-server/
 ### 浏览 `/kb`（T3）
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/index?spaceId=` | 目录树：已发布文档按知识类型（guide/service/concept/article/interview/output）分组，返回 `IndexTreeVo{total, groups[]}` |
-| GET | `/page?slug=&spaceId=` | 按 slug 取单页（slug 形如 `services/用户中心` 含斜杠，故用查询参数），返回 `PageDetailVo{...content, tags, outLinks, backLinks}`。出/入链读 `kb_relation`（需先跑同步脚本） |
+| GET | `/index?spaceId=` | **meta**：按 kb_type 分组计数，`groups[].items` 为空 |
+| GET | `/index/items?spaceId=&type=&pageNum=&pageSize=` | 分组条目分页（轻量：id/slug/title/spaceId） |
+| GET | `/index/search?spaceId=&q=&limit=` | 侧栏搜索（服务端 LIKE 过滤） |
+| GET | `/index/locate?spaceId=&slug=` | 深链定位所属分组 |
+| GET | `/page?slug=&spaceId=` | 按 slug 取单页，返回 `PageDetailVo{...content, tags, outLinks, backLinks}`。出/入链读 `kb_relation`（需先跑同步脚本） |
 
 ### 同步管理 `/kb/sync`（T10）
 | 方法 | 路径 | 说明 |
@@ -235,7 +239,7 @@ POST /kb/document
 |------|------|
 | M2 | `kb`（markdown）→ `kb_document` **单向同步**；`kb_document` 加 `slug` 唯一键 |
 | Query | 新增 `POST /kb/ask`：检索选页 → 拼上下文 → 调 LLM → **带引用答案 + 来源列表**（先中等模型，可随时换 `key+base-url+model`） |
-| 浏览 | `/kb/index` 目录树、`/kb/page/{slug}`（`/kb/graph`、`/kb/lint` 已落地，见上 [REST API](#图谱与体检-kb移植自-kbtoolsservepy)） |
+| 浏览 | `/kb/index` meta + `/kb/index/items|search|locate`、`/kb/page`（`/kb/graph`、`/kb/lint` 已落地，见上 [REST API](#图谱与体检-kb移植自-kbtoolsservepy)） |
 | 后期 | ~~空间级 ACL（复用 Shiro）~~ ✅、~~附件上传（MinIO）~~ ✅、检索升级（Meilisearch/向量，按量触发） |
 
 > 想先在界面看 Query 效果，无需改 Java：用上层零依赖 viewer [`../kb/tools/serve.py`](../kb/tools/serve.py)（`python ../kb/tools/serve.py`）即可浏览 wiki、试检索式 Query。

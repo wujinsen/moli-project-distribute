@@ -90,6 +90,7 @@ public class KbSpaceServiceImpl implements KbSpaceService {
             if (managePage) {
                 vo.setCanEdit(kbAclService.manageListCanEdit(s.getId()));
                 vo.setCanAdmin(kbAclService.manageListCanAdmin(s.getId()));
+                vo.setMyRole(kbAclService.resolveMySpaceRole(s));
             } else {
                 vo.setCanEdit(kbAclService.canEdit(s.getId()));
                 vo.setCanAdmin(kbAclService.canAdmin(s.getId()));

@@ -9,7 +9,7 @@ sources:
   - moli-knowledge/kb/AGENTS.md
 related: [知识库使用指南, 知识库服务, 数据库初始化指南, 知识库三操作]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-06-23
 ---
 
 # wiki 同步指南
@@ -68,12 +68,28 @@ python moli-knowledge/kb/tools/sync_to_db.py \
 
 ### 4.3 验证
 
+目录 **meta**（应只有 `count`，`items` 为空）：
+
 ```bash
 curl "http://127.0.0.1:21000/KnowledgeServer/kb/index?spaceId=900000000000000001" \
   -H "Authorization: login_token_xxx"
 ```
 
-单页应含 `outLinks` / `backLinks`（来自 `kb_relation`）。
+展开某分组（例：操作指导）：
+
+```bash
+curl "http://127.0.0.1:21000/KnowledgeServer/kb/index/items?spaceId=900000000000000001&type=guide&pageNum=1&pageSize=50" \
+  -H "Authorization: login_token_xxx"
+```
+
+单页应含 `outLinks` / `backLinks`（来自 `kb_relation`）：
+
+```bash
+curl "http://127.0.0.1:21000/KnowledgeServer/kb/page?slug=guides/本地启动指南&spaceId=900000000000000001" \
+  -H "Authorization: login_token_xxx"
+```
+
+> 完整 browse API 见 `docs/KNOWLEDGE_API.md` §2（含 `/kb/index/search`、`/kb/index/locate`）。
 
 ## 5. 脚本行为摘要
 

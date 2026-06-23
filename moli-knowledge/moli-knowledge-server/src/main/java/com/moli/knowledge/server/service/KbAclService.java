@@ -1,5 +1,7 @@
 package com.moli.knowledge.server.service;
 
+import com.moli.knowledge.server.entity.KbSpace;
+
 import java.util.List;
 
 /**
@@ -7,11 +9,13 @@ import java.util.List;
  *
  * <p>权限模型：
  * <ul>
- *   <li>读权限：仅 <b>负责人 owner_id</b>、<b>kb_space_member 已分配用户</b>、或平台超管（{@code superadmin}/{@code admin} / {@code *:*:*}）；
- *       未分配空间的登录用户不可见该空间及其文档/问答。</li>
+ *   <li><b>内容侧（浏览/问答/文档）</b>：按空间成员角色控制——读=负责人/已分配成员/平台超管；
+ *       写(canEdit)=成员 editor/admin、负责人、平台超管。未分配空间的登录用户不可见。</li>
+ *   <li><b>管理侧（空间增删改、成员授权）</b>：由 RBAC 动作权限控制（{@code kb:space:add/edit/remove/member}）+
+ *       平台超管；菜单 {@code kb:space:admin} 决定能否进入管理页并查看空间数据。<b>不</b>再叠加 per-space canAdmin。</li>
  *   <li>visibility（公开/内部/私有）仅作空间元数据展示，<b>不</b>再自动授予读权限。</li>
  *   <li>成员 kb_space_member：member_type=0 用户 / 1 角色；role = viewer/editor/admin。</li>
- *   <li>负责人 owner_id：等同空间 admin。</li>
+ *   <li>负责人 owner_id：等同空间 admin（内容侧）。</li>
  *   <li>平台超管：{@link CommonConstant#hasFullPermission(String)} 或 Shiro {@code *:*:*}。</li>
  * </ul>
  *
@@ -44,6 +48,12 @@ public interface KbAclService {
     /** 空间管理页列表中的可管理标记（含 {@code kb:space:member} / 菜单权限）。 */
     boolean manageListCanAdmin(Long spaceId);
 
+    /**
+     * 当前用户在该空间的成员角色（用于管理页展示，非操作按钮判定）。
+     * 返回值：{@code platform} 平台超管 / {@code owner} 负责人 / {@code admin|editor|viewer} 成员角色。
+     */
+    String resolveMySpaceRole(KbSpace space);
+
     /** 读权限断言，失败抛 BaseException。 */
     void assertCanRead(Long spaceId);
 
@@ -52,6 +62,9 @@ public interface KbAclService {
 
     /** 管理权限断言，失败抛 BaseException。 */
     void assertCanAdmin(Long spaceId);
+
+    /** 成员授权断言：平台超管或具备 {@code kb:space:member} 动作权限。 */
+    void assertCanManageMembers(Long spaceId);
 
     /** 读权限断言；有空间管理页范围时也可访问（供管理页加载详情）。 */
     void assertCanReadOrManageScope(Long spaceId);

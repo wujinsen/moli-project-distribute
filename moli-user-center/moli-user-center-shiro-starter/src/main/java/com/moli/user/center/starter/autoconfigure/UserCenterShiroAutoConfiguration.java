@@ -1,17 +1,19 @@
 package com.moli.user.center.starter.autoconfigure;
 
+import com.moli.user.center.api.UserCenterServer;
 import com.moli.user.center.starter.shiro.AuthenticationFilter;
 import com.moli.user.center.starter.shiro.ShiroRealm;
 import com.moli.user.center.starter.shiro.ShiroSessionIdGenerator;
 import com.moli.user.center.starter.shiro.ShiroSessionManager;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisManager;
 import org.crazycake.shiro.RedisSessionDAO;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -20,7 +22,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -50,23 +51,35 @@ public class UserCenterShiroAutoConfiguration {
     @Value("${spring.redis.database:0}")
     private int redisDatabase;
 
-    @Bean
-    @ConditionalOnMissingBean
-    public UserCenterServerRef userCenterServerRef() {
-        return new UserCenterServerRef();
-    }
+    @DubboReference(version = "1.0.0", group = "moli", protocol = "dubbo", check = false)
+    private UserCenterServer userCenterServer;
 
     @Bean
     @ConditionalOnMissingBean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Lazy SecurityManager securityManager) {
-        AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
-        advisor.setSecurityManager(securityManager);
-        return advisor;
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor() {
+        // 关键：创建期不注入 securityManager。
+        // AOP 自动代理在实例化任意 Bean（如 sessionManager）时，会检索全部 Advisor 以评估切点，
+        // 从而强制创建本 Advisor。若本方法依赖 securityManager，就会与
+        //   securityManager → sessionManager → (AOP 检索 Advisor) → 本 Advisor → securityManager
+        // 构成无法解析的循环依赖（在 knowledge-server 中被 Springfox 的 objectMapperConfigurer 触发）。
+        // 因此这里不传 securityManager，改由 shiroSecurityManagerInitializer 在所有单例就绪后回填。
+        return new AuthorizationAttributeSourceAdvisor();
     }
 
-    @Bean("shiroFilter")
+    /**
+     * 所有单例实例化完成后，再把 securityManager 回填给 Advisor，彻底断开上述启动期循环依赖。
+     * 注解式鉴权拦截器在请求期才会用到 securityManager，此时早已回填完成，行为不受影响。
+     */
+    @Bean
+    public SmartInitializingSingleton shiroSecurityManagerInitializer(
+            AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor,
+            SecurityManager securityManager) {
+        return () -> authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
+    }
+
+    @Bean
     @ConditionalOnMissingBean(name = "shiroFilter")
-    public ShiroFilterFactoryBean shiroFilterFactory(DefaultWebSecurityManager securityManager,
+    public ShiroFilterFactoryBean shiroFilterFactory(SecurityManager securityManager,
                                                      AuthenticationFilter authenticationFilter,
                                                      UserCenterShiroProperties properties) {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
@@ -93,17 +106,22 @@ public class UserCenterShiroAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public AuthenticationFilter authenticationFilter(UserCenterServerRef userCenterServerRef) {
+    public AuthenticationFilter authenticationFilter() {
         AuthenticationFilter filter = new AuthenticationFilter();
-        filter.setUserCenterServer(userCenterServerRef.get());
+        filter.setUserCenterServer(userCenterServer);
         return filter;
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public DefaultWebSecurityManager securityManager(ShiroRealm shiroRealm,
-                                                     SessionManager sessionManager,
-                                                     RedisCacheManager cacheManager) {
+    public SecurityManager securityManager(ShiroRealm shiroRealm,
+                                           // 关键：org.apache.shiro.mgt.SecurityManager 接口 extends SessionManager，
+                                           // 因此 securityManager 自身也是一个 SessionManager 候选。若按 SessionManager 接口注入，
+                                           // Spring（尤其在 Dubbo BPP 触发的早期实例化阶段）会把 securityManager 自己当作候选，
+                                           // 形成 securityManager → securityManager 自循环。这里按具体类型 ShiroSessionManager 注入，
+                                           // securityManager（DefaultWebSecurityManager）不是 ShiroSessionManager，候选唯一，彻底消除歧义。
+                                           ShiroSessionManager sessionManager,
+                                           RedisCacheManager cacheManager) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setSessionManager(sessionManager);
         securityManager.setCacheManager(cacheManager);
@@ -113,9 +131,9 @@ public class UserCenterShiroAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ShiroRealm shiroRealm(UserCenterServerRef userCenterServerRef) {
+    public ShiroRealm shiroRealm() {
         ShiroRealm shiroRealm = new ShiroRealm();
-        shiroRealm.setUserCenterServer(userCenterServerRef.get());
+        shiroRealm.setUserCenterServer(userCenterServer);
         return shiroRealm;
     }
 
@@ -164,7 +182,7 @@ public class UserCenterShiroAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SessionManager sessionManager(RedisSessionDAO redisSessionDAO, UserCenterShiroProperties properties) {
+    public ShiroSessionManager sessionManager(RedisSessionDAO redisSessionDAO, UserCenterShiroProperties properties) {
         ShiroSessionManager shiroSessionManager = new ShiroSessionManager();
         shiroSessionManager.setSessionDAO(redisSessionDAO);
         shiroSessionManager.setGlobalSessionTimeout(properties.getSessionExpireSeconds() * 1000L);

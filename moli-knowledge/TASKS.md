@@ -1,6 +1,6 @@
 # 企业知识库 · 待办任务清单（可并行开工）
 
-> 更新：2026-06-22
+> 更新：2026-06-23
 > 用途：每个任务**自包含、文件边界清晰**，可在不同对话框/工作区并行开工，尽量不互相冲突。
 > 范式与分工见 [`kb/ROADMAP.md`](kb/ROADMAP.md)；表结构见 [`../docs/sql/KNOWLEDGE_SCHEMA.md`](../docs/sql/KNOWLEDGE_SCHEMA.md)。
 >
@@ -14,7 +14,7 @@
 |------|--------|--------|
 | 表结构 | ✅ 14 张表 SQL + 设计文档；**14 个 entity/mapper 全部就绪**（T1 完成） | — |
 | 同步 | ✅ sync API + git hook + 定时任务 + **GitHub Actions CI(T12)** | — |
-| Java API | ✅ CRUD、Query(+**历史/反馈 T11**)、Browse、Graph/Lint、ACL、附件(+**列表 T11**)、**MySQL ngram 全文检索（M4：browse+ask 走 MATCH AGAINST，ask 全文召回 top-N+内存精排）** | Meilisearch/向量（召回/量级信号触发再上） |
+| Java API | ✅ CRUD、Query(+**历史/反馈 T11**)、Browse（**meta 目录 + 分组分页/搜索/locate**）、Graph/Lint、ACL、附件(+**列表 T11**)、**MySQL ngram 全文检索（M4）** | Meilisearch/向量（召回/量级信号触发再上） |
 | 文档 | ✅ **`docs/KNOWLEDGE_API.md`(T8)** 含附件 API §5.6 + **菜单 getRouters(T13)** | — |
 | kb 知识 | ✅ **1398 页 wiki** + 关系边；**Agent 治理自动化 [`kb/tools/lint.py`](kb/tools/lint.py)**（分级体检+CI report-only） | 治理 lint 报告（66 断链/988 孤儿）；CI 升级 lint-strict 门禁 |
 | 前端 meiling-ui | ✅ **T6 已完成**（2026-06-22） | 空间 CRUD 管理页（可选二期） |
@@ -32,7 +32,7 @@
 
 第二波（依赖 T1 完成后再开）：
   T2  Query /kb/ask
-  T3  浏览 API /kb/index、/kb/page
+  T3  浏览 API /kb/index（meta）+ items/search/locate + /kb/page
   T4  附件上传
   T5  图谱/体检落库重构
 
@@ -74,19 +74,26 @@
 - **开工提示词**：
   > 读 `kb/AGENTS.md §5 Query`、`kb/tools/serve.py` 里 Query/LLM 调用部分、`docs/sql/KNOWLEDGE_SCHEMA.md` 的 `kb_qa_log`。在 `moli-knowledge-server` 新增 `POST /kb/ask`：按关键词/作用域从 `kb_document`(status=1) 选 ≤15 页，拼上下文调 OpenAI 兼容 LLM（DeepSeek/Qwen/GLM，配置走 application-dev.yml，无 key 则降级检索式），返回带引用答案并写 `kb_qa_log`。统一返回 `MoliResult`。
 
-## T3 · 浏览 API `/kb/index`、`/kb/page` ✅ 已完成（2026-06-22）
+## T3 · 浏览 API `/kb/index`、`/kb/page` ✅ 已完成（2026-06-22；**2026-06-23 大库优化**）
 
-> 产出：`controller/KbBrowseController`、`service/KbBrowseService(+Impl)`、`dto/IndexTreeVo`/`PageDetailVo`；`mvn compile` 通过。
-> `/kb/index` 按 kb_type 分组（同步文档 category_id 为空，故按类型组织）；`/kb/page?slug=` 用查询参数（slug 含斜杠）；出/入链读 `kb_relation`。
+> 产出：`controller/KbBrowseController`、`service/KbBrowseService(+Impl)`、`dto/IndexTreeVo`/`IndexItemsPageVo`/`IndexLocateVo`/`PageDetailVo`；`mvn compile` 通过。
+> **2026-06-23**：3300+ 篇场景下 `/kb/index` 改为 **meta 模式**（`groups[].count`，不含 items）；展开分组走 `/kb/index/items`（分页，轻量无 summary）；侧栏搜索 `/kb/index/search`；深链 `/kb/index/locate`。详见 `docs/KNOWLEDGE_API.md` §2。
+> `/kb/page?slug=` 用查询参数（slug 含斜杠）；出/入链读 `kb_relation`。
 
-- **目标**：给前端提供目录树和按 slug 取单页（含正文渲染所需数据 + 出/入链）。
+- **目标**：给前端提供目录树和按 slug 取单页（含正文渲染所需数据 + 出/入链）；大文档量下首屏轻量、分组懒加载。
 - **涉及文件**：
-  - 新增 `controller/KbBrowseController.java`、`dto/IndexTreeVo.java`、`PageDetailVo.java`，service 复用现有 `KbDocumentService` + T1 `KbRelationMapper`（若已落库）
-  - ⚠️ 若想挂在 `KbDocumentController` 下，需和 T2 协调；**建议单独 Controller 避免冲突**。
-- **依赖**：T1（取关系/入链时用 `kb_relation`，没有可先用 `KbInsightService` 运行时算）。
-- **验收**：`GET /kb/index?spaceId=` 返回分类/类型树；`GET /kb/page/{slug}?spaceId=` 返回单页 + backlinks。
-- **开工提示词**：
-  > 读 `moli-knowledge-server` 的 `KbDocumentController`/`KbCategoryController` 和 `docs/sql/KNOWLEDGE_SCHEMA.md`。新增 `KbBrowseController`：`/kb/index`（按 kb_type/分类组织目录树）、`/kb/page/{slug}`（按 `(spaceId,slug)` 取单页，附出链/入链）。不要改动现有 Controller，单独建类。
+  - `controller/KbBrowseController.java`、`service/KbBrowseService(+Impl).java`
+  - `dto/IndexTreeVo.java`、`IndexItemsPageVo.java`、`IndexLocateVo.java`、`PageDetailVo.java`
+  - 前端 `meiling-ui`：`KnowledgeBrowseView.vue` + `api/knowledge.ts`
+- **依赖**：T1（取关系/入链时用 `kb_relation`）。
+- **验收**：
+  - `GET /kb/index?spaceId=` → `{ total, groups:[{ type, label, count, items:[] }] }`
+  - `GET /kb/index/items?spaceId=&type=&pageNum=&pageSize=` → 分组条目分页
+  - `GET /kb/index/search?spaceId=&q=` → 侧栏搜索（服务端过滤）
+  - `GET /kb/index/locate?spaceId=&slug=` → 深链所属分组
+  - `GET /kb/page?slug=&spaceId=` → 单页 + outLinks/backLinks
+- **开工提示词**（历史）：
+  > 读 `docs/KNOWLEDGE_API.md` §2 与 `KbBrowseController`。浏览侧栏：**meta 首屏 + items 懒加载 + search**；勿再让 `/kb/index` 一次返回全库 items。
 
 ## T4 · 附件上传（MinIO） ✅ 已完成
 

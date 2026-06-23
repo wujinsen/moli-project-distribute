@@ -125,14 +125,38 @@ public class KbAclServiceImpl implements KbAclService {
 
     @Override
     public boolean manageListCanEdit(Long spaceId) {
-        return canEdit(spaceId) || isPermitted(PermissionConstants.KB_SPACE_EDIT);
+        // 管理页按钮：由动作权限决定（菜单管数据、动作管按钮）
+        return isAdmin() || isPermitted(PermissionConstants.KB_SPACE_EDIT);
     }
 
     @Override
     public boolean manageListCanAdmin(Long spaceId) {
-        return canAdmin(spaceId)
+        // 管理页“成员授权”按钮：由 kb:space:member 动作权限决定
+        return isAdmin()
                 || isPermitted(PermissionConstants.KB_SPACE_MEMBER)
                 || isPermitted(PermissionConstants.KB_SPACE_ADMIN);
+    }
+
+    @Override
+    public String resolveMySpaceRole(KbSpace space) {
+        if (space == null) {
+            return null;
+        }
+        if (isAdmin()) {
+            return "platform";
+        }
+        Long userId = ShiroUtils.getUserId();
+        if (userId != null && userId.equals(space.getOwnerId())) {
+            return "owner";
+        }
+        String role = memberRole(space.getId(), userId);
+        if (role != null) {
+            return role;
+        }
+        if (hasSpaceManageScope()) {
+            return "platform";
+        }
+        return null;
     }
 
     @Override
@@ -170,8 +194,17 @@ public class KbAclServiceImpl implements KbAclService {
     }
 
     @Override
+    public void assertCanManageMembers(Long spaceId) {
+        if (isAdmin() || isPermitted(PermissionConstants.KB_SPACE_MEMBER)) {
+            return;
+        }
+        throw new BaseException("无权管理空间成员");
+    }
+
+    @Override
     public void assertCanEditSpaceMeta(Long spaceId) {
-        if (canAdmin(spaceId) || isPermitted(PermissionConstants.KB_SPACE_EDIT)) {
+        // 空间信息编辑属管理操作：动作权限 kb:space:edit（或平台超管）
+        if (isAdmin() || isPermitted(PermissionConstants.KB_SPACE_EDIT)) {
             return;
         }
         throw new BaseException("无权编辑该知识空间");
@@ -179,7 +212,7 @@ public class KbAclServiceImpl implements KbAclService {
 
     @Override
     public void assertCanRemoveSpace(Long spaceId) {
-        if (canAdmin(spaceId) || isPermitted(PermissionConstants.KB_SPACE_REMOVE)) {
+        if (isAdmin() || isPermitted(PermissionConstants.KB_SPACE_REMOVE)) {
             return;
         }
         throw new BaseException("无权删除该知识空间");

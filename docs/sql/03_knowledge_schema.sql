@@ -314,7 +314,7 @@ CREATE TABLE IF NOT EXISTS `kb_qa_log` (
 -- =============================================================
 -- 演示种子数据
 -- =============================================================
-INSERT INTO `kb_space` VALUES (900000000000000001, 1, NOW(), 1, NOW(), 'enterprise-kb', '企业知识库', '公司级知识沉淀与协作空间', 'book-open', 1, 1, 1, 1, 0);
+INSERT INTO `kb_space` VALUES (900000000000000001, 1, NOW(), 1, NOW(), 'enterprise-kb', '企业知识库', '公司级知识沉淀与协作空间', 'book-open', 2, 1, 1, 1, 0);
 
 INSERT INTO `kb_category` VALUES (900000000000000101, 1, NOW(), 1, NOW(), 900000000000000001, 0, '产品文档', NULL, 1, 0);
 INSERT INTO `kb_category` VALUES (900000000000000102, 1, NOW(), 1, NOW(), 900000000000000001, 0, '研发规范', NULL, 2, 0);

@@ -27,9 +27,21 @@ public class KbInsightController {
     private KbInsightService kbInsightService;
 
     @GetMapping("/graph")
-    @ApiOperation("关系图谱（节点=文档，连线=正文[[标题]]引用 + 同标签）")
-    public MoliResult<GraphVo> graph(@RequestParam(required = false) Long spaceId) {
-        return MoliResult.success(kbInsightService.graph(spaceId));
+    @ApiOperation("关系图谱（节点=文档，边读 kb_relation；大库按度数裁剪，含 meta 统计）")
+    public MoliResult<GraphVo> graph(@RequestParam(required = false) Long spaceId,
+                                     @RequestParam(required = false, defaultValue = "full") String mode,
+                                     @RequestParam(required = false) Integer maxNodes,
+                                     @RequestParam(required = false) Integer minDeg) {
+        return MoliResult.success(kbInsightService.graph(spaceId, mode, maxNodes, minDeg));
+    }
+
+    @GetMapping("/graph/ego")
+    @ApiOperation("某文档为中心的邻域子图（探索式，点击节点再拉 1~3 跳）")
+    public MoliResult<GraphVo> graphEgo(@RequestParam(required = false) Long spaceId,
+                                        @RequestParam Long docId,
+                                        @RequestParam(required = false, defaultValue = "1") Integer depth,
+                                        @RequestParam(required = false) Integer maxNodes) {
+        return MoliResult.success(kbInsightService.ego(spaceId, docId, depth, maxNodes));
     }
 
     @GetMapping("/lint")

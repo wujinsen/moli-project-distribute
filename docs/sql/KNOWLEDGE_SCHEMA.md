@@ -1,6 +1,6 @@
 # 企业知识库 · 表结构设计
 
-> 更新：2026-06-22 · 配套脚本 [`03_knowledge_schema.sql`](03_knowledge_schema.sql)
+> 更新：2026-06-23 · 配套脚本 [`03_knowledge_schema.sql`](03_knowledge_schema.sql)
 > 范式：LLM-Wiki —— `kb/`（markdown）是**唯一写入源**，`moli-knowledge-server` 是**下游只读门面 + 对外 Web/API**。
 > 规划见 [`../../moli-knowledge/kb/ROADMAP.md`](../../moli-knowledge/kb/ROADMAP.md)。
 
@@ -114,22 +114,21 @@ Get-Content docs\sql\03_knowledge_schema.sql -Raw | mysql -u root -p12345678 mol
 
 ## 5. 表关系图
 
-```
-kb_space 1───n kb_category（parent_id 自关联成树）
-   │                │
-   │ 1              │ n
-   ▼ n              ▼
-kb_document ─────── category_id
-   │  │  │  │  │
-   │  │  │  │  └─ n kb_attachment
-   │  │  │  └──── n kb_favorite (user_id)
-   │  │  └─────── n kb_comment（parent_id 楼中楼）
-   │  └────────── n kb_document_version
-   └─ n kb_document_tag n ─ kb_tag
+> 关系为**逻辑关联**（`space_id` / `document_id` 等 + 索引），DDL **未建物理外键**，便于独立迁移与批量同步。
+> 用户/角色 ID 指向用户中心 `sys_user` / `sys_role`（库外引用）。
 
-kb_relation：source_doc_id ──relation_type──▶ target_doc_id（图谱边 / 断链）
-kb_lint_issue：document_id ── issue_type（体检结果）
-kb_sync_log：source_path / document_id（同步审计）
-kb_space_member：space_id × (user|role)（ACL）
-kb_qa_log：space_id / user_id（问答历史 + 引用）
-```
+![企业知识库表关系 ER 图](./KNOWLEDGE_SCHEMA_ER.png)
+
+**按模块速览**
+
+| 模块 | 中心表 | 关联 |
+|------|--------|------|
+| 内容 CRUD | `kb_document` | ← `kb_space` / `kb_category`；→ 标签、评论、版本、收藏、附件 |
+| 标签 | `kb_tag` | 经 `kb_document_tag` 多对多挂文档 |
+| 图谱 | `kb_relation` | 文档自引用边（`links_to` / `related` / …），`target_doc_id` 空 = 断链 |
+| 体检 | `kb_lint_issue` | 按空间/文档记录 lint 问题与处理状态 |
+| 同步 | `kb_sync_log` | 记录 kb→DB 每批 insert/update/delete/skip |
+| ACL | `kb_space_member` | 空间 × 用户或角色（`member_type`） |
+| 问答 | `kb_qa_log` | 空间 + 用户 + 引用 JSON |
+
+> **维护者**：改表结构后请同步改 [`KNOWLEDGE_SCHEMA_ER.mmd`](KNOWLEDGE_SCHEMA_ER.mmd) 并重新导出 PNG（见 [`README.md`](README.md)「ER 图导出」），保证对外文档始终用静态图、不依赖 Mermaid 渲染器。

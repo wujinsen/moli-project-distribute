@@ -26,6 +26,38 @@ public class GraphVo implements Serializable {
     @ApiModelProperty("连线")
     private List<Link> links = new ArrayList<>();
 
+    @ApiModelProperty("图谱统计 / 裁剪信息")
+    private Meta meta = new Meta();
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ApiModel("图谱统计信息")
+    public static class Meta implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @ApiModelProperty("作用域内节点总数（裁剪前）")
+        private int totalNodes;
+
+        @ApiModelProperty("作用域内边总数（裁剪前）")
+        private int totalLinks;
+
+        @ApiModelProperty("本次返回节点数")
+        private int returnedNodes;
+
+        @ApiModelProperty("本次返回边数")
+        private int returnedLinks;
+
+        @ApiModelProperty("是否因 maxNodes/minDeg 截断")
+        private boolean truncated;
+
+        @ApiModelProperty("数据源：relation=已落库边 / runtime=运行时解析")
+        private String source;
+
+        @ApiModelProperty("模式：full / summary / ego")
+        private String mode;
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

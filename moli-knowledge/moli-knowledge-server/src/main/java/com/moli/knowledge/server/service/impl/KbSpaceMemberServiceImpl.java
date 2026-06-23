@@ -62,7 +62,7 @@ public class KbSpaceMemberServiceImpl implements KbSpaceMemberService {
 
     public List<KbSpaceMember> list(Long spaceId) {
 
-        kbAclService.assertCanAdmin(spaceId);
+        kbAclService.assertCanManageMembers(spaceId);
 
         return kbSpaceMemberMapper.selectList(new LambdaQueryWrapper<KbSpaceMember>()
 
@@ -80,7 +80,7 @@ public class KbSpaceMemberServiceImpl implements KbSpaceMemberService {
 
         validate(member);
 
-        kbAclService.assertCanAdmin(member.getSpaceId());
+        kbAclService.assertCanManageMembers(member.getSpaceId());
 
         Long id = upsertMember(member);
 
@@ -112,7 +112,7 @@ public class KbSpaceMemberServiceImpl implements KbSpaceMemberService {
 
         }
 
-        kbAclService.assertCanAdmin(request.getSpaceId());
+        kbAclService.assertCanManageMembers(request.getSpaceId());
 
         int memberType = request.getMemberType() != null ? request.getMemberType() : 0;
 
@@ -198,7 +198,7 @@ public class KbSpaceMemberServiceImpl implements KbSpaceMemberService {
 
         }
 
-        kbAclService.assertCanAdmin(existing.getSpaceId());
+        kbAclService.assertCanManageMembers(existing.getSpaceId());
 
         if (StringUtils.isNotBlank(member.getRole()) && !ROLES.contains(member.getRole())) {
 
@@ -226,7 +226,7 @@ public class KbSpaceMemberServiceImpl implements KbSpaceMemberService {
 
         }
 
-        kbAclService.assertCanAdmin(existing.getSpaceId());
+        kbAclService.assertCanManageMembers(existing.getSpaceId());
 
         existing.setIsDelete(CommonConstant.IS_DELETE);
 
@@ -270,7 +270,7 @@ public class KbSpaceMemberServiceImpl implements KbSpaceMemberService {
 
                 }
 
-                kbAclService.assertCanAdmin(existing.getSpaceId());
+                kbAclService.assertCanManageMembers(existing.getSpaceId());
 
                 existing.setIsDelete(CommonConstant.IS_DELETE);
 

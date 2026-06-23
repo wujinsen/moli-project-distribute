@@ -43,8 +43,6 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `sys_menu` VALUES
 (905, 1, NOW(), 1, NOW(), '触发同步', 'Sync Trigger', '同期', 900,
  '', NULL, NULL, 'F', 'kb:sync:trigger', 1, NULL, 1),
-(906, 1, NOW(), 1, NOW(), '知识库管理员', 'KB Admin', 'KB管理', 900,
- '', NULL, NULL, 'F', 'kb:admin', 1, NULL, 2),
 (907, 1, NOW(), 1, NOW(), '体检扫描', 'Lint Scan', 'スキャン', 904,
  '', NULL, NULL, 'F', 'kb:lint:scan', 1, NULL, 1),
 (908, 1, NOW(), 1, NOW(), '空间成员管理', 'Space Members', 'メンバー', 900,
@@ -60,7 +58,7 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`) VALUES
 -- 系统管理员：全部页面 + 管理按钮
 (910900002, 2, 900), (910900902, 2, 901), (910900903, 2, 902), (910900904, 2, 903), (910900905, 2, 904), (910900910, 2, 909),
-(910900906, 2, 905), (910900907, 2, 906), (910900908, 2, 907), (910900909, 2, 908),
+(910900906, 2, 905), (910900908, 2, 907), (910900909, 2, 908),
 -- 研发工程师
 (910903900, 3, 900), (910903901, 3, 901), (910903902, 3, 902), (910903903, 3, 903), (910903904, 3, 904),
 (910903907, 3, 907),
@@ -86,15 +84,13 @@ INSERT INTO `sys_action` (`perm_code`, `resource`, `action`, `name`, `menu_id`, 
 ('kb:space:member', 'kb', 'spaceMember', '批量授权',           909, 4, 1),
 -- 健康体检（904）：体检扫描 + Wiki 同步
 ('kb:lint:scan',    'kb', 'lintScan',    '知识库体检扫描',     904, 1, 1),
-('kb:sync:trigger', 'kb', 'syncTrigger', '触发Wiki同步',       904, 2, 1),
--- 全局 bypass（分配在「文档浏览」页，避免与空间 CRUD 混在同一 Tab）
-('kb:admin',        'kb', 'admin',       '知识库管理员（全局）', 901, 9, 1)
+('kb:sync:trigger', 'kb', 'syncTrigger', '触发Wiki同步',       904, 2, 1)
 ON DUPLICATE KEY UPDATE
   resource = VALUES(resource), action = VALUES(action), name = VALUES(name),
   menu_id = VALUES(menu_id), order_num = VALUES(order_num), status = VALUES(status);
 
 INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES
-(2, 'kb:admin'), (2, 'kb:sync:trigger'), (2, 'kb:lint:scan'),
+(2, 'kb:sync:trigger'), (2, 'kb:lint:scan'),
 (2, 'kb:space:add'), (2, 'kb:space:edit'), (2, 'kb:space:remove'), (2, 'kb:space:member'),
 (3, 'kb:lint:scan')
 ON DUPLICATE KEY UPDATE perm_code = VALUES(perm_code);
