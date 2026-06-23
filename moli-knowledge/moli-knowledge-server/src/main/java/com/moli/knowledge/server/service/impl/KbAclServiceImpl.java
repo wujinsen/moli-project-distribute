@@ -2,12 +2,13 @@ package com.moli.knowledge.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.exception.BaseException;
+import com.moli.user.center.common.domain.entity.SysUser;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.entity.KbSpaceMember;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
-import com.moli.knowledge.server.enums.SpaceVisibility;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMemberMapper;
 import com.moli.knowledge.server.service.KbAclService;
@@ -40,7 +41,12 @@ public class KbAclServiceImpl implements KbAclService {
     @Override
     public boolean isAdmin() {
         try {
-            return SecurityUtils.getSubject().isPermitted(ADMIN_PERM);
+            SysUser user = ShiroUtils.getUserInfo();
+            if (user != null && CommonConstant.hasFullPermission(user.getUserName())) {
+                return true;
+            }
+            return SecurityUtils.getSubject().isPermitted(ADMIN_PERM)
+                    || SecurityUtils.getSubject().isPermitted(PermissionConstants.SUPER_ADMIN);
         } catch (Exception e) {                            // 未登录/无 Subject
             return false;
         }
@@ -58,19 +64,7 @@ public class KbAclServiceImpl implements KbAclService {
         if (space == null) {
             return false;
         }
-        Integer vis = space.getVisibility();
-        if (vis != null && vis == SpaceVisibility.PUBLIC.getCode()) {
-            return true;
-        }
-        Long userId = ShiroUtils.getUserId();
-        if (userId == null) {
-            return false;
-        }
-        if (vis != null && vis == SpaceVisibility.INTERNAL.getCode()) {
-            return true;                                   // 登录用户可读内部空间
-        }
-        // 私有：负责人或成员
-        return userId.equals(space.getOwnerId()) || memberRole(spaceId, userId) != null;
+        return readable(space, ShiroUtils.getUserId());
     }
 
     @Override
@@ -193,17 +187,14 @@ public class KbAclServiceImpl implements KbAclService {
     // ------------------------------------------------------------------
 
     private boolean readable(KbSpace space, Long userId) {
-        Integer vis = space.getVisibility();
-        if (vis != null && vis == SpaceVisibility.PUBLIC.getCode()) {
-            return true;
-        }
         if (userId == null) {
             return false;
         }
-        if (vis != null && vis == SpaceVisibility.INTERNAL.getCode()) {
+        // 未在 kb_space_member 分配的用户不可见；负责人默认可读
+        if (userId.equals(space.getOwnerId())) {
             return true;
         }
-        return userId.equals(space.getOwnerId()) || memberRole(space.getId(), userId) != null;
+        return memberRole(space.getId(), userId) != null;
     }
 
     private KbSpace loadSpace(Long spaceId) {

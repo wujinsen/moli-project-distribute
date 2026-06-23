@@ -7,9 +7,11 @@ import java.util.List;
  *
  * <p>权限模型：
  * <ul>
- *   <li>空间可见性 visibility：2公开（人人可读）/ 1内部（登录即可读）/ 0私有（仅成员/负责人）。</li>
+ *   <li>读权限：仅 <b>负责人 owner_id</b>、<b>kb_space_member 已分配用户</b>、或全局 {@code kb:admin}；
+ *       未分配空间的登录用户不可见该空间及其文档/问答。</li>
+ *   <li>visibility（公开/内部/私有）仅作空间元数据展示，<b>不</b>再自动授予读权限。</li>
  *   <li>成员 kb_space_member：member_type=0 用户 / 1 角色；role = viewer/editor/admin。</li>
- *   <li>负责人 owner_id：等同 admin。</li>
+ *   <li>负责人 owner_id：等同空间 admin。</li>
  *   <li>全局管理员：Shiro 权限串 {@code kb:admin}（或通配 {@code *}）。</li>
  * </ul>
  *
