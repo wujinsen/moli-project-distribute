@@ -7,28 +7,51 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class IpUtils {
+
     public static String getIpAddr(HttpServletRequest request) {
         if (request == null) {
             return "unknown";
         }
+        return normalizeClientIp(resolveRawIp(request));
+    }
+
+    /**
+     * 从可能含代理链的字符串中取客户端 IP（X-Forwarded-For 第一项）。
+     */
+    public static String normalizeClientIp(String raw) {
+        if (StringUtils.isBlank(raw) || "unknown".equalsIgnoreCase(raw.trim())) {
+            return "unknown";
+        }
+        String ip = raw.split(",")[0].trim();
+        if (ip.startsWith("[") && ip.contains("]")) {
+            ip = ip.substring(1, ip.indexOf(']'));
+        } else if (ip.chars().filter(ch -> ch == '.').count() == 3 && ip.contains(":")) {
+            ip = ip.substring(0, ip.indexOf(':'));
+        }
+        if ("0:0:0:0:0:0:0:1".equals(ip)) {
+            return "127.0.0.1";
+        }
+        return EscapeUtil.clean(ip);
+    }
+
+    private static String resolveRawIp(HttpServletRequest request) {
         String ip = request.getHeader("x-forwarded-for");
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("X-Forwarded-For");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("WL-Proxy-Client-IP");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("X-Real-IP");
         }
-
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        return "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : EscapeUtil.clean(ip);
+        return ip;
     }
 
     public static boolean internalIp(String ip) {
@@ -159,16 +182,17 @@ public class IpUtils {
     }
 
     /**
-     * 根据 IP 推断登录地点（无第三方 IP 库时的基础实现）。
+     * 根据 IP 推断登录/操作地点（无第三方 IP 库时的基础实现）。
      */
     public static String getLoginLocation(String ip) {
-        if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+        String clientIp = normalizeClientIp(ip);
+        if (StringUtils.isBlank(clientIp) || "unknown".equalsIgnoreCase(clientIp)) {
             return "未知";
         }
-        if ("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip) || "localhost".equalsIgnoreCase(ip)) {
+        if ("127.0.0.1".equals(clientIp) || "0:0:0:0:0:0:0:1".equals(clientIp) || "localhost".equalsIgnoreCase(clientIp)) {
             return "本地";
         }
-        if (internalIp(ip)) {
+        if (internalIp(clientIp)) {
             return "内网IP";
         }
         return "外网IP";

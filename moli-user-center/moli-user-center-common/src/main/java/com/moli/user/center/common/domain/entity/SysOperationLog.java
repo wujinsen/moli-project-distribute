@@ -23,6 +23,8 @@ public class SysOperationLog {
     private String userName;
     @ApiModelProperty("ip地址")
     private String requestIp;
+    @ApiModelProperty("操作地点")
+    private String requestLocation;
     @ApiModelProperty("url")
     private String requestUrl;
     @ApiModelProperty("请求参数")

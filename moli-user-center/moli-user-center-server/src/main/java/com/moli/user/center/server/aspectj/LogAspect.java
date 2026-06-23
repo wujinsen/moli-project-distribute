@@ -82,7 +82,9 @@ public class LogAspect {
             SysOperationLog sysOperationLog = new SysOperationLog();
             sysOperationLog.setId(IdGenerator.getId());
             sysOperationLog.setStatus(1);
-            sysOperationLog.setRequestIp(IpUtils.getIpAddr(request));
+            String requestIp = IpUtils.getIpAddr(request);
+            sysOperationLog.setRequestIp(requestIp);
+            sysOperationLog.setRequestLocation(IpUtils.getLoginLocation(requestIp));
             sysOperationLog.setRequestUrl(request.getRequestURI());
             if (user != null) {
                 sysOperationLog.setUserName(user.getUserName());
