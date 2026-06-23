@@ -13,6 +13,6 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass(MoliResult.class)
-@Import({GlobalExceptionHandler.class, com.moli.common.utils.SpringUtil.class, com.moli.common.core.IdGenerator.class})
+@Import({GlobalExceptionHandler.class, com.moli.common.utils.SpringUtil.class, com.moli.common.core.IdGenerator.class, MoliJacksonAutoConfiguration.class})
 public class MoliCommonAutoConfiguration {
 }
