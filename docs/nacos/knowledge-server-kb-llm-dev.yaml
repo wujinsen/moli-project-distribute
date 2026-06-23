@@ -1,0 +1,15 @@
+# Nacos 配置：知识库 LLM（DataId: knowledge-server-kb-llm-dev.yaml · Group: DEFAULT_GROUP · namespace: dev）
+# 导入：Nacos 控制台 → 配置管理 → 创建配置 → 粘贴本文件内容
+# 修改 enabled 后无需重启服务（extension-configs refresh: true）
+
+kb:
+  llm:
+    # 是否启用生成式问答（需同时配置 api-key）
+    enabled: false
+    provider: glm
+    base-url: https://open.bigmodel.cn/api/paas/v4
+    # 建议用环境变量占位，勿把真实 key 提交进 Git
+    api-key: ${ZHIPU_API_KEY:}
+    model: glm-4-flash
+    temperature: 0.3
+    timeout-seconds: 90

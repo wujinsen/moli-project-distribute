@@ -10,7 +10,11 @@
 | **`../scripts/moli.sql`** | **推荐** 最新全库（结构+数据） |
 | `02_seckill_schema.sql` | 秒杀压测表（在 moli.sql 之后追加） |
 | `03_knowledge_schema.sql` | 企业知识库表（在 moli.sql 之后追加） |
-| `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 03 之后追加） |
+| [`KNOWLEDGE_SCHEMA.md`](KNOWLEDGE_SCHEMA.md) | 知识库表结构设计说明 + ER 关系图 |
+| [`KNOWLEDGE_SCHEMA_ER.png`](KNOWLEDGE_SCHEMA_ER.png) | ER 关系图 PNG（任意 MD 阅读器可看） |
+| `04_knowledge_menu.sql` | 知识库菜单 + sys_action 动作（在 03 之后追加） |
+| `05_knowledge_action_patch.sql` | 已有环境修正 sys_action 分组（空间 CRUD / 体检+同步） |
+| `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 04_knowledge_menu 之后追加） |
 
 ## 新环境初始化
 
@@ -48,3 +52,13 @@
 | `sys_user_system` | 70 | 是 |
 
 历史增量脚本（`patch_*.sql`、`migrate_sys_action.sql`）已合并进本基线，新环境无需再执行旧 patch。
+
+## ER 图导出（维护者）
+
+对外文档使用 **PNG 静态图**（`KNOWLEDGE_SCHEMA_ER.png`），读者无需安装 Mermaid。改表后在本目录执行：
+
+```powershell
+npx @mermaid-js/mermaid-cli -i KNOWLEDGE_SCHEMA_ER.mmd -o KNOWLEDGE_SCHEMA_ER.png -b white -w 2400
+```
+
+将更新后的 `.mmd` 与 `.png` 一并提交。

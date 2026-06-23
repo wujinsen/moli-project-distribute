@@ -1,6 +1,9 @@
 package com.moli.knowledge.server.controller;
 
 import com.moli.common.core.MoliResult;
+import com.moli.knowledge.server.dto.KbSpaceMemberBatchAddRequest;
+import com.moli.knowledge.server.dto.KbSpaceMemberBatchRemoveRequest;
+import com.moli.knowledge.server.dto.KbSpaceMemberBatchResult;
 import com.moli.knowledge.server.entity.KbSpaceMember;
 import com.moli.knowledge.server.service.KbSpaceMemberService;
 import io.swagger.annotations.Api;
@@ -30,6 +33,12 @@ public class KbSpaceMemberController {
         return MoliResult.success(kbSpaceMemberService.add(member));
     }
 
+    @PostMapping("/batch")
+    @ApiOperation("批量添加成员")
+    public MoliResult<KbSpaceMemberBatchResult> batchAdd(@RequestBody KbSpaceMemberBatchAddRequest request) {
+        return MoliResult.success(kbSpaceMemberService.batchAdd(request));
+    }
+
     @PutMapping
     @ApiOperation("更新成员角色")
     public MoliResult<Boolean> update(@RequestBody KbSpaceMember member) {
@@ -42,5 +51,11 @@ public class KbSpaceMemberController {
     public MoliResult<Boolean> remove(@PathVariable Long id) {
         kbSpaceMemberService.remove(id);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    @PostMapping("/batch/remove")
+    @ApiOperation("批量移除成员")
+    public MoliResult<KbSpaceMemberBatchResult> batchRemove(@RequestBody KbSpaceMemberBatchRemoveRequest request) {
+        return MoliResult.success(kbSpaceMemberService.batchRemove(request));
     }
 }

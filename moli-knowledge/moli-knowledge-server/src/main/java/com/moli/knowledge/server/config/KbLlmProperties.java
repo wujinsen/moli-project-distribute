@@ -2,13 +2,16 @@ package com.moli.knowledge.server.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
 
 /**
  * Query(/kb/ask) 使用的 LLM 配置。OpenAI 兼容接口（DeepSeek / Qwen / GLM 等）。
- * 在 application-dev.yml 配 kb.llm.*；不配 api-key 时 /kb/ask 自动降级为「检索式」答案。
+ * 主配置在 Nacos {@code knowledge-server-kb-llm-dev.yaml}；{@link RefreshScope} 支持热更新。
+ * {@code enabled=false} 或 api-key 为空时 /kb/ask 自动降级为「检索式」答案。
  */
 @Data
+@RefreshScope
 @Component
 @ConfigurationProperties(prefix = "kb.llm")
 public class KbLlmProperties {

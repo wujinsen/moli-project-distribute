@@ -158,7 +158,7 @@ public class KbAskServiceImpl implements KbAskService {
         }
         resp.setCitations(citations);
 
-        if (llm.usable() && !citations.isEmpty()) {
+        if (shouldUseLlm(request) && !citations.isEmpty()) {
             try {
                 String ctx = buildContext(scored, topK);
                 String answer = callLlm(question, ctx);
@@ -172,8 +172,10 @@ public class KbAskServiceImpl implements KbAskService {
             }
         } else {
             String note = "";
-            if (!llm.usable()) {
-                note = "> 未配置 LLM（kb.llm.enabled/api-key），当前为检索式。\n\n";
+            if (!Boolean.TRUE.equals(request.getUseLlm())) {
+                note = "> 本次未启用 LLM 生成式，当前为检索式。\n\n";
+            } else if (!llm.usable()) {
+                note = "> 后端未配置 LLM（kb.llm.enabled/api-key），当前为检索式。\n\n";
             }
             resp.setAnswer(note + retrievalAnswer(question, citations));
             resp.setMode("retrieval");
@@ -402,6 +404,11 @@ public class KbAskServiceImpl implements KbAskService {
     // ------------------------------------------------------------------
     // 检索式答案 / LLM 上下文 / LLM 调用
     // ------------------------------------------------------------------
+
+    /** 前端显式 useLlm=true 且后端 kb.llm 已就绪时才调 LLM。 */
+    private boolean shouldUseLlm(AskRequest request) {
+        return Boolean.TRUE.equals(request.getUseLlm()) && llm.usable();
+    }
 
     private String retrievalAnswer(String question, List<AskResponse.Citation> citations) {
         if (citations.isEmpty()) {

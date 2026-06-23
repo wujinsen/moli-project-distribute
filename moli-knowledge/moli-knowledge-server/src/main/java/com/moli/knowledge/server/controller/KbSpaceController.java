@@ -20,9 +20,9 @@ public class KbSpaceController {
     @Resource
     private KbSpaceService kbSpaceService;
 
-    @GetMapping("/accessible")
+    @GetMapping("/mine")
     @ApiOperation("当前用户可读空间（含权限摘要，供前端选择器）")
-    public MoliResult<List<KbAccessibleSpaceVo>> accessible() {
+    public MoliResult<List<KbAccessibleSpaceVo>> listMine() {
         return MoliResult.success(kbSpaceService.listAccessible());
     }
 

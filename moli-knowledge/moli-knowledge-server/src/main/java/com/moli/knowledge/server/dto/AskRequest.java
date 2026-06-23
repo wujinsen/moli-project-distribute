@@ -23,4 +23,7 @@ public class AskRequest {
 
     @ApiModelProperty("选用的候选页数上限，默认 8")
     private Integer topK = 8;
+
+    @ApiModelProperty("是否启用 LLM 生成式作答（默认 false；须后端 kb.llm 已配置且 usable）")
+    private Boolean useLlm = false;
 }

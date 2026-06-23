@@ -95,7 +95,11 @@ public class UserServiceImpl implements UserService {
 
         if (StringUtils.isNotBlank(userVo.getUserName())) {
 
-            lambdaQueryWrapper.eq(SysUser::getUserName, userVo.getUserName());
+            String keyword = userVo.getUserName().trim();
+
+            lambdaQueryWrapper.and(w -> w.like(SysUser::getUserName, keyword)
+
+                    .or().like(SysUser::getNickName, keyword));
 
         }
 

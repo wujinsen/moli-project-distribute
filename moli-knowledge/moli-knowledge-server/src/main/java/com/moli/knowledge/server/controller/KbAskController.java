@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
 import com.moli.knowledge.server.dto.AskRequest;
 import com.moli.knowledge.server.dto.AskResponse;
+import com.moli.knowledge.server.dto.KbLlmConfigVo;
 import com.moli.knowledge.server.dto.QaHistoryVo;
 import com.moli.knowledge.server.service.KbAskService;
+import com.moli.knowledge.server.service.KbLlmConfigService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -27,6 +29,14 @@ public class KbAskController {
 
     @Resource
     private KbAskService kbAskService;
+    @Resource
+    private KbLlmConfigService kbLlmConfigService;
+
+    @GetMapping("/ask/llm-config")
+    @ApiOperation("LLM 后端能力探测（不含 api-key；是否调用见 POST /kb/ask 的 useLlm）")
+    public MoliResult<KbLlmConfigVo> llmConfig() {
+        return MoliResult.success(kbLlmConfigService.getConfig());
+    }
 
     @PostMapping("/ask")
     @ApiOperation("提问（检索选页→带引用作答；无 LLM key 时降级检索式）")

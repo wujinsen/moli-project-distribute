@@ -9,6 +9,9 @@ spring:
     name: knowledge-server
   lifecycle:
     timeout-per-shutdown-phase: 30s
+  main:
+    # Shiro securityManager 与 Filter 链在部分 Boot 版本下存在循环依赖，允许 Spring 延迟注入
+    allow-circular-references: true
 
 id:
   snowflake:

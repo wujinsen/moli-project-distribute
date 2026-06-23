@@ -1,5 +1,8 @@
 package com.moli.knowledge.server.service;
 
+import com.moli.knowledge.server.dto.KbSpaceMemberBatchAddRequest;
+import com.moli.knowledge.server.dto.KbSpaceMemberBatchRemoveRequest;
+import com.moli.knowledge.server.dto.KbSpaceMemberBatchResult;
 import com.moli.knowledge.server.entity.KbSpaceMember;
 
 import java.util.List;
@@ -12,9 +15,15 @@ public interface KbSpaceMemberService {
     /** 添加成员（需空间管理权限）。 */
     Long add(KbSpaceMember member);
 
+    /** 批量添加成员（需空间管理权限）。 */
+    KbSpaceMemberBatchResult batchAdd(KbSpaceMemberBatchAddRequest request);
+
     /** 更新成员角色（需空间管理权限）。 */
     void update(KbSpaceMember member);
 
     /** 移除成员（需空间管理权限）。 */
     void remove(Long id);
+
+    /** 批量移除成员（需空间管理权限）。 */
+    KbSpaceMemberBatchResult batchRemove(KbSpaceMemberBatchRemoveRequest request);
 }

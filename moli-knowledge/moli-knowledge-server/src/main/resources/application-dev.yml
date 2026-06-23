@@ -27,7 +27,7 @@ spring:
     port: 6379
     password: 123456
     timeout: 86400000
-    database: 2
+    database: 1
     jedis:
       pool:
         max-active: 200
@@ -61,22 +61,30 @@ swagger:
 moli:
   user-center:
     shiro:
+      # 必须为 true，否则无法从 Redis 读取登录 Session，空间 ACL / superadmin 均失效（/kb/space/mine 只剩公开空间）
       enabled: true
       session-expire-seconds: 86400
 
-# 知识库 Query(/kb/ask) 的 LLM 配置（OpenAI 兼容；DeepSeek/Qwen/GLM）
-# enabled=false 或 api-key 为空时，/kb/ask 自动降级为「检索式」答案
+# 知识库 Query(/kb/ask) LLM：后端 kb.llm.* 配 provider/key；是否调用由前端请求 useLlm 控制（默认 false）
+# Nacos 托管见 docs/nacos/knowledge-server-kb-llm-dev.yaml（暂未启用 kb.llm.nacos.enabled）
 kb:
   llm:
-    enabled: false
-    provider: deepseek
-    base-url: https://api.deepseek.com/v1
-    api-key: ""
-    model: deepseek-chat
+    nacos:
+      enabled: false
+      data-id: knowledge-server-kb-llm-dev.yaml
+      group: DEFAULT_GROUP
+    enabled: true
+    provider: glm
+    base-url: https://open.bigmodel.cn/api/paas/v4
+    api-key: ${ZHIPU_API_KEY:e3cce3056c10404cb27bd7bc9bfe6cfa.h8eD7w474NtdLzM0}
+    model: glm-4-flash
     temperature: 0.3
     timeout-seconds: 90
   search:
+    # fulltext：用 kb_document 上 ngram 全文索引 ftx_kb_document（MATCH AGAINST）；like：旧三字段 LIKE
     mode: fulltext
+    # Query(/kb/ask) 候选召回上限：先用全文索引按相关度取至多 N 页，再做内存 bigram 精排，避免全量扫描
+    ask-candidate-limit: 100
   sync:
     enabled: true
     python: python

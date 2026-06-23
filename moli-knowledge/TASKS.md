@@ -212,7 +212,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
   - `KbDocumentServiceImpl`：`search` 按可读空间集合过滤 / 指定空间断言可读；`detail`/`versions` 断言可读；`save/publish/archive/delete` 断言可编辑。
   - `KbBrowseServiceImpl`：`index` 过滤可读空间；`page` 断言可读。
   - `KbAskServiceImpl`：候选页限定到可读空间；无可读空间直接回退。
-- **成员管理 API**（`/kb/space/member`，均需空间管理权限）：`GET /list`、`POST`、`PUT`、`DELETE /{id}`。
+- **成员管理 API**（`/kb/space/member`，均需空间管理权限）：`GET /list`、`POST`（单条）、`POST /batch`（批量添加）、`PUT`、`DELETE /{id}`（单条）、`POST /batch/remove`（批量移除）。
 - **已知限制**：Dubbo 契约目前只透出权限串、不透出角色ID，**角色型成员(member_type=1)** 仅支持存储/管理，运行时不解析（用户型成员完整生效）。待 `UserCenterServer` 暴露角色后，在 `KbAclServiceImpl#memberRole` 处补一行即可。
 - **验收**：非成员看不到私有空间内容；editor 以上才能改；过滤在 service 层统一做。✅
 

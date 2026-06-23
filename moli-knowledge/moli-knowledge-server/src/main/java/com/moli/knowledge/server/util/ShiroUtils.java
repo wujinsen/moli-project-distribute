@@ -9,9 +9,13 @@ public final class ShiroUtils {
     }
 
     public static SysUser getUserInfo() {
-        Object principal = SecurityUtils.getSubject().getPrincipal();
-        if (principal instanceof SysUser) {
-            return (SysUser) principal;
+        try {
+            Object principal = SecurityUtils.getSubject().getPrincipal();
+            if (principal instanceof SysUser) {
+                return (SysUser) principal;
+            }
+        } catch (Exception ignored) {
+            // Shiro 未初始化或未登录
         }
         return null;
     }

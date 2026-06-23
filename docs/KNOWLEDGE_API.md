@@ -73,7 +73,15 @@
 | 904 | C 菜单 | 健康体检 | `lint` | `knowledge/lint/index` |
 | 909 | C 菜单 | 空间管理 | `spaces` | `knowledge/spaces/index` |
 
-按钮权限（F，不出现在侧栏，供 Shiro / `v-hasPermi`）：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:sync:trigger`、`kb:admin`、`kb:lint:scan`、`kb:space:admin`。
+按钮权限（`sys_action`，在「分配权限」右侧按页面分组；F 菜单 perms 不进 Shiro）：
+
+| 页面 menu_id | 动作 perm_code |
+|--------------|----------------|
+| 909 空间管理 | `kb:space:add`、`kb:space:edit`、`kb:space:remove`、`kb:space:member` |
+| 904 健康体检 | `kb:lint:scan`、`kb:sync:trigger` |
+| 901 文档浏览 | `kb:admin`（全局 bypass，可选） |
+
+侧栏 C 菜单 perms：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:space:admin`。
 
 `getRouters` 返回片段示例：
 
@@ -181,12 +189,32 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 ## 3. Query 问答（T2）—— 问答框页面用
 
+> **LLM 开关**：后端 `kb.llm.*` 配 provider/api-key 后 **`available=true`**；每次提问是否调 LLM 由请求体 **`useLlm`** 控制（默认 `false` → 检索式）。Nacos 托管模板见 [`docs/nacos/`](nacos/)（暂未启用）。
+
+### `GET /kb/ask/llm-config`
+
+探测后端是否已配置 LLM（**不含 api-key**），供前端决定是否可勾选 `useLlm`。
+
+```json
+{
+  "available": true,
+  "configEnabled": true,
+  "apiKeyConfigured": true,
+  "provider": "glm",
+  "model": "glm-4-flash"
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `available` | `kb.llm.enabled && api-key` 均已配置 |
+
 ### `POST /kb/ask`
 
 请求体（JSON）：
 
 ```json
-{ "question": "Spring 事务在什么情况下会失效？", "spaceId": 900000000000000001, "topK": 8 }
+{ "question": "Spring 事务在什么情况下会失效？", "spaceId": 900000000000000001, "topK": 8, "useLlm": false }
 ```
 
 多空间（须对每个 space 有读权限）：
@@ -205,6 +233,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 | `spaceId` | 否 | 单空间；省略=全部可读空间 |
 | `spaceIds` | 否 | 多空间数组；非空时优先于 `spaceId` |
 | `topK` | 否 | 候选页上限，默认 8 |
+| `useLlm` | 否 | 是否启用 LLM 生成式，默认 **false**；须后端 `available=true` 才生效 |
 
 响应 `data`：
 
@@ -225,7 +254,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 | 字段 | 说明 |
 |------|------|
-| `mode` | `generative`（已配 LLM，带引用作答）/ `retrieval`（未配 key，降级为检索式列出相关页） |
+| `mode` | `generative`（`useLlm=true` 且后端 LLM 可用）/ `retrieval`（默认或未启用 LLM） |
 | `scope` / `scopeReason` | 自动识别的作用域及理由（如"面试题"→ interview） |
 | `citations` | 引用来源；前端可渲染为可点链接，跳到 `/kb/page?slug=`。`answer` 里的 `[[slug]]` 也对应这些页 |
 | `qaLogId` | 本次问答日志 ID，用于提交反馈 |
@@ -386,7 +415,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/space/accessible` | **推荐** 当前用户可读空间列表 `KbAccessibleSpaceVo[]`（含 `canEdit`/`canAdmin`，供前端空间选择器） |
+| GET | `/kb/space/mine` | **推荐** 当前用户可读空间列表 `KbAccessibleSpaceVo[]`（含 `canEdit`/`canAdmin`，供前端空间选择器） |
 | GET | `/kb/space/page?pageNum=&pageSize=` | 分页（仅可读空间；query 可带 `KbSpace` 字段过滤） |
 | GET | `/kb/space/{id}` | 详情 |
 | POST / PUT | `/kb/space` | 创建 / 更新（更新需空间管理权限） |
@@ -409,18 +438,21 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 ### 5.8 空间成员 `/kb/space/member`（T9 · ACL）
 
 > 均需**空间管理权限**（owner / 空间 admin / 全局 `kb:admin`）。
+> 雪花 ID 在 JSON 中建议用**字符串**传递（与全局 Long 序列化策略一致）。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/kb/space/member/list?spaceId=` | 成员列表 `KbSpaceMember[]` |
-| POST | `/kb/space/member` | 添加成员 |
+| POST | `/kb/space/member` | 添加**单个**成员，返回成员行 `id` |
+| POST | `/kb/space/member/batch` | **批量添加**成员，返回 `KbSpaceMemberBatchResult` |
 | PUT | `/kb/space/member` | 更新成员角色（body 带 `id` + `role`） |
-| DELETE | `/kb/space/member/{id}` | 移除成员 |
+| DELETE | `/kb/space/member/{id}` | 移除**单个**成员 |
+| POST | `/kb/space/member/batch/remove` | **批量移除**成员，返回 `KbSpaceMemberBatchResult` |
 
-添加成员请求体：
+添加成员（单条）请求体：
 
 ```json
-{ "spaceId": 900000000000000001, "memberType": 0, "memberId": 1001, "role": "editor" }
+{ "spaceId": "900000000000000001", "memberType": 0, "memberId": "719712653013942272", "role": "editor" }
 ```
 
 | 字段 | 必填 | 说明 |
@@ -429,6 +461,54 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 | `memberType` | 否 | `0` 用户（默认，运行时生效）/ `1` 角色（暂仅存储） |
 | `memberId` | 是 | 用户ID或角色ID |
 | `role` | 否 | `viewer`(默认) / `editor` / `admin` |
+
+批量添加请求体：
+
+```json
+{
+  "spaceId": "900000000000000001",
+  "memberType": 0,
+  "memberIds": ["719712653013942272", "720351341083361280"],
+  "role": "viewer"
+}
+```
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `spaceId` | 是 | 空间ID |
+| `memberIds` | 是 | 用户ID或角色ID列表（非空） |
+| `memberType` | 否 | 同单条添加，默认 `0` |
+| `role` | 否 | 同单条添加，默认 `viewer` |
+
+批量移除请求体：
+
+```json
+{ "ids": ["900000000000000501", "900000000000000502"] }
+```
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `ids` | 是 | `kb_space_member` 表主键 ID 列表（非空） |
+
+批量操作响应 `KbSpaceMemberBatchResult`：
+
+```json
+{
+  "successCount": 2,
+  "skipCount": 0,
+  "failCount": 0,
+  "memberRowIds": ["900000000000000501", "900000000000000502"]
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `successCount` | 成功数（添加：新增或恢复软删成员；移除：成功软删） |
+| `skipCount` | 跳过数（添加：已是有效成员；移除：不存在或已删） |
+| `failCount` | 失败数 |
+| `memberRowIds` | 本次成功涉及的成员行 ID |
+
+> 软删成员再次添加时，单条/批量接口均会**恢复**原记录并更新 `role`，避免唯一键冲突。
 
 ---
 

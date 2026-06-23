@@ -71,3 +71,30 @@ INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`) VALUES
 -- 普通员工：浏览 + 问答
 (910907900, 7, 900), (910907901, 7, 901), (910907902, 7, 902)
 ON DUPLICATE KEY UPDATE role_id = VALUES(role_id), menu_id = VALUES(menu_id);
+
+-- -------------------------------------------------------------
+-- 3. 动作权限（sys_action + sys_role_action）
+-- 「分配权限」右侧「按钮操作」只读 sys_action；F 菜单 perms 不会进 Shiro。
+-- menu_id 须为 C 页面，且角色须先勾选对应页面才能分配动作。
+-- -------------------------------------------------------------
+
+INSERT INTO `sys_action` (`perm_code`, `resource`, `action`, `name`, `menu_id`, `order_num`, `status`) VALUES
+-- 空间管理（909）：CRUD + 批量授权
+('kb:space:add',    'kb', 'spaceAdd',    '新增空间',           909, 1, 1),
+('kb:space:edit',   'kb', 'spaceEdit',   '修改空间',           909, 2, 1),
+('kb:space:remove', 'kb', 'spaceRemove', '删除空间',           909, 3, 1),
+('kb:space:member', 'kb', 'spaceMember', '批量授权',           909, 4, 1),
+-- 健康体检（904）：体检扫描 + Wiki 同步
+('kb:lint:scan',    'kb', 'lintScan',    '知识库体检扫描',     904, 1, 1),
+('kb:sync:trigger', 'kb', 'syncTrigger', '触发Wiki同步',       904, 2, 1),
+-- 全局 bypass（分配在「文档浏览」页，避免与空间 CRUD 混在同一 Tab）
+('kb:admin',        'kb', 'admin',       '知识库管理员（全局）', 901, 9, 1)
+ON DUPLICATE KEY UPDATE
+  resource = VALUES(resource), action = VALUES(action), name = VALUES(name),
+  menu_id = VALUES(menu_id), order_num = VALUES(order_num), status = VALUES(status);
+
+INSERT INTO `sys_role_action` (`role_id`, `perm_code`) VALUES
+(2, 'kb:admin'), (2, 'kb:sync:trigger'), (2, 'kb:lint:scan'),
+(2, 'kb:space:add'), (2, 'kb:space:edit'), (2, 'kb:space:remove'), (2, 'kb:space:member'),
+(3, 'kb:lint:scan')
+ON DUPLICATE KEY UPDATE perm_code = VALUES(perm_code);
