@@ -44,7 +44,8 @@ public class KbSpaceMemberServiceImpl implements KbSpaceMemberService {
 
 
 
-    private static final List<String> ROLES = java.util.Arrays.asList("viewer", "editor", "admin");
+    // 成员角色仅 viewer(只读)/editor(可改内容)；管理能力由超管/管理员的系统动作权限承担，不在成员表授予
+    private static final List<String> ROLES = java.util.Arrays.asList("viewer", "editor");
 
 
 

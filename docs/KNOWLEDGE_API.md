@@ -48,8 +48,10 @@
 
 | 维度 | 说明 |
 |------|------|
-| 空间可见性 `visibility` | `2` 公开（人人可读）/ `1` 内部（登录即可读）/ `0` 私有（仅成员、负责人） |
-| 成员角色 `role` | `viewer` 只读 / `editor` 可编辑文档 / `admin` 可管理成员；空间 `owner_id` 等同 admin |
+| 空间可见性 `visibility` | 仅作元数据展示（`2` 公开 / `1` 内部 / `0` 私有），**不**自动授予读权限 |
+| 内容侧访问 | 只有被分配到该空间的成员、空间 `owner_id`、平台超管可见；未分配空间的用户看不到该空间及其数据，只能看自己被分配的空间 |
+| 成员角色 `role` | `viewer` 只读 / `editor` 可读可改内容（仅这两种）；空间 `owner_id` 默认可读可改 |
+| 管理能力（建/改/删空间、成员授权） | 不由成员角色授予，而由系统动作权限 `kb:space:add/edit/remove/member` + 平台超管控制 |
 | 平台超管 | `superadmin` / `admin` 账号（或 Shiro `*:*:*`）对所有空间可读可写可管理 |
 
 - **省略 `spaceId` / `spaceIds`** 的列表/检索/问答接口：后端自动收敛到「当前用户可读的空间集合」，无可读空间时返回空结果。
@@ -623,7 +625,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql         # 可选：日�
 | PUT | `/kb/space` | 更新（动作 `kb:space:edit`） |
 | DELETE | `/kb/space/{id}` | 删除（动作 `kb:space:remove`） |
 
-> **权限分层**：菜单 `kb:space:admin` 决定能否进入管理页并看到空间数据；动作 `kb:space:add/edit/remove/member` 控制具体按钮与对应写接口；空间成员角色（viewer/editor/admin）只作用于**内容侧**（浏览/问答/文档编辑），不参与管理页操作鉴权。平台超管（`superadmin`/`admin`/`*:*:*`）全通过。
+> **权限分层**：菜单 `kb:space:admin` 决定能否进入管理页并看到空间数据；动作 `kb:space:add/edit/remove/member` 控制具体按钮与对应写接口；空间成员角色（仅 viewer/editor）只作用于**内容侧**（浏览/问答/文档编辑），不参与管理页操作鉴权。平台超管（`superadmin`/`admin`/`*:*:*`）全通过。
 
 `KbAccessibleSpaceVo` 示例：
 
@@ -664,7 +666,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql         # 可选：日�
 | `spaceId` | 是 | 空间ID |
 | `memberType` | 否 | `0` 用户（默认，运行时生效）/ `1` 角色（暂仅存储） |
 | `memberId` | 是 | 用户ID或角色ID |
-| `role` | 否 | `viewer`(默认) / `editor` / `admin` |
+| `role` | 否 | `viewer`(默认) / `editor`（仅这两种；管理能力走系统权限，不在此授予） |
 
 批量添加请求体：
 
