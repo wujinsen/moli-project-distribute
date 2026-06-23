@@ -174,7 +174,7 @@ moli-knowledge-server/
 ### 同步管理 `/kb/sync`（T10）
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/sync/logs?spaceId=&batchNo=&pageNum=&pageSize=` | 同步日志分页（需空间 admin 或 `kb:admin`） |
+| GET | `/sync/logs?spaceId=&batchNo=&pageNum=&pageSize=` | 同步日志分页（需空间 admin 或平台超管） |
 | GET | `/sync/status?spaceId=` | 最近一批同步统计（insert/update/delete/skip 计数） |
 | POST | `/sync/trigger?spaceId=&spaceCode=` | 触发 `kb/tools/sync_to_db.py` 写库 |
 | — | 定时任务 | `kb.sync.schedule-enabled=true` 时按 cron 自动 sync |
@@ -211,7 +211,7 @@ POST /kb/document
 
 - 可见性 `visibility`：`2` 公开 / `1` 内部（登录可读）/ `0` 私有（仅成员、负责人）。
 - 成员角色 `role`：`viewer` 只读 / `editor` 可改 / `admin` 可管成员；`owner_id` 等同 admin。
-- 全局管理员：Shiro 权限 `kb:admin`（或 `*`）一票通过。
+- 平台超管（`superadmin`/`admin` 或 `*:*:*`）一票通过全部空间 ACL。
 - 列表/检索/问答省略 `spaceId` 时自动收敛到「可读空间集合」；指定空间不可读则报错；写操作校验编辑/管理权限。
 - 成员管理：`/kb/space/member`（list / 单条 add·remove / **batch 批量 add·remove** / update，需空间管理权限）。
 - 限制：Dubbo 契约暂只透出权限串，**角色型成员(member_type=1)** 运行时不解析，待 `UserCenterServer` 暴露角色后在 `KbAclServiceImpl#memberRole` 补全。

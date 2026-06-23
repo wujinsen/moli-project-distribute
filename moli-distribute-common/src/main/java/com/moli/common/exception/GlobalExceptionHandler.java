@@ -67,7 +67,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public MoliResult<Object> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         log.error("GlobalExceptionHandler handleDataIntegrityViolationException error: {}", e.getMessage(), e);
-        return MoliResult.error("字段太长,超出数据库字段的长度");
+        String root = rootCauseMessage(e);
+        if (root != null && root.contains("Duplicate entry")) {
+            return MoliResult.error("数据已存在，请勿重复添加（若曾移除成员，请刷新后重试）");
+        }
+        if (root != null && (root.contains("Data too long") || root.contains("too long"))) {
+            return MoliResult.error("字段太长,超出数据库字段的长度");
+        }
+        if (root != null && root.contains("Out of range")) {
+            return MoliResult.error("ID 数值超出字段范围，请确认 kb_space_member.member_id 为 bigint（雪花 ID）");
+        }
+        return MoliResult.error("数据库约束冲突：" + (root != null ? root : e.getMessage()));
+    }
+
+    private static String rootCauseMessage(Throwable e) {
+        Throwable cur = e;
+        while (cur.getCause() != null && cur.getCause() != cur) {
+            cur = cur.getCause();
+        }
+        return cur.getMessage();
     }
 
     /**

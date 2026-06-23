@@ -107,7 +107,7 @@
 > 产出：
 > - **全文检索**：`KbDocumentMapper.searchFullText` + ngram `MATCH AGAINST`；`kb.search.mode=fulltext|like`（失败自动降级 LIKE）。
 > - **ACL 补全**：`assertCanReadDocument/assertCanEditDocument`；接入 分类/标签/评论/收藏/附件/图谱体检。
-> - **同步管理**：`GET /kb/sync/logs`、`GET /kb/sync/status`、`POST /kb/sync/trigger`（调 `sync_to_db.py`，需空间 admin 或 `kb:admin`）。
+> - **同步管理**：`GET /kb/sync/logs`、`GET /kb/sync/status`、`POST /kb/sync/trigger`（调 `sync_to_db.py`，需空间 admin 或平台超管）。
 
 - **验收**：文档搜索走全文索引；私有空间附件/评论/分类等越权拦截；管理员可 API 触发同步并查日志。✅
 
@@ -205,7 +205,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 - **权限模型**：
   - 空间可见性 `visibility`：2 公开（人人可读）/ 1 内部（登录即可读）/ 0 私有（仅成员、负责人）。
   - 成员角色 `role`：`viewer`(只读) / `editor`(可改) / `admin`(可管理成员)；`owner_id` 等同 admin。
-  - 全局管理员：Shiro 权限串 `kb:admin`（或通配 `*`）一票通过。
+  - 平台超管：`superadmin`/`admin` 或 Shiro `*:*:*` 一票通过。
 - **统一接口** `KbAclService`：`canRead/canEdit/canAdmin` + `assertCanRead/assertCanEdit/assertCanAdmin` + `accessibleSpaceIds()`。
 - **接入点**（service 层统一过滤，非散落在 controller）：
   - `KbSpaceServiceImpl`：列表只回可读空间；`getById` 断言可读；`update/delete` 断言可管理。

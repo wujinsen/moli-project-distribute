@@ -68,5 +68,12 @@ public final class PermissionConstants {
     public static final String OPERATION_COMPONENT_EDIT = "operation:component:edit";
     public static final String OPERATION_COMPONENT_REMOVE = "operation:component:remove";
 
+    /** 企业知识库 · 空间管理（C 菜单 perms） */
+    public static final String KB_SPACE_ADMIN = "kb:space:admin";
+    public static final String KB_SPACE_ADD = "kb:space:add";
+    public static final String KB_SPACE_EDIT = "kb:space:edit";
+    public static final String KB_SPACE_REMOVE = "kb:space:remove";
+    public static final String KB_SPACE_MEMBER = "kb:space:member";
+
     public static final String ROLE_ASSIGN_REFRESH_MSG = "角色授权已更新，请通知相关用户刷新页面后查看新菜单";
 }

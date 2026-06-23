@@ -13,6 +13,7 @@ import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMemberMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.util.ShiroUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +29,6 @@ import java.util.stream.Collectors;
 @Service
 public class KbAclServiceImpl implements KbAclService {
 
-    /** 全局管理员权限串。 */
-    private static final String ADMIN_PERM = "kb:admin";
-
     @Resource
     private KbSpaceMapper kbSpaceMapper;
     @Resource
@@ -42,12 +40,28 @@ public class KbAclServiceImpl implements KbAclService {
     public boolean isAdmin() {
         try {
             SysUser user = ShiroUtils.getUserInfo();
-            if (user != null && CommonConstant.hasFullPermission(user.getUserName())) {
+            if (user != null && StringUtils.isNotBlank(user.getUserName())
+                    && CommonConstant.hasFullPermission(user.getUserName())) {
                 return true;
             }
-            return SecurityUtils.getSubject().isPermitted(ADMIN_PERM)
-                    || SecurityUtils.getSubject().isPermitted(PermissionConstants.SUPER_ADMIN);
+            return SecurityUtils.getSubject().isPermitted(PermissionConstants.SUPER_ADMIN);
         } catch (Exception e) {                            // 未登录/无 Subject
+            return false;
+        }
+    }
+
+    @Override
+    public boolean hasSpaceManageScope() {
+        if (isAdmin()) {
+            return true;
+        }
+        try {
+            return isPermitted(PermissionConstants.KB_SPACE_ADMIN)
+                    || isPermitted(PermissionConstants.KB_SPACE_ADD)
+                    || isPermitted(PermissionConstants.KB_SPACE_EDIT)
+                    || isPermitted(PermissionConstants.KB_SPACE_REMOVE)
+                    || isPermitted(PermissionConstants.KB_SPACE_MEMBER);
+        } catch (Exception e) {
             return false;
         }
     }
@@ -110,6 +124,18 @@ public class KbAclServiceImpl implements KbAclService {
     }
 
     @Override
+    public boolean manageListCanEdit(Long spaceId) {
+        return canEdit(spaceId) || isPermitted(PermissionConstants.KB_SPACE_EDIT);
+    }
+
+    @Override
+    public boolean manageListCanAdmin(Long spaceId) {
+        return canAdmin(spaceId)
+                || isPermitted(PermissionConstants.KB_SPACE_MEMBER)
+                || isPermitted(PermissionConstants.KB_SPACE_ADMIN);
+    }
+
+    @Override
     public void assertCanRead(Long spaceId) {
         if (!canRead(spaceId)) {
             throw new BaseException("无权访问该知识空间");
@@ -125,9 +151,38 @@ public class KbAclServiceImpl implements KbAclService {
 
     @Override
     public void assertCanAdmin(Long spaceId) {
-        if (!canAdmin(spaceId)) {
-            throw new BaseException("无权管理该知识空间");
+        if (canAdmin(spaceId)) {
+            return;
         }
+        if (isPermitted(PermissionConstants.KB_SPACE_MEMBER)
+                || isPermitted(PermissionConstants.KB_SPACE_ADMIN)) {
+            return;
+        }
+        throw new BaseException("无权管理该知识空间");
+    }
+
+    @Override
+    public void assertCanReadOrManageScope(Long spaceId) {
+        if (canRead(spaceId) || hasSpaceManageScope()) {
+            return;
+        }
+        throw new BaseException("无权访问该知识空间");
+    }
+
+    @Override
+    public void assertCanEditSpaceMeta(Long spaceId) {
+        if (canAdmin(spaceId) || isPermitted(PermissionConstants.KB_SPACE_EDIT)) {
+            return;
+        }
+        throw new BaseException("无权编辑该知识空间");
+    }
+
+    @Override
+    public void assertCanRemoveSpace(Long spaceId) {
+        if (canAdmin(spaceId) || isPermitted(PermissionConstants.KB_SPACE_REMOVE)) {
+            return;
+        }
+        throw new BaseException("无权删除该知识空间");
     }
 
     @Override
@@ -167,6 +222,30 @@ public class KbAclServiceImpl implements KbAclService {
         Long userId = ShiroUtils.getUserId();
         for (KbSpace s : spaces) {
             if (admin || readable(s, userId)) {
+                ids.add(s.getId());
+            }
+        }
+        return ids;
+    }
+
+    @Override
+    public List<Long> manageableSpaceIds() {
+        List<KbSpace> spaces = kbSpaceMapper.selectList(new LambdaQueryWrapper<KbSpace>()
+                .eq(KbSpace::getIsDelete, CommonConstant.UN_DELETE));
+        if (isAdmin() || hasSpaceManageScope()) {
+            List<Long> ids = new ArrayList<>();
+            for (KbSpace s : spaces) {
+                ids.add(s.getId());
+            }
+            return ids;
+        }
+        Long userId = ShiroUtils.getUserId();
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        List<Long> ids = new ArrayList<>();
+        for (KbSpace s : spaces) {
+            if (canAdmin(s.getId())) {
                 ids.add(s.getId());
             }
         }
@@ -214,5 +293,9 @@ public class KbAclServiceImpl implements KbAclService {
                 .eq(KbSpaceMember::getIsDelete, CommonConstant.UN_DELETE)
                 .last("limit 1"));
         return m == null ? null : m.getRole();
+    }
+
+    private boolean isPermitted(String perm) {
+        return SecurityUtils.getSubject().isPermitted(perm);
     }
 }

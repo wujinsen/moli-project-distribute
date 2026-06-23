@@ -60,6 +60,24 @@ public class KbSpaceServiceImpl implements KbSpaceService {
                 .in(KbSpace::getId, accessible)
                 .orderByAsc(KbSpace::getSort)
                 .orderByDesc(KbSpace::getCreateTime));
+        return toAccessibleVos(spaces, false);
+    }
+
+    @Override
+    public List<KbAccessibleSpaceVo> listManageable() {
+        List<Long> manageable = kbAclService.manageableSpaceIds();
+        if (manageable.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<KbSpace> spaces = kbSpaceMapper.selectList(new LambdaQueryWrapper<KbSpace>()
+                .eq(KbSpace::getIsDelete, CommonConstant.UN_DELETE)
+                .in(KbSpace::getId, manageable)
+                .orderByAsc(KbSpace::getSort)
+                .orderByDesc(KbSpace::getCreateTime));
+        return toAccessibleVos(spaces, true);
+    }
+
+    private List<KbAccessibleSpaceVo> toAccessibleVos(List<KbSpace> spaces, boolean managePage) {
         List<KbAccessibleSpaceVo> result = new ArrayList<>();
         for (KbSpace s : spaces) {
             KbAccessibleSpaceVo vo = new KbAccessibleSpaceVo();
@@ -69,8 +87,13 @@ public class KbSpaceServiceImpl implements KbSpaceService {
             vo.setDescription(s.getDescription());
             vo.setIcon(s.getIcon());
             vo.setVisibility(s.getVisibility());
-            vo.setCanEdit(kbAclService.canEdit(s.getId()));
-            vo.setCanAdmin(kbAclService.canAdmin(s.getId()));
+            if (managePage) {
+                vo.setCanEdit(kbAclService.manageListCanEdit(s.getId()));
+                vo.setCanAdmin(kbAclService.manageListCanAdmin(s.getId()));
+            } else {
+                vo.setCanEdit(kbAclService.canEdit(s.getId()));
+                vo.setCanAdmin(kbAclService.canAdmin(s.getId()));
+            }
             result.add(vo);
         }
         return result;
@@ -82,7 +105,7 @@ public class KbSpaceServiceImpl implements KbSpaceService {
         if (space == null || !CommonConstant.UN_DELETE.equals(space.getIsDelete())) {
             throw new BaseException("知识空间不存在");
         }
-        kbAclService.assertCanRead(id);
+        kbAclService.assertCanReadOrManageScope(id);
         return space;
     }
 
@@ -117,14 +140,14 @@ public class KbSpaceServiceImpl implements KbSpaceService {
     @Override
     public void update(KbSpace space) {
         getById(space.getId());
-        kbAclService.assertCanAdmin(space.getId());
+        kbAclService.assertCanEditSpaceMeta(space.getId());
         kbSpaceMapper.updateById(space);
     }
 
     @Override
     public void delete(Long id) {
         KbSpace space = getById(id);
-        kbAclService.assertCanAdmin(id);
+        kbAclService.assertCanRemoveSpace(id);
         space.setIsDelete(CommonConstant.IS_DELETE);
         kbSpaceMapper.updateById(space);
     }

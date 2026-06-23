@@ -26,6 +26,12 @@ public class KbSpaceController {
         return MoliResult.success(kbSpaceService.listAccessible());
     }
 
+    @GetMapping("/manage")
+    @ApiOperation("空间管理页空间列表（有菜单/动作权限=全部；否则 owner/空间 admin）")
+    public MoliResult<List<KbAccessibleSpaceVo>> listManageable() {
+        return MoliResult.success(kbSpaceService.listManageable());
+    }
+
     @GetMapping("/page")
     @ApiOperation("分页查询空间")
     public MoliResult<Page<KbSpace>> page(KbSpace query,

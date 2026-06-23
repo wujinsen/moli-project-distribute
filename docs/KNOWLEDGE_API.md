@@ -50,7 +50,7 @@
 |------|------|
 | 空间可见性 `visibility` | `2` 公开（人人可读）/ `1` 内部（登录即可读）/ `0` 私有（仅成员、负责人） |
 | 成员角色 `role` | `viewer` 只读 / `editor` 可编辑文档 / `admin` 可管理成员；空间 `owner_id` 等同 admin |
-| 全局管理员 | 拥有 Shiro 权限 `kb:admin`（或通配 `*`）的用户对所有空间可读可写可管理 |
+| 平台超管 | `superadmin` / `admin` 账号（或 Shiro `*:*:*`）对所有空间可读可写可管理 |
 
 - **省略 `spaceId` / `spaceIds`** 的列表/检索/问答接口：后端自动收敛到「当前用户可读的空间集合」，无可读空间时返回空结果。
 - **指定 `spaceId`** 时：不可读会直接报错（`无权访问该知识空间`）。
@@ -79,7 +79,6 @@
 |--------------|----------------|
 | 909 空间管理 | `kb:space:add`、`kb:space:edit`、`kb:space:remove`、`kb:space:member` |
 | 904 健康体检 | `kb:lint:scan`、`kb:sync:trigger` |
-| 901 文档浏览 | `kb:admin`（全局 bypass，可选） |
 
 侧栏 C 菜单 perms：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:space:admin`。
 
@@ -415,7 +414,8 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/space/mine` | **推荐** 当前用户可读空间列表 `KbAccessibleSpaceVo[]`（含 `canEdit`/`canAdmin`，供前端空间选择器） |
+| GET | `/kb/space/mine` | **推荐** 当前用户可读空间列表 `KbAccessibleSpaceVo[]`（含 `canEdit`/`canAdmin`，供浏览/问答等空间选择器） |
+| GET | `/kb/space/manage` | 空间管理页列表（有 `kb:space:admin` 或任一 `kb:space:*` 动作权限=**全部空间**；否则 owner / 空间 admin 成员） |
 | GET | `/kb/space/page?pageNum=&pageSize=` | 分页（仅可读空间；query 可带 `KbSpace` 字段过滤） |
 | GET | `/kb/space/{id}` | 详情 |
 | POST / PUT | `/kb/space` | 创建 / 更新（更新需空间管理权限） |
@@ -437,7 +437,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 ### 5.8 空间成员 `/kb/space/member`（T9 · ACL）
 
-> 均需**空间管理权限**（owner / 空间 admin / 全局 `kb:admin`）。
+> 均需**空间管理权限**（owner / 空间 admin / 平台超管）。
 > 雪花 ID 在 JSON 中建议用**字符串**传递（与全局 Long 序列化策略一致）。
 
 | 方法 | 路径 | 说明 |
@@ -514,7 +514,7 @@ mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql   # 可选：日本語�
 
 ## 6. kb→DB 同步管理（T10）
 
-> 需**空间管理权限**（owner / 空间 admin）或全局 `kb:admin`。用于把 `kb/wiki/`（或独立目录）markdown 同步进 MySQL。
+> 需**空间管理权限**（owner / 空间 admin）或平台超管。用于把 `kb/wiki/`（或独立目录）markdown 同步进 MySQL。
 
 CLI 多空间同步：
 
