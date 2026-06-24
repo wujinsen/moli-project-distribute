@@ -7,7 +7,7 @@ tags: [知识库, ingest, raw, P0]
 sources:
   - moli-knowledge/kb/AGENTS.md
   - moli-knowledge/kb/raw/README.md
-related: [知识库三操作, 知识库使用指南, wiki同步指南, 查询与体检指南]
+related: [知识库三操作, 知识库使用指南, wiki同步指南, 查询与体检指南, AI自我进化与MD审校流程]
 created: 2026-06-22
 updated: 2026-06-22
 ---

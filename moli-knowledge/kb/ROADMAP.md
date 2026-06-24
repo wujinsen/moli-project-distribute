@@ -1,7 +1,7 @@
 # 企业级知识库 · 功能规划（LLM-Wiki 范式）
 
 > 更新：2026-06-22
-> 范式：Karpathy「LLM-Wiki」为主、AutoSci 为辅。知识 = 由 Agent 维护的、持久互链的 markdown wiki。
+> 范式：Karpathy「LLM-Wiki」为主。知识 = 由 Agent 维护的、持久互链的 markdown wiki。
 > 规则契约见 [AGENTS.md](AGENTS.md)。本文件是功能规划的**唯一入口**。
 >
 > 状态标记：✅ 已做 ｜ 🔜 近期规划 ｜ 💤 后期/按需
@@ -54,6 +54,9 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 | **M2 同步打通** | kb + server | ✅ 同步脚本 [`kb/tools/sync_to_db.py`](tools/sync_to_db.py)（dry-run 已通）；✅ `kb_document` 加 `slug` 唯一键 + 同步三件套；✅ Java 只读查询/详情 API |
 | **M3 Web 门面** | server | ✅ 前端展示（目录树/页面/关系图/搜索）+ 接 Shiro ACL（见 TASKS T5/T6/T11） |
 | **M4 检索后端** | server | ✅ **第一阶段：MySQL ngram 全文索引**（browse `search` + Query `ask` 均走 `MATCH AGAINST`，ask 改为全文召回 top-N + 内存精排，去掉全量扫描）；🔜 信号触发再上 Meilisearch/ES（见 §五③） |
+| **M5 Web Wiki 编辑** | kb + server + meiling-ui | 🔜 **界面编辑 wiki**：Markdown 编辑 + **AI 协助改稿** + **改前/后 diff** + 保存回 `kb/wiki/*.md` → Sync（见 [[Wiki在线编辑与AI协助改稿]]、TASKS T14） |
+
+> **M5 与铁律**：仍保持 **wiki 为唯一正文源**；Web 不写 `kb_document` 正文，而是通过 `PUT /kb/wiki/page` 写服务器 wiki 文件后再 Sync。Java 服务不提供「只改 MySQL 不回 wiki」的默认路径。
 
 ---
 
@@ -126,8 +129,9 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 | 功能 | 说明 | 状态 |
 |------|------|------|
 | 图谱浏览 | Obsidian 打开 `kb/` 看关系图；或基于 `edges.jsonl` 自渲染 | 🔜 |
-| 多人 Web | kb → `kb_document` 单向同步，Java `moli-knowledge-server` 对外服务（M2/M3） | 🔜 |
-| 权限隔离 | 复用现有 Shiro + Dubbo，在服务层/检索选页时做 ACL 过滤 | 🔜 |
+| 多人 Web | kb → `kb_document` 单向同步，Java `moli-knowledge-server` 对外服务（M2/M3） | ✅ 浏览/问答/图谱/体检 |
+| **Wiki 在线编辑** | 浏览/体检入口 → 编辑页 → AI 改稿 → diff → 保存 wiki → Sync | 🔜 M5 / T14 |
+| 权限隔离 | 复用现有 Shiro + Dubbo，在服务层/检索选页时做 ACL 过滤 | ✅ 空间 viewer/editor |
 | 评测 | 标准问答集 + 答对率/命中率/引用可追溯，回归看改动好坏 | 💤 |
 
 ---

@@ -40,6 +40,7 @@
 
 > 默认演示空间 `spaceId = 900000000000000001`（`space_code=enterprise-kb`，公开）。  
 > 日本語試験私有空间 `spaceId = 900000000000000002`（`space_code=jp-fe-ap-exam`），种子见 [`sql/04_kb_space_jp_exam.sql`](sql/04_kb_space_jp_exam.sql)。  
+> **系统操作手册**独立空间 `spaceId = 900000000000000003`（`space_code=moli-ops-manual`，内部可见），wiki 源 `kb/wiki-ops/`，种子见 [`sql/07_kb_space_ops_manual.sql`](sql/07_kb_space_ops_manual.sql)。  
 > 多数浏览/检索接口 `spaceId` 省略表示**当前用户可读的全部空间**（非字面「全库」）。
 
 ### 1.4 空间级权限（ACL）
@@ -126,6 +127,7 @@
 mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 mysql -u root -p moli < docs/sql/05_knowledge_action_patch.sql   # 动作权限（空间管理/体检按钮）
 mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql         # 可选：日本語試験私有空间
+mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统操作手册空间
 ```
 
 执行后**重新登录**，前端会重新拉取 `getRouters`。
@@ -727,6 +729,7 @@ CLI 多空间同步：
 ```bash
 python moli-knowledge/kb/tools/sync_to_db.py --dry-run
 python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam
+python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-ops --space moli-ops-manual
 ```
 
 | 方法 | 路径 | 说明 |
@@ -787,7 +790,35 @@ powershell -ExecutionPolicy Bypass -File moli-knowledge/kb/tools/install_git_hoo
 
 仅当 commit 变更 `moli-knowledge/kb/wiki/` 下文件时触发 `sync_to_db.py`。
 
-### 6.4 GitHub Actions CI（T12）
+### 6.4 AI 自我进化（wiki MD 审校 → Lint → Sync）
+
+Web **不提供**「AI 改 MD」能力；推荐在 **Cursor Agent** 中改 `kb/wiki/*.md`，用 **`lint.py` 门禁**通过后再 Sync。
+
+**完整手册**（含 Ingest/Lint/Sync 分工、Crystallize、Web 体检与 Sync 区别、`kb_lint_issue` 后续操作）：
+
+`moli-knowledge/kb/wiki/guides/AI自我进化与MD审校流程.md`
+
+**范式**：LLM-Wiki — 知识在 wiki **编译一次、持续保鲜**；自我进化 = Ingest + Query/crystallize + Lint + Sync 闭环（非无人值守乱改库）。
+
+**推荐顺序**（不要颠倒）：
+
+1. AI/人工修改 `kb/wiki/**/*.md`（Ingest / crystallize / 单篇审校；只改 wiki，不改 raw）
+2. `python moli-knowledge/kb/tools/lint.py --strict`（wiki 文件级门禁，先于 Sync）
+3. `git diff` 人工确认
+4. `sync_to_db.py --dry-run` → 正式 sync，或 Web **健康体检 → Wiki 同步 → 触发同步**
+5. （可选）Web **扫描并落库**（写 `kb_lint_issue`）+ **智能问答** 验证；问答缺口 → crystallize 回到步骤 1
+
+**易混淆**：
+
+| Web 按钮 | 实际作用 |
+|----------|----------|
+| **扫描并落库**（质量体检 Tab） | DB 体检问题 → `kb_lint_issue`；**不是** Sync |
+| **触发同步**（Wiki 同步 Tab） | `kb/wiki/` → `kb_document` |
+| 同步一直提示成功 | 正常；hash 未变时全 `skip`，看 insert/update 数量 |
+
+契约层说明见 `moli-knowledge/kb/AGENTS.md` §8。
+
+### 6.5 GitHub Actions CI（T12）
 
 工作流：[`.github/workflows/kb-sync.yml`](../.github/workflows/kb-sync.yml)
 
@@ -815,8 +846,71 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 智能问答 | `knowledge/ask/index` | `/kb/ask` + history/feedback | 空间选择器 + **跨空间多选**（`spaceIds[]`）；引用含 `spaceId` |
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
+| **Wiki 编辑** | `knowledge/edit/index` 🔜 | `/kb/wiki/page` + `/kb/wiki/ai-revise` | 浏览/体检「编辑/修复」入口；diff + AI 改稿 + 保存 wiki（T14） |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
 前端实现：`meiling-ui/src/composables/useKbSpace.ts`（共享空间上下文）、`src/components/knowledge/KbSpaceSelector.vue`。
 
 > 参考实现：本地零依赖 viewer `kb/tools/serve.py`（`python kb/tools/serve.py` → `http://127.0.0.1:8765`）。
+
+---
+
+## 8. Wiki 在线编辑 + AI 协助改稿（T14 · 规划中）
+
+> 产品方案：[`kb/wiki/guides/Wiki在线编辑与AI协助改稿.md`](../moli-knowledge/kb/wiki/guides/Wiki在线编辑与AI协助改稿.md)。  
+> **保存铁律**：写回服务器 `kb/wiki/*.md`，再 Sync；不默认只写 `kb_document`。
+
+### 8.1 读/写 wiki 文件
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/kb/wiki/page?slug=&spaceId=` | 返回 wiki 全文（frontmatter + body）；需空间 **editor** |
+| PUT | `/kb/wiki/page` | 写 wiki 文件；body 见下 |
+
+**PUT 请求体（草案）**
+
+```json
+{
+  "slug": "guides/本地启动指南",
+  "spaceId": "900000000000000001",
+  "content": "---\ntitle: ...\n---\n\n# ...",
+  "changeLog": "修复断链",
+  "contentHash": "可选；乐观锁，冲突 409"
+}
+```
+
+**响应**：`{ "slug", "savedAt", "contentHash" }`
+
+配置：`kb.wiki.root` 指向部署机 wiki 目录（与 `sync_to_db.py` 同源）。
+
+### 8.2 AI 协助改稿
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/kb/wiki/ai-revise` | 调 `kb.llm.*`；**不写盘**，仅返回建议全文 |
+
+**请求体（草案）**
+
+```json
+{
+  "slug": "guides/本地启动指南",
+  "spaceId": "900000000000000001",
+  "instruction": "修复 detail 中的断链",
+  "baselineContent": "可选；不传则服务端读 wiki",
+  "issueContext": {
+    "issueType": "broken_link",
+    "detail": "..."
+  }
+}
+```
+
+**响应**：`{ "suggestedContent", "provider", "model", "notes?" }`
+
+### 8.3 权限
+
+| 操作 | ACL |
+|------|-----|
+| GET/PUT wiki | 空间 **editor**（或 owner / 平台超管） |
+| ai-revise | 同上 + `kb.llm.usable()` |
+
+菜单动作（种子 SQL 待补）：`kb:wiki:edit`。

@@ -169,3 +169,45 @@ updated: 2026-06-22
 | 需要图谱可视化 | 基于 `edges.jsonl` 渲染关系图 |
 
 **原则**：先把「markdown wiki + 三操作」跑扎实，再按需加。不要过早上向量库/GraphRAG。
+
+---
+
+## 8. 自我进化闭环（Sync + AI 审校）
+
+三操作解决「写什么、怎么问、健不健康」；**对外可用**还需 **Sync**（wiki → MySQL）。完整操作手册：
+
+`wiki/guides/AI自我进化与MD审校流程.md`（[[AI自我进化与MD审校流程]]）
+
+### 8.1 推荐顺序（勿颠倒）
+
+```
+改 wiki/*.md（Ingest / crystallize / AI 审校）
+  → python kb/tools/lint.py --strict     # wiki 门禁，先于 Sync
+  → 人工确认 git diff
+  → python kb/tools/sync_to_db.py        # 或 Web「Wiki 同步」
+  → （可选）Web「扫描并落库」+ Query 验证
+```
+
+### 8.2 Agent 职责摘要
+
+| 阶段 | Agent 做什么 |
+|------|----------------|
+| Ingest | raw → 多页 wiki + index/log/edges |
+| Crystallize | Query 综合 → `wiki/outputs/` + `derived_from` |
+| AI 审校 | 单篇 MD：frontmatter、[[链接]]、sources、事实 |
+| Lint 失败 | 修断链/孤儿/sources 直到 `lint.py --strict` 通过 |
+| Sync 后 | 建议用户 Web 验证或再 Query |
+
+**禁止**：跳过 lint 直接 sync；修改 `raw/`；无据编造 wiki 内容。
+
+### 8.3 Web 与 CLI 分工
+
+| 能力 | CLI / Agent | Web（meiling-ui） |
+|------|-------------|-------------------|
+| Ingest / crystallize / AI 改 MD | ✅ | ❌ |
+| wiki Lint | `lint.py` | ❌（无等价） |
+| Sync | `sync_to_db.py` | 健康体检 → Wiki 同步 |
+| DB Lint + 问题工单 | — | 扫描并落库 → `kb_lint_issue` |
+| Query | serve.py | 智能问答 |
+
+Web「扫描并落库」写的是体检**问题表**，不是 Sync，也不能代替 `lint.py`。

@@ -22,6 +22,8 @@
 
 **一句话分工**：知识在 `kb/`（markdown）里产生与保鲜；`moli-knowledge-server` 把它对外服务化；`viewer` 用来快速看效果。详见 [`kb/ROADMAP.md`](kb/ROADMAP.md)。
 
+**架构图（draw.io，可编辑）**：[`docs/diagrams/`](../docs/diagrams/README.md) — 系统架构 · ER · RAW→落地全链路 · 功能流程。
+
 ---
 
 ## 三个组成部分
@@ -56,9 +58,8 @@ python kb/tools/serve.py --port 9000
 详见 [`moli-knowledge-server/README.md`](moli-knowledge-server/README.md)。最小步骤：
 
 ```powershell
-# 1. 建表（仓库根目录）
+# 1. 建表（仓库根目录；init-db.ps1 含 utf8mb4 + source，见 docs/sql/README.md）
 .\scripts\init-db.ps1 -SkipSeckill
-Get-Content docs\sql\03_knowledge_schema.sql -Raw | mysql -u root -p12345678 moli
 # 2. 启动（:8090，依赖 Nacos/MySQL/Redis + user-center）
 cd moli-knowledge\moli-knowledge-server
 mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
@@ -123,5 +124,6 @@ moli-knowledge/
 - Java 服务：[`moli-knowledge-server/README.md`](moli-knowledge-server/README.md)
 - 知识库范式与用法：[`kb/README.md`](kb/README.md)
 - 知识库契约（schema / 三操作）：[`kb/AGENTS.md`](kb/AGENTS.md)
+- **自我进化操作手册**（Ingest/Lint/Sync/Crystallize、AI 审校 MD）：[`kb/wiki/guides/AI自我进化与MD审校流程.md`](kb/wiki/guides/AI自我进化与MD审校流程.md)
 - 功能规划与双轨分工：[`kb/ROADMAP.md`](kb/ROADMAP.md)
 - 现有知识页目录：[`kb/wiki/index.md`](kb/wiki/index.md)

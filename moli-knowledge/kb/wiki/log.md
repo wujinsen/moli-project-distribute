@@ -1316,12 +1316,11 @@
 ## [2026-06-21] sync | wiki→MySQL 批次#287-1286
 ## [2026-06-21] sync | wiki→MySQL 批次#1237-1286
 
-## L2 merge 2026-06-22
-## [2026-06-22] ingest | 批次#1291 L2 AI/polymarket.note.md (1 raw) -> articles/l2-AI-polymarket.note «Polymarket工具与教程汇总»
-## [2026-06-22] ingest | 批次#1290 L2 AI/opensource (1 raw) -> articles/l2-AI-opensource «EverythingClaudeCode：Anthropic Claude Code 配置集合»
-## [2026-06-22] ingest | 批次#1288 L2 AI/AutoGPT (1 raw) -> articles/l2-AI-AutoGPT «Auto-GPT：自动化AI的革新»
-## [2026-06-22] ingest | 批次#1289 L2 AI/OPENAI (7 raw) -> articles/l2-AI-OPENAI «解决 ChatGPT API 地域限制方法汇总»
-## [2026-06-22] ingest | 批次#1287 L2 AI/2026 (5 raw) -> articles/l2-AI-2026 «AI/2026 工具精选指南»
+## [2026-06-22] maintenance | 移除 L1/L2 批量 ingest（脚本、试跑 wiki 页）；标准路径仅 Agent 厚 Ingest → wiki → sync
 ## [2026-06-23] lint | 1398页 err=66 warn=988 info=0 | broken_link=66 missing_dates=1 orphan=987
 ## [2026-06-23] ingest | M4 检索演进：knowledge-server Query/ask 改 MySQL ngram 全文召回 top-N + 内存精排 → services/知识库服务, index, ROADMAP(§五/M4)
 ## [2026-06-23] ingest | Shiro 启动期循环依赖根因与解法（SecurityManager extends SessionManager 自动装配歧义 + AOP Advisor）→ articles/shiro-starter与跨服务校验(+启动期循环依赖章), outputs/茉莉登录与鉴权故障根因汇总(+1行), index
+## [2026-06-24] ingest | guides/AI自我进化与MD审校流程 — AI 审校 wiki MD → lint.py 门禁 → Sync 闭环说明；index/三操作/增量ingest 互链
+## [2026-06-24] ingest | guides/AI自我进化与MD审校流程 扩写：三层架构/Ingest-Lint-Sync/Crystallize/Web体检分工/kb_lint_issue/Sync幂等/自动化对照；AGENTS.md §8
+## [2026-06-24] ingest | guides/Wiki在线编辑与AI协助改稿 — Web AI 改稿+diff+保存 wiki 产品方案；ROADMAP M5、TASKS T14、index
+## [2026-06-24] ingest | guides/AI自我进化与MD审校流程 ↔ Wiki在线编辑 分工互链：场景 B = Web T14 同一审校标准

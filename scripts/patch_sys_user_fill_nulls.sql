@@ -1,6 +1,6 @@
 -- Patch NULL fields in sys_user (demo/dev)
 -- Only fills NULL/empty values; does not overwrite existing data
--- Usage: mysql -u root -p moli < scripts/patch_sys_user_fill_nulls.sql
+-- 用法：mysql --default-character-set=utf8mb4 -u root -p moli < scripts/patch_sys_user_fill_nulls.sql
 
 SET NAMES utf8mb4;
 

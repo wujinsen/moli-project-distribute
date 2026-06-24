@@ -23,10 +23,8 @@
 ### 2. 初始化数据库
 
 ```powershell
-# 在仓库根目录：先导入全库（可跳过秒杀）
+# 在仓库根目录：init-db.ps1 已导入知识库表/菜单（utf8mb4 + source）
 .\scripts\init-db.ps1 -SkipSeckill
-# 再追加知识库表
-Get-Content docs\sql\03_knowledge_schema.sql -Raw | mysql -u root -p12345678 moli
 ```
 
 ### 3. 启动

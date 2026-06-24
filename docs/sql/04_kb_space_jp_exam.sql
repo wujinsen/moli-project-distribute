@@ -1,8 +1,10 @@
 -- =============================================================
 -- 日本語試験（基本情報 FE / 応用情報 AP）知识空间 — 增量种子
 -- 在 docs/sql/03_knowledge_schema.sql 之后执行；可重复执行。
+-- 导入：mysql --default-character-set=utf8mb4 moli < 本文件
 -- =============================================================
 
+SET NAMES utf8mb4;
 -- 私有空间：仅 owner / kb_space_member 可读；与 enterprise-kb 同库隔离（space_id）
 INSERT INTO `kb_space`
   (`id`, `create_id`, `create_time`, `update_id`, `update_time`,

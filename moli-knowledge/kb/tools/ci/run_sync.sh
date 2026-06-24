@@ -59,23 +59,15 @@ case "${MODE}" in
       --db "${KB_SYNC_DB}" \
       --space "${KB_SYNC_SPACE}"
     ;;
-  archive-raw)
-    python "${TOOLS}/ingest_raw_archive.py" \
+  purge-raw-archive)
+    python "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
       --password "${KB_SYNC_PASSWORD}" \
       --db "${KB_SYNC_DB}" \
-      --space "${KB_SYNC_SPACE}"
-    ;;
-  archive-raw-dry)
-    python "${TOOLS}/ingest_raw_archive.py" --dry-run
-    ;;
-  l2-build)
-    python "${TOOLS}/ingest_parallel.py" --build-clusters
-    ;;
-  l2-run)
-    python "${TOOLS}/ingest_parallel.py" --workers "${KB_L2_WORKERS:-10}" "$@"
+      --space "${KB_SYNC_SPACE}" \
+      --purge-raw-archive
     ;;
   verify)
     COUNT="$(mysql_cli -N -e "SELECT COUNT(*) FROM \`${KB_SYNC_DB}\`.kb_document WHERE is_delete=0 AND source='kb';")"
@@ -86,7 +78,7 @@ case "${MODE}" in
     fi
     ;;
   *)
-    echo "Unknown mode: ${MODE} (dry-run | lint | lint-strict | init-schema | sync | archive-raw | archive-raw-dry | l2-build | l2-run | verify)" >&2
+    echo "Unknown mode: ${MODE} (dry-run | lint | lint-strict | init-schema | sync | purge-raw-archive | verify)" >&2
     exit 1
     ;;
 esac

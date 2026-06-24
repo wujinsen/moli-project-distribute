@@ -1645,3 +1645,6 @@
 {"from": "outputs/茉莉知识体系1000批总索引", "to": "guides/查询与体检指南", "type": "relates_to", "evidence": "批次#1286", "date": "2026-06-21"}
 {"from": "articles/shiro-starter与跨服务校验", "to": "spring-aop与代理", "type": "relates_to", "evidence": "Springfox+Shiro AOP Advisor 触发 securityManager 循环依赖", "date": "2026-06-23"}
 {"from": "outputs/茉莉登录与鉴权故障根因汇总", "to": "articles/shiro-starter与跨服务校验", "type": "relates_to", "evidence": "启动期 securityManager 循环依赖根因与解法", "date": "2026-06-23"}
+{"from": "guides/AI自我进化与MD审校流程", "to": "concepts/知识库三操作", "type": "part_of", "evidence": "AI 自我进化隶属三操作闭环", "date": "2026-06-24"}
+{"from": "guides/AI自我进化与MD审校流程", "to": "guides/wiki同步指南", "type": "relates_to", "evidence": "lint 通过后 sync", "date": "2026-06-24"}
+{"from": "guides/AI自我进化与MD审校流程", "to": "guides/查询与体检指南", "type": "relates_to", "evidence": "lint.py 与 Web 体检分工", "date": "2026-06-24"}

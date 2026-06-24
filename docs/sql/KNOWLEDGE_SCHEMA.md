@@ -20,7 +20,9 @@
 | 面试题系列 / 作用域过滤（type/domain） | 🔜 | `kb_document`(+kb_type/domain) |
 | 全文检索（先 MySQL FULLTEXT，量大再外置） | 🔜 | `kb_document` ngram 全文索引 |
 
-通用约定：`bigint` 雪花主键；`create_id/create_time/update_id/update_time` 审计字段（MyBatis-Plus 自动填充）；`is_delete` 逻辑删除；`utf8mb4`。
+通用约定：`bigint` 雪花主键；`create_id/create_time/update_id/update_time` 审计字段（MyBatis-Plus 自动填充）；`is_delete` 逻辑删除；**`utf8mb4`**。
+
+**导入含中文的种子 SQL**（如 `kb_space.space_name`、菜单名）时，mysql 客户端必须 `--default-character-set=utf8mb4`，脚本头建议 `SET NAMES utf8mb4;`。**禁止** PowerShell `Get-Content | mysql` 管道（会写成 `?`）。详见 [`README.md`](README.md)「字符集与导入约束」、[`../../scripts/README.md`](../../scripts/README.md)。
 
 ---
 
@@ -101,10 +103,10 @@
 ## 4. 执行方式
 
 ```powershell
-# 仓库根目录：先建基础库
+# 仓库根目录：init-db.ps1 已含知识库表/菜单/操作手册空间（utf8mb4 + source）
 .\scripts\init-db.ps1 -SkipSeckill
-# 追加知识库表（含演示数据 + SSO 注册）
-Get-Content docs\sql\03_knowledge_schema.sql -Raw | mysql -u root -p12345678 moli
+# 若仅补知识库表（勿用 Get-Content | mysql 管道导入含中文种子）：
+# mysql --default-character-set=utf8mb4 moli -e "source D:/path/docs/sql/03_knowledge_schema.sql"
 ```
 
 > `ngram` 全文索引需 MySQL 5.7.6+（项目用 8.0.3，满足）。
@@ -118,6 +120,8 @@ Get-Content docs\sql\03_knowledge_schema.sql -Raw | mysql -u root -p12345678 mol
 > 用户/角色 ID 指向用户中心 `sys_user` / `sys_role`（库外引用）。
 
 ![企业知识库表关系 ER 图](./KNOWLEDGE_SCHEMA_ER.png)
+
+**可编辑 draw.io 版（推荐维护）**：[`../diagrams/moli-kb-er.drawio`](../diagrams/moli-kb-er.drawio) · 全链路 [`moli-kb-raw-pipeline.drawio`](../diagrams/moli-kb-raw-pipeline.drawio) · 见 [`../diagrams/README.md`](../diagrams/README.md)
 
 **按模块速览**
 

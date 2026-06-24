@@ -1,0 +1,85 @@
+<mxfile host="app.diagrams.net" modified="2026-06-20T00:00:00.000Z" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-auth" name="Auth Flow">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;鉴权与会话流程&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;Token = Shiro SessionId · 全链路 Header Authorization · 禁用 Cookie&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="500" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lane1" value="A. 登录（仅 user-center）" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="1320" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" value="1. POST&lt;br&gt;/UserCenter/login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="lane1">
+          <mxGeometry x="40" y="50" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="2. 网关&lt;br&gt;StripPrefix" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane1">
+          <mxGeometry x="190" y="50" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="3. ShiroRealm&lt;br&gt;校验密码" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane1">
+          <mxGeometry x="330" y="50" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="4. 写 Redis&lt;br&gt;shiro:session:*" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="lane1">
+          <mxGeometry x="490" y="45" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" value="5. 返回 token&lt;br&gt;(sessionId)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="lane1">
+          <mxGeometry x="640" y="50" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="lane2" value="B. 业务请求（order / bi / knowledge）" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="1320" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="b1" value="1. API 请求&lt;br&gt;Authorization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="lane2">
+          <mxGeometry x="40" y="55" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" value="2. 网关路由&lt;br&gt;/OrderServer/** 等" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane2">
+          <mxGeometry x="190" y="55" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" value="3. Shiro Filter&lt;br&gt;读 Redis Session" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="lane2">
+          <mxGeometry x="350" y="55" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" value="4. @RequiresPermissions&lt;br&gt;或 ACL 校验" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="lane2">
+          <mxGeometry x="520" y="55" width="140" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="b5" value="5. Dubbo（按需）&lt;br&gt;UserCenterServer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;" vertex="1" parent="lane2">
+          <mxGeometry x="700" y="55" width="140" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="b6" value="6. MoliResult JSON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="lane2">
+          <mxGeometry x="880" y="55" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="lane3" value="C. 失败分支" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;startSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="410" width="1320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" value="无 token / Session 过期" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="lane3">
+          <mxGeometry x="40" y="45" width="160" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="→ 401 / code 需重新登录" style="text;html=1;strokeColor=none;fillColor=none;align=left;" vertex="1" parent="lane3">
+          <mxGeometry x="220" y="50" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" value="账号停用/删除" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="lane3">
+          <mxGeometry x="450" y="45" width="130" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="→ AuthenticationFilter 踢出" style="text;html=1;strokeColor=none;fillColor=none;align=left;" vertex="1" parent="lane3">
+          <mxGeometry x="600" y="50" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="无权限" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="lane3">
+          <mxGeometry x="860" y="45" width="90" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="→ HTTP 200 + code=10009" style="text;html=1;strokeColor=none;fillColor=none;align=left;" vertex="1" parent="lane3">
+          <mxGeometry x="970" y="50" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;约定&lt;/b&gt;&lt;br&gt;• 各服务必须连&lt;b&gt;同一 Redis&lt;/b&gt;（host/port/db/password）&lt;br&gt;• order/bi/knowledge &lt;b&gt;不提供 /login&lt;/b&gt;，只消费共享 Session&lt;br&gt;• 超级管理员 superadmin/admin 拥有 *:*:*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffcc;strokeColor=#999999;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="420" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ea1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="a1" target="a2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="a2" target="a3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="a3" target="a4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="a4" target="a5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="b1" target="b2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="b2" target="b3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="b3" target="b4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;dashed=1;" edge="1" parent="1" source="b4" target="b5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="b5" target="b6"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

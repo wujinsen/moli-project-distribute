@@ -14,7 +14,10 @@
 
 文件名建议 UTF-8；`.note.md` 为常见导出格式。
 
-## 新增资料后怎么做（增量 Ingest）
+## 标准 Ingest 流程（Agent 厚 Ingest）
+
+唯一路径：`raw/` → Agent 读源、写/补 `wiki/**` → `lint.py` → `sync_to_db.py` → MySQL。  
+**不**把 raw 原样索引进 DB，也**不**用批量脚本绕过 wiki（见 `AGENTS.md`）。
 
 1. **把文件放进 `raw/`**（保持目录结构即可，无需改 wiki）。
 2. **对 Agent 说一句**（示例）：

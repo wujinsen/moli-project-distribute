@@ -2,7 +2,8 @@
 
 
 
-> 全库内容目录。每次 Ingest / Query 回写后更新。Query 时先读本文件定位相关页。
+> 全库内容目录。每次 Ingest / Query 回写后更新。Query 时先读本文件定位相关页。  
+> **系统操作手册**已独立为知识空间 `moli-ops-manual`（wiki 源 `kb/wiki-ops/`），本目录仍保留副本便于跨库检索；运维向入口见该空间或 [[guides/知识库使用指南]]。
 
 
 
@@ -29,6 +30,8 @@
 - [[nginx反向代理与前端部署指南]] — dist 托管、API 反代、HTTPS（P1）
 - [[git协作指南]] — 分支/MR、冲突与常见 Git 问题（P1）
 - [[增量ingest与raw投喂指南]] — raw 投喂、增量 ingest 批次、Lint/sync 闭环（P0）
+- [[AI自我进化与MD审校流程]] — LLM-Wiki 自我进化闭环、Ingest/Lint/Sync/Crystallize、AI 审校 MD → lint → Sync（P0）
+- [[Wiki在线编辑与AI协助改稿]] — Web 界面编辑 wiki、AI 协助改稿、diff 对比、保存回 wiki（draft · T14/M5）
 
 ## services（微服务实体）
 

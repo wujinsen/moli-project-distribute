@@ -1,5 +1,22 @@
 # 数据库脚本
 
+## 字符集与导入（utf8mb4 · 必读）
+
+- 库与表：**`utf8mb4`**（`CREATE DATABASE ... CHARSET utf8mb4`）。
+- **含中文的 SQL**：禁止 PowerShell **`Get-Content ... | mysql`** 管道导入（会写成 `?`）。
+- **正确做法**：
+  - 一键：`.\scripts\init-db.ps1`（已用 `--default-character-set=utf8mb4` + `source`）
+  - 单文件：
+
+```powershell
+$mysql = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
+& $mysql -u root -p12345678 --default-character-set=utf8mb4 moli -e "source D:/work/moli_project/moli-project-distribute/docs/sql/07_kb_space_ops_manual.sql"
+```
+
+- CMD 重定向 `mysql ... moli < file.sql` 可用于纯 ASCII 或 UTF-8 文件；中文种子仍建议加 `--default-character-set=utf8mb4`。
+- Navicat：连接字符集选 **utf8mb4**。
+- 详见 [`docs/sql/README.md`](../docs/sql/README.md)「字符集与导入约束」。
+
 ## 权威数据源（请用这个）
 
 | 文件 | 说明 |
@@ -15,7 +32,7 @@
 | `docs/sql/03_knowledge_schema.sql` | 知识库业务表 |
 | `docs/sql/04_knowledge_menu.sql` | 知识库 `sys_menu` + `sys_role_menu`（`getRouters` 下发给前端） |
 
-`init-db.ps1` 默认会依次导入上述两个文件（可用 `-SkipKnowledge` 跳过）。
+`init-db.ps1` 默认会依次导入上述文件，并 **`07_kb_space_ops_manual.sql`**（系统操作手册空间）；可用 `-SkipKnowledge` 跳过。
 
 ---
 
@@ -39,16 +56,23 @@ cd D:\work\moli_project\moli-project-distribute
 ## 手动导入（CMD，路径有空格需引号）
 
 ```cmd
-"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 -e "CREATE DATABASE IF NOT EXISTS moli DEFAULT CHARSET utf8mb4;"
-"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 moli < scripts\moli.sql
-"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 moli < docs\sql\02_seckill_schema.sql
+"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 --default-character-set=utf8mb4 -e "CREATE DATABASE IF NOT EXISTS moli DEFAULT CHARSET utf8mb4;"
+"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 --default-character-set=utf8mb4 moli < scripts\moli.sql
+"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 --default-character-set=utf8mb4 moli < docs\sql\02_seckill_schema.sql
+```
+
+PowerShell 单文件（**含中文时必须这样，禁止 `Get-Content | mysql` 管道**）：
+
+```powershell
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 --default-character-set=utf8mb4 moli -e "source D:/work/moli_project/moli-project-distribute/docs/sql/03_knowledge_schema.sql"
 ```
 
 ## 数据库工具（Navicat 等）
 
 1. 选中 `moli` 库  
-2. 运行 SQL 文件 → 选 `scripts/moli.sql`  
-3. 再执行 `docs/sql/02_seckill_schema.sql`（若需要秒杀压测）
+2. 连接/库字符集选 **utf8mb4**  
+3. 运行 SQL 文件 → 选 `scripts/moli.sql`  
+4. 再执行 `docs/sql/02_seckill_schema.sql`（若需要秒杀压测）
 
 ## 压测登录账号
 
@@ -59,7 +83,7 @@ cd D:\work\moli_project\moli-project-distribute
 一键统一所有演示用户为 `123456`：
 
 ```powershell
-Get-Content scripts\reset-demo-passwords.sql -Raw | & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 moli
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p12345678 --default-character-set=utf8mb4 moli -e "source D:/work/moli_project/moli-project-distribute/scripts/reset-demo-passwords.sql"
 ```
 
 - k6 可通过环境变量传入：

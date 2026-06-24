@@ -1,7 +1,5 @@
 # 本地 LLM key 配置，切勿提交
 llm_config.json
-.ingest_clusters.json
-.ingest_l2_progress.json
 
 # lint 体检生成的报告（默认写到 kb/）——按需生成，不入库
 ../lint-report.md

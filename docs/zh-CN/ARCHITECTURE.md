@@ -9,6 +9,11 @@
 
 ## 1. 链路全景
 
+> **可视化架构图（draw.io，可编辑）**：[`docs/diagrams/`](../diagrams/README.md)  
+> - [容器架构图](../diagrams/moli-container-architecture.drawio)  
+> - [鉴权流程图](../diagrams/moli-auth-flow.drawio)  
+> - [知识库同步双轨图](../diagrams/moli-knowledge-sync.drawio)
+
 ```
 meiling-ui (浏览器)
    │  HTTP + Header: Authorization=sessionId

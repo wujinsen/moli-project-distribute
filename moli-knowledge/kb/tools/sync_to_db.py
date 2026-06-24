@@ -530,6 +530,53 @@ def resolve_wiki_dir(path_arg: str) -> Path:
     return p.resolve()
 
 
+def purge_raw_archive(args) -> int:
+    """Soft-delete legacy rows imported with source='raw' (removed L1 pipeline)."""
+    import pymysql
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = pymysql.connect(
+        host=args.host,
+        port=args.port,
+        user=args.user,
+        password=args.password,
+        database=args.db,
+        charset="utf8mb4",
+        autocommit=False,
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id FROM kb_space WHERE space_code=%s AND is_delete=0",
+                (args.space,),
+            )
+            row = cur.fetchone()
+            if not row:
+                print(f"[error] 找不到空间 space_code={args.space}")
+                return 3
+            space_id = row[0]
+            cur.execute(
+                "SELECT COUNT(*) FROM kb_document "
+                "WHERE space_id=%s AND source='raw' AND is_delete=0",
+                (space_id,),
+            )
+            count = cur.fetchone()[0]
+            cur.execute(
+                "UPDATE kb_document SET is_delete=1, update_time=%s "
+                "WHERE space_id=%s AND source='raw' AND is_delete=0",
+                (now, space_id),
+            )
+            print(f"purge-raw-archive: {count} rows (space={args.space})")
+        conn.commit()
+        return 0
+    except Exception as e:  # noqa: BLE001
+        conn.rollback()
+        print(f"[error] purge 失败，已回滚：{e}")
+        return 1
+    finally:
+        conn.close()
+
+
 def main():
     ap = argparse.ArgumentParser(description="kb -> kb_document 单向增量同步")
     ap.add_argument("--dry-run", action="store_true", help="仅解析并打印计划，不连库")
@@ -544,7 +591,15 @@ def main():
     ap.add_argument("--db", default="moli")
     ap.add_argument("--space", default="enterprise-kb", help="kb_space.space_code")
     ap.add_argument("--operator", type=int, default=1, help="写入审计用的 create_id/update_id")
+    ap.add_argument(
+        "--purge-raw-archive",
+        action="store_true",
+        help="软删 source='raw' 的遗留归档行（已废弃的 L1 直写 DB，与 wiki 同步无关）",
+    )
     args = ap.parse_args()
+
+    if args.purge_raw_archive:
+        return purge_raw_archive(args)
 
     wiki_dir = resolve_wiki_dir(args.wiki_dir)
     rel_prefix = wiki_dir.name

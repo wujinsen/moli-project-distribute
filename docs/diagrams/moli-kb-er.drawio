@@ -1,0 +1,100 @@
+<mxfile host="app.diagrams.net" modified="2026-06-20T14:00:00.000Z" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-er" name="Knowledge ER">
+    <mxGraphModel dx="1800" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="茉莉知识库 · ER 图（14 表）&#xa;逻辑外键（无物理 FK）· 虚线 = 引用 · 外部: sys_user / sys_role" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="700" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- 图例 -->
+        <mxCell id="legend" value="图例&#xa;─────&#xa;kb_document.source&#xa;  kb = sync_to_db 同步 wiki&#xa;  raw = ingest_raw_archive 直写&#xa;  manual = REST 手工创建&#xa;&#xa;cardinality&#xa;  kb_space 1 ─ N kb_document&#xa;  kb_document M ─ N kb_tag&#xa;  kb_document 1 ─ N kb_relation" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="260" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext_user" value="sys_user&#xa;(user-center 外部)" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="100" width="140" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- 中心：kb_space -->
+        <mxCell id="kb_space" value="kb_space&#xa;─────────────&#xa;id PK&#xa;space_code UK&#xa;space_name&#xa;visibility (0/1/2)&#xa;owner_id → sys_user&#xa;status · sort · is_delete" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="90" width="220" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_space_member" value="kb_space_member (ACL)&#xa;─────────────&#xa;id PK&#xa;space_id → kb_space&#xa;member_type (user/role)&#xa;member_id → sys_user|sys_role&#xa;role: viewer|editor|admin" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="90" width="260" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_qa_log" value="kb_qa_log&#xa;─────────────&#xa;id PK&#xa;space_id → kb_space&#xa;user_id → sys_user&#xa;question · answer&#xa;citations (JSON)&#xa;provider · model · tokens&#xa;useful (feedback)" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="90" width="240" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- 核心：kb_document -->
+        <mxCell id="kb_document" value="kb_document ★ 核心&#xa;─────────────&#xa;id PK&#xa;space_id → kb_space&#xa;category_id → kb_category&#xa;slug UK (space_id+slug)&#xa;source: kb | raw | manual&#xa;kb_type · domain · status&#xa;title · summary · content&#xa;content_hash · source_path&#xa;view_count · version_no&#xa;FULLTEXT(title,summary,content)" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="380" width="280" height="210" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_category" value="kb_category&#xa;─────────────&#xa;id PK&#xa;space_id → kb_space&#xa;parent_id → self (0=root)&#xa;category_name · icon · sort" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="400" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_tag" value="kb_tag&#xa;─────────────&#xa;id PK&#xa;space_id → kb_space&#xa;tag_name UK (space+name)&#xa;color" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="400" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_document_tag" value="kb_document_tag&#xa;─────────────&#xa;id PK&#xa;document_id → kb_document&#xa;tag_id → kb_tag" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="540" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_relation" value="kb_relation (知识图谱)&#xa;─────────────&#xa;id PK&#xa;space_id → kb_space&#xa;source_doc_id → kb_document&#xa;target_doc_id → kb_document (nullable)&#xa;target_title (断链时)&#xa;relation_type · resolved · weight" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="560" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- kb_document 子表 -->
+        <mxCell id="kb_comment" value="kb_comment&#xa;─────────────&#xa;id PK&#xa;document_id → kb_document&#xa;parent_id → self&#xa;content" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffffff;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="720" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_document_version" value="kb_document_version&#xa;─────────────&#xa;id PK&#xa;document_id → kb_document&#xa;version_no UK (doc+ver)&#xa;title · content · hash&#xa;change_log" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffffff;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="720" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_favorite" value="kb_favorite&#xa;─────────────&#xa;id PK&#xa;user_id → sys_user&#xa;document_id → kb_document&#xa;UK (user_id, document_id)" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffffff;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="730" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_attachment" value="kb_attachment&#xa;─────────────&#xa;id PK&#xa;document_id → kb_document&#xa;file_name · object_key (MinIO)&#xa;file_size · content_type" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffffff;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="830" y="730" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_lint_issue" value="kb_lint_issue&#xa;─────────────&#xa;id PK&#xa;space_id → kb_space&#xa;document_id → kb_document (nullable)&#xa;issue_type · detail · status" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="730" width="260" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kb_sync_log" value="kb_sync_log&#xa;─────────────&#xa;id PK&#xa;batch_no · space_id&#xa;document_id → kb_document&#xa;source_path · action · hash&#xa;status · message" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1390" y="730" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- 关系线 -->
+        <mxCell id="r1" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_space" target="kb_document"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r2" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_space" target="kb_category"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r3" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_space" target="kb_tag"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r4" value="category_id" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#82b366;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_category" target="kb_document"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r5" value="M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#666666;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_document_tag"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="kb_tag" target="kb_document_tag"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r7" value="source" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9673a6;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_relation"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r8" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#666666;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_comment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r9" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#666666;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_document_version"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r10" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#666666;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_favorite"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r11" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#666666;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_attachment"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r12" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#b85450;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_space" target="kb_qa_log"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r13" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#6c8ebf;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_space" target="kb_space_member"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r14" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#b85450;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_lint_issue"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r15" value="1:N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#b85450;endArrow=block;endFill=1;fontSize=10;" edge="1" parent="1" source="kb_document" target="kb_sync_log"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r16" value="owner_id" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#999999;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="kb_space" target="ext_user"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r17" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#999999;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="kb_qa_log" target="ext_user"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

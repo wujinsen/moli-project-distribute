@@ -1,0 +1,146 @@
+<mxfile host="app.diagrams.net" modified="2026-06-20T12:00:00.000Z" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-raw" name="RAW to Landing Pipeline">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;知识库 · RAW 层 → 最终落地全链路&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;四条并行加工轨 · 统一汇入 MySQL · 经 knowledge-server 对外服务&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="15" width="650" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="L0" value="L0 · 原始数据层 RAW（只读 · Agent 绝不修改）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1620" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="raw1" value="&lt;b&gt;raw/wujinsen_markdown/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;~1962 篇 .note.md&lt;br&gt;Evernote 导出 · 面试/文章&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="L0">
+          <mxGeometry x="30" y="40" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="raw2" value="&lt;b&gt;raw/school/fe/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;日本語 FE 試験題&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="L0">
+          <mxGeometry x="260" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="raw3" value="&lt;b&gt;raw/docs · articles · interview/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;项目文档 · 技术文章 · 面试原始材料&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="L0">
+          <mxGeometry x="450" y="40" width="280" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="raw_note" value="&lt;font style=&quot;font-size:10px;color:#666;&quot;&gt;UTF-8 markdown · 可选 H1 标题 · 用户投喂后由 Agent 读取&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=right;" vertex="1" parent="L0">
+          <mxGeometry x="900" y="45" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="L1" value="L1 · 加工轨（四条并行路径）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="1620" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="pathA" value="&lt;b&gt;路径 A · Agent Ingest&lt;/b&gt;（主轨 · 推荐）&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;读 AGENTS.md + index.md 去重&lt;br&gt;按主题聚类蒸馏（非 1:1）&lt;br&gt;写 wiki/{type}/{slug}.md&lt;br&gt;更新 index · log · edges.jsonl&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="L1">
+          <mxGeometry x="30" y="40" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="pathB" value="&lt;b&gt;路径 B · L1 原始归档&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;ingest_raw_archive.py&lt;br&gt;raw → kb_document 直写&lt;br&gt;source='raw' kb_type='archive'&lt;br&gt;slug='raw/...' · 不改 wiki/&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;" vertex="1" parent="L1">
+          <mxGeometry x="340" y="40" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="pathC" value="&lt;b&gt;路径 C · L2 并行蒸馏&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;ingest_parallel.py --workers N&lt;br&gt;raw 326 个主题簇 → LLM&lt;br&gt;产出 wiki/articles/l2-*.md&lt;br&gt;再走路径 A 的 sync&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="L1">
+          <mxGeometry x="650" y="40" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="pathD" value="&lt;b&gt;路径 D · Query 结晶&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;用户提问 → Agent Query&lt;br&gt;多页综合 → wiki/outputs/{slug}.md&lt;br&gt;kb_type='output'&lt;br&gt;无新 raw 输入&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;" vertex="1" parent="L1">
+          <mxGeometry x="960" y="40" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="path_manual" value="&lt;b&gt;路径 E · 手工维护&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;开发者直接编辑 wiki-ops/&lt;br&gt;或 REST POST /kb/document&lt;br&gt;source='manual'&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;dashed=1;align=left;spacingLeft=8;" vertex="1" parent="L1">
+          <mxGeometry x="1270" y="40" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L2" value="L2 · Wiki 结晶层（Agent 写入 · YAML frontmatter + [[wikilink]]）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="430" width="1620" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="w1" value="&lt;b&gt;kb/wiki/&lt;/b&gt;&lt;br&gt;enterprise-kb&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;~1400 页&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffffff;strokeColor=#d6b656;size=12;" vertex="1" parent="L2">
+          <mxGeometry x="30" y="45" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="w2" value="&lt;b&gt;kb/wiki-jp-exam/&lt;/b&gt;&lt;br&gt;jp-fe-ap-exam" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffffff;strokeColor=#d6b656;size=12;" vertex="1" parent="L2">
+          <mxGeometry x="190" y="45" width="140" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="w3" value="&lt;b&gt;kb/wiki-ops/&lt;/b&gt;&lt;br&gt;moli-ops-manual" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffffff;strokeColor=#d6b656;size=12;" vertex="1" parent="L2">
+          <mxGeometry x="360" y="45" width="140" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="fm" value="&lt;b&gt;frontmatter&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;title · type · status · tags&lt;br&gt;domain · sources · related&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="L2">
+          <mxGeometry x="540" y="45" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="graph" value="&lt;b&gt;graph/edges.jsonl&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;depends_on · relates_to&lt;br&gt;supersedes · part_of …&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="L2">
+          <mxGeometry x="750" y="45" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="skip" value="&lt;font style=&quot;font-size:10px;&quot;&gt;不同步: index.md · log.md&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;" vertex="1" parent="L2">
+          <mxGeometry x="980" y="60" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="L3" value="L3 · 质量门禁（可选 · CI / 本地）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="590" width="1620" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="lint" value="&lt;b&gt;lint.py&lt;/b&gt; [--strict]&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;broken_link · orphan · no_summary · missing_source&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" vertex="1" parent="L3">
+          <mxGeometry x="400" y="35" width="320" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lint_srv" value="&lt;font style=&quot;font-size:10px;&quot;&gt;运行时: POST /kb/lint/scan → kb_lint_issue&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;" vertex="1" parent="L3">
+          <mxGeometry x="780" y="42" width="300" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="L4" value="L4 · 同步引擎 sync_to_db.py（幂等 · 增量 · 单向）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="700" width="1620" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_in" value="&lt;font style=&quot;font-size:10px;&quot;&gt;读取 *.md + edges.jsonl&lt;br&gt;解析 frontmatter / body / hash&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="L4">
+          <mxGeometry x="30" y="40" width="200" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_cmp" value="&lt;font style=&quot;font-size:10px;&quot;&gt;对比 (space_id, slug)&lt;br&gt;content_hash 未变 → skip&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="L4">
+          <mxGeometry x="260" y="40" width="200" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_upsert" value="&lt;font style=&quot;font-size:10px;&quot;&gt;upsert kb_document&lt;br&gt;source='kb' · 软删缺失 slug&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="L4">
+          <mxGeometry x="490" y="40" width="200" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_tag" value="&lt;font style=&quot;font-size:10px;&quot;&gt;重建 kb_tag&lt;br&gt;kb_document_tag&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="L4">
+          <mxGeometry x="720" y="40" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_rel" value="&lt;font style=&quot;font-size:10px;&quot;&gt;全量重建 kb_relation&lt;br&gt;[[link]] + related + edges&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="L4">
+          <mxGeometry x="910" y="40" width="200" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_log" value="&lt;font style=&quot;font-size:10px;&quot;&gt;写 kb_sync_log&lt;br&gt;insert/update/delete/skip&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="L4">
+          <mxGeometry x="1140" y="40" width="180" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_cmd" value="&lt;font style=&quot;font-size:10px;&quot;&gt;--wiki-dir --space · dry-run · CI · POST /kb/sync/trigger&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=right;" vertex="1" parent="L4">
+          <mxGeometry x="1350" y="50" width="250" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="L5" value="L5 · MySQL 落地（moli · utf8mb4 · 14 表 · 逻辑外键）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#d79b00;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="850" width="1620" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="db_doc" value="&lt;b&gt;kb_document&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;slug · title · content&lt;br&gt;kb_type · source · hash&lt;br&gt;FULLTEXT ngram&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="L5">
+          <mxGeometry x="200" y="40" width="140" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="db_space" value="&lt;b&gt;kb_space&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;space_code&lt;br&gt;visibility · ACL&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="L5">
+          <mxGeometry x="30" y="40" width="120" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="db_rel" value="&lt;b&gt;kb_relation&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;知识图谱边&lt;br&gt;resolved 断链&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="L5">
+          <mxGeometry x="380" y="40" width="120" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="db_tag" value="&lt;b&gt;kb_tag&lt;/b&gt; + &lt;b&gt;kb_document_tag&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="L5">
+          <mxGeometry x="540" y="40" width="160" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="db_raw" value="&lt;b&gt;source='raw'&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;路径 B 直写&lt;br&gt;archive 全文索引&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="L5">
+          <mxGeometry x="740" y="45" width="140" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="db_other" value="&lt;font style=&quot;font-size:10px;&quot;&gt;kb_qa_log · kb_sync_log · kb_lint_issue&lt;br&gt;kb_comment · kb_favorite · kb_attachment · kb_space_member …&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;dashed=1;" vertex="1" parent="L5">
+          <mxGeometry x="920" y="45" width="380" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="L6" value="L6 · 服务层与最终消费" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1010" width="1620" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="srv" value="&lt;b&gt;knowledge-server&lt;/b&gt; :8090&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Browse / Ask / Graph / Lint / Sync&lt;br&gt;ACL · FULLTEXT · LLM rerank&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="L6">
+          <mxGeometry x="200" y="40" width="220" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="gw2" value="&lt;b&gt;Gateway&lt;/b&gt; /KnowledgeServer/**" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="L6">
+          <mxGeometry x="480" y="40" width="180" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="ui2" value="&lt;b&gt;meiling-ui&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;浏览目录 · 问答 · 知识图谱 · Lint 工作台&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="L6">
+          <mxGeometry x="700" y="40" width="220" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="serve2" value="&lt;b&gt;serve.py&lt;/b&gt; :8765&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;本地 dev · 读 wiki 不连 DB&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;dashed=1;" vertex="1" parent="L6">
+          <mxGeometry x="960" y="40" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="ban2" value="&lt;b&gt;禁止反向&lt;/b&gt; DB → markdown" style="shape=mxgraph.flowchart.off-page_reference;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="L6">
+          <mxGeometry x="1180" y="45" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ea1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;strokeWidth=2;" edge="1" parent="1" source="L0" target="L1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea2" value="A/C/D/E" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="L1" target="L2"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="400" y="420" /><mxPoint x="400" y="420" /></Array></mxGeometry></mxCell>
+        <mxCell id="eb1" value="B 直写" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" parent="1" source="pathB" target="db_raw"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="520" y="820" /><mxPoint x="810" y="820" /></Array></mxGeometry></mxCell>
+        <mxCell id="ea3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d6b656;strokeWidth=2;" edge="1" parent="1" source="L2" target="L3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" parent="1" source="L3" target="L4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="L4" target="L5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;strokeWidth=2;" edge="1" parent="1" source="L5" target="L6"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

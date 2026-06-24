@@ -156,9 +156,11 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 - **角色绑定**：role 2/3/4/6/7；超管 role 1 走全菜单无需绑定。
 - **已有库补数据**：`mysql -u root -p moli < docs/sql/04_knowledge_menu.sql`，然后重新登录。
 
-## T5 · 图谱/体检落库重构 ✅ 已完成（2026-06-22）
+## T5 · 图谱/体检落库重构 ✅ 已完成（2026-06-22；**2026-06-24 大库优化**）
 
 > 产出：`KbInsightServiceImpl` 重构（graph 优先读 `kb_relation`，空表回退运行时）；新增 `scan`/`issues`/`updateIssueStatus`；`KbInsightController` 加 `POST /kb/lint/scan`、`GET /kb/lint/issues`、`PUT /kb/lint/issue/{id}`。返回结构与 GraphVo/LintVo 兼容；`mvn compile` 通过。
+> **2026-06-24（图谱卡死优化）**：3300+ 篇下 `/kb/graph` 不再每次扫正文——边只读 `kb_relation`、节点只查 `id/title/kb_type/status`（**不含 content/summary**），按**度数降序裁剪**到 `maxNodes`（full=300/summary=50，上限 2000），新增 `minDeg` 过滤；`GraphVo` 加 `meta{totalNodes,totalLinks,returnedNodes,returnedLinks,truncated,source,mode}`。新增 `GET /kb/graph/ego?docId=&depth=`（BFS 邻域子图，逐层查 relation，不加载全图）。节点 `type` 改用 `kb_type`（与浏览分组一致）。详见 `docs/KNOWLEDGE_API.md` §4.1。
+> ⚠️ 前端待办：默认 `mode=summary` 或 `minDeg`，核心节点先画，点击节点用 `ego` 展开；大图禁用 force 持续布局。
 
 - **目标**：把现在运行时计算的 `/kb/graph`、`/kb/lint` 改为读 `kb_relation` / `kb_lint_issue`（同步时写入），大库更快、可跟踪「忽略/修复」。
 - **涉及文件**：
@@ -222,6 +224,26 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 - **成员管理 API**（`/kb/space/member`，均需空间管理权限）：`GET /list`、`POST`（单条）、`POST /batch`（批量添加）、`PUT`、`DELETE /{id}`（单条）、`POST /batch/remove`（批量移除）。
 - **已知限制**：Dubbo 契约目前只透出权限串、不透出角色ID，**角色型成员(member_type=1)** 仅支持存储/管理，运行时不解析（用户型成员完整生效）。待 `UserCenterServer` 暴露角色后，在 `KbAclServiceImpl#memberRole` 处补一行即可。
 - **验收**：非成员看不到私有空间内容；editor 以上才能改；过滤在 service 层统一做。✅
+
+## T14 · Web Wiki 在线编辑 + AI 协助改稿 🔜 待开发
+
+> 产品方案：[[Wiki在线编辑与AI协助改稿]]（`kb/wiki/guides/`）。规划里程碑 **M5**。
+
+**目标**：在 Web 界面打开 wiki 页，调用已配置 LLM 协助改稿；展示修改前/后 diff；支持人工继续改；确认后保存回 `kb/wiki/*.md`，再 Sync 进库。
+
+| 子任务 | 范围 | 验收 |
+|--------|------|------|
+| **T14a** | 后端 `GET/PUT /kb/wiki/page`（`kb.wiki.root` 读写信令）；meiling-ui 编辑页 + diff + 浏览页「编辑 wiki」 | editor 可改 wiki 文件；保存后 Sync 可见 |
+| **T14b** | `POST /kb/wiki/ai-revise`（复用 `kb.llm.*`）；AI 面板 + 应用建议 | 配好 llm 后可 AI 改稿并保存 |
+| **T14c** | 体检问题「修复」入口 → 编辑页（带 issue 上下文）；保存后可选标记已修复 | 从 lint 列表跳进编辑闭环 |
+| **T14d** | 「保存并 Sync」一键；保存前 lint 摘要（可选） | 少点两次 Tab |
+
+- **涉及文件**：
+  - server：新增 `KbWikiController`、`KbWikiFileService`、`KbWikiAiReviseService`；抽取 `KbLlmClient`（从 `KbAskServiceImpl`）
+  - meiling-ui：`KnowledgeWikiEditView.vue`、diff 组件、API 封装；`KnowledgeBrowseView` / `KnowledgeLintView` 入口
+  - 文档：`docs/KNOWLEDGE_API.md` §Wiki 编辑；`docs/sql` 菜单种子（`kb:wiki:edit`）
+- **依赖**：T9 ACL（editor）、T2 LLM 配置、T3 `/kb/page`（读库展示可复用 slug）
+- **铁律**：保存目标 = **wiki 文件**，不是默认 `POST /kb/document` 双写
 
 ---
 
