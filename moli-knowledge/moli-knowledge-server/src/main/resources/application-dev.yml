@@ -93,3 +93,25 @@ kb:
     timeout-seconds: 300
     schedule-enabled: false
     schedule-cron: "0 0 2 * * ?"
+  wiki:
+    # Web 在线编辑（T14）读写 kb/wiki* markdown 文件
+    enabled: true
+    # kb/ 根目录（相对进程 cwd 或绝对路径），需指向部署机 git wiki 目录
+    root: moli-knowledge/kb
+    # space_code → wiki 子目录（相对 root）
+    space-dirs:
+      enterprise-kb: wiki
+      moli-ops-manual: wiki-ops
+      jp-fe-ap-exam: wiki-jp-exam
+    max-bytes: 2097152
+  ingest:
+    # Ingest 工作台（T15）：raw 只读树 + 批次规划。落盘在 T15b/c
+    enabled: true
+    # 只读 raw 根目录（相对进程 cwd 或绝对路径）
+    raw-root: moli-knowledge/kb/raw
+    # 单批次 Plan 最大页数（create+enrich 软上限，与 AGENTS §4「5–15 页」一致）
+    max-pages-per-batch: 15
+    # raw-tree 单次返回最大节点数
+    max-tree-nodes: 5000
+    # Plan 生成时单个 raw 文件喂给 LLM 的最大字符数
+    raw-snippet-chars: 4000

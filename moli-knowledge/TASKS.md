@@ -1,6 +1,6 @@
 # 企业知识库 · 待办任务清单（可并行开工）
 
-> 更新：2026-06-23
+> 更新：2026-06-25
 > 用途：每个任务**自包含、文件边界清晰**，可在不同对话框/工作区并行开工，尽量不互相冲突。
 > 范式与分工见 [`kb/ROADMAP.md`](kb/ROADMAP.md)；表结构见 [`../docs/sql/KNOWLEDGE_SCHEMA.md`](../docs/sql/KNOWLEDGE_SCHEMA.md)。
 >
@@ -16,8 +16,8 @@
 | 同步 | ✅ sync API + git hook + 定时任务 + **GitHub Actions CI(T12)** | — |
 | Java API | ✅ CRUD、Query(+**历史/反馈 T11**)、Browse（**meta 目录 + 分组分页/搜索/locate**）、Graph/Lint、ACL、附件(+**列表 T11**)、**MySQL ngram 全文检索（M4）** | Meilisearch/向量（召回/量级信号触发再上） |
 | 文档 | ✅ **`docs/KNOWLEDGE_API.md`(T8)** 含附件 API §5.6 + **菜单 getRouters(T13)** | — |
-| kb 知识 | ✅ **1398 页 wiki** + 关系边；**Agent 治理自动化 [`kb/tools/lint.py`](kb/tools/lint.py)**（分级体检+CI report-only） | 治理 lint 报告（66 断链/988 孤儿）；CI 升级 lint-strict 门禁 |
-| 前端 meiling-ui | ✅ **T6 已完成**（2026-06-22） | 空间 CRUD 管理页（可选二期） |
+| kb 知识 | ✅ **375 页** wiki（Phase 0 治理后）；**`lint-strict` CI 门禁**；`wiki-ops` 运维空间独立 | M5 T14 单篇编辑 |
+| 前端 meiling-ui | ✅ **T6 已完成**（2026-06-22）；**T15 Ingest 工作台 UI**（2026-06-25） | 空间 CRUD（可选二期） |
 
 ---
 
@@ -225,7 +225,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 - **已知限制**：Dubbo 契约目前只透出权限串、不透出角色ID，**角色型成员(member_type=1)** 仅支持存储/管理，运行时不解析（用户型成员完整生效）。待 `UserCenterServer` 暴露角色后，在 `KbAclServiceImpl#memberRole` 处补一行即可。
 - **验收**：非成员看不到私有空间内容；editor 以上才能改；过滤在 service 层统一做。✅
 
-## T14 · Web Wiki 在线编辑 + AI 协助改稿 🔜 待开发
+## T14 · Web Wiki 在线编辑 + AI 协助改稿 ✅ 已完成（T14a–d）
 
 > 产品方案：[[Wiki在线编辑与AI协助改稿]]（`kb/wiki/guides/`）。规划里程碑 **M5**。
 
@@ -233,25 +233,93 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 子任务 | 范围 | 验收 |
 |--------|------|------|
-| **T14a** | 后端 `GET/PUT /kb/wiki/page`（`kb.wiki.root` 读写信令）；meiling-ui 编辑页 + diff + 浏览页「编辑 wiki」 | editor 可改 wiki 文件；保存后 Sync 可见 |
-| **T14b** | `POST /kb/wiki/ai-revise`（复用 `kb.llm.*`）；AI 面板 + 应用建议 | 配好 llm 后可 AI 改稿并保存 |
-| **T14c** | 体检问题「修复」入口 → 编辑页（带 issue 上下文）；保存后可选标记已修复 | 从 lint 列表跳进编辑闭环 |
-| **T14d** | 「保存并 Sync」一键；保存前 lint 摘要（可选） | 少点两次 Tab |
+| **T14a ✅** | 后端 `GET/PUT /kb/wiki/page`（`kb.wiki.*` 三空间根映射 + 乐观锁 + 防穿越）；meiling-ui `KnowledgeWikiEditView` 编辑/预览/行级 diff + 浏览页「编辑 wiki」入口 | editor 可改 wiki 文件；保存后 Sync 可见 |
+| **T14b ✅** | `POST /kb/wiki/ai-revise`（`KbLlmClient` + 场景 B prompt）；编辑页 AI 面板 + 应用建议 + diff | 配好 llm 后可 AI 改稿并保存 |
+| **T14c ✅** | 体检「修复」→ 编辑页（issue 上下文）；保存后可选标记已修复 | lint 列表 → 编辑 → 保存 → status=2 |
+| **T14d ✅** | 「保存并 Sync」；`POST /kb/wiki/page/lint-preview` 保存前摘要 | 少点 Tab；预检断链/frontmatter |
 
 - **涉及文件**：
-  - server：新增 `KbWikiController`、`KbWikiFileService`、`KbWikiAiReviseService`；抽取 `KbLlmClient`（从 `KbAskServiceImpl`）
-  - meiling-ui：`KnowledgeWikiEditView.vue`、diff 组件、API 封装；`KnowledgeBrowseView` / `KnowledgeLintView` 入口
-  - 文档：`docs/KNOWLEDGE_API.md` §Wiki 编辑；`docs/sql` 菜单种子（`kb:wiki:edit`）
+  - server：✅ T14a–d：`KbWikiController`、`KbWikiFileService`、`KbWikiAiReviseService`、`KbLlmClient`、DTO 全套
+  - meiling-ui：✅ `KnowledgeWikiEditView`（AI/lint/sync）、`KnowledgeLintView` 修复入口、`KnowledgeBrowseView` 编辑 wiki
+  - 文档：✅ `docs/api/KNOWLEDGE_API.md` §8；🔜 `docs/sql` 菜单种子（`kb:wiki:edit`）
 - **依赖**：T9 ACL（editor）、T2 LLM 配置、T3 `/kb/page`（读库展示可复用 slug）
 - **铁律**：保存目标 = **wiki 文件**，不是默认 `POST /kb/document` 双写
 
 ---
 
+## T15 · Web Ingest 工作台（批次厚 Ingest） ✅ 已完成（T15a–e，2026-06-25）
+
+> 产品方案：[[Ingest工作台产品方案]]（`kb/wiki/guides/`）。规划里程碑 **M6**。  
+> 与 **T14** 并列：T14 = 单篇修稿；T15 = raw → 多页 ingest。
+
+**目标**：Web 完成 AGENTS §4 等价流程：选 raw → Plan（去重）→ 多页 LLM 草稿 → 逐页 diff → lint → 原子写 wiki（含 index/log/edges）→ Sync。
+
+| 子任务 | 范围 | 验收 |
+|--------|------|------|
+| **T15a** ✅ | `GET /kb/ingest/raw-tree` + job CRUD + **Plan 生成/编辑** + export-agent-prompt | 规划可对标 Agent ingest 第一步 |
+| **T15b** ✅ | `POST .../generate` + 多页 diff UI | 5 页簇可审、不落盘 |
+| **T15c** ✅ | lint 预检 + **原子 commit**（wiki/log/index/edges） | 交付物 = AGENTS §4 checklist |
+| **T15d** ✅ | commit 后一键 Sync + 批次报告 | 线上可问答 |
+| **T15e** ✅ | enrich patch、断点续跑、批次模板 | 大批量可恢复 |
+
+### T15b–d 已完成（2026-06-25）
+
+> 范围：按 plan 生成多页草稿（PageWriter/EnrichWriter）→ 逐页 baseline↔draft diff + 审批 → lint 预检（含批次内 slug）→ 原子 commit（写 wiki + append log/edges + 追加 index 批次段）→ 可选一键 Sync。
+
+- **API**（`/kb/ingest`，详见 `docs/api/KNOWLEDGE_API.md` §9.5–9.7）：
+  - `POST /jobs/{id}/generate`、`GET /jobs/{id}/drafts`、`GET|PUT /jobs/{id}/draft?slug=`、`POST /jobs/{id}/draft/regenerate?slug=`、`PUT /jobs/{id}/draft/approval?slug=&approval=`
+  - `POST /jobs/{id}/lint`、`POST /jobs/{id}/commit?sync=`
+- **commit 红线（后端强制）**：lint ERROR 阻塞、无 approved 阻塞、有 draft 未审阅阻塞；edges 仅当一端为本批次新页才追加。
+- **生成同步状态机**：created → planned →（generate）reviewing →（commit）committed。
+- **涉及文件**：
+  - server（新增）：`entity/KbIngestDraft`+`KbIngestCommit` + Mapper、`dto/IngestDraftVo`+`IngestDraftUpdateRequest`+`IngestLintVo`+`IngestCommitResultVo`；`KbIngestService`(+Impl) 扩展 generate/draft CRUD/approve/lint/commit；复用 `KbWikiFileService`、`KbLlmClient`、`KbSyncService`
+  - server（改）：`KbIngestController` 增 T15b–d 端点
+  - meiling-ui（新增）：`views/knowledge/KnowledgeIngestWorkbenchView.vue`（列表/新建 + Plan/草稿 diff/lint/commit&Sync）；`viewRegistry`、`menuLabel` 注册 `knowledge/ingest/index`；`types`/`api` 增草稿/lint/commit；`i18n` zh/en/ja `knowledge.ingest.*`
+- **已知简化（后续可选）**：generate 为同步调用（无 SSE 进度）；index 更新为追加批次段而非按类型分区插入。
+
+### T15e 已完成（2026-06-25）
+
+> 范围：enrich 草稿分离 `patch` 列 + 断点续跑 generate + 批次模板 CRUD / 从模板建 job / 另存为模板。
+
+- **API**（`/kb/ingest`，详见 `docs/api/KNOWLEDGE_API.md` §9.8）：
+  - `POST /jobs/{id}/generate?resume=` — 返回 `IngestGenerateResultVo`（total/generated/skipped/drafts）
+  - `PUT /jobs/{id}/draft?slug=` — body 支持 `{content}` 或 `{patch}`（enrich）
+  - `GET|POST /templates`、`DELETE /templates/{id}`、`POST /jobs/from-template/{templateId}`、`POST /jobs/{id}/save-as-template`
+- **DDL**：`docs/sql/09_kb_ingest_t15e.sql`（`kb_ingest_draft.patch` + `kb_ingest_template`）
+- **meiling-ui**：续跑/全量生成按钮、enrich Patch Tab、模板列表与从模板创建、另存为模板；i18n zh/en/ja
+
+### T15a 已完成（2026-06-25）
+
+> 范围：raw 只读树 + 批次 job CRUD + Plan 生成/编辑 + 导出 Agent 提示词。**只做「选源→规划」，不写 wiki / 不写 kb_document**（落盘在 T15b/c）。
+
+- **API**（`/kb/ingest`，详见 `docs/api/KNOWLEDGE_API.md` §9）：
+  - `GET /raw-tree?prefix=` 只读树（viewer，防目录穿越）
+  - `POST /jobs`、`GET /jobs`（分页，按可读空间过滤）、`GET /jobs/{id}`（含最新 plan）
+  - `POST /jobs/{id}/plan` LLM 生成（只输出 JSON；无 LLM 给可编辑骨架）、`PUT /jobs/{id}/plan` 人工改
+  - `GET /jobs/{id}/export-agent-prompt`
+- **Plan**：版本化（`kb_ingest_plan` 每次 append 一版）；Planner system prompt 强约束 enrich 优先、JSON-only。
+- **后端鉴权**：raw 树/查询=空间 viewer；创建/规划=空间 **editor**（`KbAclService.assertCanEdit`）。
+
+- **涉及文件**：
+  - server（新增）：`config/KbIngestProperties`、`entity/KbIngestJob`+`KbIngestPlan`、`mapper/KbIngestJobMapper`+`KbIngestPlanMapper`、`dto/RawTreeNodeVo`+`IngestJobCreateRequest`+`IngestJobVo`+`IngestPlanUpdateRequest`、`service/KbIngestService`(+Impl)、`controller/KbIngestController`；复用 `KbWikiProperties`、`KbLlmClient`、`KbAclService`、`KbDocumentMapper`
+  - server（改）：`application-dev.yml` 加 `kb.ingest.*`
+  - meiling-ui（新增 api/types）：`types/knowledge.ts`（`KbRawTreeNode`/`KbIngestJob`/`KbIngestPlan*`）、`api/knowledge.ts`（`getKbIngestRawTreeApi`/`create|get|getsKbIngestJob*`/`generate|updateKbIngestPlanApi`/`exportKbIngestAgentPromptApi`）
+  - 文档/SQL：`docs/api/KNOWLEDGE_API.md` §9；`docs/sql/08_kb_ingest_workbench.sql`（表 DDL + 菜单 906 + `kb:ingest:*` 权限）
+- **待续（T15b 起）**：`KnowledgeIngestWorkbenchView.vue`（raw 树 + Plan 表 + 多页 diff）、`POST .../generate`、`kb_ingest_draft/commit` 落表。
+- **依赖**：✅ Phase 0；**T14a**（wiki 读写）；T9 ACL（editor）；T2 LLM
+- **铁律**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit；见方案 §5
+
+**开工提示词**：
+
+> 读 `kb/wiki/guides/Ingest工作台产品方案.md`、`kb/AGENTS.md` §4、T14 的 `KbWikiFileService` 设计。实现 T15a：`/kb/ingest/raw-tree` + job/plan API + 前端 Plan 表；Plan LLM 只输出 JSON；不写 wiki 直到 commit。
+
+---
+
 ## 推荐推进顺序
 
-1. **先开 T1**（地基，半天内能完成）。
-2. T1 完成后，**并行开 T2 / T3 / T4 / T5**（各自新增文件为主）。
-3. **全程可并行**：T6（前端）、T7（ingest）、T8（API 文档）——它们和后端代码不抢文件。
-4. **最后单独做 T9**（ACL，改动面大）。
+1. ✅ Phase 0 治理（lint-strict + 空间去重）— 已完成。
+2. **T14a → T14b**（M5 wiki 读写 + 单篇 AI 改稿底座）。
+3. ✅ **T15a → T15b → T15c → T15d → T15e**（M6 Ingest 工作台闭环）。
+4. T14c–d 可并行增强。
 
 > 多对话协作小贴士：同一时间不要让两个对话改同一个 `.java` 文件；每个任务跑完各自 `mvn -q -pl moli-knowledge/moli-knowledge-server compile` 自测；合并前 `git status` 看清改了哪些文件。

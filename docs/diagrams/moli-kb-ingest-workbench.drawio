@@ -1,0 +1,145 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="ingest-flow" name="M6 Ingest Workbench Flow">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;M6 · Ingest 工作台（T15）· 六步状态机&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;Web 批次厚 Ingest = AGENTS.md §4 · 禁止 raw→DB · 禁止无 plan 生成 · 禁止无 diff commit&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="720" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="&lt;b&gt;① 选源 Scope&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;GET /kb/ingest/raw-tree&lt;br&gt;勾选 raw/ 文件/目录&lt;br&gt;填批次# · 主题&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="&lt;b&gt;② 规划 Plan&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;POST .../plan&lt;br&gt;LLM → JSON&lt;br&gt;新建/enrich/跳过&lt;br&gt;读 index 去重&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="240" y="100" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="g1" value="无 plan&#xa;禁止生成" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="430" y="105" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="&lt;b&gt;③ 生成 Generate&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;POST .../generate&lt;br&gt;按 plan 分页 LLM&lt;br&gt;草稿存 kb_ingest_draft&lt;br&gt;SSE 进度&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="560" y="100" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="&lt;b&gt;④ 审阅 Review&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;多页 diff UI&lt;br&gt;baseline ↔ 草稿&lt;br&gt;逐页批准/拒绝&lt;br&gt;禁止一键全批&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="770" y="100" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="&lt;b&gt;⑤ Lint 门禁&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;POST .../lint&lt;br&gt;lint.py 子集&lt;br&gt;含将新建 slug&lt;br&gt;ERROR 阻塞&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="980" y="100" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="&lt;b&gt;⑥ 提交 Commit&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;POST .../commit&lt;br&gt;原子写 wiki/**&lt;br&gt;index · log · edges&lt;br&gt;POST .../sync&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="100" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="out" value="&lt;b&gt;可问答&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;kb_document&lt;br&gt;Browse / Ask&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="105" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="s2" target="g1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" value="OK" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="g1" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e45" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="s3" target="s4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e56" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#b85450;" edge="1" parent="1" source="s4" target="s5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e67" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d6b656;" edge="1" parent="1" source="s5" target="s6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e78" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;" edge="1" parent="1" source="s6" target="out"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="back" value="退回改 plan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#999999;dashed=1;" edge="1" parent="1" source="s4" target="s2"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="860" y="220" /><mxPoint x="325" y="220" /></Array></mxGeometry></mxCell>
+        <mxCell id="lane_cmp" value="&lt;b&gt;与 T14 / M5 单篇编辑 的分工&lt;/b&gt;" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=26;fontStyle=0;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="280" width="1480" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="t14" value="&lt;b&gt;T14 · 单篇编辑&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;已有 slug&lt;br&gt;GET/PUT /kb/wiki/page&lt;br&gt;AI 改稿 + diff&lt;br&gt;修断链 / 润色&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;" vertex="1" parent="lane_cmp">
+          <mxGeometry x="30" y="40" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="t15" value="&lt;b&gt;T15 · 本方案&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;raw 主题簇&lt;br&gt;/kb/ingest/*&lt;br&gt;5–15 页 + index/log/edges&lt;br&gt;依赖 T14a wiki 读写&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;" vertex="1" parent="lane_cmp">
+          <mxGeometry x="260" y="40" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="agent" value="&lt;b&gt;Cursor Agent&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;大批量 / 复杂 enrich&lt;br&gt;CLI lint.py --strict&lt;br&gt;export-agent-prompt 可导出&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;dashed=1;align=left;spacingLeft=8;" vertex="1" parent="lane_cmp">
+          <mxGeometry x="510" y="40" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dead" value="&lt;b&gt;已废弃&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;L1 raw→DB 直写&lt;br&gt;L2 l2-*.md 批量&lt;br&gt;绕过 wiki 治理&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;fontColor=#666666;" vertex="1" parent="lane_cmp">
+          <mxGeometry x="760" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="serve" value="&lt;b&gt;serve.py 提炼&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;本地辅助&lt;br&gt;已有 wiki hub 草稿&lt;br&gt;不进 Web 主线&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;dashed=1;align=left;spacingLeft=8;" vertex="1" parent="lane_cmp">
+          <mxGeometry x="970" y="40" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ref" value="&lt;font style=&quot;font-size:10px;color:#666;&quot;&gt;详设：kb/wiki/guides/Ingest工作台产品方案.md · ROADMAP M6 · TASKS T15&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=right;" vertex="1" parent="lane_cmp">
+          <mxGeometry x="900" y="8" width="560" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="ingest-arch" name="M6 Architecture">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="at" value="&lt;b&gt;M6 Ingest 工作台 · 组件架构&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;草稿 commit 前只存 MySQL 任务表 · commit 后写 kb/wiki/*.md · 再 sync_to_db&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="650" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ui_lane" value="meiling-ui（editor + kb:ingest:*）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="1620" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ui1" value="KnowledgeIngestWorkbenchView&lt;br&gt;raw 树 · Plan 表 · 多页 diff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="ui_lane">
+          <mxGeometry x="40" y="40" width="280" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ui2" value="复用 T14 diff 组件&lt;br&gt;KbWikiFileService 预览" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="ui_lane">
+          <mxGeometry x="360" y="40" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="api_lane" value="moli-knowledge-server :8090 · Gateway /KnowledgeServer/kb/ingest/**" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="210" width="1620" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" value="KbIngestController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="api_lane">
+          <mxGeometry x="40" y="45" width="140" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="KbIngestJobService&lt;br&gt;状态机" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="api_lane">
+          <mxGeometry x="210" y="40" width="150" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" value="KbIngestPlanner&lt;br&gt;KbIngestWriter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="api_lane">
+          <mxGeometry x="390" y="40" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="KbLlmClient&lt;br&gt;（共用 Ask/T14）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;dashed=1;" vertex="1" parent="api_lane">
+          <mxGeometry x="580" y="40" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="KbWikiFileService&lt;br&gt;（T14a 共用）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="api_lane">
+          <mxGeometry x="770" y="40" width="170" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="KbSyncService&lt;br&gt;spawn sync_to_db.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="api_lane">
+          <mxGeometry x="970" y="40" width="180" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="db_lane" value="MySQL · 任务态（非正文）+ 运行时" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="370" width="1620" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="t_job" value="&lt;b&gt;kb_ingest_job&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="db_lane">
+          <mxGeometry x="40" y="45" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="t_plan" value="&lt;b&gt;kb_ingest_plan&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="db_lane">
+          <mxGeometry x="190" y="45" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="t_draft" value="&lt;b&gt;kb_ingest_draft&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="db_lane">
+          <mxGeometry x="340" y="45" width="130" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="t_commit" value="&lt;b&gt;kb_ingest_commit&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="db_lane">
+          <mxGeometry x="500" y="45" width="140" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="t_doc" value="&lt;b&gt;kb_document&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;source='kb'&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="db_lane">
+          <mxGeometry x="720" y="45" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="wiki_lane" value="kb/ 写入轨（commit 时原子落盘 · 唯一正文源）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="1620" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="w_raw" value="&lt;b&gt;kb/raw/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;只读&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="wiki_lane">
+          <mxGeometry x="40" y="45" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="w_wiki" value="&lt;b&gt;kb/wiki/**&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;enterprise-kb ~376p&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffffff;strokeColor=#d6b656;size=12;" vertex="1" parent="wiki_lane">
+          <mxGeometry x="170" y="40" width="140" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="w_meta" value="index.md · log.md · edges.jsonl" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="wiki_lane">
+          <mxGeometry x="340" y="45" width="200" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="w_lint" value="lint.py --strict&lt;br&gt;（CI + commit 前）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="wiki_lane">
+          <mxGeometry x="570" y="45" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="ae1" value="REST" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="ui_lane" target="api_lane"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ae2" value="JDBC" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="api_lane" target="db_lane"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ae3" value="commit" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d6b656;strokeWidth=2;" edge="1" parent="1" source="c5" target="wiki_lane"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="855" y="500" /><mxPoint x="400" y="500" /></Array></mxGeometry></mxCell>
+        <mxCell id="ae4" value="sync" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="c6" target="t_doc"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1060" y="360" /><mxPoint x="780" y="360" /></Array></mxGeometry></mxCell>
+        <mxCell id="ae5" value="read only" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d6b656;dashed=1;" edge="1" parent="1" source="w_raw" target="c3"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="90" y="480" /><mxPoint x="470" y="480" /></Array></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
