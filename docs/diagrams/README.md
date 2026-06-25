@@ -1,7 +1,8 @@
 # 茉莉项目 · draw.io 架构图
 
 > 源文件在本目录（`.drawio`），用 [diagrams.net](https://app.diagrams.net/) 或 VS Code **Draw.io Integration** 插件打开编辑。  
-> 改图后导出 PNG/SVG 供 README / 架构文档引用。
+> 改图后导出 PNG/SVG 供 README / 架构文档引用。  
+> **Agent 绘图规范**：见 [`.cursor/skills/drawio-diagrams/SKILL.md`](../../.cursor/skills/drawio-diagrams/SKILL.md)（对话可说 `@drawio-diagrams`）。
 
 ## 文件清单
 
