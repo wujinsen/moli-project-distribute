@@ -49,8 +49,11 @@ import com.moli.knowledge.server.util.ShiroUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -78,6 +81,18 @@ import java.util.stream.Stream;
 public class KbIngestServiceImpl implements KbIngestService {
 
     private static final String DEFAULT_SPACE_CODE = "enterprise-kb";
+
+    /** 批次状态。 */
+    private static final String ST_PLANNED = "planned";
+    private static final String ST_REVIEWING = "reviewing";
+    private static final String ST_COMMITTED = "committed";
+    /** 草稿动作。 */
+    private static final String ACT_CREATE = "create";
+    private static final String ACT_ENRICH = "enrich";
+    /** 草稿审批。 */
+    private static final String AP_DRAFT = "draft";
+    private static final String AP_APPROVED = "approved";
+    private static final String AP_REJECTED = "rejected";
 
     private static final String PLAN_SYSTEM_PROMPT =
             "你是企业知识库的 Ingest 规划器（Planner）。范式：Karpathy LLM-Wiki，契约见 kb/AGENTS.md §4。\n"
@@ -154,6 +169,16 @@ public class KbIngestServiceImpl implements KbIngestService {
     private KbWikiFileService kbWikiFileService;
     @Resource
     private KbSyncService kbSyncService;
+    @Resource
+    private PlatformTransactionManager transactionManager;
+
+    /** 编程式事务：commit 的「文件落盘 + DB 记账」放一个事务，Sync 留到事务外。 */
+    private TransactionTemplate txTemplate;
+
+    @PostConstruct
+    private void initTxTemplate() {
+        this.txTemplate = new TransactionTemplate(transactionManager);
+    }
 
     // ---------------------------------------------------------------- raw tree
 
@@ -275,9 +300,11 @@ public class KbIngestServiceImpl implements KbIngestService {
         wrapper.orderByDesc(KbIngestJob::getCreateTime);
         Page<KbIngestJob> page = jobMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
 
+        Map<Long, KbSpace> spaceMap = loadSpaceMap(page.getRecords().stream()
+                .map(KbIngestJob::getSpaceId).collect(Collectors.toList()));
         List<IngestJobVo> vos = new ArrayList<>();
         for (KbIngestJob job : page.getRecords()) {
-            vos.add(toVo(job, kbSpaceMapper.selectById(job.getSpaceId()), null));
+            vos.add(toVo(job, spaceMap.get(job.getSpaceId()), null));
         }
         result.setRecords(vos);
         result.setTotal(page.getTotal());
@@ -369,7 +396,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         planMapper.insert(plan);
 
         job.setPlanVersion(nextVersion);
-        job.setStatus("planned");
+        job.setStatus(ST_PLANNED);
         job.setUpdateId(ShiroUtils.getUserId());
         job.setUpdateTime(new Date());
         jobMapper.updateById(job);
@@ -434,16 +461,15 @@ public class KbIngestServiceImpl implements KbIngestService {
                     + ingestProperties.getMaxPagesPerBatch() + "，请拆分批次");
         }
 
+        List<KbIngestDraft> existingDrafts = draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
+                .eq(KbIngestDraft::getJobId, jobId));
         Set<String> skipSlugs = new HashSet<>();
         if (resume) {
-            for (KbIngestDraft existing : draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
-                    .eq(KbIngestDraft::getJobId, jobId))) {
+            for (KbIngestDraft existing : existingDrafts) {
                 if (StringUtils.isNotBlank(resolveDraftContent(existing))) {
                     skipSlugs.add(existing.getSlug());
                 }
             }
-        } else {
-            draftMapper.delete(new LambdaQueryWrapper<KbIngestDraft>().eq(KbIngestDraft::getJobId, jobId));
         }
 
         List<String> batchSlugs = collectPlanSlugs(create, enrich);
@@ -451,45 +477,90 @@ public class KbIngestServiceImpl implements KbIngestService {
         knownSlugs.addAll(batchSlugs);
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
-        int generated = 0;
+        // 先在内存里生成（含 LLM 调用），单页失败隔离；成功后才在事务内替换，
+        // 避免「先删旧草稿、生成中途失败」导致已有草稿丢失（P1）。
+        List<KbIngestDraft> fresh = new ArrayList<>();
         int skipped = 0;
+        int failed = 0;
         if (create != null) {
             for (int i = 0; i < create.size(); i++) {
                 JSONObject item = create.getJSONObject(i);
-                String relPath = resolveCreateRelPath(item);
+                String relPath;
+                try {
+                    relPath = resolveCreateRelPath(item);
+                } catch (Exception e) {
+                    failed++;
+                    log.warn("[ingest] generate create 项解析失败 job={}: {}", jobId, e.getMessage());
+                    continue;
+                }
                 if (skipSlugs.contains(relPath)) {
                     skipped++;
                     continue;
                 }
-                draftMapper.insert(genCreateDraft(job, space, item, knownSlugs, today));
-                generated++;
+                try {
+                    fresh.add(genCreateDraft(job, space, item, knownSlugs, today));
+                } catch (Exception e) {
+                    failed++;
+                    log.warn("[ingest] generate create 页失败 job={} slug={}: {}", jobId, relPath, e.getMessage());
+                }
             }
         }
         if (enrich != null) {
             for (int i = 0; i < enrich.size(); i++) {
                 JSONObject item = enrich.getJSONObject(i);
-                KbIngestDraft preview = genEnrichDraft(job, space, item, knownSlugs);
-                if (skipSlugs.contains(preview.getSlug())) {
-                    skipped++;
-                    continue;
+                String planSlug = StringUtils.trimToEmpty(item.getString("slug"));
+                if (!planSlug.isEmpty()) {
+                    String rel = resolveExistingRelPath(space.getSpaceCode(), planSlug);
+                    String prospective = rel != null ? rel : typeDir("article") + "/" + planSlug;
+                    if (skipSlugs.contains(prospective)) {
+                        skipped++;
+                        continue;
+                    }
                 }
-                draftMapper.insert(preview);
-                generated++;
+                try {
+                    fresh.add(genEnrichDraft(job, space, item, knownSlugs));
+                } catch (Exception e) {
+                    failed++;
+                    log.warn("[ingest] generate enrich 页失败 job={} slug={}: {}", jobId, planSlug, e.getMessage());
+                }
             }
         }
 
-        job.setStatus("reviewing");
-        job.setUpdateId(ShiroUtils.getUserId());
-        job.setUpdateTime(new Date());
-        jobMapper.updateById(job);
+        // 全量模式若全部失败则保留原有草稿，不删除（避免数据丢失）
+        if (!resume && fresh.isEmpty() && !existingDrafts.isEmpty()) {
+            throw new BaseException("本次生成全部失败，已保留原有草稿；请检查 LLM 配置后重试");
+        }
+
+        // 事务内原子替换：(全量) 删旧 + 插新；(续跑) 覆盖同 slug 旧记录 + 插新
+        final boolean fResume = resume;
+        txTemplate.execute(status -> {
+            if (!fResume) {
+                draftMapper.delete(new LambdaQueryWrapper<KbIngestDraft>().eq(KbIngestDraft::getJobId, jobId));
+            }
+            for (KbIngestDraft d : fresh) {
+                if (fResume) {
+                    draftMapper.delete(new LambdaQueryWrapper<KbIngestDraft>()
+                            .eq(KbIngestDraft::getJobId, jobId)
+                            .eq(KbIngestDraft::getSlug, d.getSlug()));
+                }
+                draftMapper.insert(d);
+            }
+            job.setStatus(ST_REVIEWING);
+            job.setUpdateId(ShiroUtils.getUserId());
+            job.setUpdateTime(new Date());
+            jobMapper.updateById(job);
+            return null;
+        });
 
         IngestGenerateResultVo result = new IngestGenerateResultVo();
         result.setTotal(total);
-        result.setGenerated(generated);
+        result.setGenerated(fresh.size());
         result.setSkipped(skipped);
+        result.setFailed(failed);
         result.setResume(resume);
         result.setDrafts(listDrafts(jobId));
-        log.info("[ingest] generate job={} resume={} generated={} skipped={}", jobId, resume, generated, skipped);
+        log.info("[ingest] generate job={} resume={} generated={} skipped={} failed={}",
+                jobId, resume, fresh.size(), skipped, failed);
         return result;
     }
 
@@ -522,7 +593,7 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         String content = stripFence(llmClient.chat(PAGE_WRITER_PROMPT, userPrompt));
 
-        KbIngestDraft d = newDraft(job, relPath, type, "create");
+        KbIngestDraft d = newDraft(job, relPath, type, ACT_CREATE);
         d.setBaseline("");
         d.setPatch(null);
         d.setDraft(content);
@@ -554,7 +625,7 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         String section = stripFence(llmClient.chat(ENRICH_WRITER_PROMPT, userPrompt));
         boolean isEnrich = StringUtils.isNotBlank(baseline);
-        String action = isEnrich ? "enrich" : "create";
+        String action = isEnrich ? ACT_ENRICH : ACT_CREATE;
 
         KbIngestDraft d = newDraft(job, relPath, kbType, action);
         d.setBaseline(baseline);
@@ -597,18 +668,18 @@ public class KbIngestServiceImpl implements KbIngestService {
         kbAclService.assertCanEdit(job.getSpaceId());
         KbIngestDraft d = loadDraft(jobId, slug);
 
-        if ("enrich".equals(d.getAction()) && StringUtils.isNotBlank(request.getPatch())) {
+        if (ACT_ENRICH.equals(d.getAction()) && StringUtils.isNotBlank(request.getPatch())) {
             d.setPatch(request.getPatch());
             d.setDraft(mergeEnrich(StringUtils.defaultString(d.getBaseline()), request.getPatch()));
         } else if (StringUtils.isNotBlank(request.getContent())) {
             d.setDraft(request.getContent());
-            if ("enrich".equals(d.getAction())) {
+            if (ACT_ENRICH.equals(d.getAction())) {
                 d.setPatch(null);
             }
         } else {
             throw new BaseException("content 或 patch 不能为空");
         }
-        d.setApproval("draft");
+        d.setApproval(AP_DRAFT);
         d.setUpdateTime(new Date());
         draftMapper.updateById(d);
         return toDraftVo(d);
@@ -628,7 +699,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         JSONObject item = findPlanItem(jobId, slug, old.getAction());
 
         KbIngestDraft fresh;
-        if ("enrich".equals(old.getAction())) {
+        if (ACT_ENRICH.equals(old.getAction())) {
             fresh = genEnrichDraft(job, space, item, knownSlugs);
         } else {
             fresh = genCreateDraft(job, space, item, knownSlugs, today);
@@ -636,7 +707,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         old.setBaseline(fresh.getBaseline());
         old.setPatch(fresh.getPatch());
         old.setDraft(fresh.getDraft());
-        old.setApproval("draft");
+        old.setApproval(AP_DRAFT);
         old.setUpdateTime(new Date());
         draftMapper.updateById(old);
         return toDraftVo(old);
@@ -645,7 +716,7 @@ public class KbIngestServiceImpl implements KbIngestService {
     @Override
     public IngestDraftVo setApproval(Long jobId, String slug, String approval) {
         assertEnabled();
-        if (!"approved".equals(approval) && !"rejected".equals(approval) && !"draft".equals(approval)) {
+        if (!AP_APPROVED.equals(approval) && !AP_REJECTED.equals(approval) && !AP_DRAFT.equals(approval)) {
             throw new BaseException("非法审批状态: " + approval);
         }
         KbIngestJob job = loadJob(jobId);
@@ -668,6 +739,31 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         List<KbIngestDraft> drafts = draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
                 .eq(KbIngestDraft::getJobId, jobId));
+        return lintDrafts(space, drafts, enrichPlanSlugs(jobId));
+    }
+
+    /** 取最新 plan 中 enrich[] 的 bare slug（小写），用于检测「enrich 降级为 create」。 */
+    private Set<String> enrichPlanSlugs(Long jobId) {
+        Set<String> set = new HashSet<>();
+        KbIngestPlan plan = latestPlan(jobId);
+        if (plan == null || StringUtils.isBlank(plan.getPlanJson())) {
+            return set;
+        }
+        JSONArray enrich = JSON.parseObject(plan.getPlanJson()).getJSONArray("enrich");
+        if (enrich == null) {
+            return set;
+        }
+        for (int i = 0; i < enrich.size(); i++) {
+            String s = StringUtils.trimToEmpty(enrich.getJSONObject(i).getString("slug"));
+            if (!s.isEmpty()) {
+                set.add(bareSlug(s).toLowerCase(Locale.ROOT));
+            }
+        }
+        return set;
+    }
+
+    /** lint 核心：复用预读的 drafts，避免 commit 时二次全表扫描（P2）。 */
+    private IngestLintVo lintDrafts(KbSpace space, List<KbIngestDraft> drafts, Set<String> enrichPlanSlugs) {
         IngestLintVo vo = new IngestLintVo();
         List<IngestLintVo.Item> items = new ArrayList<>();
         if (drafts.isEmpty()) {
@@ -684,13 +780,13 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         boolean allApproved = !drafts.isEmpty();
         for (KbIngestDraft d : drafts) {
-            if (!"approved".equals(d.getApproval())) {
+            if (!AP_APPROVED.equals(d.getApproval())) {
                 allApproved = false;
             }
-            if ("rejected".equals(d.getApproval())) {
+            if (AP_REJECTED.equals(d.getApproval())) {
                 continue;
             }
-            items.addAll(lintDraft(d, known, titleIndex));
+            items.addAll(lintDraft(d, known, titleIndex, enrichPlanSlugs));
         }
 
         int blocking = (int) items.stream().filter(i -> "ERROR".equals(i.getSeverity())).count();
@@ -701,11 +797,19 @@ public class KbIngestServiceImpl implements KbIngestService {
         return vo;
     }
 
-    private List<IngestLintVo.Item> lintDraft(KbIngestDraft d, Set<String> known, Set<String> titleIndex) {
+    private List<IngestLintVo.Item> lintDraft(KbIngestDraft d, Set<String> known, Set<String> titleIndex,
+                                              Set<String> enrichPlanSlugs) {
         List<IngestLintVo.Item> items = new ArrayList<>();
         String content = resolveDraftContent(d);
         String slug = d.getSlug();
-        boolean enrich = "enrich".equals(d.getAction());
+        boolean enrich = ACT_ENRICH.equals(d.getAction());
+
+        // 计划为 enrich 但落成 create：说明未找到目标已有页，已降级为新建，提示人工确认落点
+        if (ACT_CREATE.equals(d.getAction())
+                && enrichPlanSlugs.contains(bareSlug(slug).toLowerCase(Locale.ROOT))) {
+            items.add(new IngestLintVo.Item(slug, "enrich_downgraded", "WARN",
+                    "计划为 enrich，但未找到可补充的已有页，已降级为新建（落在 articles/），请确认落点目录"));
+        }
 
         // frontmatter 仅对整页（create / enrich 合并后整页）校验
         if (!content.startsWith("---")) {
@@ -750,86 +854,43 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public IngestCommitResultVo commit(Long jobId, boolean sync) {
         assertEnabled();
         KbIngestJob job = loadJob(jobId);
         KbSpace space = resolveSpace(job.getSpaceId());
         kbAclService.assertCanEdit(space.getId());
 
-        IngestLintVo lint = lint(jobId);
+        // 1) 门禁（只读）：lint + 批准状态，drafts 只读一次复用（P2）
+        List<KbIngestDraft> drafts = draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
+                .eq(KbIngestDraft::getJobId, jobId));
+        IngestLintVo lint = lintDrafts(space, drafts, enrichPlanSlugs(jobId));
         if (lint.getBlockingCount() > 0) {
             throw new BaseException("lint 存在 " + lint.getBlockingCount() + " 个 ERROR，禁止提交");
         }
-        List<KbIngestDraft> drafts = draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
-                .eq(KbIngestDraft::getJobId, jobId));
         List<KbIngestDraft> approved = drafts.stream()
-                .filter(d -> "approved".equals(d.getApproval()))
+                .filter(d -> AP_APPROVED.equals(d.getApproval()))
                 .collect(Collectors.toList());
         if (approved.isEmpty()) {
             throw new BaseException("没有已批准的页，禁止提交");
         }
-        if (drafts.stream().anyMatch(d -> "draft".equals(d.getApproval()))) {
+        if (drafts.stream().anyMatch(d -> AP_DRAFT.equals(d.getApproval()))) {
             throw new BaseException("存在未审阅（draft）的页，请先批准或拒绝");
         }
 
-        IngestCommitResultVo vo = new IngestCommitResultVo();
-        vo.setJobId(jobId);
-        List<String> files = new ArrayList<>();
-        int created = 0;
-        int updated = 0;
+        // 2) 文件落盘 + DB 记账：编程式事务（治理文件追加幂等，重复 commit 不重复写）
+        //    DB 失败回滚，文件因幂等可被再次 commit 安全覆盖/跳过。
+        CommitHolder holder = txTemplate.execute(status -> doCommit(job, space, approved));
 
-        // 1. 写 wiki 各页
-        for (KbIngestDraft d : approved) {
-            WikiSaveRequest req = new WikiSaveRequest();
-            req.setSlug(d.getSlug());
-            req.setSpaceId(space.getId());
-            req.setContent(resolveDraftContent(d));
-            req.setChangeLog("ingest 批次#" + job.getBatchNo());
-            kbWikiFileService.writePage(req);
-            files.add(resolveWikiDir(space.getSpaceCode()) + "/" + d.getSlug() + ".md");
-            if ("enrich".equals(d.getAction())) {
-                updated++;
-            } else {
-                created++;
-            }
-        }
-        vo.setCreated(created);
-        vo.setUpdated(updated);
-        vo.setFiles(files);
+        IngestCommitResultVo vo = holder.vo;
 
-        // 2. append edges.jsonl（来自 plan.edges）
-        int edges = appendEdges(space.getSpaceCode(), job, approved);
-        vo.setEdgesAppended(edges);
-
-        // 3. append log.md
-        vo.setLogAppended(appendLog(space.getSpaceCode(), job, approved));
-
-        // 4. 更新 index.md（追加批次段）
-        vo.setIndexUpdated(appendIndexSection(space.getSpaceCode(), job, approved));
-
-        // 5. 记录 commit + 置状态
-        KbIngestCommit commit = new KbIngestCommit();
-        commit.setId(IdGenerator.getId());
-        commit.setJobId(jobId);
-        commit.setFilesJson(JSON.toJSONString(files));
-        commit.setCreateId(ShiroUtils.getUserId());
-        commit.setCreateTime(new Date());
-        commitMapper.insert(commit);
-
-        job.setStatus("committed");
-        job.setUpdateId(ShiroUtils.getUserId());
-        job.setUpdateTime(new Date());
-        jobMapper.updateById(job);
-
-        // 6. 可选 Sync（T15d）
+        // 3) Sync 留到事务提交之后执行，避免外部子进程长时间占用 DB 事务（P1）
         if (sync) {
             try {
                 SyncTriggerVo sr = kbSyncService.trigger(space.getId(), space.getSpaceCode());
                 vo.setSyncTriggered(true);
                 vo.setSyncResult(sr);
-                commit.setSyncBatchNo(sr != null ? space.getSpaceCode() : null);
-                commitMapper.updateById(commit);
+                holder.commit.setSyncBatchNo(sr != null ? space.getSpaceCode() : null);
+                commitMapper.updateById(holder.commit);
             } catch (Exception e) {
                 log.warn("[ingest] commit 后 Sync 失败 job={}: {}", jobId, e.getMessage());
                 SyncTriggerVo sr = new SyncTriggerVo();
@@ -842,8 +903,67 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
 
         log.info("[ingest] commit job={} created={} updated={} edges={} sync={}",
-                jobId, created, updated, edges, sync);
+                jobId, vo.getCreated(), vo.getUpdated(), vo.getEdgesAppended(), sync);
         return vo;
+    }
+
+    /** commit 事务体返回值（vo + commit 实体，便于事务外补 syncBatchNo）。 */
+    private static final class CommitHolder {
+        private final IngestCommitResultVo vo;
+        private final KbIngestCommit commit;
+        private CommitHolder(IngestCommitResultVo vo, KbIngestCommit commit) {
+            this.vo = vo;
+            this.commit = commit;
+        }
+    }
+
+    /** 文件落盘 + DB 记账（同一事务）。治理文件追加均幂等。 */
+    private CommitHolder doCommit(KbIngestJob job, KbSpace space, List<KbIngestDraft> approved) {
+        IngestCommitResultVo vo = new IngestCommitResultVo();
+        vo.setJobId(job.getId());
+        List<String> files = new ArrayList<>();
+        int created = 0;
+        int updated = 0;
+
+        // 1. 写 wiki 各页（writePage 覆盖写，天然幂等）
+        for (KbIngestDraft d : approved) {
+            WikiSaveRequest req = new WikiSaveRequest();
+            req.setSlug(d.getSlug());
+            req.setSpaceId(space.getId());
+            req.setContent(resolveDraftContent(d));
+            req.setChangeLog("ingest 批次#" + job.getBatchNo());
+            kbWikiFileService.writePage(req);
+            files.add(resolveWikiDir(space.getSpaceCode()) + "/" + d.getSlug() + ".md");
+            if (ACT_ENRICH.equals(d.getAction())) {
+                updated++;
+            } else {
+                created++;
+            }
+        }
+        vo.setCreated(created);
+        vo.setUpdated(updated);
+        vo.setFiles(files);
+
+        // 2~4. 治理文件追加（幂等：按 job 标记 / 整行去重）
+        vo.setEdgesAppended(appendEdges(space.getSpaceCode(), job, approved));
+        vo.setLogAppended(appendLog(space.getSpaceCode(), job, approved));
+        vo.setIndexUpdated(appendIndexSection(space.getSpaceCode(), job, approved));
+
+        // 5. 记录 commit + 置状态
+        KbIngestCommit commit = new KbIngestCommit();
+        commit.setId(IdGenerator.getId());
+        commit.setJobId(job.getId());
+        commit.setFilesJson(JSON.toJSONString(files));
+        commit.setCreateId(ShiroUtils.getUserId());
+        commit.setCreateTime(new Date());
+        commitMapper.insert(commit);
+
+        job.setStatus(ST_COMMITTED);
+        job.setUpdateId(ShiroUtils.getUserId());
+        job.setUpdateTime(new Date());
+        jobMapper.updateById(job);
+
+        return new CommitHolder(vo, commit);
     }
 
     // ---------------------------------------------------------------- 落盘文件操作
@@ -860,6 +980,8 @@ public class KbIngestServiceImpl implements KbIngestService {
         Set<String> approvedBare = approved.stream()
                 .map(d -> bareSlug(d.getSlug())).collect(Collectors.toSet());
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        // 幂等：跳过已存在于 edges.jsonl 的相同行（重复 commit 不重复写）
+        String existing = readWikiRelFile(spaceCode, "graph/edges.jsonl");
         StringBuilder sb = new StringBuilder();
         int count = 0;
         for (int i = 0; i < edges.size(); i++) {
@@ -876,7 +998,11 @@ public class KbIngestServiceImpl implements KbIngestService {
             line.put("type", StringUtils.defaultIfBlank(e.getString("type"), "relates_to"));
             line.put("evidence", StringUtils.defaultString(e.getString("evidence")));
             line.put("date", today);
-            sb.append(line.toJSONString()).append('\n');
+            String json = line.toJSONString();
+            if (existing.contains(json) || sb.indexOf(json) >= 0) {
+                continue;
+            }
+            sb.append(json).append('\n');
             count++;
         }
         if (count == 0) {
@@ -887,10 +1013,15 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     private boolean appendLog(String spaceCode, KbIngestJob job, List<KbIngestDraft> approved) {
+        // 幂等：同一 job 的批次行只写一次
+        String marker = ingestMarker(job);
+        if (readWikiRelFile(spaceCode, "log.md").contains(marker)) {
+            return false;
+        }
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        String creates = approved.stream().filter(d -> "create".equals(d.getAction()))
+        String creates = approved.stream().filter(d -> ACT_CREATE.equals(d.getAction()))
                 .map(d -> bareSlug(d.getSlug())).collect(Collectors.joining(", "));
-        String enriches = approved.stream().filter(d -> "enrich".equals(d.getAction()))
+        String enriches = approved.stream().filter(d -> ACT_ENRICH.equals(d.getAction()))
                 .map(d -> bareSlug(d.getSlug())).collect(Collectors.joining(", "));
         StringBuilder line = new StringBuilder();
         line.append("## [").append(today).append("] ingest | 批次#").append(job.getBatchNo())
@@ -901,22 +1032,46 @@ public class KbIngestServiceImpl implements KbIngestService {
         if (!enriches.isEmpty()) {
             line.append("; enrich ").append(enriches);
         }
-        line.append('\n');
+        line.append(' ').append(marker).append('\n');
         appendToFile(spaceCode, "log.md", line.toString());
         return true;
     }
 
     private boolean appendIndexSection(String spaceCode, KbIngestJob job, List<KbIngestDraft> approved) {
+        // 幂等：同一 job 的批次段只写一次
+        String marker = ingestMarker(job);
+        if (readWikiRelFile(spaceCode, "index.md").contains(marker)) {
+            return false;
+        }
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         StringBuilder sb = new StringBuilder();
-        sb.append("\n## 批次 #").append(job.getBatchNo()).append("（Web Ingest ").append(today).append("）\n\n");
+        sb.append("\n## 批次 #").append(job.getBatchNo()).append("（Web Ingest ").append(today).append("）")
+                .append(' ').append(marker).append("\n\n");
         for (KbIngestDraft d : approved) {
             sb.append("- [[").append(bareSlug(d.getSlug())).append("]] — ")
-                    .append("enrich".equals(d.getAction()) ? "enrich" : ("create " + StringUtils.defaultString(d.getKbType())))
+                    .append(ACT_ENRICH.equals(d.getAction()) ? "enrich" : ("create " + StringUtils.defaultString(d.getKbType())))
                     .append('\n');
         }
         appendToFile(spaceCode, "index.md", sb.toString());
         return true;
+    }
+
+    /** 治理文件幂等标记（HTML 注释，渲染不可见）。 */
+    private String ingestMarker(KbIngestJob job) {
+        return "<!-- ingest-job:" + job.getId() + " -->";
+    }
+
+    /** 读 wiki 目录下相对文件全文，不存在/失败返回 ""。 */
+    private String readWikiRelFile(String spaceCode, String relFile) {
+        Path file = resolveWikiRelFile(spaceCode, relFile);
+        if (!Files.exists(file)) {
+            return "";
+        }
+        try {
+            return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return "";
+        }
     }
 
     /** 向 wiki 目录下相对文件追加内容（不存在则创建）。 */
@@ -1179,7 +1334,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         d.setSlug(relPath);
         d.setKbType(kbType);
         d.setAction(action);
-        d.setApproval("draft");
+        d.setApproval(AP_DRAFT);
         d.setCreateId(ShiroUtils.getUserId());
         d.setCreateTime(new Date());
         d.setUpdateTime(new Date());
@@ -1223,7 +1378,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
         JSONObject obj = JSON.parseObject(plan.getPlanJson());
         String bare = bareSlug(slug);
-        JSONArray arr = obj.getJSONArray("enrich".equals(action) ? "enrich" : "create");
+        JSONArray arr = obj.getJSONArray(ACT_ENRICH.equals(action) ? "enrich" : "create");
         if (arr != null) {
             for (int i = 0; i < arr.size(); i++) {
                 JSONObject it = arr.getJSONObject(i);
@@ -1494,7 +1649,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         if (StringUtils.isNotBlank(d.getDraft())) {
             return d.getDraft();
         }
-        if ("enrich".equals(d.getAction())) {
+        if (ACT_ENRICH.equals(d.getAction())) {
             return mergeEnrich(StringUtils.defaultString(d.getBaseline()), d.getPatch());
         }
         return "";
@@ -1516,11 +1671,25 @@ public class KbIngestServiceImpl implements KbIngestService {
             w.eq(KbIngestTemplate::getSpaceId, spaceId);
         }
         w.orderByDesc(KbIngestTemplate::getCreateTime);
+        List<KbIngestTemplate> tpls = templateMapper.selectList(w);
+        Map<Long, KbSpace> spaceMap = loadSpaceMap(tpls.stream()
+                .map(KbIngestTemplate::getSpaceId).collect(Collectors.toList()));
         List<IngestTemplateVo> out = new ArrayList<>();
-        for (KbIngestTemplate tpl : templateMapper.selectList(w)) {
-            out.add(toTemplateVo(tpl));
+        for (KbIngestTemplate tpl : tpls) {
+            out.add(toTemplateVo(tpl, spaceMap.get(tpl.getSpaceId())));
         }
         return out;
+    }
+
+    /** 批量按 id 加载空间，去重，避免逐条 selectById（N+1）。 */
+    private Map<Long, KbSpace> loadSpaceMap(List<Long> spaceIds) {
+        List<Long> distinct = spaceIds.stream().filter(java.util.Objects::nonNull)
+                .distinct().collect(Collectors.toList());
+        if (distinct.isEmpty()) {
+            return new java.util.HashMap<>();
+        }
+        return kbSpaceMapper.selectBatchIds(distinct).stream()
+                .collect(Collectors.toMap(KbSpace::getId, s -> s, (a, b) -> a));
     }
 
     @Override
@@ -1644,7 +1813,7 @@ public class KbIngestServiceImpl implements KbIngestService {
 
             KbIngestJob job = loadJob(jobVo.getId());
             job.setPlanVersion(1);
-            job.setStatus("planned");
+            job.setStatus(ST_PLANNED);
             job.setUpdateId(ShiroUtils.getUserId());
             job.setUpdateTime(new Date());
             jobMapper.updateById(job);
@@ -1654,10 +1823,13 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     private IngestTemplateVo toTemplateVo(KbIngestTemplate tpl) {
+        return toTemplateVo(tpl, kbSpaceMapper.selectById(tpl.getSpaceId()));
+    }
+
+    private IngestTemplateVo toTemplateVo(KbIngestTemplate tpl, KbSpace space) {
         IngestTemplateVo vo = new IngestTemplateVo();
         vo.setId(tpl.getId());
         vo.setSpaceId(tpl.getSpaceId());
-        KbSpace space = kbSpaceMapper.selectById(tpl.getSpaceId());
         vo.setSpaceCode(space == null ? null : space.getSpaceCode());
         vo.setName(tpl.getName());
         vo.setTopic(tpl.getTopic());

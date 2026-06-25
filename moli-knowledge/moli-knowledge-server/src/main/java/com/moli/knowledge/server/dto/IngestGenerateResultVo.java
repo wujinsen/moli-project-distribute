@@ -22,6 +22,9 @@ public class IngestGenerateResultVo {
     @ApiModelProperty("续跑跳过（已有草稿）页数")
     private int skipped;
 
+    @ApiModelProperty("本次生成失败页数（单页隔离，不影响其余页）")
+    private int failed;
+
     @ApiModelProperty("是否续跑模式")
     private boolean resume;
 
