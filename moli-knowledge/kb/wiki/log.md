@@ -1324,3 +1324,10 @@
 ## [2026-06-24] ingest | guides/AI自我进化与MD审校流程 扩写：三层架构/Ingest-Lint-Sync/Crystallize/Web体检分工/kb_lint_issue/Sync幂等/自动化对照；AGENTS.md §8
 ## [2026-06-24] ingest | guides/Wiki在线编辑与AI协助改稿 — Web AI 改稿+diff+保存 wiki 产品方案；ROADMAP M5、TASKS T14、index
 ## [2026-06-24] ingest | guides/AI自我进化与MD审校流程 ↔ Wiki在线编辑 分工互链：场景 B = Web T14 同一审校标准
+## [2026-06-25] maintenance | Phase0 治理：删 enterprise-kb 运维重复 20 页，清 padding 992 页，替换运维 [[链接]] 391 处，清理 edges 1121 条
+## [2026-06-25] maintenance | Phase0 补刀：删 batch output 9 页，修 index/断链/GlobalExceptionHandler/redis-缓存 created
+## [2026-06-25] maintenance | Phase0 lint pass：bare related 替换、断链修复、edges 清理 5 条
+## [2026-06-25] maintenance | wiki同步指南 三空间映射表；run_sync dry-run-all/sync-all；enterprise-kb 侧 ingest/审校/sync 文档对齐
+## [2026-06-24] feature | T14e：文档管理新建→Wiki编辑+首存AI治理；浏览 index 仅 source=kb；更新 Wiki在线编辑/AI自我进化/KNOWLEDGE_API
+## [2026-06-24] feature | 全面移除 Web 直连写库：删 KbDocumentEditPanel、停用 POST/PUT publish/archive/DELETE /kb/document；文档管理仅 wiki 编辑
+## [2026-06-24] maintenance | sync_to_db --purge-manual-web + purge_manual_web.ps1 清理 source=manual 遗留行

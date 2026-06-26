@@ -8,7 +8,7 @@ sources:
   - moli-knowledge/kb/AGENTS.md
   - moli-knowledge/kb/tools/lint.py
   - moli-knowledge/kb/tools/sync_to_db.py
-related: [知识库三操作, 增量ingest与raw投喂指南, 查询与体检指南, wiki同步指南, 知识库使用指南, Wiki在线编辑与AI协助改稿]
+related: [知识库三操作, 增量ingest与raw投喂指南, 系统操作手册入口, 系统操作手册入口, 系统操作手册入口, Wiki在线编辑与AI协助改稿]
 created: 2026-06-24
 updated: 2026-06-24
 ---
@@ -200,7 +200,7 @@ flowchart TB
 | **lint.py** | 机械门禁（断链/孤儿/缺 sources 等） |
 | **Sync** | wiki → `kb_document`，对外浏览/问答 |
 
-当前 **Web 尚无**单篇「AI 审校 + diff + 保存 wiki」界面（**T14** 见 [[Wiki在线编辑与AI协助改稿]]）；现网闭环在 **Agent + 命令行 + 健康体检 Sync Tab** 完成。
+当前 **Web** 已支持单篇「AI 审校 + diff + 保存 wiki + Sync」（**T14**，见 [[Wiki在线编辑与AI协助改稿]]）；**文档管理 · 新建** 亦走 wiki 编辑，首存后可触发场景 B 治理提示。
 
 ### 3.1 四条进化路径（对照）
 
@@ -292,7 +292,7 @@ python moli-knowledge/kb/tools/lint.py --report --log
 | 结果 | 动作 |
 |------|------|
 | **ERROR = 0** | 可进入 Sync（建议 `--strict` 也通过） |
-| 有 **broken_link / dup_slug** | 回到步骤 1 让 AI 或人工修 [[链接]] / 文件名 |
+| 有 **broken_link / dup_slug** | 回到步骤 1 让 AI 或人工修 `[[链接]]` / 文件名 |
 | 有 **orphan / missing_source** | 补入链或 sources，或确认可忽略 |
 
 > Lint 扫的是 **wiki 文件**，与 `sync_to_db.py` 解析口径一致；**先于 Sync** 跑。
@@ -309,17 +309,20 @@ python moli-knowledge/kb/tools/serve.py
 AI 改完 + Lint 通过后：
 
 1. `git diff moli-knowledge/kb/wiki/` 看变更
-2. 重点看：frontmatter、[[链接]]、是否误删 sources、是否与现有页矛盾
+2. 重点看：frontmatter、`[[链接]]`、是否误删 sources、是否与现有页矛盾
 3. 确认后 **commit**（可选装 git hook，commit wiki 后提醒/自动 sync）
 
 ### 步骤 4：Sync 进 MySQL
 
 ```bash
-python moli-knowledge/kb/tools/sync_to_db.py --dry-run   # 先看 insert/update/skip
-python moli-knowledge/kb/tools/sync_to_db.py             # 写 enterprise-kb
+bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run-all   # 三空间预览
+bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all      # 写库（推荐）
 ```
 
-或 **茉莉后台 → 健康体检 → Wiki 同步 → 触发同步**（需 `kb:sync:trigger`）。
+仅改 `kb/wiki/` 时也可：`sync_to_db.py --dry-run` / 默认 sync → `enterprise-kb`。  
+三空间 `--wiki-dir` ↔ `space_code` 对照见 [[系统操作手册入口]] §三空间 Sync 映射；完整 FAQ 见 ops 空间 `guides/wiki同步指南`。
+
+或 **茉莉后台 → 健康体检 → Wiki 同步 → 触发同步**（需 `kb:sync:trigger`；按空间触发）。
 
 看同步日志：`insert` / `update` 才有新内容；全是 `skip` 表示 hash 未变（可能改错目录或未保存）。
 
@@ -339,6 +342,7 @@ python moli-knowledge/kb/tools/sync_to_db.py             # 写 enterprise-kb
 | 健康体检 · 质量体检 | 步骤 5 **DB** 体检（`kb_lint_issue`）；**不能代替**步骤 2 wiki lint |
 | 健康体检 · Wiki 同步 | 步骤 4 Sync |
 | 文档浏览 | 步骤 5 验证 |
+| 文档管理 · 新建 | 步骤 1 写 wiki 首稿 → 步骤 2–4 lint/Sync；首存可选 **§4 场景 B** AI 治理（T14） |
 | 空间管理 | 与内容进化无关（ACL） |
 
 ### 5.1 自动化程度（现状）
@@ -350,9 +354,9 @@ python moli-knowledge/kb/tools/sync_to_db.py             # 写 enterprise-kb
 | CI merge 后 sync | ✅ | GitHub Actions |
 | Web 问答 + 反馈 | 半自动 | 点赞/点踩存库，**不**触发 crystallize |
 | raw → Ingest | ❌ | Cursor Agent（厚 Ingest，见 `AGENTS.md`） |
-| AI 审校 MD | Cursor ✅ / Web 🔜 T14 | Agent 用 §6 模板；Web 见 [[Wiki在线编辑与AI协助改稿]] |
+| AI 审校 MD | Cursor ✅ / Web ✅ T14 | Agent 用 §6 模板；Web 见 [[Wiki在线编辑与AI协助改稿]]（含文档管理新建 → 单篇治理） |
 | lint 通过 → 自动 Sync | ❌ | 需人工或 CI |
-| Web 一键自我进化 | 🔜 T14 | 见 [[Wiki在线编辑与AI协助改稿]]：界面 AI 改稿 + diff + 保存 wiki |
+| Web 一键自我进化 | T14 ✅ / **T15 / M6** 🔜 | 单篇见 [[Wiki在线编辑与AI协助改稿]]；批次 Ingest 见 [[Ingest工作台产品方案]] |
 
 **顺序记忆**：改 md → **wiki lint.py** → 人审 diff → **Sync** → （可选）Web 扫描并落库。
 
@@ -368,7 +372,7 @@ python moli-knowledge/kb/tools/sync_to_db.py             # 写 enterprise-kb
 约束：只改 wiki/**；遵守 moli-knowledge/kb/AGENTS.md
 步骤：
 1. 读 index.md 与相邻相关页，避免重复 slug
-2. 审校该 md：frontmatter、[[链接]]、sources、事实、互链
+2. 审校该 md：frontmatter、`[[链接]]`、sources、事实、互链
 3. 直接修改文件；必要时更新 index.md、log.md、edges.jsonl
 4. 在终端执行：python moli-knowledge/kb/tools/lint.py --strict
 5. 若 lint 失败，继续修直到 ERROR=0
@@ -402,13 +406,14 @@ raw：kb/raw/{路径}
 
 | 能力 | 现状 | 与本文关系 |
 |------|------|------------|
-| Web 单篇「AI 审校 + diff + 保存 wiki + Sync」 | 🔜 T14 | = **§4 场景 B** 的 Web 入口，详设见 [[Wiki在线编辑与AI协助改稿]] |
+| Web 单篇「AI 审校 + diff + 保存 wiki + Sync」 | 🔜 T14 / M5 | = **§4 场景 B** 的 Web 入口，详设见 [[Wiki在线编辑与AI协助改稿]] |
+| Web **批次厚 Ingest** 工作台 | 🔜 T15 / M6 | = **§4 场景 A + 批次 ingest** 的 Web 入口，详设见 [[Ingest工作台产品方案]] |
 | Web「上传 md → AI 审校 → Sync」 | 🔜 T14 可选 | 非 P0；T14 先做已有 slug 编辑 |
 | 问答点踩 → 自动 crystallize | 未做（仅 `kb_qa_log.useful`） | 见 §2.2 |
 | lint 通过 → 自动 Sync | 未做（需 CI 或 hook 半自动） | 见 §5.1 |
 | 单篇 md 只 lint 变更文件 | 可手跑全库；可按路径扩展 lint.py | CLI |
 
-演进建议：CI 中 `lint-strict` + merge 后 `run_sync.sh sync`；Web 增加「Sync 结果展示 insert/update/skip」。
+演进建议：CI 中 `lint-strict` + merge 后 `run_sync.sh sync-all`；Web 增加「Sync 结果展示 insert/update/skip」。
 
 ---
 
@@ -426,4 +431,4 @@ append-only 示例：
 
 ## 相关
 
-[[知识库三操作]] · [[Wiki在线编辑与AI协助改稿]] · [[增量ingest与raw投喂指南]] · [[查询与体检指南]] · [[wiki同步指南]] · [[知识库使用指南]]
+[[知识库三操作]] · [[Wiki在线编辑与AI协助改稿]] · [[Ingest工作台产品方案]] · [[增量ingest与raw投喂指南]] · [[系统操作手册入口]]

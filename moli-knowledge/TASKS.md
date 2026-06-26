@@ -243,7 +243,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
   - meiling-ui：✅ `KnowledgeWikiEditView`（AI/lint/sync）、`KnowledgeLintView` 修复入口、`KnowledgeBrowseView` 编辑 wiki
   - 文档：✅ `docs/api/KNOWLEDGE_API.md` §8；🔜 `docs/sql` 菜单种子（`kb:wiki:edit`）
 - **依赖**：T9 ACL（editor）、T2 LLM 配置、T3 `/kb/page`（读库展示可复用 slug）
-- **铁律**：保存目标 = **wiki 文件**，不是默认 `POST /kb/document` 双写
+- **铁律**：保存目标 = **wiki 文件**；`POST /kb/document` **已停用**（2026-06-24）
 
 ---
 

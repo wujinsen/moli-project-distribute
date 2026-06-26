@@ -1,6 +1,6 @@
 # 企业知识库 · 前端对接 API 文档
 
-> 更新：2026-06-23 · 后端：`moli-knowledge-server`（:8090）
+> 更新：2026-06-25 · 后端：`moli-knowledge-server`（:8090）
 > 供 `meiling-ui` 前端对接知识库模块（浏览 / Query / 图谱 / 体检 / 文档管理）。
 > 表结构见 [`../sql/KNOWLEDGE_SCHEMA.md`](../sql/KNOWLEDGE_SCHEMA.md)；后端实现见 [`../../moli-knowledge/moli-knowledge-server/README.md`](../../moli-knowledge/moli-knowledge-server/README.md)。
 
@@ -79,6 +79,7 @@
 | 902 | C 菜单 | 智能问答 | `ask` | `knowledge/ask/index` |
 | 903 | C 菜单 | 关系图谱 | `graph` | `knowledge/graph/index` |
 | 904 | C 菜单 | 健康体检 | `lint` | `knowledge/lint/index` |
+| 906 | C 菜单 | Ingest 工作台 | `ingest` | `knowledge/ingest/index` |
 | 909 | C 菜单 | 空间管理 | `spaces` | `knowledge/spaces/index` |
 
 按钮权限（`sys_action`，在「分配权限」右侧按页面分组；F 菜单 perms 不进 Shiro）：
@@ -87,8 +88,9 @@
 |--------------|----------------|
 | 909 空间管理 | `kb:space:add`、`kb:space:edit`、`kb:space:remove`、`kb:space:member` |
 | 904 健康体检 | `kb:lint:scan`、`kb:sync:trigger` |
+| 906 Ingest 工作台 | `kb:ingest:job`（规划/生成）、`kb:ingest:commit`（落盘） |
 
-侧栏 C 菜单 perms：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:space:admin`。
+侧栏 C 菜单 perms：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:ingest:list`、`kb:space:admin`。
 
 `getRouters` 返回片段示例：
 
@@ -138,7 +140,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 
 ### 2.1 目录 meta `GET /kb/index`
 
-按知识类型分组的**计数**（已发布文档；**不含 items**，轻量首屏）。
+按知识类型分组的**计数**（**已发布**且 **`source='kb'`** 的 wiki 同步文档；**不含** Web 手工 `manual` 行；**不含 items**，轻量首屏）。
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
@@ -452,21 +454,26 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 
 ---
 
-## 5. 文档 / 分类 / 标签 / 评论 / 收藏（已有 CRUD）
+## 5. 文档 / 分类 / 标签 / 评论 / 收藏
 
 ### 5.1 文档 `/kb/document`
+
+> **写库铁律（2026-06-24）**：Web **不再**通过 `POST /kb/document` 新建/改正文、也不通过 publish/archive/delete 改状态。  
+> 唯一写路径：**`PUT /kb/wiki/page`** → **Wiki 同步**（`sync_to_db` / `POST /kb/sync/trigger`）。  
+> 本组接口保留 **只读/检索** 与 **版本历史查询**；写接口调用将返回业务错误。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/kb/document/search` | 管理侧文档搜索，返回 `Page<KbDocument>` |
-| GET | `/kb/document/{id}` | 详情 `DocumentDetailVo`（会自增浏览数） |
-| POST | `/kb/document` | 保存（`DocumentSaveRequest`） |
-| PUT | `/kb/document/{id}/publish` | 发布 |
-| PUT | `/kb/document/{id}/archive` | 归档 |
-| DELETE | `/kb/document/{id}` | 删除（逻辑） |
-| GET | `/kb/document/{id}/versions?pageNum=&pageSize=` | 版本历史 `Page<KbDocumentVersion>` |
+| GET | `/kb/document/{id}` | 详情 `DocumentDetailVo`（会自增浏览数；旧 edit 路由重定向用） |
+| GET | `/kb/document/{id}/versions?pageNum=&pageSize=` | 版本历史 `Page<KbDocumentVersion>`（Sync 前手工时代的遗留版本） |
+| ~~POST~~ | `/kb/document` | **已停用** — 请用 Wiki 编辑 + Sync |
+| ~~PUT~~ | `/kb/document/{id}/publish` | **已停用** — `frontmatter.status` + Sync |
+| ~~PUT~~ | `/kb/document/{id}/archive` | **已停用** — 同上 |
+| ~~DELETE~~ | `/kb/document/{id}` | **已停用** — 删 wiki 文件后 Sync 软删 |
 
-> ⚠️ 文档接口已接入空间 ACL：搜索自动过滤不可读空间；详情/版本需读权限；保存/发布/归档/删除需编辑权限。
+> ⚠️ 文档接口已接入空间 ACL：搜索自动过滤不可读空间；详情/版本需读权限。  
+> **写操作已停用**（见上表）；编辑权限见 **`kb:wiki:edit`** + **`kb:sync:trigger`**。
 
 #### `GET /kb/document/search` 参数（`DocumentSearchRequest`）
 
@@ -478,6 +485,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | `keyword` | query | 否 | — | 关键词 |
 | `status` | query | 否 | — | `0` 草稿 / `1` 已发布 / `2` 已归档 |
 | `tagId` | query | 否 | — | 按标签过滤 |
+| `source` | query | 否 | — | `kb`（wiki 同步）/ `manual`；**文档管理固定传 `kb`** |
 | `pageNum` | query | 否 | `1` | 页码 |
 | `pageSize` | query | 否 | `10` | 每页条数 |
 
@@ -488,7 +496,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | `fulltext`（默认） | MySQL ngram 全文索引 `MATCH AGAINST`；索引异常时**自动降级**三字段 `LIKE` |
 | `like` | 始终用 `title`/`summary`/`content` 的 `LIKE` |
 
-> 前端「知识库浏览」侧栏用 `/kb/index` + `/kb/index/items|search|locate` + `/kb/page`；管理后台文档搜索用本接口。
+> 前端「知识库浏览」侧栏用 `/kb/index` + …（**仅 `source=kb`**）；文档管理列表 **`/kb/document/search?source=kb`**，编辑走 **`/kb/wiki/page`**。
 
 #### `GET /kb/document/{id}` 响应示例（`DocumentDetailVo`）
 
@@ -522,33 +530,27 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | `slug` | 空间内唯一路径，wiki 同步页有值 |
 | `kbType` | 知识类型：guide/service/concept/article/interview/output |
 | `domain` | 领域标签（如 AP/FE） |
-| `source` | `kb`（wiki 同步）/ `manual`（手工创建） |
+| `source` | `kb`（wiki 同步，**唯一 Web 可见来源**）/ `manual`（历史遗留，Web 已不可编辑） |
 | `favorited` | 当前登录用户是否已收藏 |
 
-#### `POST /kb/document` 请求体（`DocumentSaveRequest`）
+#### ~~`POST /kb/document`~~（已停用）
+
+> 返回：`已停用 Web 直连写库：请通过 PUT /kb/wiki/page 保存 wiki 源文件，再触发 Wiki 同步（sync_to_db）`
+
+<details>
+<summary>历史请求体（仅供迁移参考）</summary>
 
 ```json
 {
   "id": null,
   "spaceId": 900000000000000001,
-  "categoryId": 900000000000000103,
   "title": "新文档",
-  "summary": "摘要",
   "content": "# Hello",
-  "docType": "markdown",
-  "status": 0,
-  "tagIds": [900001],
-  "changeLog": "初稿"
+  "status": 0
 }
 ```
 
-| 字段 | 必填 | 说明 |
-|------|------|------|
-| `id` | 否 | 有值=更新，无值=新建 |
-| `spaceId` | 是 | 目标空间（需编辑权限） |
-| `status` | 否 | 默认草稿 `0` |
-| `tagIds` | 否 | 标签 ID 列表 |
-| `changeLog` | 否 | 版本变更说明 |
+</details>
 
 ### 5.2 分类 `/kb/category`
 
@@ -732,6 +734,23 @@ python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-
 python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-ops --space moli-ops-manual
 ```
 
+**清理遗留直连 DB 行**（Web 已停用 `POST /kb/document`，2026-06-24）：
+
+```bash
+# 预览将软删的行（全空间）
+bash moli-knowledge/kb/tools/ci/run_sync.sh purge-manual-web-dry-run
+
+# 执行软删：source=manual，或 source IS NULL 且无 slug 的行
+bash moli-knowledge/kb/tools/ci/run_sync.sh purge-manual-web-all
+
+# 单空间
+bash moli-knowledge/kb/tools/ci/run_sync.sh purge-manual-web
+
+# Windows
+powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1
+powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute
+```
+
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/kb/sync/logs?spaceId=&batchNo=&pageNum=&pageSize=` | 同步日志分页 `Page<KbSyncLog>` |
@@ -842,11 +861,13 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 页面 | 路由 component | 主要接口 | 备注 |
 |------|----------------|----------|------|
-| 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index`（meta）+ `/kb/index/items|search|locate` + `/kb/page` | 顶部**空间选择器**；分组懒加载；`spaceId` 随 API 传递 |
+| 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index`（meta）+ `/kb/index/items|search|locate` + `/kb/page` | 顶部**空间选择器**；分组懒加载；`spaceId` 随 API 传递；**index 仅 `source=kb`** |
+| 文档管理 | `knowledge/documents/index` | `/kb/document/search?source=kb` + **Wiki 编辑** `/kb/wiki/page` | **新建/编辑均写 wiki**；列表不含 `manual` |
 | 智能问答 | `knowledge/ask/index` | `/kb/ask` + history/feedback | 空间选择器 + **跨空间多选**（`spaceIds[]`）；引用含 `spaceId` |
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
 | **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` | 浏览/体检「编辑/修复」；源码编辑 + diff + AI 协助 + 保存并 Sync |
+| **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 20 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑 |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
 前端实现：`meiling-ui/src/composables/useKbSpace.ts`（共享空间上下文）、`src/components/knowledge/KbSpaceSelector.vue`。
@@ -970,10 +991,51 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 ## 9. Ingest 工作台（T15）
 
 > 产品方案：[`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
-> **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。
-> **已实现 T15a–e**：raw 只读树 + 批次 job CRUD + Plan + 多页草稿生成/审阅 + lint 预检 + 原子 commit + 一键 Sync + enrich patch + 断点续跑 + 批次模板。
+> **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。  
+> **状态**：T15a–e 已全部实现（含 enrich patch、断点续跑、批次模板）。
 
-统一前缀 `/kb/ingest`，返回 `MoliResult<T>`。配置见 `application-*.yml` 的 `kb.ingest.*`：
+统一前缀 **`/kb/ingest`**，返回 `MoliResult<T>`。经网关示例：`POST {VITE_API_BASE_URL}/KnowledgeServer/kb/ingest/jobs`。
+
+### 9.0 接口总览
+
+| # | 方法 | 路径 | 说明 | 权限 |
+|---|------|------|------|------|
+| 1 | GET | `/kb/ingest/raw-tree?prefix=` | raw 只读目录树 | 空间 **viewer** |
+| 2 | POST | `/kb/ingest/jobs` | 创建批次 | **editor** |
+| 3 | GET | `/kb/ingest/jobs?spaceId=&status=&pageNum=&pageSize=` | 批次分页 | viewer |
+| 4 | GET | `/kb/ingest/jobs/{id}` | 批次详情（含最新 plan） | viewer |
+| 5 | POST | `/kb/ingest/jobs/{id}/plan` | LLM 生成/刷新 Plan | **editor** |
+| 6 | PUT | `/kb/ingest/jobs/{id}/plan` | 人工编辑 Plan | **editor** |
+| 7 | GET | `/kb/ingest/jobs/{id}/export-agent-prompt` | 导出 Cursor Agent 提示词 | viewer |
+| 8 | POST | `/kb/ingest/jobs/{id}/generate?resume=false` | 按 plan 生成多页草稿；`resume=true` 断点续跑 | **editor** + LLM |
+| 9 | GET | `/kb/ingest/jobs/{id}/drafts` | 草稿列表 | viewer |
+| 10 | GET | `/kb/ingest/jobs/{id}/draft?slug=` | 单页草稿 | viewer |
+| 11 | PUT | `/kb/ingest/jobs/{id}/draft?slug=` | 人工改草稿（`content` / `patch`） | **editor** |
+| 12 | POST | `/kb/ingest/jobs/{id}/draft/regenerate?slug=` | 单页重生成 | **editor** + LLM |
+| 13 | PUT | `/kb/ingest/jobs/{id}/draft/approval?slug=&approval=` | 审批 `approved`/`rejected`/`draft` | **editor** |
+| 14 | POST | `/kb/ingest/jobs/{id}/lint` | commit 前 lint 预检 | viewer |
+| 15 | POST | `/kb/ingest/jobs/{id}/commit?sync=false` | 原子落盘 wiki；`sync=true` 一键 Sync | **editor** |
+| 16 | GET | `/kb/ingest/templates?spaceId=` | 批次模板列表 | viewer |
+| 17 | POST | `/kb/ingest/templates` | 创建批次模板 | **editor** |
+| 18 | DELETE | `/kb/ingest/templates/{id}` | 删除批次模板（软删） | **editor** |
+| 19 | POST | `/kb/ingest/jobs/from-template/{templateId}` | 从模板创建批次 | **editor** |
+| 20 | POST | `/kb/ingest/jobs/{id}/save-as-template` | 当前批次另存为模板 | **editor** |
+
+**批次状态机**（`IngestJobVo.status`）：
+
+```
+created → planned → reviewing → committed
+                ↘ cancelled（预留，当前 UI 未暴露）
+```
+
+| 状态 | 触发 |
+|------|------|
+| `created` | 新建批次，尚未规划 |
+| `planned` | 生成或人工保存 Plan 后 |
+| `reviewing` | `POST .../generate` 完成后 |
+| `committed` | `POST .../commit` 成功后 |
+
+**配置**（`application-*.yml` → `kb.ingest.*`）：
 
 | 配置 | 默认 | 说明 |
 |------|------|------|
@@ -983,140 +1045,404 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 | `kb.ingest.max-tree-nodes` | 5000 | raw-tree 单次返回最大节点数 |
 | `kb.ingest.raw-snippet-chars` | 4000 | Plan 生成时单个 raw 喂给 LLM 的截断长度 |
 
-### 9.1 raw 只读树 `GET /kb/ingest/raw-tree`
+### 9.1 raw 只读树
 
-- 入参：`prefix`（可空，相对 `raw-root` 的子目录）。
-- 权限：enterprise-kb 空间 **viewer**（`assertCanRead`）。
-- 返回：`RawTreeNodeVo[]`，`type=dir` 含 `children`，`type=file` 含 `size`；按「目录在前、名称升序」排，隐藏 `.` 开头项。
+**`GET /kb/ingest/raw-tree`**
 
-```json
-{"code":200,"data":[
-  {"name":"design","path":"design","type":"dir","children":[
-    {"name":"redis-sentinel.note.md","path":"design/redis-sentinel.note.md","type":"file","size":2048}
-  ]}
-]}
-```
-
-### 9.2 批次 job CRUD
-
-| 方法 | 路径 | 说明 | 权限 |
+| 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| POST | `/kb/ingest/jobs` | 创建批次 | 空间 **editor** |
-| GET | `/kb/ingest/jobs?spaceId=&status=&pageNum=&pageSize=` | 批次分页（按可读空间过滤） | viewer |
-| GET | `/kb/ingest/jobs/{id}` | 批次详情（含最新 plan） | viewer |
+| `prefix` | string | 否 | 相对 `raw-root` 的子目录 |
 
-**创建** `POST /kb/ingest/jobs`：
+**响应** `MoliResult<RawTreeNodeVo[]>`：
+
+| 字段 | 说明 |
+|------|------|
+| `name` | 文件/目录名 |
+| `path` | 相对 `raw-root` 路径 |
+| `type` | `dir` / `file` |
+| `size` | 文件字节数（`file` 时有值） |
+| `children` | 子节点（`dir` 时有值）；目录在前、名称升序；隐藏 `.` 开头项 |
 
 ```json
 {
-  "spaceId": 1,            // 空=默认 enterprise-kb
-  "topic": "Redis 哨兵",   // 必填
-  "batchNo": "1292",       // 空则系统生成 WB-yyyyMMddHHmmss
+  "code": 200,
+  "data": [
+    {
+      "name": "design",
+      "path": "design",
+      "type": "dir",
+      "children": [
+        {
+          "name": "redis-sentinel.note.md",
+          "path": "design/redis-sentinel.note.md",
+          "type": "file",
+          "size": 2048
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 9.2 批次 job
+
+#### 9.2.1 创建 `POST /kb/ingest/jobs`
+
+**请求体** `IngestJobCreateRequest`：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `spaceId` | long | 否 | 目标空间；空=默认 `enterprise-kb` |
+| `topic` | string | **是** | 批次主题 |
+| `batchNo` | string | 否 | 批次号；空则系统生成 `WB-yyyyMMddHHmmss` |
+| `expectTypes` | string | 否 | 期望产出类型，逗号分隔，如 `article,concept` |
+| `rawPaths` | string[] | **是** | 勾选的 raw 路径（须存在于 `raw-root` 内） |
+| `remark` | string | 否 | 备注 |
+
+```json
+{
+  "spaceId": 900000000000000001,
+  "topic": "Redis 哨兵",
+  "batchNo": "1292",
   "expectTypes": "article,concept",
-  "rawPaths": ["design/redis-sentinel.note.md"],  // 必填，须存在于 raw-root 内
+  "rawPaths": ["design/redis-sentinel.note.md"],
   "remark": ""
 }
 ```
 
-返回 `IngestJobVo`：`{id, spaceId, spaceCode, batchNo, topic, expectTypes, rawPaths[], status, planVersion, planJson, planSource, canEdit, createTime, updateTime}`。新建后 `status=created`、`planVersion=0`、`planJson=null`。
+**响应** `MoliResult<IngestJobVo>`（新建后 `status=created`、`planVersion=0`、`planJson=null`）。
+
+#### 9.2.2 分页 `GET /kb/ingest/jobs`
+
+| 参数 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `spaceId` | long | — | 按空间过滤；省略=当前用户可读的全部空间 |
+| `status` | string | — | 按状态过滤 |
+| `pageNum` | int | 1 | 页码 |
+| `pageSize` | int | 10 | 每页条数 |
+
+**响应** `MoliResult<Page<IngestJobVo>>`。
+
+#### 9.2.3 详情 `GET /kb/ingest/jobs/{id}`
+
+**响应** `MoliResult<IngestJobVo>`：
+
+| 字段 | 说明 |
+|------|------|
+| `id` | 批次 ID |
+| `spaceId` / `spaceCode` | 目标空间 |
+| `batchNo` / `topic` / `expectTypes` | 批次元数据 |
+| `rawPaths` | 勾选的 raw 路径数组 |
+| `status` | 见 §9.0 状态机 |
+| `planVersion` | 当前 plan 版本（0=未规划） |
+| `planJson` | 最新 plan JSON 字符串 |
+| `planSource` | `llm` / `manual` / `skeleton` |
+| `canEdit` | 当前用户是否对该空间有 **editor** 权限 |
+| `createTime` / `updateTime` | 审计时间 |
 
 ### 9.3 Plan 生成 / 编辑
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/kb/ingest/jobs/{id}/plan` | LLM 生成/刷新 Plan（只输出 JSON）；LLM 未配置时返回**可编辑骨架**（`planSource=skeleton`） |
-| PUT | `/kb/ingest/jobs/{id}/plan` | 人工改 Plan（校验为合法 JSON 对象后 append 新版本） |
+#### 9.3.1 生成 `POST /kb/ingest/jobs/{id}/plan`
 
-- 二者均需空间 **editor**；每次写入 append 一个 `kb_ingest_plan` 版本（`version` 递增），并把 job `status` 置 `planned`、`planVersion` 同步。
-- Plan JSON 形态（Planner system prompt 强约束，去重 enrich 优先）：
+- LLM 生成/刷新 Plan（**只输出 JSON**）；LLM 未配置时返回可编辑骨架（`planSource=skeleton`）。
+- 每次 append 一个 `kb_ingest_plan` 版本；job 置 `status=planned`。
+- 需 **editor** + `kb.llm.usable()`（骨架模式除外）。
+
+**Plan JSON 形态**（Planner system prompt 强约束，enrich 优先）：
 
 ```json
 {
-  "batchNo": "1292", "topic": "Redis 哨兵",
-  "create":   [{"type":"article","slug":"redis-哨兵部署","title":"...","sources":["raw/design/redis-sentinel.note.md"],"reason":"..."}],
-  "enrich":   [{"slug":"redis-缓存","action":"append_section","reason":"补哨兵节"}],
-  "skip":     [{"raw":"...","reason":"与 articles/xxx 重复"}],
-  "edges":    [{"from":"redis-缓存","to":"redis-哨兵部署","type":"relates_to","evidence":"..."}],
-  "conflicts":["端口描述与 articles/xxx 不一致"]
+  "batchNo": "1292",
+  "topic": "Redis 哨兵",
+  "create": [
+    {
+      "type": "article",
+      "slug": "articles/redis-哨兵部署",
+      "title": "Redis 哨兵部署",
+      "sources": ["raw/design/redis-sentinel.note.md"],
+      "reason": "新主题无已有页"
+    }
+  ],
+  "enrich": [
+    {
+      "slug": "concepts/redis-缓存",
+      "action": "append_section",
+      "reason": "补哨兵 failover 节"
+    }
+  ],
+  "skip": [{ "raw": "design/old.md", "reason": "与 articles/xxx 重复" }],
+  "edges": [
+    {
+      "from": "concepts/redis-缓存",
+      "to": "articles/redis-哨兵部署",
+      "type": "relates_to",
+      "evidence": "同属 Redis 运维"
+    }
+  ],
+  "conflicts": ["端口描述与 articles/xxx 不一致"]
 }
 ```
 
-- PUT 请求体：`{"planJson":"<合法 JSON 字符串>"}`。
+#### 9.3.2 人工编辑 `PUT /kb/ingest/jobs/{id}/plan`
 
-### 9.4 导出 Agent 提示词 `GET /kb/ingest/jobs/{id}/export-agent-prompt`
+**请求体** `IngestPlanUpdateRequest`：
 
-- 权限：viewer。
-- 返回纯文本（`MoliResult<String>`）：按 AGENTS §4 模板拼出 raw 列表、主题、默认策略 A，并附最新 Plan JSON，便于在 Cursor 里让 Agent 续跑等价 ingest。
+```json
+{ "planJson": "{ ... 合法 JSON 对象字符串 ... }" }
+```
 
-### 9.5 多页草稿生成 / 审阅（T15b）
+校验为合法 JSON 对象后 append 新版本；`planSource=manual`。
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/jobs/{id}/generate?resume=false` | 按当前 plan 生成多页草稿（PageWriter / EnrichWriter）；`resume=false` 时删除旧草稿全量重生成；`resume=true` 断点续跑（跳过已有 content 的页）；置 job `status=reviewing`。需 editor + LLM |
-| GET | `/jobs/{id}/drafts` | 草稿列表（含 `baseline`/`draft`/`approval`/`displaySlug`） |
-| GET | `/jobs/{id}/draft?slug=` | 单页草稿（`slug` 为相对 wiki 目录完整路径，如 `articles/redis-哨兵部署`，含「/」故走 query） |
-| PUT | `/jobs/{id}/draft?slug=` | 人工改草稿，body `{content?}` 或 `{patch?}`（enrich 可只改 patch）；改后 approval 重置为 draft |
-| POST | `/jobs/{id}/draft/regenerate?slug=` | 单页重生成 |
-| PUT | `/jobs/{id}/draft/approval?slug=&approval=` | 审批 `approved`/`rejected`/`draft` |
+#### 9.3.3 导出 Agent 提示词 `GET /kb/ingest/jobs/{id}/export-agent-prompt`
 
-- **create** 草稿：`baseline=""`，draft=PageWriter 完整页（frontmatter 齐全）。
-- **enrich** 草稿：`baseline=` 当前 wiki 全文；`patch=` EnrichWriter 追加段落；`draft=` baseline 与 patch 合并预览（`mergeEnrich`）；找不到已有页时降级为 create。
+**响应** `MoliResult<String>`：按 AGENTS §4 模板拼出 raw 列表、主题、默认策略 A，并附最新 Plan JSON，便于 Cursor Agent 续跑等价 ingest。
+
+### 9.4 多页草稿生成 / 审阅
+
+#### 9.4.1 生成 `POST /kb/ingest/jobs/{id}/generate`
+
+| 参数 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `resume` | boolean | `false` | `false`=删除旧草稿全量重生成；`true`=断点续跑（跳过已有 content 的页） |
+
+- 按当前 plan 调用 PageWriter（create）/ EnrichWriter（enrich）。
+- 完成后 job 置 `status=reviewing`。
+- 需 **editor** + LLM；超时建议前端设 300s。
+
+**响应** `MoliResult<IngestGenerateResultVo>`：
+
+| 字段 | 说明 |
+|------|------|
+| `total` | Plan 中应生成页数 |
+| `generated` | 本次新生成页数 |
+| `skipped` | 续跑跳过（已有草稿且含 content）页数 |
+| `resume` | 是否续跑模式 |
+| `drafts` | 当前全部草稿 `IngestDraftVo[]` |
+
+```json
+{
+  "code": 200,
+  "data": {
+    "total": 8,
+    "generated": 3,
+    "skipped": 5,
+    "resume": true,
+    "drafts": [
+      {
+        "id": 900000000000000101,
+        "jobId": 900000000000000100,
+        "slug": "articles/redis-哨兵部署",
+        "displaySlug": "redis-哨兵部署",
+        "kbType": "article",
+        "action": "create",
+        "baseline": "",
+        "patch": null,
+        "draft": "---\ntitle: Redis 哨兵部署\n...",
+        "approval": "draft",
+        "updateTime": "2026-06-25 18:00:00"
+      }
+    ]
+  }
+}
+```
+
+**草稿语义**：
+
+| `action` | `baseline` | `patch` | `draft` |
+|----------|------------|---------|---------|
+| `create` | 空 | 空 | PageWriter 完整页（frontmatter 齐全） |
+| `enrich` | 当前 wiki 全文 | EnrichWriter 追加段落 | `mergeEnrich(baseline, patch)` 合并预览 |
+
+- enrich 找不到已有 wiki 页时降级为 create。
 - 互链 `[[..]]` 仅允许「DB 既有 + 本批次 slug」；temperature 用 `kb.llm.temperature`。
 
-**`POST /jobs/{id}/generate` 响应**（T15e）`IngestGenerateResultVo`：
-
-```json
-{
-  "total": 8,
-  "generated": 3,
-  "skipped": 5,
-  "resume": true,
-  "drafts": [ /* IngestDraftVo[] */ ]
-}
-```
-
-- `total`：Plan 中应生成页数；`generated`：本次新生成；`skipped`：续跑跳过（已有草稿且含 content）；`resume`：是否续跑模式。
-
-### 9.6 lint 预检 + 原子 commit + Sync（T15c/d）
+#### 9.4.2 草稿 CRUD
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/jobs/{id}/lint` | commit 前 lint：frontmatter/sources（create 缺失=ERROR）、断链（WARN，含批次内 slug）；返回 `{issueCount, blockingCount, commitReady, issues[]}` |
-| POST | `/jobs/{id}/commit?sync=false` | 原子落盘：写 wiki 各页 + append `log.md` + append `graph/edges.jsonl` + 追加 `index.md` 批次段；记 `kb_ingest_commit`、置 `status=committed`。`sync=true` 时落盘后调用 `KbSyncService.trigger` |
+| GET | `/kb/ingest/jobs/{id}/drafts` | 草稿列表 |
+| GET | `/kb/ingest/jobs/{id}/draft?slug=` | 单页草稿 |
+| PUT | `/kb/ingest/jobs/{id}/draft?slug=` | 人工改草稿 |
+| POST | `/kb/ingest/jobs/{id}/draft/regenerate?slug=` | 单页重生成 |
+| PUT | `/kb/ingest/jobs/{id}/draft/approval?slug=&approval=` | 设置审批 |
+
+> **`slug` 走 query 参数**：值为相对 wiki 目录的完整路径（如 `articles/redis-哨兵部署`），含 `/`，不宜作 path variable。
+
+**PUT 改草稿** — 请求体 `IngestDraftUpdateRequest`（`content` 与 `patch` 二选一，**优先 `patch`**）：
+
+```json
+{ "patch": "## 哨兵 failover\n\n..." }
+```
+
+或整页覆盖：
+
+```json
+{ "content": "---\ntitle: ...\n---\n\n# 全文" }
+```
+
+- create 页：传 `content`。
+- enrich 页：推荐传 `patch`（只改追加段）；传 `content` 则整页覆盖。
+- 修改后 `approval` 重置为 `draft`。
+
+**PUT 审批** — query `approval`：`approved` / `rejected` / `draft`。
+
+**响应**（列表/单页/改/审）均为 `IngestDraftVo`：
+
+| 字段 | 说明 |
+|------|------|
+| `slug` | 相对 wiki 目录完整路径 |
+| `displaySlug` | 展示用末段（`[[]]` 引用名） |
+| `kbType` | `guide` / `service` / `concept` / `article` 等 |
+| `action` | `create` / `enrich` |
+| `baseline` | enrich 基线全文 |
+| `patch` | enrich 追加段落（T15e） |
+| `draft` | 合并预览 / 落盘全文 |
+| `approval` | `draft` / `approved` / `rejected` |
+
+### 9.5 lint 预检 + 原子 commit + Sync
+
+#### 9.5.1 lint `POST /kb/ingest/jobs/{id}/lint`
+
+**响应** `MoliResult<IngestLintVo>`：
+
+| 字段 | 说明 |
+|------|------|
+| `issueCount` | 问题总数 |
+| `blockingCount` | ERROR 数（>0 不可 commit） |
+| `commitReady` | `blockingCount==0` 且全部草稿已 approve/reject |
+| `issues[]` | `{ slug?, type, severity, message }` |
+
+| `severity` | 典型 `type` | 说明 |
+|------------|-------------|------|
+| ERROR | `missing_frontmatter` / `empty_sources` | create 页缺 frontmatter 或 sources |
+| WARN | `broken_link` | `[[slug]]` 断链（含批次内 slug 互链校验） |
+
+#### 9.5.2 commit `POST /kb/ingest/jobs/{id}/commit`
+
+| 参数 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `sync` | boolean | `false` | `true` 时落盘后调用 `KbSyncService.trigger` |
 
 **commit 门禁（产品方案 §5 红线，后端强制）**：
 
-1. lint `blockingCount>0`（有 ERROR）→ 拒绝；
+1. lint `blockingCount > 0` → 拒绝；
 2. 无任何 `approved` 页 → 拒绝；
-3. 存在 `draft`（未审阅）页 → 拒绝（必须逐页 approve/reject）；
-4. `edges` 仅当至少一端是本批次新页才追加，避免污染图谱。
+3. 存在 `approval=draft`（未审阅）页 → 拒绝；
+4. `edges` 仅当至少一端是本批次新页才追加。
 
-`commit` 报告 `IngestCommitResultVo`：`{jobId, created, updated, files[], edgesAppended, logAppended, indexUpdated, syncTriggered, syncResult}`。
-方法以 `@Transactional` 包裹 DB 操作；**文件写入非事务**（与 git 工作流一致，失败需人工核对 `git status`）。
+**落盘动作**：写 wiki 各页 + append `wiki/log.md` + append `wiki/graph/edges.jsonl` + 追加 `wiki/index.md` 批次段；记 `kb_ingest_commit`；job 置 `committed`。
 
-### 9.7 数据表 / 权限
+**响应** `MoliResult<IngestCommitResultVo>`：
 
-- 表 DDL + 菜单/动作权限种子：[`docs/sql/08_kb_ingest_workbench.sql`](../sql/08_kb_ingest_workbench.sql)。
-- T15a 用 `kb_ingest_job` / `kb_ingest_plan`；T15b/c 用 `kb_ingest_draft` / `kb_ingest_commit`。
-- 菜单：知识库 → **Ingest 工作台**（906，`kb:ingest:list`）；动作 `kb:ingest:job`（规划/生成）、`kb:ingest:commit`（落盘）。
-- 后端实际鉴权以**空间 editor**为准（raw 树/查询=viewer）；动作权限 SQL 仅用于前端菜单/按钮显隐。
-- 前端页：`meiling-ui` `knowledge/ingest/index` → `KnowledgeIngestWorkbenchView.vue`（列表/新建 + 批次详情：Plan / 草稿 diff / lint / commit&Sync）。
+```json
+{
+  "code": 200,
+  "data": {
+    "jobId": 900000000000000100,
+    "created": 3,
+    "updated": 2,
+    "files": [
+      "wiki/articles/redis-哨兵部署.md",
+      "wiki/concepts/redis-缓存.md"
+    ],
+    "edgesAppended": 1,
+    "logAppended": true,
+    "indexUpdated": true,
+    "syncTriggered": true,
+    "syncResult": {
+      "success": true,
+      "exitCode": 0,
+      "spaceCode": "enterprise-kb",
+      "outputTail": "... sync_to_db.py ..."
+    }
+  }
+}
+```
 
-### 9.8 enrich patch、断点续跑、批次模板（T15e）✅
+> DB 操作用 `@Transactional`；**文件写入非事务**（失败需人工核对 `git status`）。
 
-| 方法 | 路径 | 说明 |
+### 9.6 批次模板（T15e）
+
+#### 9.6.1 列表 `GET /kb/ingest/templates`
+
+| 参数 | 类型 | 说明 |
 |------|------|------|
-| POST | `/jobs/{id}/generate?resume=true` | 断点续跑：保留已有草稿，仅生成缺失/空 content 页；返回进度 `IngestGenerateResultVo` |
-| PUT | `/jobs/{id}/draft?slug=` | enrich 页可传 `{patch}` 单独改追加段；服务端合并后更新 `draft` 预览 |
-| GET | `/templates?spaceId=` | 当前空间批次模板列表 |
-| POST | `/templates` | 新建模板（name/topic/expectTypes/rawPaths/planJson） |
-| DELETE | `/templates/{id}` | 软删模板 |
-| POST | `/jobs/from-template/{templateId}` | 从模板创建 job（可选覆盖 `topic`/`batchNo`）；若模板含 plan 则预置 plan |
-| POST | `/jobs/{id}/save-as-template` | 将当前 job 另存为模板；body `{name, includePlan?}` |
+| `spaceId` | long | 按空间过滤；省略=默认 enterprise-kb |
 
-**DDL 增量**：[`docs/sql/09_kb_ingest_t15e.sql`](../sql/09_kb_ingest_t15e.sql) — `kb_ingest_draft.patch` 列 + `kb_ingest_template` 表。
+**响应** `MoliResult<IngestTemplateVo[]>`：
 
-**前端（T15e）**：
+| 字段 | 说明 |
+|------|------|
+| `id` / `spaceId` / `spaceCode` | 模板标识 |
+| `name` | 模板名称 |
+| `topic` / `expectTypes` | 默认主题与期望类型 |
+| `rawPaths` | raw 路径数组 |
+| `hasPlan` | 是否含 Plan JSON 快照 |
+| `createTime` | 创建时间 |
 
-- 列表页：模板列表 +「从模板创建」
-- 批次详情：「续跑生成」/ 全量重生成；enrich 草稿 **Patch 段落** 编辑 Tab；「另存为模板」
+#### 9.6.2 创建 `POST /kb/ingest/templates`
+
+**请求体** `IngestTemplateCreateRequest`：
+
+```json
+{
+  "spaceId": 900000000000000001,
+  "name": "Redis 运维批次模板",
+  "topic": "Redis 哨兵",
+  "expectTypes": "article,concept",
+  "rawPaths": ["design/redis-sentinel.note.md"],
+  "planJson": "{ ... 可选 Plan 快照 ... }"
+}
+```
+
+#### 9.6.3 删除 `DELETE /kb/ingest/templates/{id}`
+
+软删；**响应** `MoliResult<Boolean>`（`true`）。
+
+#### 9.6.4 从模板建批次 `POST /kb/ingest/jobs/from-template/{templateId}`
+
+**请求体** `IngestJobFromTemplateRequest`（可空 `{}`）：
+
+```json
+{
+  "batchNo": "1300",
+  "topic": "覆盖主题（空则用模板 topic）"
+}
+```
+
+- 复制模板 `rawPaths` / `expectTypes`；若模板含 `planJson` 则预置 plan（`status=planned`）。
+- **响应** `MoliResult<IngestJobVo>`。
+
+#### 9.6.5 另存为模板 `POST /kb/ingest/jobs/{id}/save-as-template`
+
+**请求体** `IngestSaveAsTemplateRequest`：
+
+```json
+{
+  "name": "Redis 运维批次模板",
+  "includePlan": true
+}
+```
+
+- `includePlan` 默认 `true`：附带当前批次最新 Plan 快照。
+- **响应** `MoliResult<IngestTemplateVo>`。
+
+### 9.7 数据表 / 权限 / 前端
+
+| 脚本 | 内容 |
+|------|------|
+| [`docs/sql/08_kb_ingest_workbench.sql`](../sql/08_kb_ingest_workbench.sql) | `kb_ingest_job` / `kb_ingest_plan` / `kb_ingest_draft` / `kb_ingest_commit` + 菜单 906 + `kb:ingest:*` |
+| [`docs/sql/09_kb_ingest_t15e.sql`](../sql/09_kb_ingest_t15e.sql) | `kb_ingest_draft.patch` 列 + `kb_ingest_template` 表 |
+
+| 表 | 用途 |
+|----|------|
+| `kb_ingest_job` | 批次生命周期 |
+| `kb_ingest_plan` | Plan 版本（append-only） |
+| `kb_ingest_draft` | 多页草稿（含 `patch`） |
+| `kb_ingest_commit` | 落盘记录 |
+| `kb_ingest_template` | 可复用批次模板 |
+
+- 菜单：知识库 → **Ingest 工作台**（906，`kb:ingest:list`）。
+- 后端鉴权以**空间 ACL** 为准（读=viewer，写=editor）；`sys_action` 仅作前端按钮显隐。
+- 前端：`meiling-ui` `knowledge/ingest/index` → `KnowledgeIngestWorkbenchView.vue`。
+- 架构图：[`docs/diagrams/moli-kb-ingest-workbench.drawio`](../diagrams/moli-kb-ingest-workbench.drawio)。

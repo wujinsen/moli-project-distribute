@@ -32,6 +32,9 @@
         <if test="keyword != null and keyword != ''">
             AND MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
         </if>
+        <if test="source != null and source != ''">
+            AND source = #{source}
+        </if>
         ORDER BY
         <if test="keyword != null and keyword != ''">
             MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) DESC,
@@ -80,6 +83,7 @@
         SELECT kb_type AS kbType, COUNT(*) AS cnt
         FROM kb_document
         WHERE is_delete = 0
+          AND source = 'kb'
         <if test="status != null">
             AND status = #{status}
         </if>

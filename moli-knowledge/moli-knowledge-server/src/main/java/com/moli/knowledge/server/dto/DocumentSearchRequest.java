@@ -28,6 +28,9 @@ public class DocumentSearchRequest {
     @ApiModelProperty("标签ID")
     private Long tagId;
 
+    @ApiModelProperty("来源过滤：kb（wiki 同步）/ manual；文档管理传 kb")
+    private String source;
+
     @ApiModelProperty("页码")
     private Integer pageNum = 1;
 

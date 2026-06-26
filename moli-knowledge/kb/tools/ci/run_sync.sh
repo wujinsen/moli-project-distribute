@@ -111,6 +111,34 @@ case "${MODE}" in
       --space "${KB_SYNC_SPACE}" \
       --purge-raw-archive
     ;;
+  purge-manual-web)
+    python "${SYNC_PY}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --space "${KB_SYNC_SPACE}" \
+      --purge-manual-web
+    ;;
+  purge-manual-web-all)
+    python "${SYNC_PY}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --purge-manual-web --all-spaces
+    ;;
+  purge-manual-web-dry-run)
+    python "${SYNC_PY}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --purge-manual-web --all-spaces --dry-run
+    ;;
   verify)
     COUNT="$(mysql_cli -N -e "SELECT COUNT(*) FROM \`${KB_SYNC_DB}\`.kb_document WHERE is_delete=0 AND source='kb';")"
     echo "[ci] kb_document(source=kb, active)=${COUNT}"
@@ -164,7 +192,7 @@ case "${MODE}" in
     done
     ;;
   *)
-    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | init-schema | sync | sync-all | purge-raw-archive | verify | verify-all)" >&2
+    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | init-schema | sync | sync-all | purge-raw-archive | purge-manual-web | purge-manual-web-all | purge-manual-web-dry-run | verify | verify-all)" >&2
     exit 1
     ;;
 esac

@@ -19,7 +19,8 @@ public interface KbDocumentMapper extends BaseMapper<KbDocument> {
                                     @Param("categoryId") Long categoryId,
                                     @Param("status") Integer status,
                                     @Param("documentIds") List<Long> documentIds,
-                                    @Param("keyword") String keyword);
+                                    @Param("keyword") String keyword,
+                                    @Param("source") String source);
 
     /**
      * Query(/kb/ask) 候选召回：ngram 全文按相关度召回 top-N，叠加空间/状态/类型作用域过滤。

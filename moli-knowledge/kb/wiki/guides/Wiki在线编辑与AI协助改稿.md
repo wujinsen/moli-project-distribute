@@ -2,21 +2,22 @@
 title: Wiki 在线编辑与 AI 协助改稿（产品方案）
 slug: Wiki在线编辑与AI协助改稿
 type: guide
-status: draft
+status: active
 tags: [知识库, wiki, AI, 编辑器, P1]
 sources:
   - moli-knowledge/kb/AGENTS.md
   - moli-knowledge/kb/ROADMAP.md
   - moli-knowledge/kb/wiki/guides/AI自我进化与MD审校流程.md
   - moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/impl/KbAskServiceImpl.java
-related: [AI自我进化与MD审校流程, 查询与体检指南, wiki同步指南, 知识库使用指南]
+  - meiling-ui/src/views/knowledge/KnowledgeWikiEditView.vue
+related: [AI自我进化与MD审校流程, 系统操作手册入口, 系统操作手册入口, 系统操作手册入口]
 created: 2026-06-24
 updated: 2026-06-24
 ---
 
 # Wiki 在线编辑与 AI 协助改稿（产品方案）
 
-> **状态：draft / 待开发（T14）**  
+> **状态：active（T14 已实现）**  
 > 目标：在 **Web 界面** 打开 wiki 页，**调用已配置的 LLM** 协助改稿；展示 **修改前/后对比**；支持 **人工继续改**；确认后 **保存回 `kb/wiki/*.md`**，再 Sync 进库。
 
 ### 与 [[AI自我进化与MD审校流程]] 的关系
@@ -29,7 +30,7 @@ updated: 2026-06-24
 | 门禁 | `lint.py --strict`（CLI） | 保存前 diff 必看；T14d 可选服务端 lint 摘要 |
 | 上线 | sync_to_db / Web Wiki 同步 | 同左；T14d「保存并 Sync」 |
 
-**不重复写审校细则**：frontmatter、`[[slug]]`、sources、只改 wiki 等约束以 [[AI自我进化与MD审校流程]] §4 场景 B 为准；本文只写 **界面、API、权限、分阶段交付**。
+**不重复写审校细则**：frontmatter、slug 链接语法（`[[页名]]`）、sources、只改 wiki 等约束以 [[AI自我进化与MD审校流程]] §4 场景 B 为准；本文只写 **界面、API、权限、分阶段交付**。
 
 Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **单篇修润、体检问题修复、editor 在浏览器改 wiki**。
 
@@ -52,6 +53,7 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 入口：
 
 - **文档浏览** 详情页：editor 可见 **「编辑 wiki」**
+- **文档管理 · 新建**：选空间/类型/标题 → Wiki 编辑（**已移除** `POST /kb/document` 直连入库）
 - **健康体检 · 问题列表**：每行 **「修复」**（带 `documentId` / slug / issueType / detail）
 
 编辑页布局（三栏或 Tab）：
@@ -69,7 +71,7 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 
 ### 2.1 AI 协助面板
 
-- **指令输入**：如「修复断链 [[不存在的页]]」「补 summary」「根据 issue 精简段落」
+- **指令输入**：如「修复断链 `[[不存在的页]]`」「补 summary」「根据 issue 精简段落」
 - **可选上下文**（自动带入）：
   - 当前全文（frontmatter + body）
   - 来自体检：`issueType`、`detail`
@@ -92,9 +94,17 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 - 保存成功后，若从 `kb_lint_issue` 进入，可弹窗：**「标记该问题为已修复？」** → `PUT /kb/lint/issue/{id}?status=2`
 - **仅改状态不会修内容**；内容修复必须走本编辑页保存 wiki
 
+### 2.4 文档管理「新建」与首存治理
+
+1. **新建**（`KnowledgeDocumentManageView` + `KbDocumentCreateModal`）：选 `kbType` + 标题 → 路径 slug `{type}/{标题段}` → 预填 AGENTS §2 frontmatter 模板 → 跳转 `/knowledge/wiki/edit?fromCreate=1`
+2. **首存后**（可选）：弹窗提示 **AI 单篇治理**（= [[AI自我进化与MD审校流程]] §4 场景 B）→ 打开 AI 面板并填入 ingest 审校指令
+3. **入库**：编辑确认 → **保存并 Sync** → `kb_document.source='kb'` → **文档浏览**可见（浏览 API 仅 `source=kb`，不含历史 `manual` 行）
+
+`source=kb` 的已有页在文档管理点「编辑」→ Wiki 编辑。`manual` 遗留行**不出现在文档管理列表**；旧 `/documents/edit/:id` 链接自动重定向到 Wiki 编辑。
+
 ---
 
-## 3. API 设计（待实现 · T14）
+## 3. API 设计（T14 · 已实现）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -115,7 +125,7 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
   "baselineContent": "可选；不传则服务端读 wiki 文件",
   "issueContext": {
     "issueType": "broken_link",
-    "detail": "本地启动指南 -> [[不存在的页]]"
+    "detail": "本地启动指南 -> `[[不存在的页]]`"
   }
 }
 ```
@@ -134,7 +144,7 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 实现要点：
 
 - 复用 `KbLlmProperties` + `KbAskServiceImpl` 中 OpenAI 兼容 HTTP 调用
-- **System prompt**：与 [[AI自我进化与MD审校流程]] **§4 场景 B** 一致（`AGENTS.md` §2：frontmatter、[[slug]]、sources；只输出完整 markdown，不要解释）
+- **System prompt**：与 [[AI自我进化与MD审校流程]] **§4 场景 B** 一致（`AGENTS.md` §2：frontmatter、slug 链接、sources；只输出完整 markdown，不要解释）
 - **不写盘**；仅返回建议，由用户应用后再 PUT
 
 ### 3.2 权限
@@ -158,8 +168,8 @@ Web 编辑保存
     → kb_document 更新
 ```
 
-**不采用**「只 POST /kb/document 写 MySQL、不回 wiki」作为默认路径（与 ROADMAP 双写铁律冲突）。  
-若未来需要「草稿仅 DB、确认后导出 wiki」，作为 **P2 可选**，不在 T14 范围。
+**已全面移除** Web 端 `POST /kb/document` 直连写库（2026-06-24）：后端 save/publish/archive/delete 一律拒绝；前端删除 `KbDocumentEditPanel` 与相关 API 封装。  
+**不再**提供「草稿仅 DB」路径；所有新建/编辑 = Wiki 编辑 + Sync。
 
 wiki 路径解析：与 `sync_to_db.py` 一致，`slug` = 相对 wiki 根、去扩展名；按 `type` 目录 + 文件名定位（需与现有 1398 页 slug 规则一致，服务端维护 slug→path 映射表或扫描 index）。
 
@@ -185,6 +195,7 @@ wiki 路径解析：与 `sync_to_db.py` 一致，`slug` = 相对 wiki 根、去�
 | **T14b** | `ai-revise` + AI 面板 + 应用建议 + diff | 配好 llm 后可 AI 改稿并保存 |
 | **T14c** | 体检问题「修复」入口 + 保存后标记已修复 | 从 lint 列表跳进编辑页 |
 | **T14d** | 保存并 Sync 一键；保存前服务端 lint 摘要（可选调 lint.py） | 闭环少点两次 |
+| **T14e** | 文档管理新建 → wiki 编辑 + 首存 AI 治理 + 浏览/列表仅 `source=kb` + **移除 MySQL 直连写库** | 前后端均不可 POST /kb/document |
 
 ---
 
@@ -193,7 +204,7 @@ wiki 路径解析：与 `sync_to_db.py` 一致，`slug` = 相对 wiki 根、去�
 | 风险 | 缓解 |
 |------|------|
 | 多人同时改同一 wiki | P1 乐观锁：保存带 `contentHash` / `updated` frontmatter 比对，冲突 409 |
-| AI 乱改/断链 | 保存前 diff + 可选 lint；prompt 强调 [[slug]] 约束 |
+| AI 乱改/断链 | 保存前 diff + 可选 lint；prompt 强调 slug 互链约束 |
 | 服务器无 git wiki 目录 | 配置 `kb.wiki.root` 指向部署机 `moli-knowledge/kb/wiki` |
 | 与 Cursor Agent 并行改 | 以 **git 为准**；Web 保存 = 一次 commit 前操作 |
 
@@ -209,4 +220,4 @@ wiki 路径解析：与 `sync_to_db.py` 一致，`slug` = 相对 wiki 根、去�
 
 ## 相关
 
-[[AI自我进化与MD审校流程]] · [[wiki同步指南]] · [[查询与体检指南]] · [[知识库三操作]]
+[[AI自我进化与MD审校流程]] · [[系统操作手册入口]] · [[系统操作手册入口]] · [[知识库三操作]]

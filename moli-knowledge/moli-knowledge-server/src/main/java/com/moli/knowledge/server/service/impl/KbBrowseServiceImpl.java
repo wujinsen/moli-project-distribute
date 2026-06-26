@@ -48,6 +48,9 @@ public class KbBrowseServiceImpl implements KbBrowseService {
             .map(t -> t[0])
             .collect(Collectors.toCollection(HashSet::new));
 
+    /** 文档浏览只展示 wiki 同步入库的页面，不含 Web 手工 MySQL 文档（source=manual） */
+    private static final String BROWSE_DOC_SOURCE = "kb";
+
     @Resource
     private KbDocumentMapper kbDocumentMapper;
     @Resource
@@ -307,6 +310,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
         wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
+        wrapper.eq(KbDocument::getSource, BROWSE_DOC_SOURCE);
         if (scope.singleSpaceId != null) {
             wrapper.eq(KbDocument::getSpaceId, scope.singleSpaceId);
         } else if (scope.multiSpaceIds != null) {

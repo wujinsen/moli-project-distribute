@@ -35,6 +35,12 @@ kb_relation / kb_sync_log）。方向严格单向：kb(markdown) -> DB；DB 侧�
     bash kb/tools/ci/run_sync.sh init-schema   # 需 mysql 客户端
     bash kb/tools/ci/run_sync.sh sync
 
+    # 清理 Web 直连 MySQL 遗留行（T14e 停用 POST /kb/document 后）
+    bash kb/tools/ci/run_sync.sh purge-manual-web-dry-run   # 预览
+    bash kb/tools/ci/run_sync.sh purge-manual-web-all       # 软删全空间
+    powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1              # Windows 预览
+    powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute     # Windows 执行
+
 参数默认值对齐 moli-knowledge-server 的 application-dev.yml 与建表种子数据。
 """
 
@@ -532,6 +538,108 @@ def resolve_wiki_dir(path_arg: str) -> Path:
 
 def purge_raw_archive(args) -> int:
     """Soft-delete legacy rows imported with source='raw' (removed L1 pipeline)."""
+    return _purge_by_source(args, source="raw", label="purge-raw-archive")
+
+
+def purge_manual_web(args) -> int:
+    """Soft-delete legacy Web MySQL-only rows (source='manual' or unset source without wiki slug)."""
+    import pymysql
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = pymysql.connect(
+        host=args.host,
+        port=args.port,
+        user=args.user,
+        password=args.password,
+        database=args.db,
+        charset="utf8mb4",
+        autocommit=False,
+    )
+    where = (
+        "is_delete=0 AND (source='manual' OR "
+        "(source IS NULL AND (slug IS NULL OR slug='')))"
+    )
+    try:
+        with conn.cursor() as cur:
+            if args.space:
+                cur.execute(
+                    "SELECT id FROM kb_space WHERE space_code=%s AND is_delete=0",
+                    (args.space,),
+                )
+                row = cur.fetchone()
+                if not row:
+                    print(f"[error] 找不到空间 space_code={args.space}")
+                    return 3
+                space_id = row[0]
+                cur.execute(
+                    f"SELECT COUNT(*) FROM kb_document WHERE space_id=%s AND {where}",
+                    (space_id,),
+                )
+            else:
+                cur.execute(f"SELECT COUNT(*) FROM kb_document WHERE {where}")
+
+            count = cur.fetchone()[0]
+            if args.dry_run:
+                print(f"purge-manual-web (dry-run): would soft-delete {count} rows"
+                      + (f" (space={args.space})" if args.space else " (all spaces)"))
+                _print_manual_purge_sample(cur, args.space)
+                return 0
+
+            if count == 0:
+                print("purge-manual-web: 0 rows (nothing to do)")
+                return 0
+
+            if args.space:
+                cur.execute(
+                    f"UPDATE kb_document SET is_delete=1, update_time=%s "
+                    f"WHERE space_id=%s AND {where}",
+                    (now, space_id),
+                )
+            else:
+                cur.execute(
+                    f"UPDATE kb_document SET is_delete=1, update_time=%s WHERE {where}",
+                    (now,),
+                )
+            print(f"purge-manual-web: {count} rows soft-deleted"
+                  + (f" (space={args.space})" if args.space else " (all spaces)"))
+        conn.commit()
+        return 0
+    except Exception as e:  # noqa: BLE001
+        conn.rollback()
+        print(f"[error] purge-manual-web 失败，已回滚：{e}")
+        return 1
+    finally:
+        conn.close()
+
+
+def _print_manual_purge_sample(cur, space_code, limit: int = 10) -> None:
+    """Print a few rows that would be purged (dry-run helper)."""
+    base_where = (
+        "(source='manual' OR (source IS NULL AND (slug IS NULL OR slug='')))"
+    )
+    if space_code:
+        cur.execute(
+            "SELECT d.id, d.slug, d.title, d.source FROM kb_document d "
+            "JOIN kb_space s ON s.id=d.space_id "
+            f"WHERE s.space_code=%s AND d.is_delete=0 AND {base_where} "
+            "ORDER BY d.update_time DESC LIMIT %s",
+            (space_code, limit),
+        )
+    else:
+        cur.execute(
+            f"SELECT id, slug, title, source FROM kb_document "
+            f"WHERE is_delete=0 AND {base_where} ORDER BY update_time DESC LIMIT %s",
+            (limit,),
+        )
+    rows = cur.fetchall()
+    if not rows:
+        return
+    print("  sample:")
+    for row in rows:
+        print(f"    id={row[0]} slug={row[1]!r} source={row[3]!r} title={row[2]!r}")
+
+
+def _purge_by_source(args, source: str, label: str) -> int:
     import pymysql
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -557,21 +665,21 @@ def purge_raw_archive(args) -> int:
             space_id = row[0]
             cur.execute(
                 "SELECT COUNT(*) FROM kb_document "
-                "WHERE space_id=%s AND source='raw' AND is_delete=0",
-                (space_id,),
+                "WHERE space_id=%s AND source=%s AND is_delete=0",
+                (space_id, source),
             )
             count = cur.fetchone()[0]
             cur.execute(
                 "UPDATE kb_document SET is_delete=1, update_time=%s "
-                "WHERE space_id=%s AND source='raw' AND is_delete=0",
-                (now, space_id),
+                "WHERE space_id=%s AND source=%s AND is_delete=0",
+                (now, space_id, source),
             )
-            print(f"purge-raw-archive: {count} rows (space={args.space})")
+            print(f"{label}: {count} rows (space={args.space})")
         conn.commit()
         return 0
     except Exception as e:  # noqa: BLE001
         conn.rollback()
-        print(f"[error] purge 失败，已回滚：{e}")
+        print(f"[error] {label} 失败，已回滚：{e}")
         return 1
     finally:
         conn.close()
@@ -596,10 +704,24 @@ def main():
         action="store_true",
         help="软删 source='raw' 的遗留归档行（已废弃的 L1 直写 DB，与 wiki 同步无关）",
     )
+    ap.add_argument(
+        "--purge-manual-web",
+        action="store_true",
+        help="软删 Web 直连 MySQL 遗留行（source=manual 或无 slug 的 NULL source）",
+    )
+    ap.add_argument(
+        "--all-spaces",
+        action="store_true",
+        help="与 --purge-manual-web 联用：清理全部空间（忽略 --space）",
+    )
     args = ap.parse_args()
 
     if args.purge_raw_archive:
         return purge_raw_archive(args)
+    if args.purge_manual_web:
+        if args.all_spaces:
+            args.space = None
+        return purge_manual_web(args)
 
     wiki_dir = resolve_wiki_dir(args.wiki_dir)
     rel_prefix = wiki_dir.name

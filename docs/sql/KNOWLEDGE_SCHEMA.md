@@ -81,7 +81,7 @@
 - `slug`：空间内唯一（`uk_kb_document_slug(space_id, slug)`），作为 kb→DB 的**幂等 upsert 主键**，同时是干净 URL。
 - `source_path`：kb/ 中 markdown 的相对路径，便于回溯与删除（kb 删页 → DB 置 `is_delete`）。
 - `content_hash`：正文+frontmatter 的 SHA-256，**只同步变更页**（hash 未变则 `skip`）。
-- `source`：`kb`（同步来源，界面只读）/ `manual`（界面创建，可编辑）。
+- `source`：`kb`（wiki 同步，**Web 唯一来源**）/ `manual`（历史遗留行，Web 已停用直连写库；清理见 sync `--purge` 或 DBA）
 
 ### 3.3 图谱/体检从「运行时算」到「落库」
 

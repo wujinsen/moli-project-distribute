@@ -190,12 +190,12 @@ moli-knowledge-server/
 ### 请求示例
 ```bash
 # 搜索文档（MySQL ngram 全文索引，失败自动降级 LIKE）
-GET /kb/document/search?spaceId=900000000000000001&keyword=上手
+GET /kb/document/search?spaceId=900000000000000001&source=kb&keyword=上手
 
-# 保存文档
-POST /kb/document
-{ "spaceId": 900000000000000001, "categoryId": 900000000000000103,
-  "title": "新文档", "content": "# Hello", "status": 0 }
+# 编辑正文（唯一写路径）
+PUT /kb/wiki/page
+{ "slug": "guides/xxx", "spaceId": 900000000000000001, "content": "---\n...\n---\n\n# ..." }
+# 然后 POST /kb/sync/trigger 或 sync_to_db.py
 ```
 
 ---
