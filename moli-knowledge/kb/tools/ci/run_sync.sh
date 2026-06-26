@@ -47,13 +47,31 @@ case "${MODE}" in
     python "${LINT_PY}" --strict "${@:2}"
     ;;
   lint-strict-all)
-    # 多空间门禁：逐个 wiki 空间跑 --strict，任一失败即整体失败（PR 阶段就拦住 wiki-ops / wiki-jp-exam）
+    # 多空间门禁：逐个 wiki 空间跑 --strict，任一失败即整体失败（merge 前严格治理时用）
     echo "[ci] lint-strict all wiki spaces ..."
     for entry in "${KB_SPACES[@]}"; do
       wiki_dir="${entry%%:*}"
       echo "[ci] lint-strict --wiki-dir ${wiki_dir} ..."
       python "${LINT_PY}" --strict --wiki-dir "${wiki_dir}" "${@:2}"
     done
+    ;;
+  lint-all)
+    # 多空间体检报告：三空间都跑完，始终 exit 0（PR / 渐进治理，不拦截 merge）
+    echo "[ci] lint report all wiki spaces (non-blocking) ..."
+    had_issue=0
+    for entry in "${KB_SPACES[@]}"; do
+      wiki_dir="${entry%%:*}"
+      echo "[ci] lint --wiki-dir ${wiki_dir} ..."
+      if ! python "${LINT_PY}" --wiki-dir "${wiki_dir}" "${@:2}"; then
+        had_issue=1
+      fi
+    done
+    if [[ "${had_issue}" -ne 0 ]]; then
+      echo "[ci] lint-all: issues found (report-only; fix wiki gradually, not blocking CI)"
+    else
+      echo "[ci] lint-all: no blocking issues"
+    fi
+    exit 0
     ;;
   init-schema)
     if [[ ! -f "${SCHEMA}" ]]; then
@@ -146,7 +164,7 @@ case "${MODE}" in
     done
     ;;
   *)
-    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-strict | lint-strict-all | init-schema | sync | sync-all | purge-raw-archive | verify | verify-all)" >&2
+    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | init-schema | sync | sync-all | purge-raw-archive | verify | verify-all)" >&2
     exit 1
     ;;
 esac
