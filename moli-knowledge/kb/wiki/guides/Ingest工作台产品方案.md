@@ -2,13 +2,14 @@
 title: Ingest 工作台（产品方案）
 slug: Ingest工作台产品方案
 type: guide
-status: draft
-tags: [知识库, ingest, AI, Web, P0]
+status: active
+tags: [知识库, ingest, AI, Web, P0, product]
 sources:
   - moli-knowledge/kb/AGENTS.md
   - moli-knowledge/kb/ROADMAP.md
   - moli-knowledge/kb/wiki/guides/AI自我进化与MD审校流程.md
   - moli-knowledge/kb/wiki/guides/增量ingest与raw投喂指南.md
+  - docs/api/KNOWLEDGE_API.md
 related: [AI自我进化与MD审校流程, Wiki在线编辑与AI协助改稿, 增量ingest与raw投喂指南, 知识库三操作]
 created: 2026-06-25
 updated: 2026-06-25
@@ -16,18 +17,19 @@ updated: 2026-06-25
 
 # Ingest 工作台（产品方案）
 
-> **状态：draft / 待开发（T15 · 里程碑 M6）**  
-> 目标：在 **Web 界面** 完成 **Agent 厚 Ingest** 等价流程——raw 选源 → **规划去重** → 多页 LLM 草稿 → **逐页 diff 审阅** → lint 门禁 → **原子写 wiki**（含 index/log/edges）→ Sync。
+> **状态：active / 已交付（T15a–e · 里程碑 M6 · 2026-06-25）**  
+> 目标：在 **Web 界面** 完成 **Agent 厚 Ingest** 等价流程——raw 选源 → **规划去重** → 多页 LLM 草稿 → **逐页 diff 审阅** → lint 门禁 → **原子写 wiki**（含 index/log/edges）→ Sync。  
+> **HTTP 契约权威**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) **§9**（20 个接口）。
 
 ### 与 [[Wiki在线编辑与AI协助改稿]] / [[AI自我进化与MD审校流程]] 的关系
 
 | | **T14 / M5 单篇编辑** | **T15 / M6 本方案** | **Cursor Agent** |
 |---|----------------------|----------------------|------------------|
-| 输入 | 已有 slug 单页 | raw 多文件 / 主题簇 | raw / URL / 仓库路径 |
-| 输出 | 1 页 diff | **5–15 页** + index/log/edges | 同左（AGENTS §4） |
-| 规划 | 无 | **Plan JSON**（去重/enrich/新建） | 读 index 人工+Agent |
-| 审阅 | 单页 baseline ↔ 编辑区 | **多页 PR Review 式** diff | git diff |
-| 适用 | 修稿、修断链、润色 | 运维/editor **批次 ingest** | 大批量、复杂 enrich |
+| 输入 | 已有 slug 单页（+ 可选 raw 生成 patch） | raw 多文件 / 主题簇 | raw / URL / 仓库路径 |
+| 输出 | 1 页 diff 或 **Enrich patch** + 治理文件 | **5–15 页** + index/log/edges | 同左（AGENTS §4） |
+| 规划 | 无（Enrich 面板填 patch/raw） | **Plan JSON**（去重/enrich/新建） | 读 index 人工+Agent |
+| 审阅 | 单页 baseline ↔ 编辑区 / Enrich 合并预览 | **多页 PR Review 式** diff | git diff |
+| 适用 | 修稿、**单页 enrich**、修断链 | 运维/editor **批次 ingest** | 大批量、复杂 enrich |
 | 门禁 | lint 摘要（T14d） | **lint ERROR 阻塞 commit** | `lint.py --strict` |
 
 **不重复写 Ingest 契约**：frontmatter、`[[slug]]`、sources、只改 `wiki/**`、append log/edges 等以 `AGENTS.md` §4 与 [[增量ingest与raw投喂指南]] 为准；本文只写 **工作台界面、状态机、API、表结构、分阶段交付**。
@@ -55,27 +57,16 @@ updated: 2026-06-25
 
 ## 2. 六步状态机
 
-```mermaid
-stateDiagram-v2
-  [*] --> Scope: ①选源
-  Scope --> Plan: ②规划
-  Plan --> Generate: ③生成草稿
-  Generate --> Review: ④多页Diff
-  Review --> LintGate: ⑤lint预检
-  LintGate --> Commit: ⑥落盘+Sync
-  Review --> Plan: 退回改规划
-  LintGate --> Review: lint失败
-  Commit --> [*]
-```
+主图（draw.io）：[`docs/diagrams/moli-kb-ingest-workbench.drawio`](../../../docs/diagrams/moli-kb-ingest-workbench.drawio)
 
-| 步骤 | 用户 | 系统 | 质量门禁 |
-|------|------|------|----------|
-| **① 选源** | 勾选 raw 文件/目录；填批次#、主题、期望类型 | `GET /kb/ingest/raw-tree` 只读树 | — |
-| **② 规划** | 审/改 plan 表（新建 / enrich / 跳过） | LLM 读 raw 摘要 + **index 片段** → JSON plan | **无 plan 禁止生成** |
-| **③ 生成** | 等待进度；可单页重试 | 按 plan **分页**调 LLM；enrich 出 patch | 每页独立 prompt + AGENTS §2 |
-| **④ 审阅** | 逐页 diff、手改、单页重生成 | baseline ↔ 草稿并排 | **全页勾选批准** 才下一步 |
-| **⑤ lint** | 看报告 | 调 `lint.py` 子集（含将新建 slug） | **ERROR 阻塞 commit** |
-| **⑥ 提交** | 确认 commit；可选 Sync | 原子写 wiki + log + index + edges | append `log.md` 一行 |
+| 步骤 | 用户 | 系统 | 质量门禁 | 对应 job.status |
+|------|------|------|----------|-----------------|
+| **① 选源** | 勾选 raw 文件；填批次#、主题、期望类型 | `GET /kb/ingest/raw-tree` + `POST /kb/ingest/jobs` | — | `created` |
+| **② 规划** | 审/改 plan JSON | `POST/PUT .../plan`；LLM 读 raw 摘要 + index 片段 | **无 plan 禁止 generate** | `planned` |
+| **③ 生成** | 全量生成或 **续跑**；可单页重试 | `POST .../generate?resume=`；enrich 存 `patch` + 合并 `draft` | 每页独立 PageWriter / EnrichWriter | `reviewing` |
+| **④ 审阅** | 逐页 diff、手改全文或 **patch 段**、单页重生成 | baseline ↔ draft；`PUT .../draft` | 逐页 approve/reject | `reviewing` |
+| **⑤ lint** | 看报告 | `POST .../lint` | **ERROR 阻塞 commit** | `reviewing` |
+| **⑥ 提交** | commit；可选 **一键 Sync** | `POST .../commit?sync=`；写 wiki + log + edges + index 段 | append `log.md` 一行 | `committed` |
 
 ---
 
@@ -123,10 +114,22 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 ### 3.2 多页 Diff（④）
 
 - 左侧批次树：每页状态 `draft | approved | rejected`
-- 新建页：baseline 为空；enrich 页：baseline = 当前 wiki 全文，草稿 = patch 合并预览
+- 新建页：baseline 为空；enrich 页：baseline = 当前 wiki 全文，**patch** = 追加段，**draft** = 合并预览
+- enrich 页提供 **Patch 段落** Tab，可只改 patch 不重写整页
 - **禁止**「一键全部批准」
 
-### 3.3 Commit（⑥）
+### 3.3 批次模板（T15e）
+
+- **列表页**：展示已保存模板；「从模板创建」复制 raw 范围 / 期望类型 / 可选 Plan
+- **批次详情**：「另存为模板」；可选附带当前 Plan 快照
+- API：`GET/POST /kb/ingest/templates`、`POST .../jobs/from-template/{id}`、`POST .../save-as-template`
+
+### 3.4 断点续跑（T15e）
+
+- **续跑生成**：`POST .../generate?resume=true`，跳过已有 content 的草稿，返回 `{ total, generated, skipped, drafts }`
+- **全量重生成**：`resume=false`，清空旧草稿后重新生成（需二次确认）
+
+### 3.5 Commit（⑥）
 
 原子写入（同一事务语义 / 同一 git commit 前操作）：
 
@@ -134,42 +137,53 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 2. append `wiki/log.md`（`ingest | 批次#N ...`）  
 3. append `wiki/graph/edges.jsonl`  
 4. 更新 `wiki/index.md` 相关条目  
-5. 可选：`POST /kb/sync/trigger` 或提示 `sync_to_db.py`  
+5. 可选：`POST /kb/ingest/jobs/{id}/commit?sync=true`（落盘后立即 Sync）  
 6. 展示 insert/update/skip 统计
+
+**前端实现**：`meiling-ui` → `KnowledgeIngestWorkbenchView.vue`（路由 `knowledge/ingest/index`，菜单 906）。
 
 ---
 
-## 4. API 设计（待实现 · T15）
+## 4. API 与数据（已实现 · T15）
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/kb/ingest/raw-tree?prefix=` | raw 目录树（只读，`kb.raw.root`） |
-| POST | `/kb/ingest/jobs` | 创建任务 `{spaceId, topic, batchNo?, rawPaths[]}` |
-| GET | `/kb/ingest/jobs/{id}` | 状态 + 进度 |
-| POST | `/kb/ingest/jobs/{id}/plan` | 生成/刷新 plan（LLM） |
-| PUT | `/kb/ingest/jobs/{id}/plan` | 人工改 plan |
-| POST | `/kb/ingest/jobs/{id}/generate` | 按 plan 生成草稿（async，SSE 进度） |
-| GET | `/kb/ingest/jobs/{id}/drafts` | 草稿列表 |
-| GET | `/kb/ingest/jobs/{id}/drafts/{slug}` | 单页 baseline + 草稿 |
-| PUT | `/kb/ingest/jobs/{id}/drafts/{slug}` | 人工改草稿 |
-| POST | `/kb/ingest/jobs/{id}/drafts/{slug}/regenerate` | 单页重生成 |
-| POST | `/kb/ingest/jobs/{id}/lint` | 预检（子进程 `lint.py` 或 Java 等价） |
-| POST | `/kb/ingest/jobs/{id}/commit` | 原子写 wiki |
-| POST | `/kb/ingest/jobs/{id}/sync` | 触发 Sync |
-| GET | `/kb/ingest/jobs/{id}/export-agent-prompt` | 导出 Cursor ingest 提示词 |
+> **契约权威**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) **§9**（接口总览、请求/响应示例、DTO 字段）。  
+> 下文为产品视角摘要；联调以 API 文档为准。
 
-### 4.1 任务表（新建，非正文）
+### 4.1 接口清单（20 个）
+
+| 分组 | 路径前缀 | 要点 |
+|------|----------|------|
+| 选源 | `/kb/ingest/raw-tree`、`/jobs` | raw 只读树；创建/分页/详情 |
+| 规划 | `/jobs/{id}/plan`、`/export-agent-prompt` | LLM 或 skeleton Plan；导出 Cursor 提示词 |
+| 草稿 | `/jobs/{id}/generate`、`/drafts`、`/draft?slug=` | 含 **resume**；slug 走 **query**（含 `/`） |
+| 审阅 | `/draft/regenerate`、`/draft/approval` | 单页重生成；approve/reject |
+| 落盘 | `/lint`、`/commit?sync=` | lint 预检；原子写 wiki；**sync 合并进 commit** |
+| 模板 | `/templates`、`/jobs/from-template/{id}`、`/save-as-template` | T15e 批次模板 |
+
+### 4.2 与初版 PRD 的差异（已知、可接受）
+
+| 初版 PRD | 当前实现 | 说明 |
+|----------|----------|------|
+| generate 异步 + SSE 进度 | **同步** HTTP，返回 `IngestGenerateResultVo` | 前端 loading + 续跑弥补大批量 |
+| `POST .../sync` 独立 | **`commit?sync=true`** | 减少一步操作 |
+| draft slug 在 path | **`?slug=` query** | slug 含 `articles/xxx` 路径段 |
+| index 按类型插入 | **追加批次段** | 满足 log 追溯，后续可增强 |
+
+### 4.3 任务表
 
 | 表 | 用途 |
 |----|------|
 | `kb_ingest_job` | 批次状态、操作人、主题、raw 范围 JSON、`space_id` |
 | `kb_ingest_plan` | plan JSON 版本（v1/v2…） |
-| `kb_ingest_draft` | 每页 baseline、草稿、approval 状态 |
-| `kb_ingest_commit` | 落盘时间、写入文件列表、sync batch |
+| `kb_ingest_draft` | 每页 baseline、**patch**、draft 合并预览、approval |
+| `kb_ingest_commit` | 落盘时间、写入文件列表 |
+| `kb_ingest_template` | 批次模板（raw 范围 / 可选 Plan 快照） |
 
-草稿在 **commit 前只存 DB**（或对象存储），不写 wiki 文件。
+DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_workbench.sql)、[`09_kb_ingest_t15e.sql`](../../../docs/sql/09_kb_ingest_t15e.sql)。
 
-### 4.2 配置项
+草稿在 **commit 前只存 DB**，不写 wiki 文件。
+
+### 4.4 配置项
 
 | 配置 | 说明 |
 |------|------|
@@ -178,7 +192,7 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 | `kb.ingest.max-pages-per-batch` | 默认 15 |
 | `kb.llm.*` | 与 `/kb/ask`、T14 共用 |
 
-### 4.3 LLM Prompt 分工（保证「厚」）
+### 4.5 LLM Prompt 分工（保证「厚」）
 
 | 阶段 | System 角色 | 约束 |
 |------|-------------|------|
@@ -188,7 +202,7 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 
 温度 0.2–0.3；context = raw 分块 + 相关已有页摘要。
 
-### 4.4 权限
+### 4.6 权限
 
 | 操作 | ACL |
 |------|-----|
@@ -224,23 +238,23 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 
 ---
 
-## 7. 分阶段交付（T15）
+## 7. 分阶段交付（T15）— 已全部完成
 
-| 子任务 | 范围 | 验收 |
+| 子任务 | 范围 | 状态 |
 |--------|------|------|
-| **T15a** | raw 树 + job CRUD + **Plan 生成/编辑** + export-agent-prompt | 规划质量可对标 Agent 第一步 |
-| **T15b** | 按 plan **多页 generate** + diff UI | 5 页簇可审、不落盘 |
-| **T15c** | lint 预检 + **原子 commit**（wiki/log/index/edges） | 交付物 checklist = AGENTS §4 |
-| **T15d** | commit 后 **一键 Sync** + 批次报告 | 线上可问答、图谱有边 |
-| **T15e** | enrich patch、断点续跑、批次模板 | 大批量可恢复 |
+| **T15a** | raw 树 + job CRUD + Plan 生成/编辑 + export-agent-prompt | ✅ |
+| **T15b** | 多页 generate + diff UI | ✅ |
+| **T15c** | lint 预检 + 原子 commit（wiki/log/index/edges） | ✅ |
+| **T15d** | commit 后一键 Sync + 批次报告 | ✅ |
+| **T15e** | enrich patch、断点续跑、批次模板 | ✅ |
 
-**依赖**：
+**依赖**（均已满足）：
 
 - ✅ Phase 0 治理（375 页、`lint-strict` 通过）  
-- 🔜 **T14a**（`KbWikiFileService` 读写 wiki + diff 组件，M5 底座）  
-- T9 ACL（editor）、T2 LLM（`kb.llm.*`）
+- ✅ **T14a**（`KbWikiFileService` 读写 wiki）  
+- ✅ T9 ACL（editor）、T2 LLM（`kb.llm.*`）
 
-**推荐顺序**：Phase 0 ✅ → T14a/b → **T15a → T15b → T15c → T15d** → T15e
+**开发任务明细**：`moli-knowledge/TASKS.md` **T15**
 
 ---
 
@@ -253,9 +267,10 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
   - 六步流程 + 与 T14/Agent 分工：`docs/diagrams/moli-kb-ingest-workbench.drawio`
   - 写入轨总览（含 M6 路径 B）：`docs/diagrams/moli-kb-raw-pipeline.drawio`
   - 功能流程 ⑥：`docs/diagrams/moli-kb-functional-flows.drawio`
-- 单篇 Web 编辑：[[Wiki在线编辑与AI协助改稿]]（T14）
+- 单篇 Web 编辑 + **Enrich 治理**：[[Wiki在线编辑与AI协助改稿]]（T14 / T14f）
 - 闭环手册：[[AI自我进化与MD审校流程]]
-- API 契约（实现后）：`docs/KNOWLEDGE_API.md` §Ingest 工作台
+- **HTTP API 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §9（Ingest）、§8.4（单页 Enrich）
+- **DDL**：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_workbench.sql)、[`09_kb_ingest_t15e.sql`](../../../docs/sql/09_kb_ingest_t15e.sql)
 
 ---
 

@@ -22,7 +22,8 @@
 
 **一句话分工**：知识在 `kb/`（markdown）里产生与保鲜；`moli-knowledge-server` 把它对外服务化；`viewer` 用来快速看效果。详见 [`kb/ROADMAP.md`](kb/ROADMAP.md)。
 
-**架构图（draw.io，可编辑）**：[`docs/diagrams/`](../docs/diagrams/README.md) — 系统架构 · ER · RAW→落地全链路 · 功能流程。
+**架构图（draw.io）**：[`docs/diagrams/`](../docs/diagrams/README.md)  
+**五类文档规范**：[`docs/README.md`](../docs/README.md)
 
 ---
 
@@ -34,6 +35,7 @@
 | **`moli-knowledge-server/`** | Java REST 后端（Spring Boot），对外提供空间/分类/文档/标签/评论/收藏 + 鉴权 | `mvn spring-boot:run -Dspring-boot.run.profiles=dev`（:8090） | [README](moli-knowledge-server/README.md) |
 | **`kb/tools/serve.py`** | 零依赖本地 Viewer：浏览 wiki + 检索式 Query + 高亮引用 | `python kb/tools/serve.py` → `http://127.0.0.1:8765` | 见下「看效果」 |
 | **`kb/tools/sync_to_db.py`** | kb→DB 单向增量同步：把 wiki 写进 `kb_document` 供 Java/前端使用 | `python kb/tools/sync_to_db.py --dry-run`（先校验）/ 去掉 `--dry-run` 写库 | 见下「同步到数据库」 |
+| **`kb/tools/enrich.py`** | 已有 wiki 页 **Enrich 治理**：追加 patch + log/index/edges（与 Web `POST /kb/wiki/enrich`、Ingest EnrichWriter 对齐） | `python kb/tools/enrich.py --slug guides/foo --patch-file p.md --apply` | [`KNOWLEDGE_API.md`](../docs/api/KNOWLEDGE_API.md) §8.4 |
 
 ---
 
@@ -72,16 +74,26 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 ## 同步到数据库（kb → kb_document）
 
-`kb/` 的 markdown 是**唯一写入源**；Java 服务只读 MySQL，不直接扫文件。
-用 `kb/tools/sync_to_db.py` 把 wiki **单向、增量、幂等**地写进 `kb_document`：
+`kb/` 下三个 wiki 目录是**唯一写入源**；Java 服务只读 MySQL，不直接扫文件。
+
+| wiki 目录 | space_code | 用途 |
+|-----------|------------|------|
+| `kb/wiki/` | `enterprise-kb` | 技术文库 |
+| `kb/wiki-ops/` | `moli-ops-manual` | 运维操作手册 |
+| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 日版 FE/AP 题库 |
+
+用 `sync_to_db.py` / `run_sync.sh` **单向、增量、幂等**写进 `kb_document`：
 
 ```powershell
-# 1. 先 dry-run，仅解析并打印计划（不连库，强烈建议先跑）
-python kb/tools/sync_to_db.py --dry-run
+# 1. 预览（三空间或单空间）
+bash kb/tools/ci/run_sync.sh dry-run-all
+# 或仅 enterprise-kb：python kb/tools/sync_to_db.py --dry-run
 
-# 2. 真正写库（需 pymysql：pip install pymysql；参数默认对齐 application-dev.yml）
-python kb/tools/sync_to_db.py --host 127.0.0.1 --user root --password 12345678 --db moli --space enterprise-kb
+# 2. 写库（推荐三空间一次同步；需 pymysql）
+bash kb/tools/ci/run_sync.sh sync-all
 ```
+
+详表与单空间命令见 `kb/wiki-ops/guides/wiki同步指南.md`。
 
 机制：
 - **slug** = wiki 相对路径去扩展名（如 `services/用户中心`），空间内唯一、与 `edges.jsonl` 节点命名一致。

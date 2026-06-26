@@ -17,14 +17,14 @@ updated: 2026-06-24
 
 # Wiki 在线编辑与 AI 协助改稿（产品方案）
 
-> **状态：active（T14 已实现）**  
-> 目标：在 **Web 界面** 打开 wiki 页，**调用已配置的 LLM** 协助改稿；展示 **修改前/后对比**；支持 **人工继续改**；确认后 **保存回 `kb/wiki/*.md`**，再 Sync 进库。
+> **状态：active（T14 + T14f Enrich 已实现）**  
+> 目标：在 **Web 界面** 打开 wiki 页，**调用已配置的 LLM** 协助改稿；展示 **修改前/后对比**；支持 **人工继续改**、**Enrich 追加章节**；确认后 **保存回 `kb/wiki/*.md`**，再 Sync 进库。
 
 ### 与 [[AI自我进化与MD审校流程]] 的关系
 
 | | [[AI自我进化与MD审校流程]] | **本文（T14）** |
 |---|---------------------------|-----------------|
-| 范围 | 全闭环：Ingest / Query / Crystallize / Lint / Sync | **仅单篇修稿**的 Web 产品化 |
+| 范围 | 全闭环：Ingest / Query / Crystallize / Lint / Sync | **单篇修稿 + Enrich 治理** 的 Web 产品化 |
 | AI 改 MD | §4 **场景 B** 审校规则 + §6 Cursor 模板 | 同一审校规则 → `POST /kb/wiki/ai-revise` 的 system prompt |
 | 人工确认 | `git diff` + commit | 界面 **baseline ↔ 编辑区 diff** + 保存 |
 | 门禁 | `lint.py --strict`（CLI） | 保存前 diff 必看；T14d 可选服务端 lint 摘要 |
@@ -60,7 +60,7 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  slug: guides/xxx   空间: enterprise-kb    [AI 协助] [保存]   │
+│  slug: guides/xxx   空间: enterprise-kb  [Enrich][AI][保存]   │
 ├──────────────┬──────────────────────────────────────────────┤
 │  修改前(只读)  │  编辑区（可人工改，Markdown 源码）              │
 │  (baseline)  │  + 右侧/下方：预览（渲染后）                    │
@@ -68,6 +68,8 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 │  Diff 对比（保存前必看）：并排或 unified diff，高亮增删          │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+侧栏二选一：**Enrich 治理**（追加 patch + log/index/edges）或 **AI 协助**（整页审校）。
 
 ### 2.1 AI 协助面板
 
@@ -82,22 +84,35 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
   - 可 **多次** AI 生成；每次应用前可预览 diff
 - **降级**：LLM 未配置时按钮禁用，提示配置 `kb.llm.*`（与问答同一套）
 
-### 2.2 保存前校验（对应 [[AI自我进化与MD审校流程]] §步骤 2–4）
+### 2.2 Enrich 治理面板（T14f）
+
+对齐 `kb/tools/enrich.py` 与 Ingest EnrichWriter：**在已有 slug 上追加 patch**，并可选写 `log.md` / `index.md` / `graph/edges.jsonl`（非新建平行页）。
+
+- **入口**：工具栏 **「Enrich 治理」**（wiki 文件须已存在；新建页需先首次保存）
+- **输入**（二选一）：
+  - **patch**：从 `## 标题` 开始的 Markdown 追加段
+  - **raw 路径**：留空 patch 时调 LLM 生成 patch（EnrichWriter prompt）
+- **治理选项**：批次号 / 主题、`appendLog`+`appendIndex`+`appendEdges`、`updateMeta`、落盘后 Sync
+- **流程**：**预览合并**（`POST /kb/wiki/enrich` + `dryRun: true`）→ 确认 diff → **应用 Enrich**（写盘）
+- **与 AI 协助**：Enrich **只追加章节**；整页 frontmatter / 断链 / status 审校仍用 AI 场景 B
+- **与 Ingest enrich**：Ingest 为 raw 批次多页草稿 → commit；本面板为**单页快速治理**，API 与 CLI 一致
+
+### 2.3 保存前校验（对应 [[AI自我进化与MD审校流程]] §步骤 2–4）
 
 1. 前端展示 **baseline ↔ 当前编辑区** diff（Web 侧等价于 §步骤 3 的 `git diff`）
 2. 用户确认 → `PUT /kb/wiki/page` 写文件
 3. 可选：**保存并 Sync**（§步骤 4）
 4. 可选：保存后提示跑 **lint.py**（§步骤 2 门禁；T14d 可服务端摘要）
 
-### 2.3 与「标记修复」的关系
+### 2.4 与「标记修复」的关系
 
 - 保存成功后，若从 `kb_lint_issue` 进入，可弹窗：**「标记该问题为已修复？」** → `PUT /kb/lint/issue/{id}?status=2`
 - **仅改状态不会修内容**；内容修复必须走本编辑页保存 wiki
 
-### 2.4 文档管理「新建」与首存治理
+### 2.5 文档管理「新建」与首存治理
 
 1. **新建**（`KnowledgeDocumentManageView` + `KbDocumentCreateModal`）：选 `kbType` + 标题 → 路径 slug `{type}/{标题段}` → 预填 AGENTS §2 frontmatter 模板 → 跳转 `/knowledge/wiki/edit?fromCreate=1`
-2. **首存后**（可选）：弹窗提示 **AI 单篇治理**（= [[AI自我进化与MD审校流程]] §4 场景 B）→ 打开 AI 面板并填入 ingest 审校指令
+2. **首存后**（可选）：弹窗提示 **Enrich 治理** 或 **AI 单篇治理**（= [[AI自我进化与MD审校流程]] §4 场景 B）
 3. **入库**：编辑确认 → **保存并 Sync** → `kb_document.source='kb'` → **文档浏览**可见（浏览 API 仅 `source=kb`，不含历史 `manual` 行）
 
 `source=kb` 的已有页在文档管理点「编辑」→ Wiki 编辑。`manual` 遗留行**不出现在文档管理列表**；旧 `/documents/edit/:id` 链接自动重定向到 Wiki 编辑。
@@ -111,6 +126,8 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 | GET | `/kb/wiki/page?slug=&spaceId=` | 读 wiki 文件全文（frontmatter+body）；需空间 **editor** |
 | PUT | `/kb/wiki/page` | 写 wiki 文件；body：`slug, spaceId, content, changeLog?`；需 editor |
 | POST | `/kb/wiki/ai-revise` | AI 改稿建议；见下表 |
+| POST | `/kb/wiki/page/lint-preview` | 保存前轻量 lint 摘要 |
+| POST | `/kb/wiki/enrich` | **Enrich 治理**：追加 patch + 可选 log/index/edges；见 [`KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §8.4 |
 | GET | `/kb/wiki/page/history?slug=` | 🔜 P2：git 历史或版本表（可选） |
 
 ### 3.1 `POST /kb/wiki/ai-revise`
@@ -153,6 +170,7 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 |------|-----|
 | 读/写 wiki 文件 | 空间 **editor**（或 owner/平台超管） |
 | AI 改稿 | 同上 + `kb.llm.usable()` |
+| **Enrich 治理** | 空间 **editor**；LLM 生成 patch 时需 `kb.llm.usable()` |
 | Sync | 现有 `kb:sync:trigger` 或空间 editor（与现网一致） |
 
 动作权限（菜单）建议新增：`kb:wiki:edit`（编辑 wiki）、`kb:wiki:ai`（AI 协助，可合并到 edit）。
@@ -196,6 +214,7 @@ wiki 路径解析：与 `sync_to_db.py` 一致，`slug` = 相对 wiki 根、去�
 | **T14c** | 体检问题「修复」入口 + 保存后标记已修复 | 从 lint 列表跳进编辑页 |
 | **T14d** | 保存并 Sync 一键；保存前服务端 lint 摘要（可选调 lint.py） | 闭环少点两次 |
 | **T14e** | 文档管理新建 → wiki 编辑 + 首存 AI 治理 + 浏览/列表仅 `source=kb` + **移除 MySQL 直连写库** | 前后端均不可 POST /kb/document |
+| **T14f** | `POST /kb/wiki/enrich` + `enrich.py` CLI + 编辑页 **Enrich 治理** 侧栏（预览/应用、log/index/edges） | 单页 enrich 与 Ingest/CLI 语义一致 |
 
 ---
 
@@ -214,7 +233,7 @@ wiki 路径解析：与 `sync_to_db.py` 一致，`slug` = 相对 wiki 根、去�
 
 - 开发任务：`moli-knowledge/TASKS.md` **T14**
 - 规划：`moli-knowledge/kb/ROADMAP.md` **M5**
-- 前端 API 契约（实现后）：`docs/KNOWLEDGE_API.md` §Wiki 编辑
+- 前端 API 契约：`docs/api/KNOWLEDGE_API.md` §8（含 §8.4 Enrich）
 
 ---
 

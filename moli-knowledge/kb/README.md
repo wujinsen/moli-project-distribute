@@ -16,6 +16,7 @@
 - **吸收**：把文档放进 `raw/` 后说「ingest raw/docs/xxx.md」→ 我读它、写/更新 wiki 页。
 - **提问**：「query：订单服务怎么本地启动？」→ 我读 index 选页、带 `[[页]]` 引用作答；好答案可回写 `wiki/outputs/`。
 - **体检**：「lint」→ 我扫全库找矛盾/孤儿页/断链/缺来源，给修复建议。
+- **Enrich**：已有 slug 追加章节 → `python kb/tools/enrich.py` 或 Web Wiki 编辑页 **Enrich 治理**（见 [[Wiki在线编辑与AI协助改稿]] §2.2）。
 
 规则细节见 [AGENTS.md](AGENTS.md)（Agent 工作前必读）。
 功能规划见 [ROADMAP.md](ROADMAP.md)（企业级知识库要做哪些功能、做到哪了）。

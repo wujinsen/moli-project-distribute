@@ -909,7 +909,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 智能问答 | `knowledge/ask/index` | `/kb/ask` + history/feedback | 空间选择器 + **跨空间多选**（`spaceIds[]`）；引用含 `spaceId` |
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
-| **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` | 浏览/体检「编辑/修复」；源码编辑 + diff + AI 协助 + 保存并 Sync |
+| **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` + **`/kb/wiki/enrich`** | 浏览/体检「编辑/修复」；源码编辑 + diff + **Enrich 治理** + AI 协助 + 保存并 Sync |
 | **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 20 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑 |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
@@ -1044,6 +1044,25 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 
 **响应**：`{ batchNo, topic, dryRun, items[{ slug, patch, mergedPreview, applied, error }], logAppended, indexUpdated, edgesAppended, syncTriggered?, syncResult? }`
 
+**字段说明**：
+
+| 字段 | 默认 | 说明 |
+|------|------|------|
+| `dryRun` | `false` | `true` 时只返回 `mergedPreview`，不写 wiki / 治理文件 |
+| `updateMeta` | `true` | 追加 `sources`、刷新 frontmatter `updated` |
+| `appendLog` / `appendIndex` / `appendEdges` | `true` | 非 dryRun 时维护 `log.md` / `index.md` / `edges.jsonl` |
+| `sync` | `false` | 落盘后调用 `POST /kb/sync/trigger`（需 `kb:sync:trigger` 或等价权限） |
+| `reason` | — | 单页 LLM 模式（`patch` 空、`rawPaths` 非空）时的补充说明 |
+| `items[]` | — | 批次模式；每项 `{ slug, patch?, reason?, rawPaths? }`，优先于顶层单页字段 |
+
+**Web 界面（meiling-ui · T14f）**：
+
+- 路由：`/knowledge/wiki/edit?slug=&spaceId=` → `KnowledgeWikiEditView.vue`
+- 工具栏 **「Enrich 治理」** 打开侧栏：填写 patch 或 raw 路径 → **预览合并**（`dryRun: true`）→ **应用 Enrich**（写盘 + 可选治理 + Sync）
+- 与 **保存并 Sync** 分工：Enrich 走 `POST /kb/wiki/enrich`（追加 patch + log/index/edges）；整页手改仍走 `PUT /kb/wiki/page`
+- 与 **AI 协助** 分工：AI 整页审校（场景 B）→ `ai-revise`；Enrich 只追加章节，不整页重写
+- 与 **Ingest 工作台 enrich** 分工：Ingest 为 raw 批次 Plan → 多页草稿 → commit；Wiki 编辑 Enrich 为**单页、已存 slug** 的快速治理入口（API/语义与 `enrich.py` 一致）
+
 **CLI 等价**：
 
 ```bash
@@ -1067,6 +1086,7 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 |------|-----|
 | GET/PUT wiki | 空间 **editor**（或 owner / 平台超管），由 `KbAclService.assertCanEdit` 强制 |
 | ai-revise | 同上 + `kb.llm.usable()` |
+| **wiki enrich** | 空间 **editor**；`rawPaths` 调 LLM 生成 patch 时需 `kb.llm.usable()`；`dryRun` 仅预览不校验 Sync 权限 |
 
 后端鉴权以**空间 editor**为准（与文档编辑一致）。前端编辑入口/路由 `meta.perms` 标注 `kb:wiki:edit` 仅作菜单级提示，按钮显隐按所属空间 `canEdit`；动作权限种子 SQL（`kb:wiki:edit`）可后续补充，不影响 T14a 功能。
 
@@ -1290,6 +1310,8 @@ created → planned → reviewing → committed
 | `resume` | boolean | `false` | `false`=删除旧草稿全量重生成；`true`=断点续跑（跳过已有 content 的页） |
 
 - 按当前 plan 调用 PageWriter（create）/ EnrichWriter（enrich）。
+- **PageWriter `related` 约束**（2026-06-24）：frontmatter `related` 仅 **0–5** 个与本页**强相关** slug；候选池 = 同批次 slug + 主题召回（≤25），**禁止**把全库 slug 批量抄进 `related`。lint 预检对超标项报 `related_overflow`（WARN）。
+- **`type=exam`** 新建页写入 `wiki/exams/`（与其它 type 目录映射一致）。
 - 完成后 job 置 `status=reviewing`。
 - 需 **editor** + LLM；超时建议前端设 300s。
 

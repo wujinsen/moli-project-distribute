@@ -197,7 +197,9 @@ PUT /kb/wiki/page
 { "slug": "guides/xxx", "spaceId": 900000000000000001, "content": "---\n...\n---\n\n# ..." }
 # 已有页 enrich（追加 patch + log/index/edges，可选 sync）
 POST /kb/wiki/enrich
-{ "slug": "guides/xxx", "spaceId": 900000000000000001, "patch": "## 补充\n\n...", "sync": true }
+{ "slug": "guides/xxx", "spaceId": 900000000000000001, "patch": "## 补充\n\n...", "dryRun": false, "appendLog": true, "sync": true }
+# Web：Wiki 编辑页工具栏「Enrich 治理」→ 预览合并 → 应用（meiling-ui KnowledgeWikiEditView）
+# CLI：python kb/tools/enrich.py --slug guides/xxx --patch-file patch.md --apply
 # 然后 POST /kb/sync/trigger 或 sync_to_db.py（enrich 请求 sync:true 时可省略）
 ```
 

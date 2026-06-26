@@ -225,11 +225,11 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 - **已知限制**：Dubbo 契约目前只透出权限串、不透出角色ID，**角色型成员(member_type=1)** 仅支持存储/管理，运行时不解析（用户型成员完整生效）。待 `UserCenterServer` 暴露角色后，在 `KbAclServiceImpl#memberRole` 处补一行即可。
 - **验收**：非成员看不到私有空间内容；editor 以上才能改；过滤在 service 层统一做。✅
 
-## T14 · Web Wiki 在线编辑 + AI 协助改稿 ✅ 已完成（T14a–d）
+## T14 · Web Wiki 在线编辑 + AI 协助改稿 ✅ 已完成（T14a–f）
 
 > 产品方案：[[Wiki在线编辑与AI协助改稿]]（`kb/wiki/guides/`）。规划里程碑 **M5**。
 
-**目标**：在 Web 界面打开 wiki 页，调用已配置 LLM 协助改稿；展示修改前/后 diff；支持人工继续改；确认后保存回 `kb/wiki/*.md`，再 Sync 进库。
+**目标**：在 Web 界面打开 wiki 页，调用已配置 LLM 协助改稿；展示修改前/后 diff；支持人工继续改；**Enrich 追加章节**；确认后保存回 `kb/wiki/*.md`，再 Sync 进库。
 
 | 子任务 | 范围 | 验收 |
 |--------|------|------|
@@ -237,11 +237,12 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | **T14b ✅** | `POST /kb/wiki/ai-revise`（`KbLlmClient` + 场景 B prompt）；编辑页 AI 面板 + 应用建议 + diff | 配好 llm 后可 AI 改稿并保存 |
 | **T14c ✅** | 体检「修复」→ 编辑页（issue 上下文）；保存后可选标记已修复 | lint 列表 → 编辑 → 保存 → status=2 |
 | **T14d ✅** | 「保存并 Sync」；`POST /kb/wiki/page/lint-preview` 保存前摘要 | 少点 Tab；预检断链/frontmatter |
+| **T14f ✅** | `POST /kb/wiki/enrich` + `kb/tools/enrich.py`；编辑页 **Enrich 治理** 侧栏（preview/apply、log/index/edges）；Ingest PageWriter `related` 收敛（0–5 强相关） | 单页 enrich 与 CLI/Ingest 语义一致 |
 
 - **涉及文件**：
-  - server：✅ T14a–d：`KbWikiController`、`KbWikiFileService`、`KbWikiAiReviseService`、`KbLlmClient`、DTO 全套
-  - meiling-ui：✅ `KnowledgeWikiEditView`（AI/lint/sync）、`KnowledgeLintView` 修复入口、`KnowledgeBrowseView` 编辑 wiki
-  - 文档：✅ `docs/api/KNOWLEDGE_API.md` §8；🔜 `docs/sql` 菜单种子（`kb:wiki:edit`）
+  - server：✅ T14a–f：`KbWikiController`、`KbWikiFileService`、`KbWikiAiReviseService`、**`KbWikiEnrichService`**、`KbLlmClient`、DTO 全套；Ingest `related` 约束见 `KbIngestServiceImpl`
+  - meiling-ui：✅ `KnowledgeWikiEditView`（AI/lint/sync/**enrich**）、`KnowledgeLintView` 修复入口、`KnowledgeBrowseView` 编辑 wiki
+  - 文档：✅ `docs/api/KNOWLEDGE_API.md` §8（含 §8.4 Enrich）；🔜 `docs/sql` 菜单种子（`kb:wiki:edit`）
 - **依赖**：T9 ACL（editor）、T2 LLM 配置、T3 `/kb/page`（读库展示可复用 slug）
 - **铁律**：保存目标 = **wiki 文件**；`POST /kb/document` **已停用**（2026-06-24）
 
