@@ -6,18 +6,24 @@ import com.moli.common.constant.CommonConstant;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbSearchProperties;
 import com.moli.knowledge.server.dto.DocumentDetailVo;
+import com.moli.knowledge.server.dto.DocumentMoveResultVo;
 import com.moli.knowledge.server.dto.DocumentSaveRequest;
 import com.moli.knowledge.server.dto.DocumentSearchRequest;
+import com.moli.knowledge.server.dto.SyncTriggerVo;
+import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbDocumentTag;
 import com.moli.knowledge.server.entity.KbDocumentVersion;
 import com.moli.knowledge.server.entity.KbFavorite;
+import com.moli.knowledge.server.mapper.KbCategoryMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
 import com.moli.knowledge.server.mapper.KbDocumentVersionMapper;
 import com.moli.knowledge.server.mapper.KbFavoriteMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbDocumentService;
+import com.moli.knowledge.server.service.KbSyncService;
+import com.moli.knowledge.server.service.KbWikiFileService;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +53,12 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     private KbAclService kbAclService;
     @Resource
     private KbSearchProperties kbSearchProperties;
+    @Resource
+    private KbCategoryMapper kbCategoryMapper;
+    @Resource
+    private KbWikiFileService kbWikiFileService;
+    @Resource
+    private KbSyncService kbSyncService;
 
     @Override
     public Page<KbDocument> search(DocumentSearchRequest request) {
@@ -150,6 +162,51 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     @Override
     public void delete(Long id) {
         rejectDirectDocumentWrite();
+    }
+
+    @Override
+    public DocumentMoveResultVo move(Long docId, Long toCategoryId) {
+        if (toCategoryId == null) {
+            throw new BaseException("目标分类不能为空");
+        }
+        KbDocument doc = getActiveDocument(docId);
+        kbAclService.assertCanEdit(doc.getSpaceId());
+        if (!"kb".equals(doc.getSource())) {
+            throw new BaseException("仅 wiki 来源文档可移动分类（manual 文档不支持）");
+        }
+        if (StringUtils.isBlank(doc.getSlug())) {
+            throw new BaseException("文档缺少 slug，无法定位 wiki 文件");
+        }
+
+        KbCategory category = kbCategoryMapper.selectById(toCategoryId);
+        if (category == null || !CommonConstant.UN_DELETE.equals(category.getIsDelete())) {
+            throw new BaseException("目标分类不存在");
+        }
+        if (!category.getSpaceId().equals(doc.getSpaceId())) {
+            throw new BaseException("不能跨空间移动分类");
+        }
+        if (StringUtils.isBlank(category.getDirSlug())) {
+            throw new BaseException("目标分类未绑定目录，无法移动");
+        }
+
+        String fromSlug = doc.getSlug();
+        String stem = fromSlug.contains("/") ? fromSlug.substring(fromSlug.lastIndexOf('/') + 1) : fromSlug;
+        String toSlug = category.getDirSlug() + "/" + stem;
+        if (toSlug.equals(fromSlug)) {
+            throw new BaseException("文档已在该分类下");
+        }
+
+        kbWikiFileService.movePage(doc.getSpaceId(), fromSlug, toSlug, category.getDefaultType());
+        SyncTriggerVo sync = kbSyncService.triggerAfterEdit(doc.getSpaceId());
+
+        DocumentMoveResultVo vo = new DocumentMoveResultVo();
+        vo.setDocId(docId);
+        vo.setFromSlug(fromSlug);
+        vo.setToSlug(toSlug);
+        vo.setCategoryId(toCategoryId);
+        vo.setSyncSuccess(sync != null && sync.isSuccess());
+        vo.setSyncOutputTail(sync == null ? null : sync.getOutputTail());
+        return vo;
     }
 
     @Override

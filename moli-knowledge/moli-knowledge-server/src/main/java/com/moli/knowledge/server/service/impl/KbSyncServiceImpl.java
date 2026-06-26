@@ -117,6 +117,16 @@ public class KbSyncServiceImpl implements KbSyncService {
     }
 
     @Override
+    public SyncTriggerVo triggerAfterEdit(Long spaceId) {
+        if (!syncProperties.isEnabled()) {
+            throw new BaseException("同步 API 已禁用（kb.sync.enabled=false）");
+        }
+        KbSpace space = resolveSpace(spaceId, null);
+        kbAclService.assertCanEdit(space.getId());
+        return executeSync(space);
+    }
+
+    @Override
     public SyncTriggerVo triggerScheduled() {
         if (!syncProperties.isEnabled()) {
             throw new BaseException("同步已禁用（kb.sync.enabled=false）");

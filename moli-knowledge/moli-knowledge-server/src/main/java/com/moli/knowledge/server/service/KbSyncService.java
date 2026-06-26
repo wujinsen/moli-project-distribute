@@ -16,6 +16,9 @@ public interface KbSyncService {
     /** 触发 kb/tools/sync_to_db.py 写库（需空间管理权限或全局管理员）。 */
     SyncTriggerVo trigger(Long spaceId, String spaceCode);
 
+    /** 编辑类操作（如移动分类）后触发同步：仅需空间编辑权限。 */
+    SyncTriggerVo triggerAfterEdit(Long spaceId);
+
     /** 系统定时触发（无 ACL，仅调度器调用）。 */
     SyncTriggerVo triggerScheduled();
 }

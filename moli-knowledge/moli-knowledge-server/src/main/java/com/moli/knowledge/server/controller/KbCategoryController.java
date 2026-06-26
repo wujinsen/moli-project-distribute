@@ -20,9 +20,10 @@ public class KbCategoryController {
     private KbCategoryService kbCategoryService;
 
     @GetMapping("/tree")
-    @ApiOperation("分类树")
-    public MoliResult<List<CategoryTreeVo>> tree(@RequestParam Long spaceId) {
-        return MoliResult.success(kbCategoryService.tree(spaceId));
+    @ApiOperation("分类树（withCount=true 附带每个分类文档数）")
+    public MoliResult<List<CategoryTreeVo>> tree(@RequestParam Long spaceId,
+                                                 @RequestParam(required = false, defaultValue = "false") boolean withCount) {
+        return MoliResult.success(kbCategoryService.tree(spaceId, withCount));
     }
 
     @PostMapping

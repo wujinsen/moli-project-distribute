@@ -140,13 +140,16 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 
 ### 2.1 目录 meta `GET /kb/index`
 
-按知识类型分组的**计数**（**已发布**且 **`source='kb'`** 的 wiki 同步文档；**不含** Web 手工 `manual` 行；**不含 items**，轻量首屏）。
+按 **groupBy** 分组的**计数**（**已发布**且 **`source='kb'`** 的 wiki 同步文档；**不含** Web 手工 `manual` 行；**不含 items**，轻量首屏）。
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
+| `groupBy` | query | 否 | `type`(默认，按 kb_type 体裁) / `category`(按分类=目录) |
 
 响应 `data.groups[]` 含 `type/label/count`；`items` 为空数组。展开分组时调 **2.2**。
+
+> `groupBy=category` 时 `group.type` 为 **categoryId** 字符串（或 `uncategorized`），`group.label` 为分类名。分类=目录（单一真相源），由 `kb_category.dir_slug` 绑定 wiki 子目录，sync 时按文档一级目录回填 `category_id`。
 
 ```json
 {
@@ -162,7 +165,9 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 同 index |
-| `type` | query | 是 | guide/service/concept/article/interview/output/other |
+| `groupBy` | query | 否 | `type`(默认) / `category` |
+| `key` | query | 是* | 分组键：`type` 模式为 kb_type；`category` 模式为 categoryId 或 `uncategorized` |
+| `type` | query | 是* | 旧参数，等价 `key`（向后兼容，二选一） |
 | `pageNum` | query | 否 | 默认 1 |
 | `pageSize` | query | 否 | 默认 50，最大 200 |
 
@@ -175,6 +180,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | `spaceId` | query | 否 | 同 index |
 | `q` | query | 是 | 关键词（title/slug/summary LIKE） |
 | `limit` | query | 否 | 默认 200，最大 500 |
+| `groupBy` | query | 否 | `type`(默认) / `category` |
 
 ### 2.4 slug 定位 `GET /kb/index/locate`
 
@@ -552,15 +558,46 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 
 </details>
 
-### 5.2 分类 `/kb/category`
+### 5.2 分类 `/kb/category`（分类=目录，单一真相源）
+
+> **模型（2026-06-27）**：每个分类绑定一个 wiki 子目录 `dir_slug`；浏览左树 `groupBy=category` 与文档移动都以它为准。  
+> `default_type` 用于「文档移入该分类时」把 frontmatter `type` 改成此体裁（空=不改）。
+
+![分类管理流程](../diagrams/png/moli-kb-category-flow.png)
+
+源文件：[moli-kb-category-flow.drawio](../diagrams/moli-kb-category-flow.drawio) · 图清单见 [diagrams/README.md](../diagrams/README.md)
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/category/tree?spaceId=` | 分类树 `CategoryTreeVo[]` |
-| POST / PUT | `/kb/category` | 创建 / 更新（body `KbCategory`） |
-| DELETE | `/kb/category/{id}` | 删除 |
+| GET | `/kb/category/tree?spaceId=&withCount=` | 分类树 `CategoryTreeVo[]`；`withCount=true` 附带 `docCount` |
+| POST | `/kb/category` | 创建（body `KbCategory`）：**同时 `mkdir` 对应 `dir_slug` 目录**（+`.gitkeep`） |
+| PUT | `/kb/category` | 更新：**仅改** `categoryName/icon/sort/defaultType`；`dirSlug` 不可变 |
+| DELETE | `/kb/category/{id}` | 删除：要求**目录为空**（无 `.md`）且**无文档归属**，否则拒绝；通过则删目录 + 软删 |
+
+**`KbCategory` 关键字段**
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `spaceId` | 创建必填 | 所属空间 |
+| `categoryName` | 是 | 显示名（可改） |
+| `dirSlug` | 创建必填 | 绑定 wiki 子目录，单段 `[A-Za-z0-9_-]`，空间内唯一，**创建后不可改** |
+| `defaultType` | 否 | 默认体裁 `guide/service/concept/article/interview/output` |
+| `icon` / `sort` | 否 | 图标 / 排序 |
 
 > ⚠️ 已接入空间 ACL：`tree` 需空间读权限；增删改需空间编辑权限。`spaceId` 不可读时直接报错。
+
+### 5.2.1 移动文档分类 `PUT /kb/document/{id}/move`
+
+把一篇 **wiki 来源**文档移到另一分类(=目录)：移动 `.md` 文件 → 自动改其它页/`edges.jsonl` 中的**全路径引用**（裸名引用因 stem 不变无需改）→ 按目标分类 `defaultType` 改本页 frontmatter `type` → **触发 Sync** 刷新 `category_id`/关系。
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | path | 是 | 文档 ID（`source=kb`，否则拒绝） |
+| `toCategoryId` | query | 是 | 目标分类（同空间，须绑定 `dir_slug`） |
+
+响应 `DocumentMoveResultVo`：`fromSlug/toSlug/categoryId/syncSuccess/syncOutputTail`。需空间编辑权限。
+
+> 约束：目标目录下不能已存在同 stem 文件；slug 会从 `旧目录/名` 变为 `新目录/名`，旧 `?slug=` 外链将失效。
 
 ### 5.3 标签 `/kb/tag`
 

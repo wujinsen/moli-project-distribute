@@ -24,33 +24,39 @@ public class KbBrowseController {
     private KbBrowseService kbBrowseService;
 
     @GetMapping("/index")
-    @ApiOperation("目录 meta（按类型分组计数，不含 items；展开分组调 /index/items）")
-    public MoliResult<IndexTreeVo> index(@RequestParam(required = false) Long spaceId) {
-        return MoliResult.success(kbBrowseService.index(spaceId));
+    @ApiOperation("目录 meta（groupBy=type|category 分组计数，不含 items；展开分组调 /index/items）")
+    public MoliResult<IndexTreeVo> index(@RequestParam(required = false) Long spaceId,
+                                         @RequestParam(required = false, defaultValue = "type") String groupBy) {
+        return MoliResult.success(kbBrowseService.index(spaceId, groupBy));
     }
 
     @GetMapping("/index/items")
-    @ApiOperation("目录分组条目分页（轻量：id/slug/title/spaceId）")
+    @ApiOperation("目录分组条目分页（轻量：id/slug/title/spaceId）。key 为 kb_type 或 categoryId")
     public MoliResult<IndexItemsPageVo> indexItems(@RequestParam(required = false) Long spaceId,
-                                                   @RequestParam String type,
+                                                   @RequestParam(required = false, defaultValue = "type") String groupBy,
+                                                   @RequestParam(required = false) String key,
+                                                   @RequestParam(required = false) String type,
                                                    @RequestParam(defaultValue = "1") int pageNum,
                                                    @RequestParam(defaultValue = "50") int pageSize) {
-        return MoliResult.success(kbBrowseService.indexItems(spaceId, type, pageNum, pageSize));
+        String groupKey = key != null ? key : type;
+        return MoliResult.success(kbBrowseService.indexItems(spaceId, groupBy, groupKey, pageNum, pageSize));
     }
 
     @GetMapping("/index/search")
-    @ApiOperation("目录搜索（服务端过滤，按类型分组）")
+    @ApiOperation("目录搜索（服务端过滤，按 groupBy 分组）")
     public MoliResult<IndexTreeVo> indexSearch(@RequestParam(required = false) Long spaceId,
                                              @RequestParam String q,
-                                             @RequestParam(defaultValue = "200") int limit) {
-        return MoliResult.success(kbBrowseService.indexSearch(spaceId, q, limit));
+                                             @RequestParam(defaultValue = "200") int limit,
+                                             @RequestParam(required = false, defaultValue = "type") String groupBy) {
+        return MoliResult.success(kbBrowseService.indexSearch(spaceId, q, limit, groupBy));
     }
 
     @GetMapping("/index/locate")
     @ApiOperation("按 slug 定位所属分组（深链展开用）")
     public MoliResult<IndexLocateVo> locate(@RequestParam(required = false) Long spaceId,
-                                            @RequestParam String slug) {
-        return MoliResult.success(kbBrowseService.locate(spaceId, slug));
+                                            @RequestParam String slug,
+                                            @RequestParam(required = false, defaultValue = "type") String groupBy) {
+        return MoliResult.success(kbBrowseService.locate(spaceId, slug, groupBy));
     }
 
     @GetMapping("/page")

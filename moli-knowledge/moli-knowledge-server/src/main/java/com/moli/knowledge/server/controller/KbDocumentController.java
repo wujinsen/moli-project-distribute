@@ -3,6 +3,7 @@ package com.moli.knowledge.server.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
 import com.moli.knowledge.server.dto.DocumentDetailVo;
+import com.moli.knowledge.server.dto.DocumentMoveResultVo;
 import com.moli.knowledge.server.dto.DocumentSaveRequest;
 import com.moli.knowledge.server.dto.DocumentSearchRequest;
 import com.moli.knowledge.server.entity.KbDocument;
@@ -60,6 +61,13 @@ public class KbDocumentController {
     public MoliResult<Boolean> delete(@PathVariable Long id) {
         kbDocumentService.delete(id);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    @PutMapping("/{id}/move")
+    @ApiOperation("移动文档到另一分类(=目录)：移 wiki 文件 + 改引用 + 触发 Sync")
+    public MoliResult<DocumentMoveResultVo> move(@PathVariable Long id,
+                                                 @RequestParam Long toCategoryId) {
+        return MoliResult.success(kbDocumentService.move(id, toCategoryId));
     }
 
     @GetMapping("/{id}/versions")

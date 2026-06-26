@@ -25,6 +25,12 @@ public class KbCategory extends BaseEntity {
     @ApiModelProperty("图标")
     private String icon;
 
+    @ApiModelProperty("绑定的 wiki 子目录名（分类=目录，单一真相源）")
+    private String dirSlug;
+
+    @ApiModelProperty("该分类默认体裁 kb_type；文档移入时按此改 frontmatter type")
+    private String defaultType;
+
     @ApiModelProperty("排序")
     private Integer sort;
 

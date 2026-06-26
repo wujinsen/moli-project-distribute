@@ -18,6 +18,7 @@ import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbQaLogMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbAskService;
+import com.moli.knowledge.server.service.KbLlmClient;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,13 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -66,6 +60,8 @@ public class KbAskServiceImpl implements KbAskService {
     private KbQaLogMapper kbQaLogMapper;
     @Resource
     private KbLlmProperties llm;
+    @Resource
+    private KbLlmClient kbLlmClient;
     @Resource
     private KbAclService kbAclService;
     @Resource
@@ -161,7 +157,8 @@ public class KbAskServiceImpl implements KbAskService {
         if (shouldUseLlm(request) && !citations.isEmpty()) {
             try {
                 String ctx = buildContext(scored, topK);
-                String answer = callLlm(question, ctx);
+                String answer = kbLlmClient.chat(SYSTEM_PROMPT,
+                        "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + ctx);
                 resp.setAnswer(answer);
                 resp.setMode("generative");
             } catch (Exception e) {                       // noqa
@@ -441,65 +438,6 @@ public class KbAskServiceImpl implements KbAskService {
             used += chunk.length();
             if (used >= budget) {
                 break;
-            }
-        }
-        return sb.toString();
-    }
-
-    private String callLlm(String question, String context) throws Exception {
-        String url = llm.getBaseUrl().replaceAll("/+$", "") + "/chat/completions";
-
-        JSONArray messages = new JSONArray();
-        JSONObject sys = new JSONObject();
-        sys.put("role", "system");
-        sys.put("content", SYSTEM_PROMPT);
-        messages.add(sys);
-        JSONObject user = new JSONObject();
-        user.put("role", "user");
-        user.put("content", "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + context);
-        messages.add(user);
-
-        JSONObject payload = new JSONObject();
-        payload.put("model", llm.getModel());
-        payload.put("messages", messages);
-        payload.put("temperature", llm.getTemperature());
-        payload.put("stream", false);
-
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        try {
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + llm.getApiKey());
-            conn.setDoOutput(true);
-            int timeout = (llm.getTimeoutSeconds() == null ? 90 : llm.getTimeoutSeconds()) * 1000;
-            conn.setConnectTimeout(timeout);
-            conn.setReadTimeout(timeout);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(JSON.toJSONString(payload).getBytes(StandardCharsets.UTF_8));
-            }
-            int code = conn.getResponseCode();
-            String body = readStream(code >= 400 ? conn.getErrorStream() : conn.getInputStream());
-            if (code >= 400) {
-                throw new RuntimeException("HTTP " + code + ": "
-                        + body.substring(0, Math.min(300, body.length())));
-            }
-            JSONObject json = JSON.parseObject(body);
-            return json.getJSONArray("choices").getJSONObject(0)
-                    .getJSONObject("message").getString("content");
-        } finally {
-            conn.disconnect();
-        }
-    }
-
-    private String readStream(InputStream in) throws Exception {
-        if (in == null) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append('\n');
             }
         }
         return sb.toString();

@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -124,6 +125,120 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
         vo.setContentHash(sha256(request.getContent()));
         vo.setSavedAt(new Date());
         return vo;
+    }
+
+    @Override
+    public WikiSaveResultVo movePage(Long spaceId, String fromSlug, String toSlug, String newType) {
+        assertEnabled();
+        KbSpace space = resolveSpace(spaceId);
+        kbAclService.assertCanEdit(space.getId());
+
+        String from = normalizeSlug(fromSlug);
+        String to = normalizeSlug(toSlug);
+        if (from.equals(to)) {
+            throw new BaseException("源与目标分类相同，无需移动");
+        }
+        String wikiDir = resolveWikiDir(space.getSpaceCode());
+        Path fromFile = resolveFile(wikiDir, from);
+        Path toFile = resolveFile(wikiDir, to);
+        if (!Files.exists(fromFile)) {
+            throw new BaseException("源文件不存在: " + from);
+        }
+        if (Files.exists(toFile)) {
+            throw new BaseException("目标分类下已存在同名文档: " + to);
+        }
+
+        try {
+            // 1) 可选：改本页 frontmatter 的 type（移动到新分类的默认体裁）
+            String content = new String(Files.readAllBytes(fromFile), StandardCharsets.UTF_8);
+            if (StringUtils.isNotBlank(newType)) {
+                content = rewriteFrontmatterType(content, newType.trim());
+            }
+            // 2) 移动文件（先写新内容到目标，再删源，避免半路失败丢内容）
+            if (toFile.getParent() != null) {
+                Files.createDirectories(toFile.getParent());
+            }
+            Files.write(toFile, content.getBytes(StandardCharsets.UTF_8));
+            Files.delete(fromFile);
+            // 3) 自动改其它页/edges 中的全路径引用（裸名引用因 stem 不变无需改）
+            rewriteReferences(wikiDir, from, to);
+        } catch (IOException e) {
+            log.error("移动 wiki 文件失败: {} -> {}", fromFile, toFile, e);
+            throw new BaseException("移动 wiki 文件失败：" + e.getMessage());
+        }
+
+        log.info("[wiki-move] space={} {} -> {} newType={}", space.getSpaceCode(), from, to, newType);
+        WikiSaveResultVo vo = new WikiSaveResultVo();
+        vo.setSlug(to);
+        vo.setSpaceId(space.getId());
+        vo.setRelativePath(wikiDir + "/" + to + ".md");
+        vo.setCreated(false);
+        vo.setSavedAt(new Date());
+        return vo;
+    }
+
+    /** 替换 frontmatter（首个 --- ... --- 块）内的 type: 行。 */
+    private String rewriteFrontmatterType(String content, String newType) {
+        if (!content.startsWith("---")) {
+            return content;
+        }
+        int end = content.indexOf("\n---", 3);
+        if (end < 0) {
+            return content;
+        }
+        String head = content.substring(0, end);
+        String rest = content.substring(end);
+        String newHead = head.replaceFirst("(?m)^type:\\s*.*$", "type: " + newType);
+        return newHead + rest;
+    }
+
+    /** 扫描该空间所有 .md + graph/edges.jsonl，把全路径引用 from -> to 改写。 */
+    private void rewriteReferences(String wikiDir, String from, String to) throws IOException {
+        Path root = Paths.get(wikiProperties.getRoot());
+        if (!root.isAbsolute()) {
+            root = Paths.get(System.getProperty("user.dir")).resolve(root);
+        }
+        Path base = root.resolve(wikiDir).normalize();
+        if (!Files.exists(base)) {
+            return;
+        }
+        String linkClose = "[[" + from + "]]";
+        String linkPipe = "[[" + from + "|";
+        try (java.util.stream.Stream<Path> stream = Files.walk(base)) {
+            List<Path> mdFiles = stream
+                    .filter(p -> p.toString().endsWith(".md"))
+                    .collect(java.util.stream.Collectors.toList());
+            for (Path p : mdFiles) {
+                String text = new String(Files.readAllBytes(p), StandardCharsets.UTF_8);
+                if (!text.contains(linkClose) && !text.contains(linkPipe)) {
+                    continue;
+                }
+                String updated = text.replace(linkClose, "[[" + to + "]]")
+                        .replace(linkPipe, "[[" + to + "|");
+                if (!updated.equals(text)) {
+                    Files.write(p, updated.getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        }
+        // graph/edges.jsonl：from/to 全路径 slug 改写
+        Path edges = base.resolve("graph").resolve("edges.jsonl");
+        if (Files.exists(edges)) {
+            List<String> lines = Files.readAllLines(edges, StandardCharsets.UTF_8);
+            boolean changed = false;
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                String repl = line
+                        .replace("\"" + from + "\"", "\"" + to + "\"");
+                if (!repl.equals(line)) {
+                    lines.set(i, repl);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                Files.write(edges, lines.stream().collect(java.util.stream.Collectors.joining("\n", "", "\n"))
+                        .getBytes(StandardCharsets.UTF_8));
+            }
+        }
     }
 
     private void assertEnabled() {
