@@ -1,6 +1,8 @@
 package com.moli.knowledge.server.controller;
 
 import com.moli.common.core.MoliResult;
+import com.moli.knowledge.server.dto.WikiEnrichRequest;
+import com.moli.knowledge.server.dto.WikiEnrichResultVo;
 import com.moli.knowledge.server.dto.WikiAiReviseRequest;
 import com.moli.knowledge.server.dto.WikiAiReviseResultVo;
 import com.moli.knowledge.server.dto.WikiLintPreviewRequest;
@@ -9,6 +11,7 @@ import com.moli.knowledge.server.dto.WikiPageVo;
 import com.moli.knowledge.server.dto.WikiSaveRequest;
 import com.moli.knowledge.server.dto.WikiSaveResultVo;
 import com.moli.knowledge.server.service.KbWikiAiReviseService;
+import com.moli.knowledge.server.service.KbWikiEnrichService;
 import com.moli.knowledge.server.service.KbWikiFileService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -31,6 +34,8 @@ public class KbWikiController {
     private KbWikiFileService kbWikiFileService;
     @Resource
     private KbWikiAiReviseService kbWikiAiReviseService;
+    @Resource
+    private KbWikiEnrichService kbWikiEnrichService;
 
     @GetMapping("/page")
     @ApiOperation("读 wiki 文件全文（frontmatter+正文）；需空间 editor。文件不存在返回 exists=false")
@@ -55,5 +60,11 @@ public class KbWikiController {
     @ApiOperation("保存前 lint 预检（断链/frontmatter）；需空间 editor")
     public MoliResult<WikiLintPreviewVo> lintPreview(@RequestBody WikiLintPreviewRequest request) {
         return MoliResult.success(kbWikiAiReviseService.previewLint(request));
+    }
+
+    @PostMapping("/enrich")
+    @ApiOperation("Wiki enrich：已有页追加 patch + 可选 log/index/edges/Sync；需空间 editor")
+    public MoliResult<WikiEnrichResultVo> enrich(@RequestBody WikiEnrichRequest request) {
+        return MoliResult.success(kbWikiEnrichService.enrich(request));
     }
 }

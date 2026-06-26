@@ -12,6 +12,7 @@ REPO_ROOT="$(cd "${TOOLS}/../../.." && pwd)"
 SCHEMA="${REPO_ROOT}/docs/sql/03_knowledge_schema.sql"
 SYNC_PY="${TOOLS}/sync_to_db.py"
 LINT_PY="${TOOLS}/lint.py"
+ENRICH_PY="${TOOLS}/enrich.py"
 
 MODE="${1:-dry-run}"
 
@@ -41,6 +42,10 @@ case "${MODE}" in
   lint)
     # 知识治理体检（report-only：不因 ERROR/WARN 失败，便于在 dry-run 里观察）
     python "${LINT_PY}" "${@:2}"
+    ;;
+  enrich)
+    # Wiki enrich：已有页追加 patch（默认 dry-run；--apply 写盘）
+    python "${ENRICH_PY}" "${@:2}"
     ;;
   lint-strict)
     # 门禁模式：有 ERROR 即失败；加 --strict 时 WARN 也失败
@@ -192,7 +197,7 @@ case "${MODE}" in
     done
     ;;
   *)
-    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | init-schema | sync | sync-all | purge-raw-archive | purge-manual-web | purge-manual-web-all | purge-manual-web-dry-run | verify | verify-all)" >&2
+    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | enrich | init-schema | sync | sync-all | purge-raw-archive | purge-manual-web | purge-manual-web-all | purge-manual-web-dry-run | verify | verify-all)" >&2
     exit 1
     ;;
 esac

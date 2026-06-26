@@ -67,6 +67,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -117,7 +118,9 @@ public class KbIngestServiceImpl implements KbIngestService {
             + "2) frontmatter 必填：title、slug、type、status(active)、tags、sources、related、created、updated；\n"
             + "3) slug 用给定 slug；type 用给定 type；sources 用给定 raw 路径；created/updated 用给定日期；\n"
             + "4) 正文 [[..]] 互链只用「同批次/已知 slug 列表」里的 slug，禁止乱造；\n"
-            + "5) 内容忠于给定 raw 源，提炼为结构化知识，不照抄全文。";
+            + "5) related：**仅**填 0–5 个与本页主题**强相关**的 slug（裸名）；优先与正文 [[..]] 互链一致；"
+            + "无合适关联则 related: []；**禁止**把「已知 slug 列表」批量抄进 related；\n"
+            + "6) 内容忠于给定 raw 源，提炼为结构化知识，不照抄全文。";
 
     private static final String ENRICH_WRITER_PROMPT =
             "你是茉莉企业知识库的增量补充器（EnrichWriter）。任务：给一篇已有 wiki 页补充一个新章节。\n"
@@ -131,6 +134,10 @@ public class KbIngestServiceImpl implements KbIngestService {
 
     private static final Pattern WIKILINK = Pattern.compile("\\[\\[([^\\]]+)\\]\\]");
     private static final Pattern SOURCES_LINE = Pattern.compile("^sources:\\s*\\S", Pattern.MULTILINE);
+    private static final Pattern RELATED_INLINE = Pattern.compile("^related:\\s*\\[(.*)]\\s*$", Pattern.MULTILINE);
+
+    private static final int MAX_RELATED_SLUGS = 5;
+    private static final int MAX_LINK_CANDIDATES = 25;
 
     private static Map<String, String> buildTypeDirs() {
         Map<String, String> m = new LinkedHashMap<>();
@@ -140,6 +147,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         m.put("article", "articles");
         m.put("interview", "interview");
         m.put("output", "outputs");
+        m.put("exam", "exams");
         return m;
     }
 
@@ -473,8 +481,8 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
 
         List<String> batchSlugs = collectPlanSlugs(create, enrich);
-        List<String> knownSlugs = candidateBareSlugs(space.getId());
-        knownSlugs.addAll(batchSlugs);
+        List<String> linkCandidates = linkCandidateBareSlugs(space.getId(), job.getTopic(), batchSlugs);
+        List<String> batchBareSlugs = batchBareNames(batchSlugs);
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
         // 先在内存里生成（含 LLM 调用），单页失败隔离；成功后才在事务内替换，
@@ -498,7 +506,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                     continue;
                 }
                 try {
-                    fresh.add(genCreateDraft(job, space, item, knownSlugs, today));
+                    fresh.add(genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today));
                 } catch (Exception e) {
                     failed++;
                     log.warn("[ingest] generate create 页失败 job={} slug={}: {}", jobId, relPath, e.getMessage());
@@ -518,7 +526,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                     }
                 }
                 try {
-                    fresh.add(genEnrichDraft(job, space, item, knownSlugs));
+                    fresh.add(genEnrichDraft(job, space, item, linkCandidates));
                 } catch (Exception e) {
                     failed++;
                     log.warn("[ingest] generate enrich 页失败 job={} slug={}: {}", jobId, planSlug, e.getMessage());
@@ -574,7 +582,8 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     private KbIngestDraft genCreateDraft(KbIngestJob job, KbSpace space, JSONObject item,
-                                         List<String> knownSlugs, String today) {
+                                         List<String> linkCandidates, List<String> batchBareSlugs,
+                                         String today) {
         String type = StringUtils.defaultIfBlank(item.getString("type"), "article");
         String bare = StringUtils.trimToEmpty(item.getString("slug"));
         if (bare.isEmpty()) {
@@ -582,16 +591,23 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
         String relPath = resolveCreateRelPath(item);
         List<String> sources = jsonStrList(item.getJSONArray("sources"));
+        List<String> planRelated = jsonStrList(item.getJSONArray("related"));
 
-        String userPrompt = "目标 slug：" + bare + "\n"
-                + "type：" + type + "\n"
-                + "title：" + StringUtils.defaultString(item.getString("title")) + "\n"
-                + "created/updated：" + today + "\n"
-                + "sources（写入 frontmatter）：\n" + bulletList(sources)
-                + "\n已知 slug 列表（互链可用）：\n" + bulletList(limit(knownSlugs, 60))
-                + "\n\nraw 源内容（已截断）：\n" + readSources(sources);
+        StringBuilder userPrompt = new StringBuilder();
+        userPrompt.append("目标 slug：").append(bare).append('\n');
+        userPrompt.append("type：").append(type).append('\n');
+        userPrompt.append("title：").append(StringUtils.defaultString(item.getString("title"))).append('\n');
+        userPrompt.append("created/updated：").append(today).append('\n');
+        userPrompt.append("sources（写入 frontmatter）：\n").append(bulletList(sources)).append('\n');
+        if (!planRelated.isEmpty()) {
+            userPrompt.append("planRelated（优先采用，0–5 个）：\n").append(bulletList(planRelated)).append('\n');
+        }
+        userPrompt.append("已知 slug 列表（正文 [[..]] 互链可用，勿整批写入 related）：\n")
+                .append(bulletList(limit(linkCandidates, MAX_LINK_CANDIDATES))).append('\n');
+        userPrompt.append("\nraw 源内容（已截断）：\n").append(readSources(sources));
 
-        String content = stripFence(llmClient.chat(PAGE_WRITER_PROMPT, userPrompt));
+        String content = stripFence(llmClient.chat(PAGE_WRITER_PROMPT, userPrompt.toString()));
+        content = sanitizeRelatedFrontmatter(content, bareSlug(bare), batchBareSlugs, planRelated);
 
         KbIngestDraft d = newDraft(job, relPath, type, ACT_CREATE);
         d.setBaseline("");
@@ -620,7 +636,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         String reason = StringUtils.defaultString(item.getString("reason"));
         String userPrompt = "目标页 slug：" + planSlug + "\n"
                 + "补充原因：" + reason + "\n"
-                + "已知 slug 列表（互链可用）：\n" + bulletList(limit(knownSlugs, 60))
+                + "已知 slug 列表（互链可用，勿写入 related）：\n" + bulletList(limit(knownSlugs, MAX_LINK_CANDIDATES))
                 + "\n\n已有页当前全文：\n" + (baseline.isEmpty() ? "（页不存在，请作为新页主体内容输出一个章节）" : baseline);
 
         String section = stripFence(llmClient.chat(ENRICH_WRITER_PROMPT, userPrompt));
@@ -694,15 +710,19 @@ public class KbIngestServiceImpl implements KbIngestService {
         llmClient.assertUsable();
         KbIngestDraft old = loadDraft(jobId, slug);
 
-        List<String> knownSlugs = candidateBareSlugs(space.getId());
+        KbIngestPlan plan = latestPlan(jobId);
+        JSONObject planObj = plan != null ? JSON.parseObject(plan.getPlanJson()) : new JSONObject();
+        List<String> batchSlugs = collectPlanSlugs(planObj.getJSONArray("create"), planObj.getJSONArray("enrich"));
+        List<String> linkCandidates = linkCandidateBareSlugs(space.getId(), job.getTopic(), batchSlugs);
+        List<String> batchBareSlugs = batchBareNames(batchSlugs);
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         JSONObject item = findPlanItem(jobId, slug, old.getAction());
 
         KbIngestDraft fresh;
         if (ACT_ENRICH.equals(old.getAction())) {
-            fresh = genEnrichDraft(job, space, item, knownSlugs);
+            fresh = genEnrichDraft(job, space, item, linkCandidates);
         } else {
-            fresh = genCreateDraft(job, space, item, knownSlugs, today);
+            fresh = genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today);
         }
         old.setBaseline(fresh.getBaseline());
         old.setPatch(fresh.getPatch());
@@ -834,6 +854,12 @@ public class KbIngestServiceImpl implements KbIngestService {
                 if (!SOURCES_LINE.matcher(fm).find()) {
                     items.add(new IngestLintVo.Item(slug, "empty_sources",
                             enrich ? "WARN" : "ERROR", "frontmatter sources 为空或缺失"));
+                }
+                int relatedCount = countRelatedInFrontmatter(content);
+                if (relatedCount > MAX_RELATED_SLUGS) {
+                    items.add(new IngestLintVo.Item(slug, "related_overflow", "WARN",
+                            "related 条目过多（" + relatedCount + "），建议 ≤" + MAX_RELATED_SLUGS
+                                    + " 且仅填正文互链/同批次相关页"));
                 }
             }
         }
@@ -1426,6 +1452,147 @@ public class KbIngestServiceImpl implements KbIngestService {
             }
         }
         return out.stream().distinct().collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * 供 PageWriter 互链的候选 slug：同批次 + 按主题召回（≤25），避免把全库 slug 喂给 LLM 导致 related 泛滥。
+     */
+    private List<String> linkCandidateBareSlugs(Long spaceId, String topic, List<String> batchFullSlugs) {
+        LinkedHashSet<String> set = new LinkedHashSet<>();
+        for (String s : batchBareNames(batchFullSlugs)) {
+            set.add(s);
+        }
+        if (StringUtils.isNotBlank(topic)) {
+            try {
+                List<KbDocument> docs = kbDocumentMapper.searchAskCandidates(
+                        java.util.Collections.singletonList(spaceId),
+                        DocumentStatus.PUBLISHED.getCode(),
+                        null, null, topic, 15);
+                if (docs != null) {
+                    for (KbDocument d : docs) {
+                        if (StringUtils.isNotBlank(d.getSlug())) {
+                            set.add(bareSlug(d.getSlug()));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("[ingest] linkCandidateBareSlugs 召回失败: {}", e.getMessage());
+            }
+        }
+        return limit(new ArrayList<>(set), MAX_LINK_CANDIDATES);
+    }
+
+    private List<String> batchBareNames(List<String> batchFullSlugs) {
+        if (batchFullSlugs == null) {
+            return new ArrayList<>();
+        }
+        return batchFullSlugs.stream()
+                .map(this::bareSlug)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /** 落盘前清洗 related：仅保留正文 [[..]]、planRelated、同批次页，最多 5 个。 */
+    private String sanitizeRelatedFrontmatter(String content, String currentBare,
+                                            List<String> batchBareSlugs, List<String> planRelated) {
+        if (!content.startsWith("---")) {
+            return content;
+        }
+        int end = content.indexOf("\n---", 3);
+        if (end < 0) {
+            return content;
+        }
+        String body = content.substring(end + 4);
+        LinkedHashSet<String> kept = new LinkedHashSet<>();
+        for (String t : extractWikilinkTargets(body)) {
+            kept.add(bareSlug(t));
+        }
+        if (planRelated != null) {
+            for (String r : planRelated) {
+                if (StringUtils.isNotBlank(r)) {
+                    kept.add(bareSlug(r));
+                }
+            }
+        }
+        if (batchBareSlugs != null) {
+            for (String b : batchBareSlugs) {
+                if (StringUtils.isNotBlank(b) && !bareSlug(b).equalsIgnoreCase(currentBare)) {
+                    kept.add(bareSlug(b));
+                }
+            }
+        }
+        kept.remove(currentBare);
+        List<String> list = limit(new ArrayList<>(kept), MAX_RELATED_SLUGS);
+        return setFrontmatterRelated(content, list);
+    }
+
+    private List<String> extractWikilinkTargets(String body) {
+        List<String> out = new ArrayList<>();
+        Matcher m = WIKILINK.matcher(body);
+        while (m.find()) {
+            String t = m.group(1).split("\\|")[0].trim();
+            if (!t.isEmpty()) {
+                out.add(t);
+            }
+        }
+        return out;
+    }
+
+    private String setFrontmatterRelated(String content, List<String> relatedBare) {
+        int end = content.indexOf("\n---", 3);
+        if (end < 0) {
+            return content;
+        }
+        String fm = content.substring(0, end);
+        String rest = content.substring(end);
+        String cleaned = fm.replaceAll("(?m)^related:\\s*\\[[^\\]]*]\\s*\\n?", "");
+        cleaned = cleaned.replaceAll("(?m)^related:\\s*\\n(?:  - [^\\n]+\\n)+", "");
+        cleaned = cleaned.replaceAll("(?m)^related:\\s*\\n?", "");
+        cleaned = cleaned.stripTrailing();
+
+        StringBuilder relatedBlock = new StringBuilder("\n");
+        if (relatedBare == null || relatedBare.isEmpty()) {
+            relatedBlock.append("related: []");
+        } else if (relatedBare.size() <= 4 && relatedBare.stream().noneMatch(s -> s.contains(" "))) {
+            relatedBlock.append("related: [").append(String.join(", ", relatedBare)).append(']');
+        } else {
+            relatedBlock.append("related:");
+            for (String r : relatedBare) {
+                relatedBlock.append("\n  - ").append(r);
+            }
+        }
+        return cleaned + relatedBlock + rest;
+    }
+
+    private int countRelatedInFrontmatter(String content) {
+        if (!content.startsWith("---")) {
+            return 0;
+        }
+        int end = content.indexOf("\n---", 3);
+        if (end < 0) {
+            return 0;
+        }
+        String fm = content.substring(0, end);
+        Matcher inline = RELATED_INLINE.matcher(fm);
+        if (inline.find()) {
+            String inner = inline.group(1).trim();
+            if (inner.isEmpty()) {
+                return 0;
+            }
+            return inner.split(",").length;
+        }
+        int count = 0;
+        int idx = fm.indexOf("related:");
+        if (idx < 0) {
+            return 0;
+        }
+        String block = fm.substring(idx);
+        Matcher bm = Pattern.compile("^  - ", Pattern.MULTILINE).matcher(block);
+        while (bm.find()) {
+            count++;
+        }
+        return count;
     }
 
     private void indexDocuments(Long spaceId, Set<String> slugIndex, Set<String> titleIndex) {

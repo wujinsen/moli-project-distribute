@@ -1,0 +1,20 @@
+{
+  "batchNo": "example",
+  "topic": "示例批次 enrich",
+  "raw": ["articles/example.note.md"],
+  "enrich": [
+    {
+      "slug": "concepts/知识库三操作",
+      "reason": "补充 enrich CLI 说明",
+      "patch": "## Enrich CLI\n\n> 由 `kb/tools/enrich.py` 维护；见 enrich-plan.example.json。\n"
+    }
+  ],
+  "edges": [
+    {
+      "from": "concepts/知识库三操作",
+      "to": "guides/AI自我进化与MD审校流程",
+      "type": "relates_to",
+      "evidence": "enrich CLI 示例"
+    }
+  ]
+}

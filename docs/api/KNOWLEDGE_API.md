@@ -423,6 +423,10 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 
 ### 4.2 体检（只算不落库）`GET /kb/lint`
 
+> **数据源**：扫描 **MySQL `kb_document`**（`KbInsightServiceImpl.loadDocs()`），**不读**部署机上的 `kb/wiki*` 文件。  
+> 若 wiki 已改但未 Sync，体检结果仍是**旧快照**。Sync 前门禁请用 **`lint.py`**（见 `wiki-ops/guides/查询与体检指南` §3）。  
+> 同页 **Wiki 同步** Tab（`POST /kb/sync/trigger`）才是 wiki → DB，与「扫描并落库」不是同一操作。
+
 | 参数 | 位置 | 必填 |
 |------|------|------|
 | `spaceId` | query | 否 |
@@ -864,13 +868,15 @@ Web **不提供**「AI 改 MD」能力；推荐在 **Cursor Agent** 中改 `kb/w
 4. `sync_to_db.py --dry-run` → 正式 sync，或 Web **健康体检 → Wiki 同步 → 触发同步**
 5. （可选）Web **扫描并落库**（写 `kb_lint_issue`）+ **智能问答** 验证；问答缺口 → crystallize 回到步骤 1
 
-**易混淆**：
+**易混淆**（完整对照见 `wiki-ops/guides/查询与体检指南` §3）：
 
 | Web 按钮 | 实际作用 |
 |----------|----------|
+| **重新体检**（质量体检 Tab） | 只算 `GET /kb/lint`，**扫 DB**，不落库 |
 | **扫描并落库**（质量体检 Tab） | DB 体检问题 → `kb_lint_issue`；**不是** Sync |
 | **触发同步**（Wiki 同步 Tab） | `kb/wiki/` → `kb_document` |
 | 同步一直提示成功 | 正常；hash 未变时全 `skip`，看 insert/update 数量 |
+| wiki 已改但体检无变化 | 尚未 Sync；DB 仍是旧快照 |
 
 契约层说明见 `moli-knowledge/kb/AGENTS.md` §8。
 
@@ -1006,7 +1012,48 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 类型：`broken_link` / `missing_frontmatter` / `empty_sources`。  
 **非** `lint.py --strict` 全库门禁；保存前前端展示摘要并允许用户确认仍保存。
 
-### 8.4 体检修复入口 + 保存并 Sync（T14c / T14d · 前端）
+### 8.4 Wiki enrich 治理 ✅（CLI + Web API）
+
+对齐 `kb/tools/enrich.py` 与 Ingest EnrichWriter：在**已有 wiki 页**追加 patch，并可选维护 `log.md` / `index.md` / `graph/edges.jsonl`。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/kb/wiki/enrich` | enrich 单页或批次；需空间 **editor** |
+
+**请求体**（单页）：
+
+```json
+{
+  "spaceId": "900000000000000001",
+  "slug": "guides/本地启动指南",
+  "patch": "## 补充\n\n正文…",
+  "batchNo": "43",
+  "topic": "用户中心启动",
+  "rawPaths": ["docs/foo.md"],
+  "edges": [{ "from": "guides/a", "to": "concepts/b", "type": "relates_to", "evidence": "批次43" }],
+  "updateMeta": true,
+  "appendLog": true,
+  "appendIndex": true,
+  "appendEdges": true,
+  "dryRun": false,
+  "sync": true
+}
+```
+
+**请求体**（批次）：`items[]` 每项 `{ slug, patch?, reason?, rawPaths? }`；`patch` 优先于 `rawPaths`（后者调 LLM）。
+
+**响应**：`{ batchNo, topic, dryRun, items[{ slug, patch, mergedPreview, applied, error }], logAppended, indexUpdated, edgesAppended, syncTriggered?, syncResult? }`
+
+**CLI 等价**：
+
+```bash
+python moli-knowledge/kb/tools/enrich.py --plan enrich-plan.json --apply
+bash moli-knowledge/kb/tools/ci/run_sync.sh enrich --slug guides/foo --patch-file patch.md --apply
+```
+
+Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
+
+### 8.5 体检修复入口 + 保存并 Sync（T14c / T14d · 前端）
 
 | 能力 | 说明 |
 |------|------|
@@ -1014,7 +1061,7 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 | 保存后标记修复 | 保存成功 → 确认 → `PUT /kb/lint/issue/{id}?status=2` |
 | 保存并 Sync | 保存 wiki → `POST /kb/sync/trigger?spaceId=`（需 `kb:sync:trigger`） |
 
-### 8.5 权限
+### 8.6 权限
 
 | 操作 | ACL |
 |------|-----|

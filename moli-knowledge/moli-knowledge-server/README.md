@@ -195,7 +195,10 @@ GET /kb/document/search?spaceId=900000000000000001&source=kb&keyword=上手
 # 编辑正文（唯一写路径）
 PUT /kb/wiki/page
 { "slug": "guides/xxx", "spaceId": 900000000000000001, "content": "---\n...\n---\n\n# ..." }
-# 然后 POST /kb/sync/trigger 或 sync_to_db.py
+# 已有页 enrich（追加 patch + log/index/edges，可选 sync）
+POST /kb/wiki/enrich
+{ "slug": "guides/xxx", "spaceId": 900000000000000001, "patch": "## 补充\n\n...", "sync": true }
+# 然后 POST /kb/sync/trigger 或 sync_to_db.py（enrich 请求 sync:true 时可省略）
 ```
 
 ---
