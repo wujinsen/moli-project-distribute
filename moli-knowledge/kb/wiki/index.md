@@ -3,49 +3,53 @@
 
 
 > 全库内容目录。每次 Ingest / Query 回写后更新。Query 时先读本文件定位相关页。  
-> **系统操作手册**已独立为知识空间 `moli-ops-manual`（wiki 源 `kb/wiki-ops/`），本目录仍保留副本便于跨库检索；运维向入口见该空间或 [[guides/知识库使用指南]]。
+> **系统操作手册**独立为空间 `moli-ops-manual`（`kb/wiki-ops/`）。enterprise-kb 内运维页已移除，见 [[系统操作手册入口]]。
 
+## 系统操作手册（跨空间）
 
+- [[系统操作手册入口]] — 运维操作见空间 `moli-ops-manual`（`kb/wiki-ops/`），本库不保留副本（P0）
 
 ## guides（操作指导 · P0）
 
 
 
-- [[本地启动指南]] — 从零本地启动茉莉微服务全家桶（Nacos/MySQL/Redis + 各服务，含启动顺序）
+- [[系统操作手册入口]] — 从零本地启动茉莉微服务全家桶（Nacos/MySQL/Redis + 各服务，含启动顺序）
 
-- [[登录与鉴权指南]] — 怎么登录拿 token、怎么带 `Authorization` 头跨服务调接口、常见返回码
+- [[系统操作手册入口]] — 怎么登录拿 token、怎么带 `Authorization` 头跨服务调接口、常见返回码
 
-- [[权限管理操作指南]] — 怎么管用户/角色/菜单/部门、给新员工开通权限的标准流程
+- [[系统操作手册入口]] — 怎么管用户/角色/菜单/部门、给新员工开通权限的标准流程
 
-- [[故障排查指南]] — 登录 500/Redis/Dubbo/Nacos/DB/JVM 等常见故障决策树（P0 运维）
+- [[系统操作手册入口]] — 登录 500/Redis/Dubbo/Nacos/DB/JVM 等常见故障决策树（P0 运维）
 - [[秒杀压测指南]] — loadtest 环境、k6 脚本阶梯、秒杀 API、checklist（P0 压测）
-- [[知识库使用指南]] — 浏览/问答/图谱 API、空间权限、wiki 同步（P0）
-- [[数据库初始化指南]] — scripts/moli.sql 一键导入、演示账号、秒杀/知识库表（P0）
-- [[wiki同步指南]] — sync_to_db dry-run/写库、slug/kb_relation、与 Ingest 配合（P0）
-- [[查询与体检指南]] — Query 作用域/Lint 检查、serve.py 与 /kb/ask（P0）
-- [[minio-附件存储指南]] — MinIO 本地启动、knowledge 附件 API（P0）
-- [[swagger接口调试指南]] — Springfox UI、Authorization 头、各服务端口（P0）
-- [[docker部署指南]] — Docker 安装、常用命令、Java 镜像与 compose（P1）
-- [[前端开发与联调指南]] — Node/Vue 本地启动、devServer 代理、token 联调（P0）
-- [[nginx反向代理与前端部署指南]] — dist 托管、API 反代、HTTPS（P1）
+- [[系统操作手册入口]] — 浏览/问答/图谱 API、空间权限、wiki 同步（P0）
+- [[系统操作手册入口]] — scripts/moli.sql 一键导入、演示账号、秒杀/知识库表（P0）
+- [[系统操作手册入口]] — sync_to_db dry-run/写库、slug/kb_relation、与 Ingest 配合（P0）
+- [[系统操作手册入口]] — Query 作用域/Lint 检查、serve.py 与 /kb/ask（P0）
+- [[系统操作手册入口]] — MinIO 本地启动、knowledge 附件 API（P0）
+- [[系统操作手册入口]] — Springfox UI、Authorization 头、各服务端口（P0）
+- [[系统操作手册入口]] — Docker 安装、常用命令、Java 镜像与 compose（P1）
+- [[系统操作手册入口]] — Node/Vue 本地启动、devServer 代理、token 联调（P0）
+- [[系统操作手册入口]] — dist 托管、API 反代、HTTPS（P1）
 - [[git协作指南]] — 分支/MR、冲突与常见 Git 问题（P1）
 - [[增量ingest与raw投喂指南]] — raw 投喂、增量 ingest 批次、Lint/sync 闭环（P0）
 - [[AI自我进化与MD审校流程]] — LLM-Wiki 自我进化闭环、Ingest/Lint/Sync/Crystallize、AI 审校 MD → lint → Sync（P0）
-- [[Wiki在线编辑与AI协助改稿]] — Web 界面编辑 wiki、AI 协助改稿、diff 对比、保存回 wiki（draft · T14/M5）
+- [[Wiki在线编辑与AI协助改稿]] — Web 单篇编辑 wiki、AI 改稿、diff、保存（draft · T14/M5）
+- [[Ingest工作台产品方案]] — Web 批次厚 Ingest：raw→Plan→多页草稿→diff→lint→commit+Sync（**active · T15/M6 已交付**）
+- [[Wiki治理工作台产品方案]] — Web 空间级治理：选空间→文件真值 Lint→批量 enrich/ai-revise→复检→Sync（draft · T16/M7 规划）
 
 ## services（微服务实体）
 
 
 
-- [[用户中心]] — 权限中枢：用户/角色/菜单/权限 + Shiro 认证 + Dubbo Provider（HTTP 8888）
+- [[系统操作手册入口]] — 权限中枢：用户/角色/菜单/权限 + Shiro 认证 + Dubbo Provider（HTTP 8888）
 
-- [[网关]] — Spring Cloud Gateway 统一入口，按路径转发（HTTP 21000，无鉴权/无 Sentinel）
+- [[系统操作手册入口]] — Spring Cloud Gateway 统一入口，按路径转发（HTTP 21000，无鉴权/无 Sentinel）
 
-- [[订单服务]] — 订单业务（通用为骨架）+ 秒杀子系统（HTTP 8087）
+- [[系统操作手册入口]] — 订单业务（通用为骨架）+ 秒杀子系统（HTTP 8087）
 
-- [[bi服务]] — BI 骨架（1128）：Shiro+Dubbo 就绪，报表 API 待建；演进 [[bi报表服务演进路线]]
+- [[系统操作手册入口]] — BI 骨架（1128）：Shiro+Dubbo 就绪，报表 API 待建；演进 [[bi报表服务演进路线]]
 
-- [[知识库服务]] — 企业知识库 Java REST 后端，检索走 MySQL ngram 全文（HTTP 8090）
+- [[系统操作手册入口]] — 企业知识库 Java REST 后端，检索走 MySQL ngram 全文（HTTP 8090）
 
 
 
@@ -53,9 +57,9 @@
 
 
 
-- [[rbac-权限模型]] — 用户→角色→菜单/动作 的双轨 RBAC + Shiro 校验
+- [[系统操作手册入口]] — 用户→角色→菜单/动作 的双轨 RBAC + Shiro 校验
 
-- [[认证与会话机制]] — 无 JWT，token=Shiro Session ID，共享 Redis，跨服务校验
+- [[系统操作手册入口]] — 无 JWT，token=Shiro Session ID，共享 Redis，跨服务校验
 
 - [[服务调用与架构]] — 全链路、Dubbo vs HTTP 调用分层、基础设施、鉴权边界
 
@@ -522,18 +526,13 @@ _下一批从 **#87** 起。_
 - [[康威定律-与组织]] — 康威定律与组织（#283）
 - [[技术雷达-维护]] — 技术雷达维护（#284）
 - [[茉莉微服务演进路线-2026]] — 茉莉微服务演进路线 2026（#285）
-- [[茉莉知识体系100批索引]] — 茉莉知识体系100批索引（#286）
 
 ## 批次 #187–#286 总览（100 批）
 
-分域入口见 [[茉莉知识体系100批索引]]；按段列表见上方四段（#187–#211 / #212–#236 / #237–#261 / #262–#286）。
 
 ## 批次 #287–#1286 总览（1000 批 · 已完成）
 
-- **总入口**：[[茉莉知识体系1000批总索引]]
-- **上一档**：[[茉莉知识体系100批索引]]（#187–#286）
 - **10 个 megacluster**：每 100 批一域（前端 / Java / Spring / 数据 / 中间件 / DevOps / 安全 / 测试 / 架构 / 茉莉）
-- **汇总页**：[[茉莉前端与客户端体系汇总]] · [[茉莉数据存储深化汇总]] · [[茉莉集成中间件100批汇总]] · [[茉莉平台工程与SRE汇总]] · [[茉莉安全深化100批汇总]] · [[茉莉质量工程100批汇总]] · [[茉莉架构模式100批汇总]]
 
 _1000 批计划 **#287–#1286** 已完成；下一批从 **#1287** 起。_
 

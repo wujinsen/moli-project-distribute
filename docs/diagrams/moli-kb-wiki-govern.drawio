@@ -1,0 +1,118 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-wiki-govern" name="Wiki 治理工作台">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Wiki 治理工作台 · 链路（T16）：选空间 → Lint 文件真值 → 批量修复(enrich/ai-revise) → 复检 → Sync；ingest 旁路投喂新源" style="text;html=1;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="2300" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="laneState" value="状态机" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s0" value="① 选空间&#xa;KbSpaceSelector&#xa;enterprise-kb / jp-fe-ap-exam / moli-ops-manual" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="220" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s1" value="② Lint 文件真值&#xa;POST /kb/wiki/lint-space&#xa;调 lint.py --wiki-dir {spaceDir} --json&#xa;扫磁盘 wiki，非 DB 快照" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="120" width="260" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dec" value="有问题?&#xa;errors/warns &gt; 0" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="640" y="120" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="healthy" value="健康&#xa;status=linted（无 ERROR/WARN）" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="640" y="260" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s2" value="③ 问题页分组 + 勾选&#xa;按 kind 分组：broken_link / orphan /&#xa;missing_source / related_overflow ...&#xa;issue.page = slug（修复目标键）" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="840" y="110" width="280" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fixEnrich" value="enrich 批量补章&#xa;POST /kb/wiki/enrich (items[])&#xa;patch 或 raw→LLM&#xa;+ log/index/edges" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="60" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fixAi" value="ai-revise 批量修断链&#xa;POST /kb/wiki/ai-revise（逐页）&#xa;按 kind 自动生成指令&#xa;失败隔离 + 进度反馈" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="160" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fixManual" value="跳转单页手改&#xa;/knowledge/wiki/edit?slug=&#xa;PUT /kb/wiki/page" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="260" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s3" value="④ Lint 复检&#xa;再调 /kb/wiki/lint-space&#xa;对比问题数 → 确认清零&#xa;status=relinted" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="110" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s4" value="⑤ Sync 入库&#xa;POST /kb/sync/trigger?spaceId=&#xa;kb/wiki → kb_document&#xa;status=synced" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1780" y="110" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db" value="MySQL kb_document&#xa;浏览 / 问答 / 图谱可见" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="2080" y="120" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bypass" value="旁路：投喂新 raw&#xa;Ingest 工作台 /knowledge/ingest&#xa;raw → Plan → 多页草稿 → commit → Sync&#xa;（新增知识，非修问题页）" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="300" width="300" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note" value="数据贯通要点：lint.py 的 issue.page = slug，直接作为 enrich/ai-revise 的入参 slug；&#xa;空间→目录映射复用 KbWikiProperties.spaceDirs（enterprise-kb→wiki / jp-fe-ap-exam→wiki-jp-exam / moli-ops-manual→wiki-ops）。" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fillColor=#f8f8f8;strokeColor=#cccccc;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="840" y="360" width="900" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="s0" target="s1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="s1" target="dec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="否" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=11;" edge="1" parent="1" source="dec" target="healthy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="是" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=11;" edge="1" parent="1" source="dec" target="s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="s2" target="fixEnrich">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="s2" target="fixAi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4c" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="s2" target="fixManual">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="fixEnrich" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="fixAi" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5c" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;" edge="1" parent="1" source="fixManual" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="仍有问题→回③" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;" edge="1" parent="1" source="s3" target="s2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1600" y="40" />
+              <mxPoint x="980" y="40" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="通过" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;fontSize=11;" edge="1" parent="1" source="s3" target="s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="s4" target="db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="旁路" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;fontSize=10;" edge="1" parent="1" source="s0" target="bypass">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

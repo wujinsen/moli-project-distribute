@@ -1331,3 +1331,4 @@
 ## [2026-06-24] feature | T14e：文档管理新建→Wiki编辑+首存AI治理；浏览 index 仅 source=kb；更新 Wiki在线编辑/AI自我进化/KNOWLEDGE_API
 ## [2026-06-24] feature | 全面移除 Web 直连写库：删 KbDocumentEditPanel、停用 POST/PUT publish/archive/DELETE /kb/document；文档管理仅 wiki 编辑
 ## [2026-06-24] maintenance | sync_to_db --purge-manual-web + purge_manual_web.ps1 清理 source=manual 遗留行
+## [2026-06-27] plan | T16 Wiki 治理工作台落档：create guides/Wiki治理工作台产品方案 + moli-kb-wiki-govern.drawio/png；TASKS T16a–d、diagrams/index 登记
