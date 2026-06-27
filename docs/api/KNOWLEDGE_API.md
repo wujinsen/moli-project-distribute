@@ -71,6 +71,7 @@
 |------|------|
 | [`docs/sql/04_knowledge_menu.sql`](../sql/04_knowledge_menu.sql) | 侧栏菜单 + 角色菜单绑定（`init-db.ps1` 在 `03_knowledge_schema.sql` 后自动执行） |
 | [`docs/sql/05_knowledge_action_patch.sql`](../sql/05_knowledge_action_patch.sql) | **动作权限** `sys_action`（空间 CRUD/批量授权、体检扫描、Wiki 同步）；**已有库需手动补一次** |
+| [`docs/sql/11_kb_wiki_govern_menu.sql`](../sql/11_kb_wiki_govern_menu.sql) | **Wiki 治理**菜单 910 + 角色绑定（T16；已有库需手动补） |
 
 | menu_id | 类型 | 名称 | path | component（对齐 meiling-ui viewRegistry） |
 |---------|------|------|------|-------------------------------------------|
@@ -80,6 +81,7 @@
 | 903 | C 菜单 | 关系图谱 | `graph` | `knowledge/graph/index` |
 | 904 | C 菜单 | 健康体检 | `lint` | `knowledge/lint/index` |
 | 906 | C 菜单 | Ingest 工作台 | `ingest` | `knowledge/ingest/index` |
+| 910 | C 菜单 | Wiki 治理 | `wiki-govern` | `knowledge/wiki-govern/index` |
 | 909 | C 菜单 | 空间管理 | `spaces` | `knowledge/spaces/index` |
 
 按钮权限（`sys_action`，在「分配权限」右侧按页面分组；F 菜单 perms 不进 Shiro）：
@@ -90,7 +92,7 @@
 | 904 健康体检 | `kb:lint:scan`、`kb:sync:trigger` |
 | 906 Ingest 工作台 | `kb:ingest:job`（规划/生成）、`kb:ingest:commit`（落盘） |
 
-侧栏 C 菜单 perms：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:ingest:list`、`kb:space:admin`。
+侧栏 C 菜单 perms：`kb:browse:list`、`kb:ask:list`、`kb:graph:list`、`kb:lint:list`、`kb:ingest:list`、`kb:wiki:govern:list`、`kb:space:admin`。
 
 `getRouters` 返回片段示例：
 
@@ -886,6 +888,8 @@ powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute
 | GET | `/kb/sync/status?spaceId=` | 最近一批统计 `SyncStatusVo` |
 | POST | `/kb/sync/trigger?spaceId=&spaceCode=` | 触发 `sync_to_db.py`，返回 `SyncTriggerVo` |
 
+> **多空间 Sync**：脚本同时传 `--space {spaceCode}` 与 `--wiki-dir {kb.wiki.space-dirs[spaceCode]}`（如 `moli-ops-manual` → `wiki-ops`）。**勿**对所有空间默认扫 `wiki/`，否则操作手册空间会误入 enterprise-kb 的 300+ 篇文档。
+
 `SyncStatusVo` 示例：
 
 ```json
@@ -998,7 +1002,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
 | **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` + **`/kb/wiki/enrich`** | 浏览/体检「编辑/修复」；源码编辑 + diff + **Enrich 治理** + AI 协助 + 保存并 Sync |
-| **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 20 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑 |
+| **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 **21** 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑/删批次 |
 | **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16 | `/kb/wiki/lint-space` + enrich + ai-revise + `/kb/sync/trigger` | 选空间 → **文件真值 Lint** → 批量 enrich/ai-revise → 复检 → Sync；ingest 旁路 |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
@@ -1220,9 +1224,11 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 | # | 方法 | 路径 | 说明 | 权限 |
 |---|------|------|------|------|
 | 1 | GET | `/kb/ingest/raw-tree?prefix=` | raw 只读目录树 | 空间 **viewer** |
-| 2 | POST | `/kb/ingest/jobs` | 创建批次 | **editor** |
+| 2 | GET | `/kb/ingest/raw-coverage?spaceId=&prefix=&filter=&refresh=` | wiki `sources` 反向索引（筛未 ingest raw） | viewer |
+| 3 | POST | `/kb/ingest/jobs` | 创建批次 | **editor** |
 | 3 | GET | `/kb/ingest/jobs?spaceId=&status=&pageNum=&pageSize=` | 批次分页 | viewer |
 | 4 | GET | `/kb/ingest/jobs/{id}` | 批次详情（含最新 plan） | viewer |
+| 4b | DELETE | `/kb/ingest/jobs/{id}` | 删除历史批次（软删） | **editor** |
 | 5 | POST | `/kb/ingest/jobs/{id}/plan` | LLM 生成/刷新 Plan | **editor** |
 | 6 | PUT | `/kb/ingest/jobs/{id}/plan` | 人工编辑 Plan | **editor** |
 | 7 | GET | `/kb/ingest/jobs/{id}/export-agent-prompt` | 导出 Cursor Agent 提示词 | viewer |
@@ -1263,6 +1269,8 @@ created → planned → reviewing → committed
 | `kb.ingest.max-pages-per-batch` | 15 | 单批次 Plan 软上限（create+enrich） |
 | `kb.ingest.max-tree-nodes` | 5000 | raw-tree 单次返回最大节点数 |
 | `kb.ingest.raw-snippet-chars` | 4000 | Plan 生成时单个 raw 喂给 LLM 的截断长度 |
+| `kb.ingest.coverage-cache-seconds` | 300 | raw-coverage wiki 索引内存缓存 TTL |
+| `kb.ingest.max-coverage-files` | 10000 | raw-coverage 单次扫描最大文件数 |
 
 ### 9.1 raw 只读树
 
@@ -1302,6 +1310,60 @@ created → planned → reviewing → committed
   ]
 }
 ```
+
+### 9.1.1 raw 覆盖索引（P0 · 筛未 ingest）
+
+**`GET /kb/ingest/raw-coverage`**
+
+扫描目标空间 **wiki 文件** frontmatter `sources`，建立 raw 路径 → wiki slug 反向索引，供 Ingest 选源时过滤「已 ingest / 待 ingest」。
+
+| 参数 | 类型 | 默认 | 说明 |
+|------|------|------|------|
+| `spaceId` | long | 默认 `enterprise-kb` | 索引哪个空间的 wiki |
+| `prefix` | string | — | 仅扫描 raw 子目录（相对 `raw-root`） |
+| `filter` | string | `all` | `all` \| `open` \| `covered` \| `cluster`（影响 `items` 列表，**不影响** `summary` 全量统计） |
+| `refresh` | boolean | false | true 跳过 wiki 索引缓存 |
+
+**coverage 三态**：
+
+| 值 | 含义 |
+|----|------|
+| `open` | 无任何 wiki `sources` 引用 |
+| `covered` | 有 wiki 页 **精确** 引用该 raw 文件路径 |
+| `cluster` | 无精确引用，但父目录在 `sources` 中被引用（如 `raw/wujinsen_markdown/`） |
+
+**响应** `MoliResult<RawCoverageVo>`：
+
+```json
+{
+  "code": 200,
+  "data": {
+    "spaceId": "900000000000000001",
+    "spaceCode": "enterprise-kb",
+    "wikiDir": "wiki",
+    "indexedAt": "2026-06-27 12:00:00",
+    "wikiPageCount": 142,
+    "filter": "open",
+    "summary": { "totalFiles": 520, "covered": 38, "cluster": 95, "open": 387 },
+    "items": [
+      {
+        "path": "design/new-topic.note.md",
+        "coverage": "open",
+        "matchKind": "none",
+        "wikiSlugs": [],
+        "inFlightJobIds": []
+      }
+    ]
+  }
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `items[].wikiSlugs` | 引用该 raw 的 wiki slug（hover 展示） |
+| `items[].inFlightJobIds` | 未 `committed`/`cancelled` 批次已勾选该 raw（或目录前缀） |
+
+> **注意**：索引依据 wiki 磁盘文件，与 Sync/DB 无关；`sources` 写目录占位会导致 `cluster` 偏多。已 ingest 的 raw **仍可勾选**（用于 enrich），前端会提示。
 
 ### 9.2 批次 job
 
@@ -1358,6 +1420,51 @@ created → planned → reviewing → committed
 | `planSource` | `llm` / `manual` / `skeleton` |
 | `canEdit` | 当前用户是否对该空间有 **editor** 权限 |
 | `createTime` / `updateTime` | 审计时间 |
+
+#### 9.2.4 删除 `DELETE /kb/ingest/jobs/{id}`
+
+删除 **历史批次**（工作台列表中的 ingest job），用于清理已完成或废弃的批次记录。
+
+| 路径参数 | 类型 | 说明 |
+|----------|------|------|
+| `id` | long | 批次 ID（`kb_ingest_job.id`） |
+
+**请求体**：无。
+
+**成功响应** `MoliResult<Boolean>`：
+
+```json
+{ "code": 200, "msg": "成功", "data": true }
+```
+
+**行为说明**：
+
+| 项 | 说明 |
+|----|------|
+| 存储 | 主表 `kb_ingest_job.is_delete = 1`（软删） |
+| 子表 | `kb_ingest_plan` / `kb_ingest_draft` / `kb_ingest_commit` **保留**，不级联删除 |
+| 列表 | `GET /kb/ingest/jobs` 不再返回已删批次 |
+| 详情 | `GET /kb/ingest/jobs/{id}` 返回「批次不存在」 |
+| 已 commit | **不回滚**已写入磁盘的 wiki 文件；仅隐藏工作台记录 |
+| 权限 | 目标空间 **editor**（`kbAclService.assertCanEdit`） |
+
+**常见错误**（`code ≠ 200`）：
+
+| 场景 | `msg` 示例 |
+|------|------------|
+| ID 为空 | 批次ID不能为空 |
+| 不存在或已删 | 批次不存在 |
+| 无编辑权 | 无权编辑该空间 |
+| 功能关闭 | Ingest 工作台已禁用（`kb.ingest.enabled=false`） |
+
+**curl 示例**（经网关）：
+
+```bash
+curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/900000000000000099" \
+  -H "Authorization: <token>"
+```
+
+> 与 **§9.6.3 删除模板** 对称：模板删 `kb_ingest_template`；本接口删 `kb_ingest_job`。前端历史批次列表删除按钮对接本接口。
 
 ### 9.3 Plan 生成 / 编辑
 

@@ -30,6 +30,9 @@ public interface KbIngestService {
 
     IngestJobVo getJob(Long id);
 
+    /** 软删历史批次（仅从列表隐藏；不回滚已 commit 的 wiki 文件）。 */
+    void deleteJob(Long id);
+
     IngestJobVo generatePlan(Long id);
 
     IngestJobVo updatePlan(Long id, IngestPlanUpdateRequest request);

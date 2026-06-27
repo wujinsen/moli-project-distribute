@@ -14,8 +14,10 @@ import com.moli.knowledge.server.dto.IngestPlanUpdateRequest;
 import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
+import com.moli.knowledge.server.dto.RawCoverageVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
 import com.moli.knowledge.server.service.KbIngestService;
+import com.moli.knowledge.server.service.KbRawCoverageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -43,10 +45,22 @@ public class KbIngestController {
     @Resource
     private KbIngestService kbIngestService;
 
+    @Resource
+    private KbRawCoverageService kbRawCoverageService;
+
     @GetMapping("/raw-tree")
     @ApiOperation("raw 只读目录树")
     public MoliResult<List<RawTreeNodeVo>> rawTree(@RequestParam(required = false) String prefix) {
         return MoliResult.success(kbIngestService.rawTree(prefix));
+    }
+
+    @GetMapping("/raw-coverage")
+    @ApiOperation("raw 覆盖索引（wiki sources 反向映射，筛未 ingest）")
+    public MoliResult<RawCoverageVo> rawCoverage(@RequestParam(required = false) Long spaceId,
+                                                 @RequestParam(required = false) String prefix,
+                                                 @RequestParam(required = false, defaultValue = "all") String filter,
+                                                 @RequestParam(required = false, defaultValue = "false") boolean refresh) {
+        return MoliResult.success(kbRawCoverageService.coverage(spaceId, prefix, filter, refresh));
     }
 
     @PostMapping("/jobs")
@@ -68,6 +82,13 @@ public class KbIngestController {
     @ApiOperation("批次详情")
     public MoliResult<IngestJobVo> getJob(@PathVariable Long id) {
         return MoliResult.success(kbIngestService.getJob(id));
+    }
+
+    @DeleteMapping("/jobs/{id}")
+    @ApiOperation("删除历史批次（软删）")
+    public MoliResult<Boolean> deleteJob(@PathVariable Long id) {
+        kbIngestService.deleteJob(id);
+        return MoliResult.success(Boolean.TRUE);
     }
 
     @PostMapping("/jobs/{id}/plan")

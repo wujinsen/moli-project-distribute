@@ -33,4 +33,10 @@ public class KbIngestProperties {
 
     /** Plan 生成时单个 raw 文件喂给 LLM 的最大字符数（截断）。 */
     private int rawSnippetChars = 4000;
+
+    /** raw-coverage wiki 索引内存缓存 TTL（秒）。 */
+    private int coverageCacheSeconds = 300;
+
+    /** raw-coverage 单次返回的最大文件项数（防超大目录）。 */
+    private int maxCoverageFiles = 10000;
 }

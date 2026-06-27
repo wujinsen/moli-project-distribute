@@ -333,6 +333,23 @@ public class KbIngestServiceImpl implements KbIngestService {
         return toVo(job, space, latestPlan(id));
     }
 
+    @Override
+    public void deleteJob(Long id) {
+        assertEnabled();
+        if (id == null) {
+            throw new BaseException("批次ID不能为空");
+        }
+        KbIngestJob job = jobMapper.selectById(id);
+        if (job == null || (job.getIsDelete() != null && job.getIsDelete() == 1)) {
+            throw new BaseException("批次不存在");
+        }
+        kbAclService.assertCanEdit(job.getSpaceId());
+        job.setIsDelete(1);
+        job.setUpdateId(ShiroUtils.getUserId());
+        job.setUpdateTime(new Date());
+        jobMapper.updateById(job);
+    }
+
     // ---------------------------------------------------------------- plan
 
     @Override

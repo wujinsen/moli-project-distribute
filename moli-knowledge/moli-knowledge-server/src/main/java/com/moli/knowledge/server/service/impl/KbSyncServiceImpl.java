@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbSyncProperties;
+import com.moli.knowledge.server.config.KbWikiProperties;
 import com.moli.knowledge.server.dto.SyncStatusVo;
 import com.moli.knowledge.server.dto.SyncTriggerVo;
 import com.moli.knowledge.server.entity.KbSpace;
@@ -46,6 +47,8 @@ public class KbSyncServiceImpl implements KbSyncService {
     private KbAclService kbAclService;
     @Resource
     private KbSyncProperties syncProperties;
+    @Resource
+    private KbWikiProperties wikiProperties;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
@@ -154,6 +157,8 @@ public class KbSyncServiceImpl implements KbSyncService {
         command.add(db.database);
         command.add("--space");
         command.add(space.getSpaceCode());
+        command.add("--wiki-dir");
+        command.add(resolveWikiDirForSpace(space.getSpaceCode()));
 
         SyncTriggerVo result = new SyncTriggerVo();
         result.setSpaceCode(space.getSpaceCode());
@@ -218,6 +223,18 @@ public class KbSyncServiceImpl implements KbSyncService {
             throw new BaseException("空间不存在: " + code);
         }
         return space;
+    }
+
+    /** space_code → sync_to_db.py --wiki-dir（与 KbWikiProperties.spaceDirs 一致）。 */
+    String resolveWikiDirForSpace(String spaceCode) {
+        if (StringUtils.isBlank(spaceCode)) {
+            throw new BaseException("空间编码不能为空");
+        }
+        String wikiDir = wikiProperties.getSpaceDirs().get(spaceCode);
+        if (StringUtils.isBlank(wikiDir)) {
+            throw new BaseException("空间未配置 wiki 目录映射: " + spaceCode);
+        }
+        return wikiDir;
     }
 
     private Path resolveScriptPath() {
