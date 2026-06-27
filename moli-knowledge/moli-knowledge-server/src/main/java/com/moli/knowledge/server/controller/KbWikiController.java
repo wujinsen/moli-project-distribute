@@ -10,9 +10,12 @@ import com.moli.knowledge.server.dto.WikiLintPreviewVo;
 import com.moli.knowledge.server.dto.WikiPageVo;
 import com.moli.knowledge.server.dto.WikiSaveRequest;
 import com.moli.knowledge.server.dto.WikiSaveResultVo;
+import com.moli.knowledge.server.dto.WikiSpaceLintRequest;
+import com.moli.knowledge.server.dto.WikiSpaceLintVo;
 import com.moli.knowledge.server.service.KbWikiAiReviseService;
 import com.moli.knowledge.server.service.KbWikiEnrichService;
 import com.moli.knowledge.server.service.KbWikiFileService;
+import com.moli.knowledge.server.service.KbWikiLintService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +39,8 @@ public class KbWikiController {
     private KbWikiAiReviseService kbWikiAiReviseService;
     @Resource
     private KbWikiEnrichService kbWikiEnrichService;
+    @Resource
+    private KbWikiLintService kbWikiLintService;
 
     @GetMapping("/page")
     @ApiOperation("读 wiki 文件全文（frontmatter+正文）；需空间 editor。文件不存在返回 exists=false")
@@ -66,5 +71,11 @@ public class KbWikiController {
     @ApiOperation("Wiki enrich：已有页追加 patch + 可选 log/index/edges/Sync；需空间 editor")
     public MoliResult<WikiEnrichResultVo> enrich(@RequestBody WikiEnrichRequest request) {
         return MoliResult.success(kbWikiEnrichService.enrich(request));
+    }
+
+    @PostMapping("/lint-space")
+    @ApiOperation("空间级文件 Lint（文件真值，调 lint.py）；需空间 editor。issue.page 即 slug")
+    public MoliResult<WikiSpaceLintVo> lintSpace(@RequestBody WikiSpaceLintRequest request) {
+        return MoliResult.success(kbWikiLintService.lintSpace(request));
     }
 }

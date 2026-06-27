@@ -34,6 +34,12 @@ public class KbWikiProperties {
     /** 单文件大小上限（字节），防止误传超大内容。 */
     private long maxBytes = 2 * 1024 * 1024;
 
+    /** 文件级空间体检脚本 lint.py 路径（相对项目根或绝对路径）。 */
+    private String lintScriptPath = "moli-knowledge/kb/tools/lint.py";
+
+    /** 文件级体检脚本超时（秒）。 */
+    private int lintTimeoutSeconds = 120;
+
     private static Map<String, String> defaultSpaceDirs() {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("enterprise-kb", "wiki");

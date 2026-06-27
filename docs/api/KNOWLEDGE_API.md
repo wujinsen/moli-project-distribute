@@ -462,6 +462,94 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | `id` | path | 是 | 问题 ID |
 | `status` | query | 是 | `0`/`1`/`2` |
 
+### 4.6 文件级空间 Lint（T16a · 文件真值）✅
+
+> **与 §4.2–4.5 的区别**：本节扫**部署机磁盘** `kb/wiki*` markdown（调 `lint.py`），**不读** MySQL。改完 wiki 未 Sync 也能检出断链/孤儿/缺 sources 等，是 **Wiki 治理工作台** 与 Sync 前门禁的权威数据源。  
+> DB 快照体检仍用 `GET /kb/lint`（§4.2）；单页保存前轻量预检用 `POST /kb/wiki/page/lint-preview`（§8.3）。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/kb/wiki/lint-space` | 对指定空间 wiki 目录跑 `lint.py --wiki-dir {spaceDir} --json`；需空间 **editor** |
+
+**请求体** `WikiSpaceLintRequest`：
+
+```json
+{
+  "spaceId": "900000000000000001",
+  "spaceCode": "enterprise-kb",
+  "strict": false
+}
+```
+
+| 字段 | 默认 | 说明 |
+|------|------|------|
+| `spaceId` | — | 与 `spaceCode` 二选一；省略时用默认 `enterprise-kb` |
+| `spaceCode` | `enterprise-kb` | 映射 `kb.wiki.space-dirs` → `--wiki-dir` |
+| `strict` | `false` | `true` 时 WARN 也令脚本 `exitCode≠0`（仍返回完整 `issues`） |
+
+**响应** `WikiSpaceLintVo`：
+
+```json
+{
+  "spaceCode": "enterprise-kb",
+  "wikiDir": "wiki",
+  "stats": {
+    "pages": 375,
+    "issues": 42,
+    "errors": 9,
+    "warnings": 28,
+    "infos": 5,
+    "by_kind": { "broken_link": 9, "orphan": 12, "missing_source": 16 }
+  },
+  "issues": [
+    {
+      "level": "error",
+      "kind": "broken_link",
+      "page": "guides/本地启动指南",
+      "detail": "→ [[不存在的页]]",
+      "suggest": "建该页或改链"
+    }
+  ],
+  "exitCode": 1,
+  "outputTail": "[FAIL] 体检未通过（errors=9）"
+}
+```
+
+**字段说明**：
+
+| 字段 | 说明 |
+|------|------|
+| `issues[].page` | **slug**（相对 wiki 根、无 `.md`），可直接作为 `POST /kb/wiki/enrich` 的 `slug` 或 `ai-revise` 的修复目标 |
+| `issues[].kind` | `broken_link` / `orphan` / `missing_source` / `dup_slug` / `slug_mismatch` / `missing_dates` / `outdated` / …（与 `lint.py` 一致） |
+| `issues[].level` | `error` / `warn` / `info` |
+| `exitCode` | 脚本退出码：`0`=无阻断；`≠0`=有 error 或 strict 下含 warn。**非 HTTP 失败**；接口仍 `code=200` 并返回清单 |
+| `outputTail` | 脚本 stdout 尾部（排障） |
+
+**空间 → wiki 目录**（`kb.wiki.space-dirs`，与 Sync 同源）：
+
+| `spaceCode` | `--wiki-dir` |
+|-------------|--------------|
+| `enterprise-kb` | `wiki` |
+| `jp-fe-ap-exam` | `wiki-jp-exam` |
+| `moli-ops-manual` | `wiki-ops` |
+
+**配置**（`application-dev.yml` → `kb.wiki.*`）：
+
+| 键 | 默认 | 说明 |
+|----|------|------|
+| `kb.wiki.lint-script-path` | `moli-knowledge/kb/tools/lint.py` | 体检脚本 |
+| `kb.wiki.lint-timeout-seconds` | `120` | 超时 |
+| `kb.sync.python` | `python` | Python 解释器（与 Sync 共用） |
+
+**CLI 等价**：
+
+```bash
+python moli-knowledge/kb/tools/lint.py --wiki-dir wiki --json /tmp/lint.json
+python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
+```
+
+产品方案与链路图：[`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md) · [`docs/diagrams/moli-kb-wiki-govern.drawio`](../diagrams/moli-kb-wiki-govern.drawio)
+
 ---
 
 ## 5. 文档 / 分类 / 标签 / 评论 / 收藏
@@ -911,6 +999,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
 | **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` + **`/kb/wiki/enrich`** | 浏览/体检「编辑/修复」；源码编辑 + diff + **Enrich 治理** + AI 协助 + 保存并 Sync |
 | **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 20 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑 |
+| **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16 | `/kb/wiki/lint-space` + enrich + ai-revise + `/kb/sync/trigger` | 选空间 → **文件真值 Lint** → 批量 enrich/ai-revise → 复检 → Sync；ingest 旁路 |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
 前端实现：`meiling-ui/src/composables/useKbSpace.ts`（共享空间上下文）、`src/components/knowledge/KbSpaceSelector.vue`。
@@ -930,6 +1019,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 |------|------|------|
 | GET | `/kb/wiki/page?slug=&spaceId=` | 返回 wiki 文件全文（frontmatter + body）；需空间 **editor**；文件不存在返回 `exists=false` 空壳，便于新建 |
 | PUT | `/kb/wiki/page` | 写 wiki 文件（必要时建父目录）；body 见下；需空间 **editor** |
+| POST | `/kb/wiki/lint-space` | **空间级文件 Lint**（文件真值，调 `lint.py`）；详见 **§4.6** |
 
 后端：`KbWikiController` + `KbWikiFileService`（`moli-knowledge-server`）。
 
@@ -1080,13 +1170,38 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 | 保存后标记修复 | 保存成功 → 确认 → `PUT /kb/lint/issue/{id}?status=2` |
 | 保存并 Sync | 保存 wiki → `POST /kb/sync/trigger?spaceId=`（需 `kb:sync:trigger`） |
 
-### 8.6 权限
+### 8.6 Wiki 治理工作台链路（T16 · 规划中）
+
+> 产品方案：[`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)。  
+> **T16a ✅**：`POST /kb/wiki/lint-space`（§4.6）。**T16b–c 🔵**：前端批量 enrich / ai-revise 编排 + 复检 + Sync。
+
+推荐链路（勿颠倒）：
+
+```
+选空间 → POST /kb/wiki/lint-space（文件真值）
+  → 勾选 issues[].page（= slug）
+  → 批量 POST /kb/wiki/enrich（items[]）或 POST /kb/wiki/ai-revise（逐页）
+  → 再 lint-space 复检
+  → POST /kb/sync/trigger
+```
+
+| 步骤 | API | 说明 |
+|------|-----|------|
+| ① Lint | `POST /kb/wiki/lint-space` | 扫磁盘 wiki；`issue.page` = 修复目标 slug |
+| ② 修复 | `POST /kb/wiki/enrich` / `POST /kb/wiki/ai-revise` | **非 ingest**；ingest 仅旁路投喂新 raw |
+| ③ 复检 | `POST /kb/wiki/lint-space` | 确认 `stats.errors`/`warnings` 下降 |
+| ④ Sync | `POST /kb/sync/trigger` | wiki → `kb_document` |
+
+与 **健康体检页**（`GET /kb/lint` · DB 快照）并存：治理用文件真值；DB 体检验证 Sync 后线上库。
+
+### 8.7 权限
 
 | 操作 | ACL |
 |------|-----|
 | GET/PUT wiki | 空间 **editor**（或 owner / 平台超管），由 `KbAclService.assertCanEdit` 强制 |
 | ai-revise | 同上 + `kb.llm.usable()` |
 | **wiki enrich** | 空间 **editor**；`rawPaths` 调 LLM 生成 patch 时需 `kb.llm.usable()`；`dryRun` 仅预览不校验 Sync 权限 |
+| **wiki lint-space** | 空间 **editor**；只读扫描 wiki 文件，不调 LLM |
 
 后端鉴权以**空间 editor**为准（与文档编辑一致）。前端编辑入口/路由 `meta.perms` 标注 `kb:wiki:edit` 仅作菜单级提示，按钮显隐按所属空间 `canEdit`；动作权限种子 SQL（`kb:wiki:edit`）可后续补充，不影响 T14a 功能。
 

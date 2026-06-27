@@ -327,7 +327,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 子任务 | 范围 | 验收 |
 |--------|------|------|
-| **T16a** 🔵 | 后端 `POST /kb/wiki/lint-space`（包 `lint.py --wiki-dir {spaceDir} --json`，仿 `KbSyncServiceImpl` ProcessBuilder）+ `KbWikiLintService`；前端 lint 真值展示 + 按 kind 分组 | 选空间扫文件真值出问题清单 |
+| **T16a** ✅ | 后端 `POST /kb/wiki/lint-space`（包 `lint.py --wiki-dir {spaceDir} --json`，仿 `KbSyncServiceImpl` ProcessBuilder）+ `KbWikiLintService`；前端 lint 真值展示 + 按 kind 分组 | 选空间扫文件真值出问题清单 |
 | **T16b** 🔵 | 批量 **enrich** 修复编排（复用 `POST /kb/wiki/enrich` 的 `items[]`）+ 逐条进度/汇总 | 勾选问题页批量补章落盘 |
 | **T16c** 🔵 | 批量 **ai-revise**（按 issue.kind 自动生成指令，前端循环 + 失败隔离）+ 复检 + Sync 收尾 | lint→修→复检→sync 闭环 |
 | **T16d**（可选） | `POST /kb/wiki/ai-revise/batch` 服务端聚合；Ingest 旁路入口卡片；治理报告导出 | 体验增强 |

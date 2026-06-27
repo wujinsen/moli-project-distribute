@@ -201,6 +201,10 @@ POST /kb/wiki/enrich
 # Web：Wiki 编辑页工具栏「Enrich 治理」→ 预览合并 → 应用（meiling-ui KnowledgeWikiEditView）
 # CLI：python kb/tools/enrich.py --slug guides/xxx --patch-file patch.md --apply
 # 然后 POST /kb/sync/trigger 或 sync_to_db.py（enrich 请求 sync:true 时可省略）
+# 空间级文件 Lint（文件真值，T16a；治理工作台 / Sync 前门禁）
+POST /kb/wiki/lint-space
+{ "spaceId": 900000000000000001, "strict": false }
+# CLI 等价：python kb/tools/lint.py --wiki-dir wiki --json /tmp/lint.json
 ```
 
 ---
