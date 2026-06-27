@@ -43,6 +43,7 @@ import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbIngestService;
 import com.moli.knowledge.server.service.KbLlmClient;
+import com.moli.knowledge.server.service.KbRawCoverageService;
 import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiFileService;
 import com.moli.knowledge.server.util.ShiroUtils;
@@ -177,6 +178,8 @@ public class KbIngestServiceImpl implements KbIngestService {
     private KbWikiFileService kbWikiFileService;
     @Resource
     private KbSyncService kbSyncService;
+    @Resource
+    private KbRawCoverageService kbRawCoverageService;
     @Resource
     private PlatformTransactionManager transactionManager;
 
@@ -930,6 +933,7 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         log.info("[ingest] commit job={} created={} updated={} edges={} sync={}",
                 jobId, vo.getCreated(), vo.getUpdated(), vo.getEdgesAppended(), sync);
+        kbRawCoverageService.invalidateCache(space.getId());
         return vo;
     }
 
@@ -1549,7 +1553,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         String cleaned = fm.replaceAll("(?m)^related:\\s*\\[[^\\]]*]\\s*\\n?", "");
         cleaned = cleaned.replaceAll("(?m)^related:\\s*\\n(?:  - [^\\n]+\\n)+", "");
         cleaned = cleaned.replaceAll("(?m)^related:\\s*\\n?", "");
-        cleaned = cleaned.stripTrailing();
+        cleaned = StringUtils.stripEnd(cleaned, null);
 
         StringBuilder relatedBlock = new StringBuilder("\n");
         if (relatedBare == null || relatedBare.isEmpty()) {
