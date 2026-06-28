@@ -1002,7 +1002,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
 | **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` + **`/kb/wiki/enrich`** | 浏览/体检「编辑/修复」；源码编辑 + diff + **Enrich 治理** + AI 协助 + 保存并 Sync |
-| **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 **21** 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑/删批次 |
+| **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 **24** 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑/删批次；**T18 一键预览/入库** |
 | **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16 | `/kb/wiki/lint-space` + enrich + ai-revise + `/kb/sync/trigger` | 选空间 → **文件真值 Lint** → 批量 enrich/ai-revise → 复检 → Sync；ingest 旁路 |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
@@ -1215,9 +1215,11 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 > 产品方案：[`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
 > **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。  
-> **状态**：T15a–e 已全部实现（含 enrich patch、断点续跑、批次模板）。
+> **状态**：T15a–e、**T18** 已全部实现（含 enrich patch、断点续跑、批次模板、Express 一键预览/入库）。
 
 统一前缀 **`/kb/ingest`**，返回 `MoliResult<T>`。经网关示例：`POST {VITE_API_BASE_URL}/KnowledgeServer/kb/ingest/jobs`。
+
+**Express 快捷流（T18）**：列表页「一键预览」→ `POST .../jobs/express`（创建 + Express Plan + 生成草稿）；详情页「确认入库」→ `POST .../jobs/{id}/publish?sync=true&approveAll=true`（可选全批准 + lint + commit + Sync）。Expert 模式仍可用逐步 Plan / 逐页审批 / `commit`。
 
 ### 9.0 接口总览
 
@@ -1245,6 +1247,9 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 | 18 | DELETE | `/kb/ingest/templates/{id}` | 删除批次模板（软删） | **editor** |
 | 19 | POST | `/kb/ingest/jobs/from-template/{templateId}` | 从模板创建批次 | **editor** |
 | 20 | POST | `/kb/ingest/jobs/{id}/save-as-template` | 当前批次另存为模板 | **editor** |
+| 21 | POST | `/kb/ingest/jobs/express?useLlmPlan=false` | **T18** 一键预览：创建批次 + Express Plan + 生成草稿 | **editor** |
+| 22 | POST | `/kb/ingest/jobs/{id}/prepare?useLlmPlan=false` | **T18** 已有批次：Express Plan + 生成草稿 | **editor** |
+| 23 | POST | `/kb/ingest/jobs/{id}/publish?sync=true&approveAll=true` | **T18** 确认入库：可选全批准 + lint + commit（+ Sync） | **editor** |
 
 **批次状态机**（`IngestJobVo.status`）：
 
@@ -1474,7 +1479,56 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 - 每次 append 一个 `kb_ingest_plan` 版本；job 置 `status=planned`。
 - 需 **editor** + `kb.llm.usable()`（骨架模式除外）。
 
-**Plan JSON 形态**（Planner system prompt 强约束，enrich 优先）：
+**Plan JSON 形态**（Planner system prompt 强约束，enrich 优先）。
+
+**T17 · create 落盘路径（2026-06）**：与文档管理 `kb_category.dir_slug` 对齐；`create[]` 推荐 **`categoryId` + 裸 `slug`**，落盘 `{dir_slug}/{slug}.md`；无 `categoryId` 时沿用 legacy `typeDir(type)/slug`。
+
+##### `create[]` 字段（v2，向后兼容 v1）
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `categoryId` | **推荐** | 目标空间 `kb_category.id`；落盘一级目录 = 该分类 `dir_slug` |
+| `slug` | 是 | **裸文件名**（无 `.md`、无 `/`）；有 `categoryId` 时禁止含 `/` |
+| `title` | 否 | 页标题；PageWriter 写 frontmatter |
+| `sources` | 是 | raw 路径数组，如 `["raw/fe/fe_kamoku_b_set_sample_qs.md"]` |
+| `type` | 否 | **legacy 兜底**：无 `categoryId` 时用 `typeDir(type)` 映射目录；有 `categoryId` 时默认取 `category.defaultType` 写 frontmatter |
+| `reason` | 否 | 规划说明 |
+
+**落盘相对路径（权威）**：
+
+```text
+relPath = {category.dir_slug}/{slug}     # 有 categoryId
+relPath = {typeDir(type)}/{slug}       # legacy
+relPath = {slug 整段}                  # legacy：slug 已含 `/` 时不再叠 typeDir
+fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB slug
+磁盘     = kb/{wikiDir}/{relPath}.md   # wikiDir 见 kb.wiki.space-dirs
+```
+
+**jp-fe-ap-exam + FE 分类示例**：
+
+```json
+{
+  "batchNo": "726295221004025856",
+  "topic": "FE 科目B 样题",
+  "create": [
+    {
+      "categoryId": "900000000000000010",
+      "slug": "fe_kamoku_b_set_sample_qs",
+      "title": "科目B 样题集",
+      "sources": ["raw/fe/fe_kamoku_b_set_sample_qs.md"],
+      "reason": "新题入库 fe 分类"
+    }
+  ],
+  "enrich": [],
+  "skip": [],
+  "edges": [],
+  "conflicts": []
+}
+```
+
+落盘：`moli-knowledge/kb/wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`；Sync 后 `kb_document.category_id` 回填为 `fe` 分类。
+
+**legacy 示例（仅 type + slug）**：
 
 ```json
 {
@@ -1483,7 +1537,7 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
   "create": [
     {
       "type": "article",
-      "slug": "articles/redis-哨兵部署",
+      "slug": "redis-哨兵部署",
       "title": "Redis 哨兵部署",
       "sources": ["raw/design/redis-sentinel.note.md"],
       "reason": "新主题无已有页"
@@ -1509,6 +1563,8 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 }
 ```
 
+> **注意**：旧文档示例中 `slug: "articles/redis-..."` 仍合法（整段作 relPath）；T17 起 **推荐** 裸 slug + `categoryId`，与 Web Plan 可视化表一致。
+
 #### 9.3.2 人工编辑 `PUT /kb/ingest/jobs/{id}/plan`
 
 **请求体** `IngestPlanUpdateRequest`：
@@ -1517,7 +1573,7 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 { "planJson": "{ ... 合法 JSON 对象字符串 ... }" }
 ```
 
-校验为合法 JSON 对象后 append 新版本；`planSource=manual`。
+校验为合法 JSON 对象后 append 新版本；`planSource=manual`。保存时服务端校验每个 `create[]` 项路径（非法 slug、跨空间 `categoryId`、分类无 `dir_slug` 等返回 4xx）。
 
 #### 9.3.3 导出 Agent 提示词 `GET /kb/ingest/jobs/{id}/export-agent-prompt`
 
@@ -1559,15 +1615,18 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
       {
         "id": 900000000000000101,
         "jobId": 900000000000000100,
-        "slug": "articles/redis-哨兵部署",
-        "displaySlug": "redis-哨兵部署",
-        "kbType": "article",
+        "slug": "fe/fe_kamoku_b_set_sample_qs",
+        "displaySlug": "fe_kamoku_b_set_sample_qs",
+        "kbType": "interview",
         "action": "create",
+        "categoryId": "900000000000000010",
+        "dirSlug": "fe",
+        "categoryName": "FE 题库",
         "baseline": "",
         "patch": null,
-        "draft": "---\ntitle: Redis 哨兵部署\n...",
+        "draft": "---\ntitle: 科目B 样题集\n...",
         "approval": "draft",
-        "updateTime": "2026-06-25 18:00:00"
+        "updateTime": "2026-06-27 18:00:00"
       }
     ]
   }
@@ -1618,9 +1677,12 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 
 | 字段 | 说明 |
 |------|------|
-| `slug` | 相对 wiki 目录完整路径 |
+| `slug` | 相对 wiki 目录完整路径（如 `fe/fe_kamoku_b_set_sample_qs`） |
 | `displaySlug` | 展示用末段（`[[]]` 引用名） |
 | `kbType` | `guide` / `service` / `concept` / `article` 等 |
+| `categoryId` | Plan create 项指定的分类 ID（只读，T17） |
+| `dirSlug` | 落盘一级目录（只读，T17） |
+| `categoryName` | 分类名称（只读，T17） |
 | `action` | `create` / `enrich` |
 | `baseline` | enrich 基线全文 |
 | `patch` | enrich 追加段落（T15e） |
@@ -1650,6 +1712,8 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 | 参数 | 类型 | 默认 | 说明 |
 |------|------|------|------|
 | `sync` | boolean | `false` | `true` 时落盘后调用 `KbSyncService.trigger` |
+
+**落盘路径**：与 Plan `create` 解析一致（T17）；已批准页的 `KbIngestDraft.slug` 即 wiki 相对路径。前端在 commit 前展示 `kb/{wikiDir}/{slug}.md` 预览（`wikiDir`：`enterprise-kb`→`wiki`，`jp-fe-ap-exam`→`wiki-jp-exam`，见 `kb.wiki.space-dirs`）。
 
 **commit 门禁（产品方案 §5 红线，后端强制）**：
 
@@ -1754,6 +1818,67 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 
 - `includePlan` 默认 `true`：附带当前批次最新 Plan 快照。
 - **响应** `MoliResult<IngestTemplateVo>`。
+
+### 9.6.6 T18 · Express 一键预览 / 确认入库
+
+将 Agent ingest 的「规划 + 生成 + 落盘」合并为 Web 快捷流；默认 **Express Plan**（骨架 JSON + 从 `raw/{dir_slug}/...` 推断 `categoryId`），不调用 LLM Planner（`useLlmPlan=true` 时走 LLM Plan）。
+
+#### 9.6.6.1 一键预览 `POST /kb/ingest/jobs/express`
+
+**Query**：`useLlmPlan`（默认 `false`）
+
+**请求体**：同 `POST /kb/ingest/jobs`（`IngestJobCreateRequest`：`spaceId`、`topic`、`rawPaths`、可选 `batchNo` / `expectTypes`）。
+
+**响应** `MoliResult<IngestExpressStartVo>`：
+
+```json
+{
+  "code": 200,
+  "data": {
+    "job": { "id": "726295221004025856", "topic": "FE 科目B 样题", "status": "reviewing", "planVersion": 1 },
+    "prepare": {
+      "job": { "...": "..." },
+      "generate": { "generated": 1, "skipped": 0, "failed": 0, "total": 1 },
+      "drafts": [{ "slug": "fe/fe_kamoku_b_set_sample_qs", "displaySlug": "fe_kamoku_b_set_sample_qs", "approval": "draft" }]
+    }
+  }
+}
+```
+
+- 等价于：`createJob` → `prepare`（Express Plan + `generate`）。
+- 前端导航：`/knowledge/ingest?id={jobId}&express=1`。
+
+#### 9.6.6.2 已有批次 prepare `POST /kb/ingest/jobs/{id}/prepare`
+
+**Query**：`useLlmPlan`（默认 `false`）
+
+**响应** `MoliResult<IngestPrepareResultVo>`：`job` + `generate` 统计 + `drafts` 列表。
+
+#### 9.6.6.3 确认入库 `POST /kb/ingest/jobs/{id}/publish`
+
+**Query**：
+
+| 参数 | 默认 | 说明 |
+|------|------|------|
+| `sync` | `true` | commit 成功后触发 Wiki Sync |
+| `approveAll` | `true` | 将 `approval=draft` 的页批量设为 `approved` |
+
+**响应** `MoliResult<IngestPublishResultVo>`：
+
+```json
+{
+  "code": 200,
+  "data": {
+    "lint": { "commitReady": true, "blockingCount": 0, "issues": [] },
+    "committed": true,
+    "approvedCount": 1,
+    "commit": { "created": 1, "updated": 0, "syncTriggered": true, "syncResult": { "success": true } }
+  }
+}
+```
+
+- `committed=false` 时**不抛错**：返回 lint 报告（ERROR 阻塞或仍有未批准页）；前端提示修正后重试或改用逐步 `commit`。
+- Express Plan 的 create 行：`slug` = raw 文件名 stem；`categoryId` 由 `raw/fe/...` → 空间内 `dir_slug=fe` 分类推断（T17）。
 
 ### 9.7 数据表 / 权限 / 前端
 

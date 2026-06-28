@@ -12,7 +12,7 @@ sources:
   - docs/api/KNOWLEDGE_API.md
 related: [AI自我进化与MD审校流程, Wiki在线编辑与AI协助改稿, 增量ingest与raw投喂指南, 知识库三操作]
 created: 2026-06-25
-updated: 2026-06-25
+updated: 2026-06-27
 ---
 
 # Ingest 工作台（产品方案）
@@ -89,7 +89,40 @@ updated: 2026-06-25
 
 ### 3.1 Plan 表（②）
 
-LLM **只输出 JSON**，示例：
+LLM **只输出 JSON**。Web **T17c** 提供可视化表：分类下拉（`GET /kb/category/tree`）+ 裸 `slug` + 落盘路径预览；与 **文档管理** `kb_category.dir_slug` 单一真相一致。
+
+**T17 · create 落盘（2026-06）**
+
+| 模式 | Plan 字段 | 落盘路径 |
+|------|-----------|----------|
+| **推荐** | `categoryId` + 裸 `slug` | `kb/{wikiDir}/{dir_slug}/{slug}.md` |
+| legacy | `type` + 裸 `slug` | `kb/{wikiDir}/{typeDir(type)}/{slug}.md` |
+| legacy | `slug` 含 `/` | `kb/{wikiDir}/{slug}.md`（不叠 typeDir） |
+
+**jp-fe-ap-exam 示例**：
+
+```json
+{
+  "batchNo": "726295221004025856",
+  "topic": "FE 科目B 样题",
+  "create": [
+    {
+      "categoryId": "900000000000000010",
+      "slug": "fe_kamoku_b_set_sample_qs",
+      "title": "科目B 样题集",
+      "sources": ["raw/fe/fe_kamoku_b_set_sample_qs.md"]
+    }
+  ],
+  "enrich": [],
+  "skip": [],
+  "edges": [],
+  "conflicts": []
+}
+```
+
+→ `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`；Sync 后文档管理 `category_id` 对应 FE 分类。
+
+**enterprise-kb legacy 示例**：
 
 ```json
 {
@@ -109,27 +142,38 @@ LLM **只输出 JSON**，示例：
 }
 ```
 
-UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高亮；用户确认后锁定 plan 版本。
+UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高亮；用户确认后锁定 plan 版本。骨架 Plan（LLM 未配置）从 raw 文件名预填 `slug`；`raw/fe/...` 可自动推断 `fe` 分类。
 
 ### 3.2 多页 Diff（④）
 
 - 左侧批次树：每页状态 `draft | approved | rejected`
 - 新建页：baseline 为空；enrich 页：baseline = 当前 wiki 全文，**patch** = 追加段，**draft** = 合并预览
 - enrich 页提供 **Patch 段落** Tab，可只改 patch 不重写整页
-- **禁止**「一键全部批准」
+- **禁止**「一键全部批准」（Expert 逐步模式）；**T18 Express** 在二次确认后可 `approveAll=true` 入库
 
-### 3.3 批次模板（T15e）
+### 3.3 Express 一键流（T18 · 2026-06）
+
+| 步骤 | 用户 | 系统 |
+|------|------|------|
+| **预览** | 列表勾选 raw →「一键预览」 | `POST /kb/ingest/jobs/express`：创建批次 + Express Plan（骨架 + `raw/fe/`→FE 分类推断）+ 生成草稿 |
+| **确认** | 详情 diff 扫一眼 →「确认入库」 | `POST .../publish?sync=true&approveAll=true`：全批准 + lint + commit + Sync |
+
+- URL 带 `?express=1` 显示 Express 横幅；Expert 仍可用逐步 Plan / 逐页 approve / `commit`。
+- `useLlmPlan=true` 时 prepare 走 LLM Planner（与 T15 相同）。
+- API 契约：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §9.6.6。
+
+### 3.4 批次模板（T15e）
 
 - **列表页**：展示已保存模板；「从模板创建」复制 raw 范围 / 期望类型 / 可选 Plan
 - **批次详情**：「另存为模板」；可选附带当前 Plan 快照
 - API：`GET/POST /kb/ingest/templates`、`POST .../jobs/from-template/{id}`、`POST .../save-as-template`
 
-### 3.4 断点续跑（T15e）
+### 3.5 断点续跑（T15e）
 
 - **续跑生成**：`POST .../generate?resume=true`，跳过已有 content 的草稿，返回 `{ total, generated, skipped, drafts }`
 - **全量重生成**：`resume=false`，清空旧草稿后重新生成（需二次确认）
 
-### 3.5 Commit（⑥）
+### 3.6 Commit（⑥）
 
 原子写入（同一事务语义 / 同一 git commit 前操作）：
 
@@ -140,7 +184,9 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 5. 可选：`POST /kb/ingest/jobs/{id}/commit?sync=true`（落盘后立即 Sync）  
 6. 展示 insert/update/skip 统计
 
-**前端实现**：`meiling-ui` → `KnowledgeIngestWorkbenchView.vue`（路由 `knowledge/ingest/index`，菜单 906）。
+**T17d · 落盘预览**：③ Lint 区在 commit 前列出已批准页的 `kb/{wikiDir}/{slug}.md`；确认对话框同步展示路径列表。
+
+**前端实现**：`meiling-ui` → `KnowledgeIngestWorkbenchView.vue`（路由 `knowledge/ingest/index`，菜单 906）；Plan 可视化表 → `IngestPlanCreateTable.vue`（T17c）。
 
 ---
 
@@ -153,7 +199,7 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 
 | 分组 | 路径前缀 | 要点 |
 |------|----------|------|
-| 选源 | `/kb/ingest/raw-tree`、`/jobs` | raw 只读树；创建/分页/详情 |
+| 选源 | `/kb/ingest/raw-tree`、`/kb/ingest/raw-coverage`、`/jobs` | raw 只读树 + **覆盖索引（筛未 ingest）**；创建/分页/详情 |
 | 规划 | `/jobs/{id}/plan`、`/export-agent-prompt` | LLM 或 skeleton Plan；导出 Cursor 提示词 |
 | 草稿 | `/jobs/{id}/generate`、`/drafts`、`/draft?slug=` | 含 **resume**；slug 走 **query**（含 `/`） |
 | 审阅 | `/draft/regenerate`、`/draft/approval` | 单页重生成；approve/reject |

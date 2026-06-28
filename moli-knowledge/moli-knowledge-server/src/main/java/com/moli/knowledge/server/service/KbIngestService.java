@@ -4,12 +4,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.knowledge.server.dto.IngestCommitResultVo;
 import com.moli.knowledge.server.dto.IngestDraftUpdateRequest;
 import com.moli.knowledge.server.dto.IngestDraftVo;
+import com.moli.knowledge.server.dto.IngestExpressStartVo;
 import com.moli.knowledge.server.dto.IngestGenerateResultVo;
 import com.moli.knowledge.server.dto.IngestJobCreateRequest;
 import com.moli.knowledge.server.dto.IngestJobFromTemplateRequest;
 import com.moli.knowledge.server.dto.IngestJobVo;
 import com.moli.knowledge.server.dto.IngestLintVo;
 import com.moli.knowledge.server.dto.IngestPlanUpdateRequest;
+import com.moli.knowledge.server.dto.IngestPrepareResultVo;
+import com.moli.knowledge.server.dto.IngestPublishResultVo;
 import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
@@ -55,6 +58,15 @@ public interface KbIngestService {
     IngestLintVo lint(Long jobId);
 
     IngestCommitResultVo commit(Long jobId, boolean sync);
+
+    /** T18 · Express Plan（分类推断 + slug stem）+ 生成草稿。 */
+    IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan);
+
+    /** T18 · 可选全部批准 + lint + commit（+ Sync）。 */
+    IngestPublishResultVo publish(Long jobId, boolean sync, boolean approveAll);
+
+    /** T18 · 创建批次并 prepare 一步。 */
+    IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan);
 
     // ---------------------------------------------------------------- T15e 模板
 

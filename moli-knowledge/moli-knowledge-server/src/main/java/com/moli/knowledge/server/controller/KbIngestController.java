@@ -5,12 +5,15 @@ import com.moli.common.core.MoliResult;
 import com.moli.knowledge.server.dto.IngestCommitResultVo;
 import com.moli.knowledge.server.dto.IngestDraftUpdateRequest;
 import com.moli.knowledge.server.dto.IngestDraftVo;
+import com.moli.knowledge.server.dto.IngestExpressStartVo;
 import com.moli.knowledge.server.dto.IngestGenerateResultVo;
 import com.moli.knowledge.server.dto.IngestJobCreateRequest;
 import com.moli.knowledge.server.dto.IngestJobFromTemplateRequest;
 import com.moli.knowledge.server.dto.IngestJobVo;
 import com.moli.knowledge.server.dto.IngestLintVo;
 import com.moli.knowledge.server.dto.IngestPlanUpdateRequest;
+import com.moli.knowledge.server.dto.IngestPrepareResultVo;
+import com.moli.knowledge.server.dto.IngestPublishResultVo;
 import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
@@ -160,6 +163,28 @@ public class KbIngestController {
     public MoliResult<IngestCommitResultVo> commit(@PathVariable Long id,
                                                    @RequestParam(defaultValue = "false") boolean sync) {
         return MoliResult.success(kbIngestService.commit(id, sync));
+    }
+
+    @PostMapping("/jobs/express")
+    @ApiOperation("T18 一键预览：创建批次 + Express Plan + 生成草稿")
+    public MoliResult<IngestExpressStartVo> expressStart(@Validated @RequestBody IngestJobCreateRequest request,
+                                                         @RequestParam(defaultValue = "false") boolean useLlmPlan) {
+        return MoliResult.success(kbIngestService.expressStart(request, useLlmPlan));
+    }
+
+    @PostMapping("/jobs/{id}/prepare")
+    @ApiOperation("T18 一键预览：Express Plan（默认）+ 生成草稿")
+    public MoliResult<IngestPrepareResultVo> prepare(@PathVariable Long id,
+                                                     @RequestParam(defaultValue = "false") boolean useLlmPlan) {
+        return MoliResult.success(kbIngestService.prepare(id, useLlmPlan));
+    }
+
+    @PostMapping("/jobs/{id}/publish")
+    @ApiOperation("T18 确认入库：可选全部批准 + lint + commit（+ Sync）")
+    public MoliResult<IngestPublishResultVo> publish(@PathVariable Long id,
+                                                     @RequestParam(defaultValue = "true") boolean sync,
+                                                     @RequestParam(defaultValue = "true") boolean approveAll) {
+        return MoliResult.success(kbIngestService.publish(id, sync, approveAll));
     }
 
     // ------------------------------------------------------------ T15e 模板

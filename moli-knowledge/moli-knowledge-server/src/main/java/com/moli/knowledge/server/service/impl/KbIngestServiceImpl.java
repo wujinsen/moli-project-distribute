@@ -13,18 +13,22 @@ import com.moli.knowledge.server.config.KbWikiProperties;
 import com.moli.knowledge.server.dto.IngestCommitResultVo;
 import com.moli.knowledge.server.dto.IngestDraftUpdateRequest;
 import com.moli.knowledge.server.dto.IngestDraftVo;
+import com.moli.knowledge.server.dto.IngestExpressStartVo;
 import com.moli.knowledge.server.dto.IngestGenerateResultVo;
 import com.moli.knowledge.server.dto.IngestJobCreateRequest;
 import com.moli.knowledge.server.dto.IngestJobFromTemplateRequest;
 import com.moli.knowledge.server.dto.IngestJobVo;
 import com.moli.knowledge.server.dto.IngestLintVo;
 import com.moli.knowledge.server.dto.IngestPlanUpdateRequest;
+import com.moli.knowledge.server.dto.IngestPrepareResultVo;
+import com.moli.knowledge.server.dto.IngestPublishResultVo;
 import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
 import com.moli.knowledge.server.dto.SyncTriggerVo;
 import com.moli.knowledge.server.dto.WikiSaveRequest;
+import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbIngestCommit;
 import com.moli.knowledge.server.entity.KbIngestDraft;
@@ -32,6 +36,7 @@ import com.moli.knowledge.server.entity.KbIngestJob;
 import com.moli.knowledge.server.entity.KbIngestPlan;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.enums.DocumentStatus;
+import com.moli.knowledge.server.mapper.KbCategoryMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbIngestCommitMapper;
 import com.moli.knowledge.server.mapper.KbIngestDraftMapper;
@@ -46,6 +51,7 @@ import com.moli.knowledge.server.service.KbLlmClient;
 import com.moli.knowledge.server.service.KbRawCoverageService;
 import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiFileService;
+import com.moli.knowledge.server.service.ingest.IngestPlanPathResolver;
 import com.moli.knowledge.server.util.ShiroUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -164,6 +170,8 @@ public class KbIngestServiceImpl implements KbIngestService {
     private KbIngestTemplateMapper templateMapper;
     @Resource
     private KbSpaceMapper kbSpaceMapper;
+    @Resource
+    private KbCategoryMapper kbCategoryMapper;
     @Resource
     private KbDocumentMapper kbDocumentMapper;
     @Resource
@@ -410,6 +418,17 @@ public class KbIngestServiceImpl implements KbIngestService {
 
     private void savePlanVersion(KbIngestJob job, String planJson, String source,
                                  String provider, String model) {
+        JSONObject planObj;
+        try {
+            planObj = JSON.parseObject(planJson);
+        } catch (Exception e) {
+            throw new BaseException("Plan JSON 非法");
+        }
+        if (planObj == null) {
+            throw new BaseException("Plan JSON 非法");
+        }
+        validatePlanCreateItems(job.getSpaceId(), planObj);
+
         int nextVersion = (job.getPlanVersion() == null ? 0 : job.getPlanVersion()) + 1;
         KbIngestPlan plan = new KbIngestPlan();
         plan.setId(IdGenerator.getId());
@@ -463,6 +482,127 @@ public class KbIngestServiceImpl implements KbIngestService {
         return sb.toString();
     }
 
+    // ---------------------------------------------------------------- T18 Express prepare / publish
+
+    @Override
+    public IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan) {
+        IngestJobVo job = createJob(request);
+        IngestPrepareResultVo prepare = prepare(job.getId(), useLlmPlan);
+        IngestExpressStartVo vo = new IngestExpressStartVo();
+        vo.setJob(prepare.getJob() != null ? prepare.getJob() : job);
+        vo.setPrepare(prepare);
+        return vo;
+    }
+
+    @Override
+    public IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan) {
+        assertEnabled();
+        KbIngestJob job = loadJob(jobId);
+        KbSpace space = resolveSpace(job.getSpaceId());
+        kbAclService.assertCanEdit(space.getId());
+
+        if (useLlmPlan) {
+            generatePlan(jobId);
+        } else {
+            List<String> rawPaths = parsePaths(job.getRawPaths());
+            if (rawPaths.isEmpty()) {
+                throw new BaseException("批次无 raw 源，无法生成 Express Plan");
+            }
+            String planJson = buildExpressPlanJson(job, space.getId(), rawPaths);
+            savePlanVersion(job, planJson, "express", null, null);
+        }
+
+        IngestGenerateResultVo generate = generate(jobId, false);
+        IngestPrepareResultVo result = new IngestPrepareResultVo();
+        result.setJob(toVo(loadJob(jobId), space, latestPlan(jobId)));
+        result.setGenerate(generate);
+        result.setDrafts(generate.getDrafts() != null ? generate.getDrafts() : listDrafts(jobId));
+        log.info("[ingest] prepare job={} useLlmPlan={} generated={}", jobId, useLlmPlan, generate.getGenerated());
+        return result;
+    }
+
+    @Override
+    public IngestPublishResultVo publish(Long jobId, boolean sync, boolean approveAll) {
+        assertEnabled();
+        KbIngestJob job = loadJob(jobId);
+        KbSpace space = resolveSpace(job.getSpaceId());
+        kbAclService.assertCanEdit(space.getId());
+
+        if (approveAll) {
+            approveAllPendingDrafts(jobId);
+        }
+
+        IngestLintVo lintResult = lint(jobId);
+        IngestPublishResultVo vo = new IngestPublishResultVo();
+        vo.setLint(lintResult);
+        int approved = (int) draftMapper.selectCount(new LambdaQueryWrapper<KbIngestDraft>()
+                .eq(KbIngestDraft::getJobId, jobId)
+                .eq(KbIngestDraft::getApproval, AP_APPROVED));
+        vo.setApprovedCount(approved);
+
+        if (!lintResult.isCommitReady()) {
+            vo.setCommitted(false);
+            vo.setCommit(null);
+            return vo;
+        }
+
+        IngestCommitResultVo commitResult = commit(jobId, sync);
+        vo.setCommitted(true);
+        vo.setCommit(commitResult);
+        log.info("[ingest] publish job={} sync={} approveAll={} created={}", jobId, sync, approveAll,
+                commitResult.getCreated());
+        return vo;
+    }
+
+    private void approveAllPendingDrafts(Long jobId) {
+        List<KbIngestDraft> pending = draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
+                .eq(KbIngestDraft::getJobId, jobId)
+                .eq(KbIngestDraft::getApproval, AP_DRAFT));
+        if (pending.isEmpty()) {
+            return;
+        }
+        Date now = new Date();
+        for (KbIngestDraft d : pending) {
+            if (StringUtils.isBlank(resolveDraftContent(d))) {
+                throw new BaseException("草稿「" + d.getSlug() + "」内容为空，无法自动批准");
+            }
+            d.setApproval(AP_APPROVED);
+            d.setUpdateTime(now);
+            draftMapper.updateById(d);
+        }
+    }
+
+    private String buildExpressPlanJson(KbIngestJob job, Long spaceId, List<String> rawPaths) {
+        JSONObject obj = JSON.parseObject(skeletonPlan(job, rawPaths));
+        Map<String, KbCategory> byDir = loadCategoriesByDirSlug(spaceId);
+        JSONArray create = obj.getJSONArray("create");
+        if (create != null) {
+            for (int i = 0; i < create.size(); i++) {
+                JSONObject item = create.getJSONObject(i);
+                JSONArray sources = item.getJSONArray("sources");
+                String rawSource = sources != null && !sources.isEmpty() ? sources.getString(0) : "";
+                KbCategory cat = IngestPlanPathResolver.inferCategoryFromRawSource(rawSource, byDir);
+                if (cat != null) {
+                    item.put("categoryId", cat.getId());
+                    if (StringUtils.isNotBlank(cat.getDefaultType())) {
+                        item.put("type", cat.getDefaultType());
+                    }
+                    item.put("reason", "Express：raw 路径匹配分类 " + cat.getDirSlug());
+                } else {
+                    item.put("reason", "Express：请确认分类或 type");
+                }
+            }
+        }
+        return obj.toJSONString();
+    }
+
+    private Map<String, KbCategory> loadCategoriesByDirSlug(Long spaceId) {
+        List<KbCategory> list = kbCategoryMapper.selectList(new LambdaQueryWrapper<KbCategory>()
+                .eq(KbCategory::getSpaceId, spaceId)
+                .eq(KbCategory::getIsDelete, CommonConstant.UN_DELETE));
+        return IngestPlanPathResolver.indexCategoriesByDirSlug(list);
+    }
+
     // ---------------------------------------------------------------- T15b 生成 / 审阅
 
     @Override
@@ -500,7 +640,7 @@ public class KbIngestServiceImpl implements KbIngestService {
             }
         }
 
-        List<String> batchSlugs = collectPlanSlugs(create, enrich);
+        List<String> batchSlugs = collectPlanSlugs(space.getId(), create, enrich);
         List<String> linkCandidates = linkCandidateBareSlugs(space.getId(), job.getTopic(), batchSlugs);
         List<String> batchBareSlugs = batchBareNames(batchSlugs);
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
@@ -515,7 +655,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                 JSONObject item = create.getJSONObject(i);
                 String relPath;
                 try {
-                    relPath = resolveCreateRelPath(item);
+                    relPath = resolveCreateRelPath(space.getId(), item);
                 } catch (Exception e) {
                     failed++;
                     log.warn("[ingest] generate create 项解析失败 job={}: {}", jobId, e.getMessage());
@@ -592,30 +732,57 @@ public class KbIngestServiceImpl implements KbIngestService {
         return result;
     }
 
-    private String resolveCreateRelPath(JSONObject item) {
-        String type = StringUtils.defaultIfBlank(item.getString("type"), "article");
-        String bare = StringUtils.trimToEmpty(item.getString("slug"));
-        if (bare.isEmpty()) {
-            throw new BaseException("create 项缺少 slug，请先在 Plan 补全");
+    private String resolveCreateRelPath(Long spaceId, JSONObject item) {
+        Long categoryId = IngestPlanPathResolver.parseCategoryId(item);
+        KbCategory category = categoryId != null ? loadCategoryForPlan(categoryId, spaceId) : null;
+        return IngestPlanPathResolver.resolveCreateRelPath(item, category);
+    }
+
+    private KbCategory loadCategoryForPlan(Long categoryId, Long spaceId) {
+        KbCategory cat = kbCategoryMapper.selectById(categoryId);
+        if (cat == null || (cat.getIsDelete() != null && cat.getIsDelete() == 1)) {
+            throw new BaseException("分类不存在: " + categoryId);
         }
-        return typeDir(type) + "/" + bare;
+        if (!spaceId.equals(cat.getSpaceId())) {
+            throw new BaseException("分类不属于当前批次空间");
+        }
+        return cat;
+    }
+
+    private void validatePlanCreateItems(Long spaceId, JSONObject planObj) {
+        JSONArray create = planObj.getJSONArray("create");
+        if (create == null) {
+            return;
+        }
+        for (int i = 0; i < create.size(); i++) {
+            JSONObject item = create.getJSONObject(i);
+            try {
+                resolveCreateRelPath(spaceId, item);
+            } catch (BaseException e) {
+                throw new BaseException("Plan create[" + i + "]: " + e.getMessage());
+            }
+        }
     }
 
     private KbIngestDraft genCreateDraft(KbIngestJob job, KbSpace space, JSONObject item,
                                          List<String> linkCandidates, List<String> batchBareSlugs,
                                          String today) {
-        String type = StringUtils.defaultIfBlank(item.getString("type"), "article");
-        String bare = StringUtils.trimToEmpty(item.getString("slug"));
-        if (bare.isEmpty()) {
-            throw new BaseException("create 项缺少 slug，请先在 Plan 补全");
-        }
-        String relPath = resolveCreateRelPath(item);
+        Long categoryId = IngestPlanPathResolver.parseCategoryId(item);
+        KbCategory category = categoryId != null ? loadCategoryForPlan(categoryId, space.getId()) : null;
+        String type = category != null && StringUtils.isNotBlank(category.getDefaultType())
+                ? category.getDefaultType()
+                : StringUtils.defaultIfBlank(item.getString("type"), "article");
+        String relPath = resolveCreateRelPath(space.getId(), item);
+        String bare = bareSlug(relPath);
         List<String> sources = jsonStrList(item.getJSONArray("sources"));
         List<String> planRelated = jsonStrList(item.getJSONArray("related"));
 
         StringBuilder userPrompt = new StringBuilder();
         userPrompt.append("目标 slug：").append(bare).append('\n');
         userPrompt.append("type：").append(type).append('\n');
+        if (category != null) {
+            userPrompt.append("落盘目录：").append(category.getDirSlug()).append("/\n");
+        }
         userPrompt.append("title：").append(StringUtils.defaultString(item.getString("title"))).append('\n');
         userPrompt.append("created/updated：").append(today).append('\n');
         userPrompt.append("sources（写入 frontmatter）：\n").append(bulletList(sources)).append('\n');
@@ -683,7 +850,9 @@ public class KbIngestServiceImpl implements KbIngestService {
         return draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
                         .eq(KbIngestDraft::getJobId, jobId)
                         .orderByAsc(KbIngestDraft::getId))
-                .stream().map(this::toDraftVo).collect(Collectors.toList());
+                .stream()
+                .map(d -> toDraftVo(d, job.getSpaceId(), latestPlan(jobId)))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -691,7 +860,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         assertEnabled();
         KbIngestJob job = loadJob(jobId);
         kbAclService.assertCanRead(job.getSpaceId());
-        return toDraftVo(loadDraft(jobId, slug));
+        return toDraftVo(loadDraft(jobId, slug), job.getSpaceId(), latestPlan(jobId));
     }
 
     @Override
@@ -718,7 +887,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         d.setApproval(AP_DRAFT);
         d.setUpdateTime(new Date());
         draftMapper.updateById(d);
-        return toDraftVo(d);
+        return toDraftVo(d, job.getSpaceId(), latestPlan(jobId));
     }
 
     @Override
@@ -732,11 +901,11 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         KbIngestPlan plan = latestPlan(jobId);
         JSONObject planObj = plan != null ? JSON.parseObject(plan.getPlanJson()) : new JSONObject();
-        List<String> batchSlugs = collectPlanSlugs(planObj.getJSONArray("create"), planObj.getJSONArray("enrich"));
+        List<String> batchSlugs = collectPlanSlugs(space.getId(), planObj.getJSONArray("create"), planObj.getJSONArray("enrich"));
         List<String> linkCandidates = linkCandidateBareSlugs(space.getId(), job.getTopic(), batchSlugs);
         List<String> batchBareSlugs = batchBareNames(batchSlugs);
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        JSONObject item = findPlanItem(jobId, slug, old.getAction());
+        JSONObject item = findPlanItem(jobId, space.getId(), slug, old.getAction());
 
         KbIngestDraft fresh;
         if (ACT_ENRICH.equals(old.getAction())) {
@@ -750,7 +919,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         old.setApproval(AP_DRAFT);
         old.setUpdateTime(new Date());
         draftMapper.updateById(old);
-        return toDraftVo(old);
+        return toDraftVo(old, job.getSpaceId(), plan);
     }
 
     @Override
@@ -765,7 +934,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         d.setApproval(approval);
         d.setUpdateTime(new Date());
         draftMapper.updateById(d);
-        return toDraftVo(d);
+        return toDraftVo(d, job.getSpaceId(), latestPlan(jobId));
     }
 
     // ---------------------------------------------------------------- T15c lint + commit
@@ -1248,7 +1417,7 @@ public class KbIngestServiceImpl implements KbIngestService {
             JSONObject item = new JSONObject(true);
             item.put("type", StringUtils.isNotBlank(job.getExpectTypes())
                     ? job.getExpectTypes().split(",")[0].trim() : "article");
-            item.put("slug", "");
+            item.put("slug", IngestPlanPathResolver.stemFromRawPath(rp));
             item.put("title", "");
             JSONArray sources = new JSONArray();
             sources.add("raw/" + rp);
@@ -1389,6 +1558,10 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     private IngestDraftVo toDraftVo(KbIngestDraft d) {
+        return toDraftVo(d, null, null);
+    }
+
+    private IngestDraftVo toDraftVo(KbIngestDraft d, Long spaceId, KbIngestPlan plan) {
         IngestDraftVo vo = new IngestDraftVo();
         vo.setId(d.getId());
         vo.setJobId(d.getJobId());
@@ -1401,7 +1574,45 @@ public class KbIngestServiceImpl implements KbIngestService {
         vo.setDraft(resolveDraftContent(d));
         vo.setApproval(d.getApproval());
         vo.setUpdateTime(d.getUpdateTime());
+        enrichDraftVoFromPlan(vo, d, spaceId, plan);
         return vo;
+    }
+
+    private void enrichDraftVoFromPlan(IngestDraftVo vo, KbIngestDraft d, Long spaceId, KbIngestPlan plan) {
+        if (spaceId == null || plan == null || !ACT_CREATE.equals(d.getAction())) {
+            return;
+        }
+        JSONObject planObj;
+        try {
+            planObj = JSON.parseObject(plan.getPlanJson());
+        } catch (Exception e) {
+            return;
+        }
+        JSONArray create = planObj.getJSONArray("create");
+        if (create == null) {
+            return;
+        }
+        String draftSlug = StringUtils.trimToEmpty(d.getSlug());
+        for (int i = 0; i < create.size(); i++) {
+            JSONObject item = create.getJSONObject(i);
+            try {
+                String rel = resolveCreateRelPath(spaceId, item);
+                if (!rel.equalsIgnoreCase(draftSlug)
+                        && !bareSlug(draftSlug).equalsIgnoreCase(bareSlug(item.getString("slug")))) {
+                    continue;
+                }
+                Long categoryId = IngestPlanPathResolver.parseCategoryId(item);
+                vo.setCategoryId(categoryId);
+                if (categoryId != null) {
+                    KbCategory cat = loadCategoryForPlan(categoryId, spaceId);
+                    vo.setDirSlug(cat.getDirSlug());
+                    vo.setCategoryName(cat.getCategoryName());
+                }
+                return;
+            } catch (BaseException ignored) {
+                // 单项解析失败时不阻断列表
+            }
+        }
     }
 
     private KbIngestDraft loadDraft(Long jobId, String slug) {
@@ -1418,35 +1629,53 @@ public class KbIngestServiceImpl implements KbIngestService {
         return d;
     }
 
-    private JSONObject findPlanItem(Long jobId, String slug, String action) {
+    private JSONObject findPlanItem(Long jobId, Long spaceId, String draftRelPath, String action) {
         KbIngestPlan plan = latestPlan(jobId);
         if (plan == null) {
             throw new BaseException("Plan 不存在，无法重生成");
         }
         JSONObject obj = JSON.parseObject(plan.getPlanJson());
-        String bare = bareSlug(slug);
+        String bareDraft = bareSlug(draftRelPath).toLowerCase(Locale.ROOT);
         JSONArray arr = obj.getJSONArray(ACT_ENRICH.equals(action) ? "enrich" : "create");
         if (arr != null) {
             for (int i = 0; i < arr.size(); i++) {
                 JSONObject it = arr.getJSONObject(i);
-                if (bare.equalsIgnoreCase(bareSlug(StringUtils.trimToEmpty(it.getString("slug"))))) {
-                    return it;
+                if (ACT_ENRICH.equals(action)) {
+                    if (bareDraft.equalsIgnoreCase(bareSlug(StringUtils.trimToEmpty(it.getString("slug"))))) {
+                        return it;
+                    }
+                    continue;
+                }
+                try {
+                    String rel = resolveCreateRelPath(spaceId, it);
+                    if (rel.equalsIgnoreCase(draftRelPath)
+                            || bareDraft.equalsIgnoreCase(bareSlug(StringUtils.trimToEmpty(it.getString("slug"))))) {
+                        return it;
+                    }
+                } catch (BaseException e) {
+                    if (bareDraft.equalsIgnoreCase(bareSlug(StringUtils.trimToEmpty(it.getString("slug"))))) {
+                        return it;
+                    }
                 }
             }
         }
-        // 找不到对应 plan 项时给个兜底（用当前 slug）
         JSONObject fallback = new JSONObject();
-        fallback.put("slug", bare);
+        fallback.put("slug", bareDraft);
         return fallback;
     }
 
-    private List<String> collectPlanSlugs(JSONArray create, JSONArray enrich) {
+    private List<String> collectPlanSlugs(Long spaceId, JSONArray create, JSONArray enrich) {
         List<String> out = new ArrayList<>();
         if (create != null) {
             for (int i = 0; i < create.size(); i++) {
-                String s = create.getJSONObject(i).getString("slug");
-                if (StringUtils.isNotBlank(s)) {
-                    out.add(bareSlug(s).toLowerCase(Locale.ROOT));
+                JSONObject item = create.getJSONObject(i);
+                try {
+                    out.add(resolveCreateRelPath(spaceId, item).toLowerCase(Locale.ROOT));
+                } catch (BaseException e) {
+                    String s = item.getString("slug");
+                    if (StringUtils.isNotBlank(s)) {
+                        out.add(bareSlug(s).toLowerCase(Locale.ROOT));
+                    }
                 }
             }
         }

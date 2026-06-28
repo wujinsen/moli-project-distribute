@@ -347,6 +347,201 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ---
 
+## T17 · Ingest 落盘对齐文档分类（categoryId + 自定义 slug）🔵
+
+> **背景**：文档管理「分类」= `kb_category.dir_slug` = wiki 一级目录（Sync 回填 `category_id`）；Ingest Commit 仍用硬编码 `type → guides/articles/...`，与分类体系脱节，导致落盘路径不可选（如 `fe/`）、文件名被 LLM 英文 slug 覆盖 raw 原名。  
+> **目标**：Plan/Commit 与 [[文档管理]]、[[wiki同步指南]] 单一真相一致：`{dir_slug}/{slug}.md`，UI 可选分类 + 可改文件名。
+
+**用户故事**
+
+| 角色 | 场景 |
+|------|------|
+| editor | 勾选 `raw/fe/fe_kamoku_b_set_sample_qs.md` → 规划页 **分类选「FE 题库/fe」**、**slug 默认 `fe_kamoku_b_set_sample_qs` 可改** → 生成草稿 → 批准 → Commit → 落盘 `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md` |
+| editor | 仅改分类不重生成：Plan 表改 `categoryId` → 保存 Plan → 重新生成或 Commit 前校验路径预览 |
+
+**Plan JSON 契约（v2，向后兼容 v1）**
+
+`create[]` 每项：
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `categoryId` | **create 推荐必填** | 目标空间 `kb_category.id`；落盘目录 = 该分类 `dir_slug` |
+| `slug` | 是 | **裸文件名**（无 `.md`、无 `/`），如 `fe_kamoku_b_set_sample_qs` |
+| `title` | 否 | 页标题；LLM 写 frontmatter |
+| `sources` | 是 | raw 路径数组 |
+| `type` | 否 | **deprecated 兜底**：无 `categoryId` 时用 `typeDir(type)`；有 `categoryId` 时默认取 `category.defaultType` 写 frontmatter |
+| `reason` | 否 | 规划说明 |
+
+落盘相对路径（权威）：
+
+```text
+relPath = {category.dir_slug}/{slug}.md
+fullSlug = {dir_slug}/{slug}          // 写入 KbIngestDraft.slug、commit、DB slug
+```
+
+`enrich[]` **不变**（仍按已有 wiki 页路径增补）；可选后续 T17b 支持 enrich 改分类（= 移动分类）。
+
+**向后兼容**
+
+| 旧 Plan | 行为 |
+|---------|------|
+| 仅有 `type` + `slug` | 继续 `typeDir(type)/slug`（现状） |
+| `slug` 含 `/`（如 `articles/foo`） | **不再**叠 `typeDir`；整段作 relPath（修正 API 文档与实现不一致） |
+
+---
+
+### 子任务拆分
+
+| 子任务 | 范围 | 验收 |
+|--------|------|------|
+| **T17a** | **后端路径解析** + Plan 校验 + 单元测试 | `resolveCreateRelPath` 支持 `categoryId`；非法 slug/跨空间分类拒绝；旧 Plan 仍可通过 |
+| **T17b** | **Planner / skeleton 预填** + PageWriter prompt | 骨架 Plan 从 raw 路径取 stem 填 `slug`；LLM Plan 注入空间分类列表（id/dir_slug/defaultType）；生成草稿后 `IngestDraftVo` 增 `categoryId/dirSlug/categoryName` |
+| **T17c** | **前端 Plan 可视化表**（分类下拉 + slug 输入） | 批次详情 ① 区：create 行级编辑；调 `GET /kb/category/tree`；保存 Plan 写回 JSON；JSON 高级模式保留 |
+| **T17d** | **落盘预览 + 文档** | Commit 前展示 `wiki-jp-exam/fe/xxx.md`；`docs/api/KNOWLEDGE_API.md` §9.3、`Ingest工作台产品方案` 更新；i18n zh/en/ja | ✅ |
+
+---
+
+### T17a · 后端（详细）
+
+**涉及文件**
+
+- `KbIngestServiceImpl.java`：`resolveCreateRelPath`、`genCreateDraft`、`skeletonPlan`、`parsePlan` 校验、`findPlanItem`
+- 新增：`IngestPlanItemValidator` 或私有方法 `validateCreateItem`、`resolveCategoryForPlan`
+- 复用：`KbCategoryMapper`、`KbCategoryServiceImpl`（校验 dir_slug 非空、空间一致）
+- 复用：`KbDocumentServiceImpl.move` 同款规则 `{dirSlug}/{stem}`
+
+**核心逻辑**
+
+```java
+// 伪代码
+if (item.categoryId != null) {
+  KbCategory cat = loadCategory(item.categoryId, job.spaceId);
+  String stem = sanitizeBareSlug(item.slug); // 禁止 / . ..
+  return cat.getDirSlug() + "/" + stem;
+}
+// legacy
+return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
+```
+
+**slug 校验**（与 `KbCategoryServiceImpl` dir_slug 规则对齐或略宽以支持中文 stem）：
+
+- 允许：中文、英文、数字、`-`、`_`
+- 禁止：`/`、`\`、`..`、首尾空白、空串
+
+**DTO**
+
+- `IngestDraftVo` 增加：`categoryId`、`dirSlug`、`categoryName`（只读展示）
+- 可选：`IngestPlanCreateItemVo` 供未来结构化 API（T17c 仍用 planJson 字符串亦可）
+
+**测试**（`KbIngestServiceImplPlanPathTest`）
+
+1. `categoryId=fe分类` + `slug=fe_kamoku_b_set_sample_qs` → `fe/fe_kamoku_b_set_sample_qs`
+2. 仅 `type=article` + `slug=foo` → `articles/foo`（兼容）
+3. `slug=articles/foo` 无 category → relPath `articles/foo`（不双前缀）
+4. 跨空间 `categoryId` → BaseException
+5. commit 集成测（可选）：mock writePage 断言 slug
+
+---
+
+### T17b · Planner / 生成（详细）
+
+**skeletonPlan**（LLM 未配置时）
+
+- 每个 raw：`slug = Path(stem).md` 去后缀（`fe_kamoku_b_set_sample_qs`）
+- `categoryId`：若空间仅一个分类则默认；否则 null + UI 必选
+- `type`：来自 `job.expectTypes` 或分类 `defaultType`
+
+**LLM Planner prompt**
+
+- 注入：`GET categories for space` 列表 `[{id, categoryName, dirSlug, defaultType}]`
+- 规则：create 必须输出 `categoryId` + 裸 `slug`；slug 优先 raw 文件名 stem；禁止输出 `articles/xxx` 全路径
+
+**PageWriter**
+
+- userPrompt 增加：`落盘目录：{dirSlug}/`；`frontmatter type：{defaultType}`
+
+---
+
+### T17c · 前端（详细）
+
+**涉及文件**
+
+- `KnowledgeIngestWorkbenchView.vue`：① Plan 区新增 `IngestPlanCreateTable.vue`（或内联）
+- `api/knowledge.ts`：已有 `getKbCategoryTreeApi`
+- `types/knowledge.ts`：`IngestPlanCreateRow`、`KbIngestDraft` 扩展字段
+- i18n：`knowledge.ingest.planCategory`、`planSlug`、`planSlugHint`、`planPathPreview`
+
+**UI 行为**
+
+1. 解析 `planObj.create[]` → 表格列：**分类（树形下拉）| slug（input）| title | sources | 删除**
+2. 新建批次 / 生成 skeleton 后：slug 默认 `rawPaths` 末段 stem
+3. 选分类后显示预览：`{spaceWikiRoot}/{dirSlug}/{slug}.md`（只读）
+4. 「保存 Plan」：`PUT /kb/ingest/jobs/{id}/plan` 序列化回 JSON
+5. **高级**：保留现有 Plan JSON textarea（折叠），双向同步或「仅 JSON 模式」开关
+6. ② 草稿列表：`displaySlug` 仍示 stem；tooltip 显示完整 `slug`
+
+**权限**：无分类时提示「请先在文档管理创建分类（绑定目录）」链到文档管理。
+
+---
+
+### T17d · 文档与验收清单
+
+**文档**
+
+- `docs/api/KNOWLEDGE_API.md` §9.3 Plan JSON 表 + 示例（jp-fe-ap-exam + `fe` 分类）
+- `moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md` §Plan 形态增补 T17
+- 可选：`docs/test/knowledge-ingest-category-slug.md` 手测用例
+
+**E2E 验收**（jp-fe-ap-exam）
+
+1. 文档管理新建分类：名称 FE 题库，`dir_slug=fe`，`default_type=interview`
+2. Ingest 勾选 `fe/fe_kamoku_b_set_sample_qs.md`，分类选 fe，slug 保持默认
+3. 生成草稿 → 批准 → Lint → Commit 并 Sync
+4. 磁盘：`kb/wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`
+5. 文档管理：该文档 `category_id` 对应 fe，浏览/索引分组正确
+
+**非目标（本迭代不做）**
+
+- enrich 改分类（移动分类）
+- 多级分类子目录（仅一级 `dir_slug`）
+- raw 自动 ingest 到多个 create 行（仍靠 Plan）
+
+---
+
+**开工提示词**
+
+> 实现 T17a：读 `KbIngestServiceImpl.resolveCreateRelPath`、`KbDocumentServiceImpl.move`、`CategoryTreeVo`。Plan create 支持 `categoryId` + 裸 `slug`，落盘 `{dir_slug}/{slug}.md`；兼容旧 `type`；补单测。完成后 T17c 前端分类下拉复用 `GET /kb/category/tree`。
+
+---
+
+## T18 · Ingest 一键入库（Express）✅
+
+> **目标**：Web 与 Agent ingest 同结果、更少步骤——「选 raw → 一键预览 → 确认入库」。
+
+| 子项 | 内容 | 状态 |
+|------|------|------|
+| **T18a** | 后端 `expressStart` / `prepare` / `publish`；Express Plan（骨架 + `inferCategoryFromRawSource`） | ✅ |
+| **T18b** | 前端列表「一键预览」、详情 Express 横幅 +「确认入库」；API types + i18n | ✅ |
+| **T18c** | `docs/api/KNOWLEDGE_API.md` §9.6.6、产品方案、手测说明 | ✅ |
+
+**API**（`/kb/ingest`，详见 `docs/api/KNOWLEDGE_API.md` §9.6.6）：
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/kb/ingest/jobs/express?useLlmPlan=false` | 创建 + Express Plan + 生成草稿 |
+| POST | `/kb/ingest/jobs/{id}/prepare?useLlmPlan=false` | 已有批次 prepare |
+| POST | `/kb/ingest/jobs/{id}/publish?sync=true&approveAll=true` | 全批准 + lint + commit + Sync |
+
+**验收（jp-fe-ap-exam）**：
+
+1. 列表勾选 `raw/fe/fe_kamoku_b_set_sample_qs.md` →「一键预览」
+2. 详情 Express 模式：Plan create 行 `categoryId`→FE、`slug`→`fe_kamoku_b_set_sample_qs`
+3.「确认入库」→ `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md` + Sync 成功
+
+**非目标**：Express 不替代 Expert 逐步审阅；enrich 多页复杂批次仍建议 LLM Plan + 逐页 diff。
+
+---
+
 ## 推荐推进顺序
 
 1. ✅ Phase 0 治理（lint-strict + 空间去重）— 已完成。
@@ -354,5 +549,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 3. ✅ **T15a → T15b → T15c → T15d → T15e**（M6 Ingest 工作台闭环）。
 4. T14c–d 可并行增强。
 5. 🔵 **T16a → T16b → T16c**（M7 Wiki 治理工作台：文件级 lint → 批量 enrich/ai-revise → 复检 → Sync）。
+6. 🔵 **T17a → T17b → T17c → T17d**（M6+ Ingest 落盘对齐文档分类 + 自定义 slug）。✅
+7. ✅ **T18**（M6+ Ingest 一键预览 / 确认入库 Express 流）。
 
 > 多对话协作小贴士：同一时间不要让两个对话改同一个 `.java` 文件；每个任务跑完各自 `mvn -q -pl moli-knowledge/moli-knowledge-server compile` 自测；合并前 `git status` 看清改了哪些文件。
