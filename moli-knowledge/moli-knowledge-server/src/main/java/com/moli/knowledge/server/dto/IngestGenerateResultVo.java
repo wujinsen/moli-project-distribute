@@ -3,6 +3,7 @@ package com.moli.knowledge.server.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import com.moli.knowledge.server.dto.KbWorkflowHintVo;
 
 import java.util.List;
 
@@ -27,6 +28,9 @@ public class IngestGenerateResultVo {
 
     @ApiModelProperty("是否续跑模式")
     private boolean resume;
+
+    @ApiModelProperty("是否模板模式（useLlmGenerate=false）")
+    private boolean templateMode;
 
     @ApiModelProperty("当前全部草稿")
     private List<IngestDraftVo> drafts;

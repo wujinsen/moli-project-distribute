@@ -40,6 +40,9 @@ public class KbWikiControllerLintApiTest {
     @Mock
     private KbWikiLintService kbWikiLintService;
 
+    @Mock
+    private com.moli.knowledge.server.service.KbWikiGovernService kbWikiGovernService;
+
     @Test
     public void POST_kb_wiki_lint_space() {
         WikiSpaceLintVo vo = new WikiSpaceLintVo();

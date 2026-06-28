@@ -4,9 +4,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @ApiModel("同步触发结果")
 public class SyncTriggerVo {
+
+    @ApiModelProperty("空间 ID")
+    private Long spaceId;
 
     @ApiModelProperty("是否成功")
     private boolean success;
@@ -19,4 +24,7 @@ public class SyncTriggerVo {
 
     @ApiModelProperty("脚本标准输出摘要（末尾）")
     private String outputTail;
+
+    @ApiModelProperty("Sync 成功后建议下一步")
+    private List<KbWorkflowHintVo> nextSteps;
 }

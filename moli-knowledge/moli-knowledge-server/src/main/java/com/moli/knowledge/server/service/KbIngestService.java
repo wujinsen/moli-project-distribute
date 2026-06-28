@@ -42,8 +42,12 @@ public interface KbIngestService {
 
     String exportAgentPrompt(Long id);
 
-    /** 按 plan 生成草稿；resume=true 时跳过已有草稿（断点续跑）。 */
-    IngestGenerateResultVo generate(Long jobId, boolean resume);
+    /** 按 plan 生成草稿；resume=true 时跳过已有草稿（断点续跑）。useLlmGenerate=false 为模板模式（raw 直贴）。 */
+    IngestGenerateResultVo generate(Long jobId, boolean resume, boolean useLlmGenerate);
+
+    default IngestGenerateResultVo generate(Long jobId, boolean resume) {
+        return generate(jobId, resume, true);
+    }
 
     List<IngestDraftVo> listDrafts(Long jobId);
 
@@ -51,7 +55,11 @@ public interface KbIngestService {
 
     IngestDraftVo updateDraft(Long jobId, String slug, IngestDraftUpdateRequest request);
 
-    IngestDraftVo regenerateDraft(Long jobId, String slug);
+    IngestDraftVo regenerateDraft(Long jobId, String slug, boolean useLlmGenerate);
+
+    default IngestDraftVo regenerateDraft(Long jobId, String slug) {
+        return regenerateDraft(jobId, slug, true);
+    }
 
     IngestDraftVo setApproval(Long jobId, String slug, String approval);
 
@@ -60,13 +68,21 @@ public interface KbIngestService {
     IngestCommitResultVo commit(Long jobId, boolean sync);
 
     /** T18 · Express Plan（分类推断 + slug stem）+ 生成草稿。 */
-    IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan);
+    IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan, boolean useLlmGenerate);
+
+    default IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan) {
+        return prepare(jobId, useLlmPlan, true);
+    }
 
     /** T18 · 可选全部批准 + lint + commit（+ Sync）。 */
     IngestPublishResultVo publish(Long jobId, boolean sync, boolean approveAll);
 
     /** T18 · 创建批次并 prepare 一步。 */
-    IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan);
+    IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan, boolean useLlmGenerate);
+
+    default IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan) {
+        return expressStart(request, useLlmPlan, true);
+    }
 
     // ---------------------------------------------------------------- T15e 模板
 

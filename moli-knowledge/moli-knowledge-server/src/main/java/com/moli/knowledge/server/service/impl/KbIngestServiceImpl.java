@@ -52,6 +52,9 @@ import com.moli.knowledge.server.service.KbRawCoverageService;
 import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiFileService;
 import com.moli.knowledge.server.service.ingest.IngestPlanPathResolver;
+import com.moli.knowledge.server.util.KbIngestTemplateWriter;
+import com.moli.knowledge.server.util.KbWorkflowHints;
+import com.moli.knowledge.server.util.KbWikiFrontmatterUtil;
 import com.moli.knowledge.server.util.ShiroUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -485,9 +488,10 @@ public class KbIngestServiceImpl implements KbIngestService {
     // ---------------------------------------------------------------- T18 Express prepare / publish
 
     @Override
-    public IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan) {
+    public IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan,
+                                             boolean useLlmGenerate) {
         IngestJobVo job = createJob(request);
-        IngestPrepareResultVo prepare = prepare(job.getId(), useLlmPlan);
+        IngestPrepareResultVo prepare = prepare(job.getId(), useLlmPlan, useLlmGenerate);
         IngestExpressStartVo vo = new IngestExpressStartVo();
         vo.setJob(prepare.getJob() != null ? prepare.getJob() : job);
         vo.setPrepare(prepare);
@@ -495,7 +499,7 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     @Override
-    public IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan) {
+    public IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan, boolean useLlmGenerate) {
         assertEnabled();
         KbIngestJob job = loadJob(jobId);
         KbSpace space = resolveSpace(job.getSpaceId());
@@ -512,10 +516,10 @@ public class KbIngestServiceImpl implements KbIngestService {
             savePlanVersion(job, planJson, "express", null, null);
         }
 
-        IngestGenerateResultVo generate = generate(jobId, false);
+        IngestGenerateResultVo generate = generate(jobId, false, useLlmGenerate);
         List<IngestDraftVo> draftList = generate.getDrafts() != null ? generate.getDrafts() : listDrafts(jobId);
         if (draftList.isEmpty()) {
-            int failed = generate.getFailed() != null ? generate.getFailed() : 0;
+            int failed = generate.getFailed();
             String detail = failed > 0 ? "，" + failed + " 页失败" : "";
             throw new BaseException("Express 草稿生成失败：0 页成功" + detail
                     + "。请检查 kb.llm 配置与服务端日志后重试");
@@ -524,7 +528,8 @@ public class KbIngestServiceImpl implements KbIngestService {
         result.setJob(toVo(loadJob(jobId), space, latestPlan(jobId)));
         result.setGenerate(generate);
         result.setDrafts(draftList);
-        log.info("[ingest] prepare job={} useLlmPlan={} generated={}", jobId, useLlmPlan, generate.getGenerated());
+        log.info("[ingest] prepare job={} useLlmPlan={} useLlmGenerate={} generated={}", jobId, useLlmPlan,
+                useLlmGenerate, generate.getGenerated());
         return result;
     }
 
@@ -556,6 +561,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         IngestCommitResultVo commitResult = commit(jobId, sync);
         vo.setCommitted(true);
         vo.setCommit(commitResult);
+        vo.setNextSteps(commitResult.getNextSteps());
         log.info("[ingest] publish job={} sync={} approveAll={} created={}", jobId, sync, approveAll,
                 commitResult.getCreated());
         return vo;
@@ -613,12 +619,14 @@ public class KbIngestServiceImpl implements KbIngestService {
     // ---------------------------------------------------------------- T15b 生成 / 审阅
 
     @Override
-    public IngestGenerateResultVo generate(Long jobId, boolean resume) {
+    public IngestGenerateResultVo generate(Long jobId, boolean resume, boolean useLlmGenerate) {
         assertEnabled();
         KbIngestJob job = loadJob(jobId);
         KbSpace space = resolveSpace(job.getSpaceId());
         kbAclService.assertCanEdit(space.getId());
-        llmClient.assertUsable();
+        if (useLlmGenerate) {
+            llmClient.assertUsable();
+        }
 
         KbIngestPlan plan = latestPlan(jobId);
         if (plan == null || StringUtils.isBlank(plan.getPlanJson())) {
@@ -673,7 +681,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                     continue;
                 }
                 try {
-                    fresh.add(genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today));
+                    fresh.add(genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today, useLlmGenerate));
                 } catch (Exception e) {
                     failed++;
                     log.warn("[ingest] generate create 页失败 job={} slug={}: {}", jobId, relPath, e.getMessage());
@@ -693,7 +701,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                     }
                 }
                 try {
-                    fresh.add(genEnrichDraft(job, space, item, linkCandidates));
+                    fresh.add(genEnrichDraft(job, space, item, linkCandidates, useLlmGenerate));
                 } catch (Exception e) {
                     failed++;
                     log.warn("[ingest] generate enrich 页失败 job={} slug={}: {}", jobId, planSlug, e.getMessage());
@@ -733,9 +741,10 @@ public class KbIngestServiceImpl implements KbIngestService {
         result.setSkipped(skipped);
         result.setFailed(failed);
         result.setResume(resume);
+        result.setTemplateMode(!useLlmGenerate);
         result.setDrafts(listDrafts(jobId));
-        log.info("[ingest] generate job={} resume={} generated={} skipped={} failed={}",
-                jobId, resume, fresh.size(), skipped, failed);
+        log.info("[ingest] generate job={} resume={} useLlmGenerate={} generated={} skipped={} failed={}",
+                jobId, resume, useLlmGenerate, fresh.size(), skipped, failed);
         return result;
     }
 
@@ -773,7 +782,7 @@ public class KbIngestServiceImpl implements KbIngestService {
 
     private KbIngestDraft genCreateDraft(KbIngestJob job, KbSpace space, JSONObject item,
                                          List<String> linkCandidates, List<String> batchBareSlugs,
-                                         String today) {
+                                         String today, boolean useLlmGenerate) {
         Long categoryId = IngestPlanPathResolver.parseCategoryId(item);
         KbCategory category = categoryId != null ? loadCategoryForPlan(categoryId, space.getId()) : null;
         String type = category != null && StringUtils.isNotBlank(category.getDefaultType())
@@ -784,24 +793,31 @@ public class KbIngestServiceImpl implements KbIngestService {
         List<String> sources = jsonStrList(item.getJSONArray("sources"));
         List<String> planRelated = jsonStrList(item.getJSONArray("related"));
 
-        StringBuilder userPrompt = new StringBuilder();
-        userPrompt.append("目标 slug：").append(bare).append('\n');
-        userPrompt.append("type：").append(type).append('\n');
-        if (category != null) {
-            userPrompt.append("落盘目录：").append(category.getDirSlug()).append("/\n");
+        String content;
+        if (useLlmGenerate) {
+            StringBuilder userPrompt = new StringBuilder();
+            userPrompt.append("目标 slug：").append(bare).append('\n');
+            userPrompt.append("type：").append(type).append('\n');
+            if (category != null) {
+                userPrompt.append("落盘目录：").append(category.getDirSlug()).append("/\n");
+            }
+            userPrompt.append("title：").append(StringUtils.defaultString(item.getString("title"))).append('\n');
+            userPrompt.append("created/updated：").append(today).append('\n');
+            userPrompt.append("sources（写入 frontmatter）：\n").append(bulletList(sources)).append('\n');
+            if (!planRelated.isEmpty()) {
+                userPrompt.append("planRelated（优先采用，0–5 个）：\n").append(bulletList(planRelated)).append('\n');
+            }
+            userPrompt.append("已知 slug 列表（正文 [[..]] 互链可用，勿整批写入 related）：\n")
+                    .append(bulletList(limit(linkCandidates, MAX_LINK_CANDIDATES))).append('\n');
+            userPrompt.append("\nraw 源内容（已截断）：\n").append(readSources(sources));
+            content = stripFence(llmClient.chat(PAGE_WRITER_PROMPT, userPrompt.toString()));
+            content = sanitizeRelatedFrontmatter(content, bareSlug(bare), batchBareSlugs, planRelated);
+        } else {
+            String title = StringUtils.defaultIfBlank(item.getString("title"), bare);
+            content = KbIngestTemplateWriter.buildCreatePage(
+                    bareSlug(bare), title, type, sources, planRelated,
+                    readRawBodyForTemplate(sources), today);
         }
-        userPrompt.append("title：").append(StringUtils.defaultString(item.getString("title"))).append('\n');
-        userPrompt.append("created/updated：").append(today).append('\n');
-        userPrompt.append("sources（写入 frontmatter）：\n").append(bulletList(sources)).append('\n');
-        if (!planRelated.isEmpty()) {
-            userPrompt.append("planRelated（优先采用，0–5 个）：\n").append(bulletList(planRelated)).append('\n');
-        }
-        userPrompt.append("已知 slug 列表（正文 [[..]] 互链可用，勿整批写入 related）：\n")
-                .append(bulletList(limit(linkCandidates, MAX_LINK_CANDIDATES))).append('\n');
-        userPrompt.append("\nraw 源内容（已截断）：\n").append(readSources(sources));
-
-        String content = stripFence(llmClient.chat(PAGE_WRITER_PROMPT, userPrompt.toString()));
-        content = sanitizeRelatedFrontmatter(content, bareSlug(bare), batchBareSlugs, planRelated);
 
         KbIngestDraft d = newDraft(job, relPath, type, ACT_CREATE);
         d.setBaseline("");
@@ -811,7 +827,7 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     private KbIngestDraft genEnrichDraft(KbIngestJob job, KbSpace space, JSONObject item,
-                                         List<String> knownSlugs) {
+                                         List<String> knownSlugs, boolean useLlmGenerate) {
         String planSlug = StringUtils.trimToEmpty(item.getString("slug"));
         if (planSlug.isEmpty()) {
             throw new BaseException("enrich 项缺少 slug");
@@ -822,18 +838,23 @@ public class KbIngestServiceImpl implements KbIngestService {
         if (relPath != null) {
             baseline = readWikiFile(space.getSpaceCode(), relPath);
         } else {
-            // 找不到已有页：降级为 create（落在 articles 下，需人工确认）
             relPath = typeDir("article") + "/" + planSlug;
             kbType = "article";
         }
 
         String reason = StringUtils.defaultString(item.getString("reason"));
-        String userPrompt = "目标页 slug：" + planSlug + "\n"
-                + "补充原因：" + reason + "\n"
-                + "已知 slug 列表（互链可用，勿写入 related）：\n" + bulletList(limit(knownSlugs, MAX_LINK_CANDIDATES))
-                + "\n\n已有页当前全文：\n" + (baseline.isEmpty() ? "（页不存在，请作为新页主体内容输出一个章节）" : baseline);
-
-        String section = stripFence(llmClient.chat(ENRICH_WRITER_PROMPT, userPrompt));
+        List<String> sources = jsonStrList(item.getJSONArray("sources"));
+        String section;
+        if (useLlmGenerate) {
+            String userPrompt = "目标页 slug：" + planSlug + "\n"
+                    + "补充原因：" + reason + "\n"
+                    + "已知 slug 列表（互链可用，勿写入 related）：\n" + bulletList(limit(knownSlugs, MAX_LINK_CANDIDATES))
+                    + "\n\n已有页当前全文：\n"
+                    + (baseline.isEmpty() ? "（页不存在，请作为新页主体内容输出一个章节）" : baseline);
+            section = stripFence(llmClient.chat(ENRICH_WRITER_PROMPT, userPrompt));
+        } else {
+            section = KbIngestTemplateWriter.buildEnrichPatch(reason, readRawBodyForTemplate(sources));
+        }
         boolean isEnrich = StringUtils.isNotBlank(baseline);
         String action = isEnrich ? ACT_ENRICH : ACT_CREATE;
 
@@ -898,12 +919,14 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     @Override
-    public IngestDraftVo regenerateDraft(Long jobId, String slug) {
+    public IngestDraftVo regenerateDraft(Long jobId, String slug, boolean useLlmGenerate) {
         assertEnabled();
         KbIngestJob job = loadJob(jobId);
         KbSpace space = resolveSpace(job.getSpaceId());
         kbAclService.assertCanEdit(space.getId());
-        llmClient.assertUsable();
+        if (useLlmGenerate) {
+            llmClient.assertUsable();
+        }
         KbIngestDraft old = loadDraft(jobId, slug);
 
         KbIngestPlan plan = latestPlan(jobId);
@@ -916,9 +939,9 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         KbIngestDraft fresh;
         if (ACT_ENRICH.equals(old.getAction())) {
-            fresh = genEnrichDraft(job, space, item, linkCandidates);
+            fresh = genEnrichDraft(job, space, item, linkCandidates, useLlmGenerate);
         } else {
-            fresh = genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today);
+            fresh = genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today, useLlmGenerate);
         }
         old.setBaseline(fresh.getBaseline());
         old.setPatch(fresh.getPatch());
@@ -1099,6 +1122,15 @@ public class KbIngestServiceImpl implements KbIngestService {
             throw new BaseException("存在未审阅（draft）的页，请先批准或拒绝");
         }
 
+        Set<String> targetWikiSlugs = approved.stream()
+                .map(KbIngestDraft::getSlug)
+                .collect(Collectors.toSet());
+        List<String> rawSources = new ArrayList<>();
+        for (KbIngestDraft d : approved) {
+            rawSources.addAll(KbWikiFrontmatterUtil.parseSources(resolveDraftContent(d)));
+        }
+        kbRawCoverageService.assertRawOpenForCommit(space.getId(), jobId, targetWikiSlugs, rawSources);
+
         // 2) 文件落盘 + DB 记账：编程式事务（治理文件追加幂等，重复 commit 不重复写）
         //    DB 失败回滚，文件因幂等可被再次 commit 安全覆盖/跳过。
         CommitHolder holder = txTemplate.execute(status -> doCommit(job, space, approved));
@@ -1127,6 +1159,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         log.info("[ingest] commit job={} created={} updated={} edges={} sync={}",
                 jobId, vo.getCreated(), vo.getUpdated(), vo.getEdgesAppended(), sync);
         kbRawCoverageService.invalidateCache(space.getId());
+        vo.setNextSteps(KbWorkflowHints.afterWikiWrite(space.getId()));
         return vo;
     }
 
@@ -1944,6 +1977,31 @@ public class KbIngestServiceImpl implements KbIngestService {
         } catch (IOException e) {
             return "";
         }
+    }
+
+    /** 读 plan sources 引用的 raw 文件内容（截断拼接）。 */
+    private String readRawBodyForTemplate(List<String> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return "";
+        }
+        Path rawRoot = resolveRawRoot();
+        StringBuilder sb = new StringBuilder();
+        for (String src : sources) {
+            String rel = stripRawPrefix(src);
+            Path f;
+            try {
+                f = rawRoot.resolve(rel).normalize();
+            } catch (Exception e) {
+                continue;
+            }
+            if (f.startsWith(rawRoot) && Files.isRegularFile(f)) {
+                if (sb.length() > 0) {
+                    sb.append("\n\n");
+                }
+                sb.append(readSnippet(f));
+            }
+        }
+        return sb.toString();
     }
 
     /** 读 plan sources 引用的 raw 文件内容（截断拼接）。 */

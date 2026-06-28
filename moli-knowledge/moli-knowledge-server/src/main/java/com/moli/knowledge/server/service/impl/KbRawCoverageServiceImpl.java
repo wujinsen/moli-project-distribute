@@ -37,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -138,6 +139,44 @@ public class KbRawCoverageServiceImpl implements KbRawCoverageService {
             wikiIndexCache.remove(spaceId);
         } else {
             wikiIndexCache.clear();
+        }
+    }
+
+    @Override
+    public void assertRawOpenForCommit(Long spaceId, Long jobId, Set<String> targetWikiSlugs,
+                                       Collection<String> rawSourcePaths) {
+        if (rawSourcePaths == null || rawSourcePaths.isEmpty()) {
+            return;
+        }
+        KbSpace space = resolveSpace(spaceId);
+        WikiSourceIndex index = loadWikiIndex(space, false);
+        Map<String, Set<Long>> inFlight = loadInFlightRawPaths(space.getId());
+        Set<String> targets = targetWikiSlugs == null ? Collections.emptySet() : targetWikiSlugs;
+
+        for (String raw : rawSourcePaths) {
+            if (StringUtils.isBlank(raw)) {
+                continue;
+            }
+            String norm = KbWikiFrontmatterUtil.normalizeRawSourcePath(raw);
+            if (norm == null) {
+                norm = raw.trim().replace('\\', '/');
+                if (norm.startsWith("raw/")) {
+                    norm = norm.substring(4);
+                }
+            }
+            RawCoverageItemVo item = classify(norm, index, inFlight);
+            if (COV_OPEN.equals(item.getCoverage())) {
+                continue;
+            }
+            List<String> wikiSlugs = item.getWikiSlugs();
+            if (wikiSlugs == null || wikiSlugs.isEmpty()) {
+                continue;
+            }
+            boolean allInBatch = wikiSlugs.stream().allMatch(targets::contains);
+            if (!allInBatch) {
+                throw new BaseException("raw 已被 wiki 引用，禁止重复 ingest：raw/" + norm
+                        + " → wiki " + wikiSlugs + "。请对已有页 enrich 或更换 raw 源。");
+            }
         }
     }
 

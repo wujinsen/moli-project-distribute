@@ -521,7 +521,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 
 | 字段 | 说明 |
 |------|------|
-| `issues[].page` | **slug**（相对 wiki 根、无 `.md`），可直接作为 `POST /kb/wiki/enrich` 的 `slug` 或 `ai-revise` 的修复目标 |
+| `issues[].page` | **slug**（相对 wiki 根、无 `.md`），作为治理修复 API 的 `issues[].page` |
 | `issues[].kind` | `broken_link` / `orphan` / `missing_source` / `dup_slug` / `slug_mismatch` / `missing_dates` / `outdated` / …（与 `lint.py` 一致） |
 | `issues[].level` | `error` / `warn` / `info` |
 | `exitCode` | 脚本退出码：`0`=无阻断；`≠0`=有 error 或 strict 下含 warn。**非 HTTP 失败**；接口仍 `code=200` 并返回清单 |
@@ -550,7 +550,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki --json /tmp/lint.json
 python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 ```
 
-产品方案与链路图：[`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md) · [`docs/diagrams/moli-kb-wiki-govern.drawio`](../diagrams/moli-kb-wiki-govern.drawio)
+产品方案与链路图：[`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md) · [`wiki-govern-frontend.md`](wiki-govern-frontend.md) · [`docs/diagrams/moli-kb-wiki-govern.drawio`](../diagrams/moli-kb-wiki-govern.drawio)
 
 ---
 
@@ -1003,7 +1003,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
 | **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` + **`/kb/wiki/enrich`** | 浏览/体检「编辑/修复」；源码编辑 + diff + **Enrich 治理** + AI 协助 + 保存并 Sync |
 | **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 **24** 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑/删批次；**T18 一键预览/入库** |
-| **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16 | `/kb/wiki/lint-space` + enrich + ai-revise + `/kb/sync/trigger` | 选空间 → **文件真值 Lint** → 批量 enrich/ai-revise → 复检 → Sync；ingest 旁路 |
+| **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16f | `/kb/wiki/lint-space` + `/kb/wiki/govern/*` + `/kb/sync/trigger` | 见 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
 
 前端实现：`meiling-ui/src/composables/useKbSpace.ts`（共享空间上下文）、`src/components/knowledge/KbSpaceSelector.vue`。
@@ -1066,7 +1066,34 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 slug 做合法性校验（禁止 `..` / 绝对路径 / 盘符）并强制解析结果落在对应 wiki 目录内（防目录穿越）。**保存只写文件，不进库**；需再走 §6 Sync 才更新 `kb_document`。
 
-### 8.2 AI 协助改稿 ✅（T14b 已实现）
+### 8.2 AI 协助改稿 ✅（T14b · Wiki 治理走 kb.llm）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/kb/wiki/govern/options` | Wiki 治理选项（模型 + script/ai kind 列表） |
+| POST | `/kb/wiki/govern/script-fix` | 脚本批量修 metadata（不写 LLM） |
+| POST | `/kb/wiki/govern/ai-batch-fix` | AI 批量修复并写盘 |
+| POST | `/kb/wiki/govern/auto-fix` | 一键：脚本→AI→复检→可选 Sync |
+| POST | `/kb/wiki/ai-revise` | 调 `KbLlmClient`（OpenAI 兼容）；**不写盘**；可传 `model` |
+
+**配置**：
+
+| 键 | 说明 |
+|----|------|
+| `kb.llm.*` | provider / base-url / api-key / model（与 `/kb/ask` 共用） |
+| `kb.wiki.govern.models` | 可选；治理页模型下拉，留空则仅 `kb.llm.model` |
+
+**ai-revise 请求体**（`model` 可选）：
+
+```json
+{
+  "slug": "guides/本地启动指南",
+  "instruction": "修复断链…",
+  "model": "glm-4-flash"
+}
+```
+
+### 8.2b AI 协助改稿（详细 · T14b）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -1174,10 +1201,97 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 | 保存后标记修复 | 保存成功 → 确认 → `PUT /kb/lint/issue/{id}?status=2` |
 | 保存并 Sync | 保存 wiki → `POST /kb/sync/trigger?spaceId=`（需 `kb:sync:trigger`） |
 
-### 8.6 Wiki 治理工作台链路（T16 · 规划中）
+### 8.6 Wiki 治理工作台（T16 · Lint + 脚本修复 + kb.llm AI + 一键 auto-fix）
 
+> **前端对接全文** → **[wiki-govern-frontend.md](wiki-govern-frontend.md)**（类型、按钮、验收清单）。  
+> 页面：**① 文件真值 Lint** → **② 脚本修 metadata** → **③ AI 批量修复** → **④ 一键 auto-fix（含复检/可选 Sync）**。
+
+```
+选空间 → POST /kb/wiki/lint-space
+  → GET /kb/wiki/govern/options（scriptFixableKinds / aiFixableKinds）
+  → 勾选 issues → 任选：
+       POST /kb/wiki/govern/script-fix        # 快，不调 LLM
+       POST /kb/wiki/govern/ai-batch-fix      # 断链/孤儿等
+       POST /kb/wiki/govern/auto-fix          # 一键：脚本→AI→relint→sync?
+```
+
+| 步骤 | API | LLM |
+|------|-----|-----|
+| ① Lint | `POST /kb/wiki/lint-space` | 否 |
+| ②a 脚本修复 | `POST /kb/wiki/govern/script-fix` | 否 |
+| ②b AI 修复 | `POST /kb/wiki/govern/ai-batch-fix` | **是** |
+| ②c 一键 | `POST /kb/wiki/govern/auto-fix` | 部分 |
+| ③ Sync | `syncAfter=true` 或 `POST /kb/sync/trigger` | 否 |
+
+#### `POST /kb/wiki/govern/script-fix`
+
+请求体：
+
+```json
+{
+  "spaceId": 900000000000000001,
+  "issues": [{ "page": "guides/foo", "kind": "missing_dates", "detail": "缺 created" }],
+  "dryRun": false
+}
+```
+
+脚本可修 kind：`missing_dates`（补 created/updated）、`slug_mismatch`（frontmatter slug 对齐文件名）、`missing_source`（从正文推断 raw/ 或写 wiki 路径占位）。
+
+响应：`fixedPages` / `skippedPages` / `failedPages` + `pages[]`（`status`: ok|skipped|failed）。
+
+#### `POST /kb/wiki/govern/ai-batch-fix`
+
+请求体：`{ spaceId, issues[], model?, dryRun? }`。按 `page` 合并 issue，逐页 ai-revise 并写盘。
+
+#### `POST /kb/wiki/govern/auto-fix`
+
+请求体：
+
+```json
+{
+  "spaceId": 900000000000000001,
+  "issues": [ /* lint 勾选 */ ],
+  "model": "deepseek-chat",
+  "scriptFix": true,
+  "aiFix": true,
+  "relintAfter": true,
+  "strict": false,
+  "syncAfter": false
+}
+```
+
+响应：`issuesBefore` / `issuesAfter` + `scriptFix` / `aiFix` / `relint` / `sync` 摘要。
+
+#### `GET /kb/wiki/govern/options`（扩展）
+
+除 `llmAvailable` / `defaultModel` / `models` 外，返回 `scriptFixableKinds`、`aiFixableKinds`、`manualOnlyKinds`。
+
+#### `POST /kb/wiki/govern/merge-hint`（P2）
+
+请求：`{ spaceId, issues[] }`（仅 `dup_slug` / `dup_content` / `near_dup`）。
+
+响应 `items[]`：`cursorPrompt`、`manualSteps`、`relatedSlugs`、`canonicalSlug` — 供前端「复制到 Cursor」按钮，**不调 LLM**。
+
+#### `nextSteps`（P1 · Ingest / Sync）
+
+`IngestCommitResultVo` / `IngestPublishResultVo` / `SyncTriggerVo` 含 `nextSteps: KbWorkflowHintVo[]`：
+
+| key | 说明 |
+|-----|------|
+| `wiki_govern_lint` | 跳转 Wiki 治理 |
+| `kb_health_scan` | 跳转健康体检 |
+
+#### Ingest 模板模式（P1）
+
+`useLlmGenerate=false`：`generate` / `prepare` / `express` / `draft/regenerate`。详见 [knowledge-ingest-template-mode.md](../test/knowledge-ingest-template-mode.md)。
+
+脚本 vs LLM 总矩阵：[knowledge-script-vs-llm-matrix.md](../test/knowledge-script-vs-llm-matrix.md)
+
+### 8.6b Wiki 治理工作台链路（历史 · 前端 enrich 编排）
+
+> **已 superseded**：请按 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** 接 script-fix / ai-batch-fix / auto-fix。  
 > 产品方案：[`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)。  
-> **T16a ✅**：`POST /kb/wiki/lint-space`（§4.6）。**T16b–c 🔵**：前端批量 enrich / ai-revise 编排 + 复检 + Sync。
+> **T16a ✅**：`POST /kb/wiki/lint-space`（§4.6）。**T16e ✅**：服务端 script-fix / ai-batch-fix / auto-fix。
 
 推荐链路（勿颠倒）：
 

@@ -8,7 +8,10 @@
 | **秒杀链路图** | 见 [`test/README.md`](README.md) · 源文件 [`moli-seckill-flow.drawio`](../diagrams/moli-seckill-flow.drawio) |
 | **用户中心 ApiTest** | [`user-center.md`](user-center.md) |
 | **知识库 Wiki Lint（T16a）** | [`knowledge-wiki-lint-space.md`](knowledge-wiki-lint-space.md) |
+| **脚本 vs LLM 矩阵（P1/P2）** | [`knowledge-script-vs-llm-matrix.md`](knowledge-script-vs-llm-matrix.md) |
+| **Ingest 模板模式** | [`knowledge-ingest-template-mode.md`](knowledge-ingest-template-mode.md) |
 | **知识库 Ingest 删批次** | [`knowledge-ingest-delete-job.md`](knowledge-ingest-delete-job.md) |
+| **知识库 Ingest 分类+slug（T17）** | [`knowledge-ingest-category-slug.md`](knowledge-ingest-category-slug.md) |
 | **压测操作指南（浏览）** | `kb/wiki/guides/秒杀压测指南.md` |
 | **压测报告解读** | `kb/wiki/guides/压测报告解读指南.md` |
 | **测试概念 / 面试** | `kb/wiki/concepts/测试金字塔-与分层.md`、`wiki/interview/测试与质量面试题.md` |

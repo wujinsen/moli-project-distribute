@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -460,13 +461,22 @@ public class KbInsightServiceImpl implements KbInsightService {
             ctx.categoryName.put(c.getId(), c.getCategoryName());
         }
 
-        // 标题 → 文档ID（wikilink 按标题解析；同名取其一）
+        // 标题 / slug → 文档ID（与 lint.py、KbWikiAiReviseServiceImpl 一致：标题 + 全路径 slug + 末段）
         Set<Long> idSet = new HashSet<>();
         Map<String, Long> titleIndex = new HashMap<>();
+        Map<String, Long> slugIndex = new HashMap<>();
         for (KbDocument d : ctx.docs) {
             idSet.add(d.getId());
             if (StringUtils.isNotBlank(d.getTitle())) {
-                titleIndex.putIfAbsent(d.getTitle().trim().toLowerCase(), d.getId());
+                titleIndex.putIfAbsent(d.getTitle().trim().toLowerCase(Locale.ROOT), d.getId());
+            }
+            if (StringUtils.isNotBlank(d.getSlug())) {
+                String slug = d.getSlug().trim().toLowerCase(Locale.ROOT);
+                slugIndex.putIfAbsent(slug, d.getId());
+                int slash = slug.lastIndexOf('/');
+                if (slash >= 0) {
+                    slugIndex.putIfAbsent(slug.substring(slash + 1), d.getId());
+                }
             }
         }
 
@@ -480,7 +490,7 @@ public class KbInsightServiceImpl implements KbInsightService {
                 if (target.isEmpty()) {
                     continue;
                 }
-                Long tid = titleIndex.get(target.toLowerCase());
+                Long tid = resolveWikilinkTarget(target, titleIndex, slugIndex);
                 if (tid == null) {
                     ctx.broken.add(new LintVo.Broken(String.valueOf(d.getId()), d.getTitle(), target));
                 } else if (!tid.equals(d.getId()) && seen.add(tid)) {
@@ -515,6 +525,39 @@ public class KbInsightServiceImpl implements KbInsightService {
             }
         }
         return ctx;
+    }
+
+    /**
+     * 解析 [[target]]：先标题，再全路径 slug，再 slug 末段（如 [[本地启动指南]] → guides/本地启动指南）。
+     * 与 {@link KbWikiAiReviseServiceImpl}、{@code lint.py resolve()} 对齐。
+     */
+    static Long resolveWikilinkTarget(String target, Map<String, Long> titleIndex, Map<String, Long> slugIndex) {
+        if (StringUtils.isBlank(target)) {
+            return null;
+        }
+        String t = target.trim().toLowerCase(Locale.ROOT);
+        Long byTitle = titleIndex.get(t);
+        if (byTitle != null) {
+            return byTitle;
+        }
+        Long bySlug = slugIndex.get(t);
+        if (bySlug != null) {
+            return bySlug;
+        }
+        int slash = t.lastIndexOf('/');
+        if (slash >= 0) {
+            Long byTail = slugIndex.get(t.substring(slash + 1));
+            if (byTail != null) {
+                return byTail;
+            }
+        }
+        for (Map.Entry<String, Long> e : slugIndex.entrySet()) {
+            String slug = e.getKey();
+            if (slug.endsWith("/" + t)) {
+                return e.getValue();
+            }
+        }
+        return null;
     }
 
     private List<KbDocument> loadDocs(Long spaceId) {

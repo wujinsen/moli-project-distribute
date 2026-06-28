@@ -23,6 +23,9 @@ public class WikiAiReviseRequest {
     @ApiModelProperty("来自体检的问题上下文")
     private IssueContext issueContext;
 
+    @ApiModelProperty("模型 ID；见 GET /kb/wiki/govern/options，默认 kb.llm.model")
+    private String model;
+
     @Data
     @ApiModel("体检问题上下文")
     public static class IssueContext {

@@ -114,10 +114,11 @@ public class KbIngestController {
     }
 
     @PostMapping("/jobs/{id}/generate")
-    @ApiOperation("按 plan 生成草稿；resume=true 断点续跑（跳过已有草稿）")
+    @ApiOperation("按 plan 生成草稿；resume=true 断点续跑；useLlmGenerate=false 为模板模式（raw 直贴）")
     public MoliResult<IngestGenerateResultVo> generate(@PathVariable Long id,
-                                                     @RequestParam(defaultValue = "false") boolean resume) {
-        return MoliResult.success(kbIngestService.generate(id, resume));
+                                                     @RequestParam(defaultValue = "false") boolean resume,
+                                                     @RequestParam(defaultValue = "true") boolean useLlmGenerate) {
+        return MoliResult.success(kbIngestService.generate(id, resume, useLlmGenerate));
     }
 
     @GetMapping("/jobs/{id}/drafts")
@@ -140,9 +141,10 @@ public class KbIngestController {
     }
 
     @PostMapping("/jobs/{id}/draft/regenerate")
-    @ApiOperation("单页重生成")
-    public MoliResult<IngestDraftVo> regenerate(@PathVariable Long id, @RequestParam String slug) {
-        return MoliResult.success(kbIngestService.regenerateDraft(id, slug));
+    @ApiOperation("单页重生成；useLlmGenerate=false 为模板模式")
+    public MoliResult<IngestDraftVo> regenerate(@PathVariable Long id, @RequestParam String slug,
+                                                @RequestParam(defaultValue = "true") boolean useLlmGenerate) {
+        return MoliResult.success(kbIngestService.regenerateDraft(id, slug, useLlmGenerate));
     }
 
     @PutMapping("/jobs/{id}/draft/approval")
@@ -168,15 +170,17 @@ public class KbIngestController {
     @PostMapping("/jobs/express")
     @ApiOperation("T18 一键预览：创建批次 + Express Plan + 生成草稿")
     public MoliResult<IngestExpressStartVo> expressStart(@Validated @RequestBody IngestJobCreateRequest request,
-                                                         @RequestParam(defaultValue = "false") boolean useLlmPlan) {
-        return MoliResult.success(kbIngestService.expressStart(request, useLlmPlan));
+                                                         @RequestParam(defaultValue = "false") boolean useLlmPlan,
+                                                         @RequestParam(defaultValue = "true") boolean useLlmGenerate) {
+        return MoliResult.success(kbIngestService.expressStart(request, useLlmPlan, useLlmGenerate));
     }
 
     @PostMapping("/jobs/{id}/prepare")
     @ApiOperation("T18 一键预览：Express Plan（默认）+ 生成草稿")
     public MoliResult<IngestPrepareResultVo> prepare(@PathVariable Long id,
-                                                     @RequestParam(defaultValue = "false") boolean useLlmPlan) {
-        return MoliResult.success(kbIngestService.prepare(id, useLlmPlan));
+                                                     @RequestParam(defaultValue = "false") boolean useLlmPlan,
+                                                     @RequestParam(defaultValue = "true") boolean useLlmGenerate) {
+        return MoliResult.success(kbIngestService.prepare(id, useLlmPlan, useLlmGenerate));
     }
 
     @PostMapping("/jobs/{id}/publish")

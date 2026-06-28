@@ -17,4 +17,10 @@ public interface KbRawCoverageService {
 
     /** commit / 手工刷新后丢弃该空间 wiki 索引缓存。 */
     void invalidateCache(Long spaceId);
+
+    /**
+     * commit 门禁：raw 已被其它 wiki 页 sources 引用时拒绝（本批目标 slug 除外）。
+     */
+    void assertRawOpenForCommit(Long spaceId, Long jobId, java.util.Set<String> targetWikiSlugs,
+                                java.util.Collection<String> rawSourcePaths);
 }

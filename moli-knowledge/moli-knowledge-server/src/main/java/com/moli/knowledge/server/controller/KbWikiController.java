@@ -15,6 +15,16 @@ import com.moli.knowledge.server.dto.WikiSpaceLintVo;
 import com.moli.knowledge.server.service.KbWikiAiReviseService;
 import com.moli.knowledge.server.service.KbWikiEnrichService;
 import com.moli.knowledge.server.service.KbWikiFileService;
+import com.moli.knowledge.server.dto.WikiGovernAiBatchFixRequest;
+import com.moli.knowledge.server.dto.WikiGovernAiBatchFixResultVo;
+import com.moli.knowledge.server.dto.WikiGovernAutoFixRequest;
+import com.moli.knowledge.server.dto.WikiGovernAutoFixResultVo;
+import com.moli.knowledge.server.dto.WikiGovernMergeHintRequest;
+import com.moli.knowledge.server.dto.WikiGovernMergeHintResultVo;
+import com.moli.knowledge.server.dto.WikiGovernOptionsVo;
+import com.moli.knowledge.server.dto.WikiGovernScriptFixRequest;
+import com.moli.knowledge.server.dto.WikiGovernScriptFixResultVo;
+import com.moli.knowledge.server.service.KbWikiGovernService;
 import com.moli.knowledge.server.service.KbWikiLintService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,6 +51,8 @@ public class KbWikiController {
     private KbWikiEnrichService kbWikiEnrichService;
     @Resource
     private KbWikiLintService kbWikiLintService;
+    @Resource
+    private KbWikiGovernService kbWikiGovernService;
 
     @GetMapping("/page")
     @ApiOperation("读 wiki 文件全文（frontmatter+正文）；需空间 editor。文件不存在返回 exists=false")
@@ -56,9 +68,15 @@ public class KbWikiController {
     }
 
     @PostMapping("/ai-revise")
-    @ApiOperation("AI 改稿建议（不写盘）；需空间 editor + kb.llm 可用")
+    @ApiOperation("AI 改稿建议（不写盘）；走 kb.llm OpenAI 兼容接口，可选 model")
     public MoliResult<WikiAiReviseResultVo> aiRevise(@RequestBody WikiAiReviseRequest request) {
         return MoliResult.success(kbWikiAiReviseService.aiRevise(request));
+    }
+
+    @GetMapping("/govern/options")
+    @ApiOperation("Wiki 治理 LLM 选项（kb.llm 模型列表）")
+    public MoliResult<WikiGovernOptionsVo> governOptions() {
+        return MoliResult.success(kbWikiGovernService.getOptions());
     }
 
     @PostMapping("/page/lint-preview")
@@ -77,5 +95,29 @@ public class KbWikiController {
     @ApiOperation("空间级文件 Lint（文件真值，调 lint.py）；需空间 editor。issue.page 即 slug")
     public MoliResult<WikiSpaceLintVo> lintSpace(@RequestBody WikiSpaceLintRequest request) {
         return MoliResult.success(kbWikiLintService.lintSpace(request));
+    }
+
+    @PostMapping("/govern/script-fix")
+    @ApiOperation("Wiki 治理 · 脚本批量修复（missing_dates/slug_mismatch/missing_source）；需空间 editor")
+    public MoliResult<WikiGovernScriptFixResultVo> governScriptFix(@RequestBody WikiGovernScriptFixRequest request) {
+        return MoliResult.success(kbWikiGovernService.scriptFix(request));
+    }
+
+    @PostMapping("/govern/ai-batch-fix")
+    @ApiOperation("Wiki 治理 · AI 批量修复（写盘）；需空间 editor + kb.llm")
+    public MoliResult<WikiGovernAiBatchFixResultVo> governAiBatchFix(@RequestBody WikiGovernAiBatchFixRequest request) {
+        return MoliResult.success(kbWikiGovernService.aiBatchFix(request));
+    }
+
+    @PostMapping("/govern/auto-fix")
+    @ApiOperation("Wiki 治理 · 一键修复：脚本 → AI → 复检 → 可选 Sync")
+    public MoliResult<WikiGovernAutoFixResultVo> governAutoFix(@RequestBody WikiGovernAutoFixRequest request) {
+        return MoliResult.success(kbWikiGovernService.autoFix(request));
+    }
+
+    @PostMapping("/govern/merge-hint")
+    @ApiOperation("Wiki 治理 · 重复页合并提示（dup_slug/dup_content；Cursor 指令，不调 LLM）")
+    public MoliResult<WikiGovernMergeHintResultVo> governMergeHint(@RequestBody WikiGovernMergeHintRequest request) {
+        return MoliResult.success(kbWikiGovernService.mergeHint(request));
     }
 }

@@ -47,9 +47,14 @@ public class KbLlmClient {
 
     /** 非流式 chat/completions，返回 assistant 文本。 */
     public String chat(String systemPrompt, String userPrompt) {
+        return chat(systemPrompt, userPrompt, null);
+    }
+
+    /** 非流式 chat/completions，可覆盖 model。 */
+    public String chat(String systemPrompt, String userPrompt, String modelOverride) {
         assertUsable();
         try {
-            return doChat(systemPrompt, userPrompt);
+            return doChat(systemPrompt, userPrompt, modelOverride);
         } catch (BaseException e) {
             throw e;
         } catch (Exception e) {
@@ -58,7 +63,7 @@ public class KbLlmClient {
         }
     }
 
-    private String doChat(String systemPrompt, String userPrompt) throws Exception {
+    private String doChat(String systemPrompt, String userPrompt, String modelOverride) throws Exception {
         String url = llm.getBaseUrl().replaceAll("/+$", "") + "/chat/completions";
 
         JSONArray messages = new JSONArray();
@@ -72,7 +77,9 @@ public class KbLlmClient {
         messages.add(user);
 
         JSONObject payload = new JSONObject();
-        payload.put("model", llm.getModel());
+        String model = modelOverride != null && !modelOverride.trim().isEmpty()
+                ? modelOverride.trim() : llm.getModel();
+        payload.put("model", model);
         payload.put("messages", messages);
         payload.put("temperature", llm.getTemperature());
         payload.put("stream", false);

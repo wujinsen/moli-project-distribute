@@ -75,15 +75,23 @@ public class KbWikiAiReviseServiceImpl implements KbWikiAiReviseService {
         String userPrompt = buildUserPrompt(slug, request.getInstruction().trim(), baseline,
                 request.getIssueContext(), knownSlugs);
 
-        String raw = kbLlmClient.chat(SYSTEM_PROMPT, userPrompt);
+        String model = resolveModel(request);
+        String raw = kbLlmClient.chat(SYSTEM_PROMPT, userPrompt, model);
         String suggested = stripCodeFence(raw);
 
         WikiAiReviseResultVo vo = new WikiAiReviseResultVo();
         vo.setSuggestedContent(suggested);
         vo.setProvider(kbLlmClient.getProvider());
-        vo.setModel(kbLlmClient.getModel());
+        vo.setModel(model);
         vo.setNotes(extractNotes(raw, suggested));
         return vo;
+    }
+
+    private String resolveModel(WikiAiReviseRequest request) {
+        if (StringUtils.isNotBlank(request.getModel())) {
+            return request.getModel().trim();
+        }
+        return kbLlmClient.getModel();
     }
 
     @Override

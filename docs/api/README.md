@@ -7,6 +7,9 @@
 | 文件 | 范围 |
 |------|------|
 | [KNOWLEDGE_API.md](KNOWLEDGE_API.md) | 知识库模块 `/kb/*`（meiling-ui 对接）；**§9 Ingest 工作台**（T15，21 个接口） |
+| [wiki-govern-frontend.md](wiki-govern-frontend.md) | **Wiki 治理工作台前端对接**（T16e：Lint + 脚本/AI/一键修复） |
+| [../test/knowledge-ingest-template-mode.md](../test/knowledge-ingest-template-mode.md) | **Ingest 模板模式**（`useLlmGenerate=false`） |
+| [../test/knowledge-script-vs-llm-matrix.md](../test/knowledge-script-vs-llm-matrix.md) | 脚本 vs LLM 能力矩阵 |
 | [user-center-api-map.md](user-center-api-map.md) | 用户中心 ~70 接口地图（登录/RBAC/系统门户） |
 | [user-center-dubbo.md](user-center-dubbo.md) | 用户中心 Dubbo 契约（3 方法） |
 

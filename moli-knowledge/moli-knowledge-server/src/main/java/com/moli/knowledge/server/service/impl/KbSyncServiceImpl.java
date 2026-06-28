@@ -188,6 +188,10 @@ public class KbSyncServiceImpl implements KbSyncService {
             result.setExitCode(exitCode);
             result.setSuccess(exitCode == 0);
             result.setOutputTail(tail(output.toString(), 2000));
+            result.setSpaceId(space.getId());
+            if (result.isSuccess()) {
+                result.setNextSteps(com.moli.knowledge.server.util.KbWorkflowHints.afterWikiWrite(space.getId()));
+            }
         } catch (BaseException e) {
             throw e;
         } catch (Exception e) {

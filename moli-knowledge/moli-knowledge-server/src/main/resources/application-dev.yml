@@ -104,6 +104,11 @@ kb:
       moli-ops-manual: wiki-ops
       jp-fe-ap-exam: wiki-jp-exam
     max-bytes: 2097152
+    lint-script-path: moli-knowledge/kb/tools/lint.py
+    lint-timeout-seconds: 120
+    govern:
+      # 治理页模型下拉（可选）；留空则仅 kb.llm.model
+      models: []
   ingest:
     # Ingest 工作台（T15）：raw 只读树 + 批次规划。落盘在 T15b/c
     enabled: true
