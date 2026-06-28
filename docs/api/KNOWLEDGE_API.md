@@ -1913,7 +1913,33 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 1. lint `blockingCount > 0` → 拒绝；
 2. 无任何 `approved` 页 → 拒绝；
 3. 存在 `approval=draft`（未审阅）页 → 拒绝；
-4. `edges` 仅当至少一端是本批次新页才追加。
+4. raw 已被其它 wiki 页 `sources` 引用且本批非 enrich 同一 slug → 拒绝（见下）；
+5. `edges` 仅当至少一端是本批次新页才追加。
+
+**raw 覆盖门禁（第 4 条）**：`assertRawOpenForCommit` 对照 wiki `sources` 反向索引；冲突时 `code=10012`，`data` 为 `IngestRawConflictVo`：
+
+```json
+{
+  "code": 10012,
+  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/fe/foo.md → wiki [guides/说明]。请对已有页 enrich 或更换 raw 源。",
+  "data": {
+    "errorKind": "INGEST_RAW_ALREADY_COVERED",
+    "spaceId": 900000000000000002,
+    "jobId": 900000000000000100,
+    "hint": "请对已有页 enrich 或更换 raw 源。",
+    "conflicts": [
+      {
+        "path": "fe/foo.md",
+        "coverage": "cluster",
+        "matchKind": "dir_prefix",
+        "wikiSlugs": ["guides/说明"]
+      }
+    ]
+  }
+}
+```
+
+字段与 `GET /kb/ingest/raw-coverage` 的 `items[]` 一致；`coverage` 为 `covered`（精确引用）或 `cluster`（目录级 sources）。
 
 **落盘动作**：写 wiki 各页 + append `wiki/log.md` + append `wiki/graph/edges.jsonl` + 追加 `wiki/index.md` 批次段；记 `kb_ingest_commit`；job 置 `committed`。
 

@@ -6,9 +6,11 @@ import com.moli.common.constant.CommonConstant;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbIngestProperties;
 import com.moli.knowledge.server.config.KbWikiProperties;
+import com.moli.knowledge.server.dto.IngestRawConflictVo;
 import com.moli.knowledge.server.dto.RawCoverageItemVo;
 import com.moli.knowledge.server.dto.RawCoverageSummaryVo;
 import com.moli.knowledge.server.dto.RawCoverageVo;
+import com.moli.knowledge.server.exception.IngestRawConflictException;
 import com.moli.knowledge.server.entity.KbIngestJob;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.mapper.KbIngestJobMapper;
@@ -153,17 +155,12 @@ public class KbRawCoverageServiceImpl implements KbRawCoverageService {
         Map<String, Set<Long>> inFlight = loadInFlightRawPaths(space.getId());
         Set<String> targets = targetWikiSlugs == null ? Collections.emptySet() : targetWikiSlugs;
 
+        List<RawCoverageItemVo> conflicts = new ArrayList<>();
         for (String raw : rawSourcePaths) {
             if (StringUtils.isBlank(raw)) {
                 continue;
             }
-            String norm = KbWikiFrontmatterUtil.normalizeRawSourcePath(raw);
-            if (norm == null) {
-                norm = raw.trim().replace('\\', '/');
-                if (norm.startsWith("raw/")) {
-                    norm = norm.substring(4);
-                }
-            }
+            String norm = normalizeRawRelPath(raw);
             RawCoverageItemVo item = classify(norm, index, inFlight);
             if (COV_OPEN.equals(item.getCoverage())) {
                 continue;
@@ -174,10 +171,51 @@ public class KbRawCoverageServiceImpl implements KbRawCoverageService {
             }
             boolean allInBatch = wikiSlugs.stream().allMatch(targets::contains);
             if (!allInBatch) {
-                throw new BaseException("raw 已被 wiki 引用，禁止重复 ingest：raw/" + norm
-                        + " → wiki " + wikiSlugs + "。请对已有页 enrich 或更换 raw 源。");
+                RawCoverageItemVo conflict = new RawCoverageItemVo();
+                conflict.setPath(norm);
+                conflict.setCoverage(item.getCoverage());
+                conflict.setMatchKind(item.getMatchKind());
+                conflict.setWikiSlugs(new ArrayList<>(wikiSlugs));
+                conflicts.add(conflict);
             }
         }
+        if (!conflicts.isEmpty()) {
+            IngestRawConflictVo detail = new IngestRawConflictVo();
+            detail.setSpaceId(space.getId());
+            detail.setJobId(jobId);
+            detail.setConflicts(conflicts);
+            throw new IngestRawConflictException(buildRawConflictMessage(conflicts), detail);
+        }
+    }
+
+    private static String normalizeRawRelPath(String raw) {
+        String norm = KbWikiFrontmatterUtil.normalizeRawSourcePath(raw);
+        if (norm == null) {
+            norm = raw.trim().replace('\\', '/');
+            if (norm.startsWith("raw/")) {
+                norm = norm.substring(4);
+            }
+        }
+        return norm;
+    }
+
+    private static String buildRawConflictMessage(List<RawCoverageItemVo> conflicts) {
+        if (conflicts.size() == 1) {
+            RawCoverageItemVo c = conflicts.get(0);
+            return "raw 已被 wiki 引用，禁止重复 ingest：raw/" + c.getPath()
+                    + " → wiki " + c.getWikiSlugs() + "。请对已有页 enrich 或更换 raw 源。";
+        }
+        StringBuilder sb = new StringBuilder("raw 已被 wiki 引用，禁止重复 ingest（")
+                .append(conflicts.size()).append(" 项）：");
+        for (int i = 0; i < conflicts.size(); i++) {
+            RawCoverageItemVo c = conflicts.get(i);
+            if (i > 0) {
+                sb.append("；");
+            }
+            sb.append("raw/").append(c.getPath()).append(" → wiki ").append(c.getWikiSlugs());
+        }
+        sb.append("。请对已有页 enrich 或更换 raw 源。");
+        return sb.toString();
     }
 
     private RawCoverageItemVo classify(String rawRelPath, WikiSourceIndex index, Map<String, Set<Long>> inFlight) {
