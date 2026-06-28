@@ -513,10 +513,17 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
 
         IngestGenerateResultVo generate = generate(jobId, false);
+        List<IngestDraftVo> draftList = generate.getDrafts() != null ? generate.getDrafts() : listDrafts(jobId);
+        if (draftList.isEmpty()) {
+            int failed = generate.getFailed() != null ? generate.getFailed() : 0;
+            String detail = failed > 0 ? "，" + failed + " 页失败" : "";
+            throw new BaseException("Express 草稿生成失败：0 页成功" + detail
+                    + "。请检查 kb.llm 配置与服务端日志后重试");
+        }
         IngestPrepareResultVo result = new IngestPrepareResultVo();
         result.setJob(toVo(loadJob(jobId), space, latestPlan(jobId)));
         result.setGenerate(generate);
-        result.setDrafts(generate.getDrafts() != null ? generate.getDrafts() : listDrafts(jobId));
+        result.setDrafts(draftList);
         log.info("[ingest] prepare job={} useLlmPlan={} generated={}", jobId, useLlmPlan, generate.getGenerated());
         return result;
     }
