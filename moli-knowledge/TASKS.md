@@ -316,34 +316,33 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ---
 
-## T16 · Web Wiki 治理工作台（Lint→修复→复检→Sync 链路） 🔵 规划中（M7）
+## T16 · Web Wiki 治理工作台（Lint→修复→复检→Sync 链路） ✅ 后端已交付（T16a/e/g）；🔵 T16f 前端
 
-> 产品方案：[[Wiki治理工作台产品方案]]（`kb/wiki/guides/`）。链路图：`docs/diagrams/moli-kb-wiki-govern.drawio`。
-> 与 T14（单篇编辑）/ T15（raw 批次 ingest）并列：**T16 = 空间级批量治理**（按文件真值 lint，批量 enrich/ai-revise 修问题页）。
+> 产品方案：[[Wiki治理工作台产品方案]]（`kb/wiki/guides/`）。需求总览：`docs/product/knowledge-workbench-requirements.md`。  
+> 与 T14（单篇编辑）/ T15（raw 批次 ingest）并列：**T16 = 空间级批量治理**（文件真值 lint → **script-fix / ai-batch-fix / auto-fix**）。
 
-**两条锁定决策**：① Lint 用**文件真值**（`lint.py --wiki-dir`），非 DB 快照；② 批量处理 = **enrich + ai-revise**（修已有页），ingest 仅作旁路投喂新源。
+**锁定决策（2026-06-27）**：① Lint 用**文件真值**（`lint.py --wiki-dir`）；② 批量修复 = **script-fix**（metadata，无 LLM）+ **ai-batch-fix** + **auto-fix**；③ dup 用 **merge-hint** + 手改；④ **治理页不做批量 enrich**（enrich 仅 T14 单页 / Ingest Plan）。
 
-**目标**：选空间 → 对该空间全部 wiki 文件 lint → 问题页按 kind 分组 → 批量 enrich/ai-revise → 复检 → Sync。
+**目标**：选空间 → lint-space → 勾选 issues → script/AI/一键修复 → 复检 → 可选 Sync。
 
-| 子任务 | 范围 | 验收 |
-|--------|------|------|
-| **T16a** ✅ | 后端 `POST /kb/wiki/lint-space`（包 `lint.py --wiki-dir {spaceDir} --json`，仿 `KbSyncServiceImpl` ProcessBuilder）+ `KbWikiLintService`；前端 lint 真值展示 + 按 kind 分组 | 选空间扫文件真值出问题清单 |
-| **T16b** 🔵 | 批量 **enrich** 修复编排（复用 `POST /kb/wiki/enrich` 的 `items[]`）+ 逐条进度/汇总 | 勾选问题页批量补章落盘 |
-| **T16c** 🔵 | 批量 **ai-revise**（按 issue.kind 自动生成指令，前端循环 + 失败隔离）+ 复检 + Sync 收尾 | lint→修→复检→sync 闭环 |
-| **T16d**（可选） | `POST /kb/wiki/ai-revise/batch` 服务端聚合；Ingest 旁路入口卡片；治理报告导出 | 体验增强 |
+| 子任务 | 范围 | 验收 | 状态 |
+|--------|------|------|------|
+| **T16a** | `POST /kb/wiki/lint-space` + 前端 lint 真值展示 | 选空间扫文件真值 | ✅ |
+| **T16e** | `script-fix` / `ai-batch-fix` / `auto-fix` | metadata + 断链/孤儿批量修 | ✅ |
+| **T16g** | `merge-hint` + `manualOnlyKinds` | dup_slug 复制 Cursor 指令 | ✅ |
+| **T16f** | meiling-ui 治理页 | 见 `docs/api/wiki-govern-frontend.md` | 🔵 |
+| ~~T16b/c enrich 批量~~ | — | **已废弃** | ❌ |
 
-- **数据贯通**：`lint.py` 的 `issue.page` = slug，直接作 enrich/ai-revise 的 `slug` 入参；空间→目录复用 `KbWikiProperties.spaceDirs`。
+- **数据贯通**：`lint.py` 的 `issue.page` = slug，直接传入 govern API 的 `issues[]`。
 - **涉及文件**：
-  - server（新增）：`service/KbWikiLintService`(+Impl)、`dto/WikiSpaceLintRequest`+`WikiSpaceLintVo`+`WikiLintIssueVo`、`controller` 增 `/kb/wiki/lint-space`；新增配置 `kb.wiki.lint-script-path`
-  - server（复用）：`KbWikiEnrichService`（批量）、`KbWikiAiReviseService`、`KbSyncService`、`KbWikiProperties`、`KbAclService`
-  - meiling-ui（新增）：`views/knowledge/KnowledgeWikiGovernView.vue` + `GovernLintPanel`/`GovernFixPanel`/`GovernRelintBar`（复用 `KbSpaceSelector`/`KbSyncPanel`）；`api`/`types` 增 `lintWikiSpaceApi`/`KbWikiSpaceLintResult`；i18n `knowledge.wikiGovern.*` zh/en/ja
-  - 文档：`docs/api/KNOWLEDGE_API.md` §4.6 + §8.7；产品方案 + 链路图（已落档）
-- **依赖**：✅ T14a（wiki 读写）、✅ T14f（enrich）、T9 ACL（editor）、T2 LLM、`lint.py` 部署机可执行
-- **风险**：批量 LLM 慢 → 串行 + 进度 + 失败隔离 + 可取消；改完未 Sync → 链路强制复检通过才放行 Sync
+  - server：`KbWikiGovernServiceImpl`、`KbWikiFrontmatterFixUtil`、`WikiGovernKindUtil`、`KbWikiMergeHintUtil`
+  - meiling-ui：`KnowledgeWikiGovernView.vue`（待接）
+  - 文档：`docs/api/wiki-govern-frontend.md`、`docs/test/knowledge-script-vs-llm-matrix.md`
+- **依赖**：✅ T14a、T9 ACL、T2 LLM、`lint.py`
 
-**开工提示词**：
+**开工提示词（T16f 前端）**：
 
-> 读 `kb/wiki/guides/Wiki治理工作台产品方案.md`、`docs/diagrams/moli-kb-wiki-govern.drawio`。实现 T16a：后端 `POST /kb/wiki/lint-space`（照搬 `KbSyncServiceImpl.executeSync` 跑 `lint.py --wiki-dir {KbWikiProperties.spaceDirs[spaceCode]} --json {tmp}` 读回）；前端独立页展示 lint 真值并按 kind 分组。enrich/ai-revise/sync 全复用。
+> 读 `docs/api/wiki-govern-frontend.md` 与 `kb/wiki/guides/Wiki治理工作台产品方案.md`。接 lint-space + script-fix + ai-batch-fix + auto-fix + merge-hint；**不要**接批量 enrich。
 
 ---
 
@@ -548,8 +547,29 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 2. **T14a → T14b**（M5 wiki 读写 + 单篇 AI 改稿底座）。
 3. ✅ **T15a → T15b → T15c → T15d → T15e**（M6 Ingest 工作台闭环）。
 4. T14c–d 可并行增强。
-5. 🔵 **T16a → T16b → T16c**（M7 Wiki 治理工作台：文件级 lint → 批量 enrich/ai-revise → 复检 → Sync）。
+5. 🔵 **T16f**（M7 Wiki 治理前端：lint-space → script/AI/auto-fix → merge-hint → 复检 → Sync）。后端 T16a/e/g ✅。
 6. 🔵 **T17a → T17b → T17c → T17d**（M6+ Ingest 落盘对齐文档分类 + 自定义 slug）。✅
-7. ✅ **T18**（M6+ Ingest 一键预览 / 确认入库 Express 流）。
+7. ✅ **T18**（M6+ Ingest 一键入库 Express 流）。
+8. 🔵 **T19**（M8 平台 LLM 系统设置：DB 存 Key + 系统管理 UI）。设计 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md)
+
+---
+
+## T19 · 平台 LLM 系统设置（设计稿 2026-06-28）
+
+**目标**：`kb.llm.*` 从 yaml 迁到 **Web 平台系统设置**（系统管理 → 知识库 LLM）；MySQL 加密存 api-key；Ask/Ingest/Wiki 治理共用。
+
+| 子任务 | 内容 | 状态 |
+|--------|------|------|
+| **T19a** | DDL `11_kb_platform_llm_config.sql` + `KbLlmRuntime` + 加密 | ✅ |
+| **T19b** | `GET/PUT/POST test` `/kb/platform/llm-config` + `kb:platform:llm` | 📋 |
+| **T19c** | `KbLlmClient` 切 Runtime；回归 Ask/Ingest/Wiki | ✅（随 T19a 一并接入） |
+| **T19d** | `system/kb-llm/index` 设置页 + `12_kb_platform_llm_menu.sql` | 📋 |
+| **T19e** | API 契约 §3.5、运维说明 | 📋 |
+
+**非目标（一期）**：moli-ai 独立服务、按空间多套 Key、用户自带 Key。
+
+> 读 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md) 后按 T19a→e 实现。
+
+---
 
 > 多对话协作小贴士：同一时间不要让两个对话改同一个 `.java` 文件；每个任务跑完各自 `mvn -q -pl moli-knowledge/moli-knowledge-server compile` 自测；合并前 `git status` 看清改了哪些文件。

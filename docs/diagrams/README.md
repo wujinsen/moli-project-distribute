@@ -18,7 +18,8 @@
 | [`moli-kb-functional-flows.drawio`](moli-kb-functional-flows.drawio) | **功能流程**：Browse / Ask / Sync / Graph·Lint / CLI Ingest / **M6 工作台** |
 | [`moli-kb-category-flow.drawio`](moli-kb-category-flow.drawio) | **分类管理流程**：分类=目录 · 创建/删除/移动/Sync 回填 · groupBy=category |
 | [`moli-kb-ingest-workbench.drawio`](moli-kb-ingest-workbench.drawio) | **M6 Ingest 工作台**（T15 六步状态机 + 架构页） |
-| [`moli-kb-wiki-govern.drawio`](moli-kb-wiki-govern.drawio) | **M7 Wiki 治理工作台**（T16 链路：选空间→文件级 Lint→批量 enrich/ai-revise→复检→Sync） |
+| [`moli-kb-wiki-govern.drawio`](moli-kb-wiki-govern.drawio) | **M7 Wiki 治理工作台**（T16：Lint→script-fix/ai-batch-fix/auto-fix→merge-hint→复检→Sync） |
+| [`moli-kb-llm-settings-flow.drawio`](moli-kb-llm-settings-flow.drawio) | **T19 平台 LLM 设置**：系统管理 UI → knowledge-server → DB/yaml → 厂商 API |
 | [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：四路由 + StripPrefix + 端口 |
 | [`moli-rbac-model.drawio`](moli-rbac-model.drawio) | **RBAC 模型**：用户→角色→菜单/动作 + Shiro 运行时 |
 | [`moli-user-center-position.drawio`](moli-user-center-position.drawio) | **用户中心定位**：网关 HTTP + Dubbo + 共享 Redis |

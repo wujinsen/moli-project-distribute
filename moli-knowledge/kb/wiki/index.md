@@ -34,8 +34,8 @@
 - [[增量ingest与raw投喂指南]] — raw 投喂、增量 ingest 批次、Lint/sync 闭环（P0）
 - [[AI自我进化与MD审校流程]] — LLM-Wiki 自我进化闭环、Ingest/Lint/Sync/Crystallize、AI 审校 MD → lint → Sync（P0）
 - [[Wiki在线编辑与AI协助改稿]] — Web 单篇编辑 wiki、AI 改稿、diff、保存（draft · T14/M5）
-- [[Ingest工作台产品方案]] — Web 批次厚 Ingest：raw→Plan→多页草稿→diff→lint→commit+Sync（**active · T15/M6 已交付**）
-- [[Wiki治理工作台产品方案]] — Web 空间级治理：选空间→文件真值 Lint→批量 enrich/ai-revise→复检→Sync（draft · T16/M7 规划）
+- [[Ingest工作台产品方案]] — Web 批次厚 Ingest：raw→Plan→草稿→diff→lint→commit+Sync；含 Express、**模板模式**（**active · T15+T18+T19**）
+- [[Wiki治理工作台产品方案]] — Web 空间级治理：Lint→script-fix/ai-batch-fix/auto-fix→merge-hint→复检→Sync（**active · T16/M7**；后端 ✅，前端 T16f 🔵）
 
 ## services（微服务实体）
 
@@ -537,3 +537,7 @@ _下一批从 **#87** 起。_
 _1000 批计划 **#287–#1286** 已完成；下一批从 **#1287** 起。_
 
 _增量 ingest 见 [[增量ingest与raw投喂指南]]。_
+
+## 批次 #WB-20260628053754（Web Ingest 2026-06-28） <!-- ingest-job:726295221004025856 -->
+
+- [[basic-information-technologist-examination-subject-b-sample-questions]] — create article

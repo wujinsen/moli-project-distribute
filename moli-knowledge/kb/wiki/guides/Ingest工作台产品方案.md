@@ -9,6 +9,7 @@ sources:
   - moli-knowledge/kb/ROADMAP.md
   - moli-knowledge/kb/wiki/guides/AI自我进化与MD审校流程.md
   - moli-knowledge/kb/wiki/guides/增量ingest与raw投喂指南.md
+  - docs/product/knowledge-workbench-requirements.md
   - docs/api/KNOWLEDGE_API.md
 related: [AI自我进化与MD审校流程, Wiki在线编辑与AI协助改稿, 增量ingest与raw投喂指南, 知识库三操作]
 created: 2026-06-25
@@ -17,9 +18,10 @@ updated: 2026-06-27
 
 # Ingest 工作台（产品方案）
 
-> **状态：active / 已交付（T15a–e · 里程碑 M6 · 2026-06-25）**  
-> 目标：在 **Web 界面** 完成 **Agent 厚 Ingest** 等价流程——raw 选源 → **规划去重** → 多页 LLM 草稿 → **逐页 diff 审阅** → lint 门禁 → **原子写 wiki**（含 index/log/edges）→ Sync。  
-> **HTTP 契约权威**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) **§9**（20 个接口）。
+> **状态：active（T15a–e + T18 + 模板模式 · 2026-06-27）**  
+> **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)  
+> 目标：Web 完成 **Agent 厚 Ingest** — raw → Plan → 草稿 → 审阅 → lint → commit → Sync。  
+> **HTTP 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) **§9**。
 
 ### 与 [[Wiki在线编辑与AI协助改稿]] / [[AI自我进化与MD审校流程]] 的关系
 
@@ -63,7 +65,7 @@ updated: 2026-06-27
 |------|------|------|----------|-----------------|
 | **① 选源** | 勾选 raw 文件；填批次#、主题、期望类型 | `GET /kb/ingest/raw-tree` + `POST /kb/ingest/jobs` | — | `created` |
 | **② 规划** | 审/改 plan JSON | `POST/PUT .../plan`；LLM 读 raw 摘要 + index 片段 | **无 plan 禁止 generate** | `planned` |
-| **③ 生成** | 全量生成或 **续跑**；可单页重试 | `POST .../generate?resume=`；enrich 存 `patch` + 合并 `draft` | 每页独立 PageWriter / EnrichWriter | `reviewing` |
+| **③ 生成** | 全量/续跑；**LLM 或模板模式** | `POST .../generate?resume=&useLlmGenerate=` | PageWriter **或** raw 直贴 | `reviewing` |
 | **④ 审阅** | 逐页 diff、手改全文或 **patch 段**、单页重生成 | baseline ↔ draft；`PUT .../draft` | 逐页 approve/reject | `reviewing` |
 | **⑤ lint** | 看报告 | `POST .../lint` | **ERROR 阻塞 commit** | `reviewing` |
 | **⑥ 提交** | commit；可选 **一键 Sync** | `POST .../commit?sync=`；写 wiki + log + edges + index 段 | append `log.md` 一行 | `committed` |
@@ -155,25 +157,40 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 
 | 步骤 | 用户 | 系统 |
 |------|------|------|
-| **预览** | 列表勾选 raw →「一键预览」 | `POST /kb/ingest/jobs/express`：创建批次 + Express Plan（骨架 + `raw/fe/`→FE 分类推断）+ 生成草稿 |
-| **确认** | 详情 diff 扫一眼 →「确认入库」 | `POST .../publish?sync=true&approveAll=true`：全批准 + lint + commit + Sync |
+| **预览** | 列表勾选 raw →「一键预览」 | `POST /kb/ingest/jobs/express?useLlmPlan=&useLlmGenerate=` |
+| **确认** | 详情 diff →「确认入库」 | `POST .../publish?sync=true&approveAll=true` |
 
-- URL 带 `?express=1` 显示 Express 横幅；Expert 仍可用逐步 Plan / 逐页 approve / `commit`。
-- `useLlmPlan=true` 时 prepare 走 LLM Planner（与 T15 相同）。
-- API 契约：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §9.6.6。
+| 参数 | 默认 | 说明 |
+|------|------|------|
+| `useLlmPlan` | `false` | Express skeleton Plan（1 raw → 1 create） |
+| `useLlmGenerate` | `true` | **`false`** = 模板模式（raw 直贴，不调 LLM） |
 
-### 3.4 批次模板（T15e）
+- Expert 仍可用逐步 Plan / 逐页 approve / `commit`。
+- 契约：§9.6.6 · [knowledge-ingest-template-mode.md](../../../docs/test/knowledge-ingest-template-mode.md)
+
+### 3.4 模板入库（T19 · 2026-06）
+
+**场景**：raw 已是 markdown（题库、文档搬运），只需 frontmatter + 正文入库，**不需要 LLM 改写**。
+
+```
+POST .../generate?useLlmGenerate=false
+POST .../express?useLlmPlan=false&useLlmGenerate=false
+```
+
+生成规则：`KbIngestTemplateWriter` — frontmatter 齐全 + raw 正文（去 raw 自身 frontmatter）。响应 `templateMode=true`。
+
+### 3.5 批次模板（T15e）
 
 - **列表页**：展示已保存模板；「从模板创建」复制 raw 范围 / 期望类型 / 可选 Plan
 - **批次详情**：「另存为模板」；可选附带当前 Plan 快照
 - API：`GET/POST /kb/ingest/templates`、`POST .../jobs/from-template/{id}`、`POST .../save-as-template`
 
-### 3.5 断点续跑（T15e）
+### 3.6 断点续跑（T15e）
 
 - **续跑生成**：`POST .../generate?resume=true`，跳过已有 content 的草稿，返回 `{ total, generated, skipped, drafts }`
 - **全量重生成**：`resume=false`，清空旧草稿后重新生成（需二次确认）
 
-### 3.6 Commit（⑥）
+### 3.7 Commit（⑥）与入库后引导
 
 原子写入（同一事务语义 / 同一 git commit 前操作）：
 
@@ -182,9 +199,12 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 3. append `wiki/graph/edges.jsonl`  
 4. 更新 `wiki/index.md` 相关条目  
 5. 可选：`POST /kb/ingest/jobs/{id}/commit?sync=true`（落盘后立即 Sync）  
-6. 展示 insert/update/skip 统计
+6. 展示 insert/update/skip 统计  
+7. **`commit.nextSteps`**：建议跳转 Wiki 治理 Lint、健康体检（`KbWorkflowHintVo`）
 
-**T17d · 落盘预览**：③ Lint 区在 commit 前列出已批准页的 `kb/{wikiDir}/{slug}.md`；确认对话框同步展示路径列表。
+**raw 覆盖门禁（2026-06）**：commit 时若 sources 中 raw 已被**其它** wiki 页引用 → 拒绝（本批 enrich 同一 slug 除外）。
+
+**T17d · 落盘预览**：③ Lint 区在 commit 前列出已批准页的 `kb/{wikiDir}/{slug}.md`。
 
 **前端实现**：`meiling-ui` → `KnowledgeIngestWorkbenchView.vue`（路由 `knowledge/ingest/index`，菜单 906）；Plan 可视化表 → `IngestPlanCreateTable.vue`（T17c）。
 
@@ -201,7 +221,7 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 |------|----------|------|
 | 选源 | `/kb/ingest/raw-tree`、`/kb/ingest/raw-coverage`、`/jobs` | raw 只读树 + **覆盖索引（筛未 ingest）**；创建/分页/详情 |
 | 规划 | `/jobs/{id}/plan`、`/export-agent-prompt` | LLM 或 skeleton Plan；导出 Cursor 提示词 |
-| 草稿 | `/jobs/{id}/generate`、`/drafts`、`/draft?slug=` | 含 **resume**；slug 走 **query**（含 `/`） |
+| 草稿 | `/jobs/{id}/generate?useLlmGenerate=`、`/drafts` | 含 resume；**模板模式**不调 LLM |
 | 审阅 | `/draft/regenerate`、`/draft/approval` | 单页重生成；approve/reject |
 | 落盘 | `/lint`、`/commit?sync=` | lint 预检；原子写 wiki；**sync 合并进 commit** |
 | 模板 | `/templates`、`/jobs/from-template/{id}`、`/save-as-template` | T15e 批次模板 |
@@ -242,9 +262,10 @@ DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_wor
 
 | 阶段 | System 角色 | 约束 |
 |------|-------------|------|
-| **Planner** | 只做规划 | 输出 JSON；必须引用 index 片段 + 相似页 slug；禁止写正文 |
-| **PageWriter** | 单页完整 md | frontmatter 齐全；`[[slug]]` 仅来自 plan 已知 slug |
-| **EnrichWriter** | patch | 只输出追加段落或 unified diff；禁止整页覆盖（需 UI 二次确认） |
+| **Planner** | 只做规划 | 输出 JSON；enrich 优先于 create |
+| **PageWriter** | 单页完整 md | `useLlmGenerate=true`（默认） |
+| **TemplateWriter** | raw 直贴 | `useLlmGenerate=false`；不调 LLM |
+| **EnrichWriter** | patch | Plan `enrich[]`；只追加段落 |
 
 温度 0.2–0.3；context = raw 分块 + 相关已有页摘要。
 
@@ -266,8 +287,9 @@ DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_wor
 2. **禁止** 无 plan 调用 generate  
 3. **禁止** 存在未批准页时 commit  
 4. **禁止** commit 时 lint 有 ERROR  
-5. **禁止** 只写 articles 不更新 index/log/edges（commit 前校验清单）  
-6. enrich 默认 patch；整页覆盖需 UI 二次确认  
+5. **禁止** 只写 articles 不更新 index/log/edges  
+6. **禁止** commit 重复 ingest 已 covered raw（raw 覆盖门禁）  
+7. enrich 默认 patch；整页覆盖需 UI 二次确认  
 
 与 Phase 0 一致：CI 已 `lint-strict` 门禁；工作台 commit 前应跑同等口径。
 
@@ -293,6 +315,8 @@ DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_wor
 | **T15c** | lint 预检 + 原子 commit（wiki/log/index/edges） | ✅ |
 | **T15d** | commit 后一键 Sync + 批次报告 | ✅ |
 | **T15e** | enrich patch、断点续跑、批次模板 | ✅ |
+| **T18** | Express 一键 preview/publish | ✅ |
+| **T19** | 模板模式 `useLlmGenerate=false` + nextSteps + raw 门禁 | ✅ |
 
 **依赖**（均已满足）：
 
@@ -315,7 +339,10 @@ DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_wor
   - 功能流程 ⑥：`docs/diagrams/moli-kb-functional-flows.drawio`
 - 单篇 Web 编辑 + **Enrich 治理**：[[Wiki在线编辑与AI协助改稿]]（T14 / T14f）
 - 闭环手册：[[AI自我进化与MD审校流程]]
-- **HTTP API 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §9（Ingest）、§8.4（单页 Enrich）
+- **HTTP API 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §9
+- **模板模式**：[`docs/test/knowledge-ingest-template-mode.md`](../../../docs/test/knowledge-ingest-template-mode.md)
+- **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)
+- 单页 Enrich（T14，非治理页）：[[Wiki在线编辑与AI协助改稿]] §2.2
 - **DDL**：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_workbench.sql)、[`09_kb_ingest_t15e.sql`](../../../docs/sql/09_kb_ingest_t15e.sql)
 
 ---

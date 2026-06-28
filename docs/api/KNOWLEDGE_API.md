@@ -267,6 +267,59 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 |------|------|
 | `available` | `kb.llm.enabled && api-key` 均已配置 |
 
+> **T19 规划**：平台管理员在 **系统管理 → 知识库 LLM** 维护配置（存 `kb_platform_llm_config`）；详见 [`../design/kb-llm-platform-settings.md`](../design/kb-llm-platform-settings.md) 与 §3.5。
+
+### 3.5 平台 LLM 配置（T19 · 规划中）
+
+> **权限**：平台超管或 `kb:platform:llm`。API Key **加密存库**，响应永不回明文。
+
+#### `GET /kb/platform/llm-config`
+
+读取当前生效配置（含脱敏 key、配置来源 `database` / `yaml_fallback`）。
+
+```json
+{
+  "enabled": true,
+  "provider": "glm",
+  "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+  "apiKeyConfigured": true,
+  "apiKeyMask": "****tdLzM0",
+  "model": "glm-4-flash",
+  "temperature": 0.3,
+  "timeoutSeconds": 90,
+  "extraModels": ["glm-4-flash", "glm-4-air"],
+  "available": true,
+  "source": "database",
+  "updateTime": "2026-06-28 15:00:00"
+}
+```
+
+#### `PUT /kb/platform/llm-config`
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `enabled` | 是 | 总开关 |
+| `provider` | 是 | `deepseek` / `qwen` / `glm` / `custom` |
+| `baseUrl` | 是 | OpenAI 兼容根 URL |
+| `apiKey` | 否 | 空=不修改；非空=替换并加密入库 |
+| `model` | 是 | 默认模型 |
+| `temperature` | 否 | 默认 0.3 |
+| `timeoutSeconds` | 否 | 默认 90 |
+| `extraModels` | 否 | 治理/Ingest 模型下拉 |
+
+保存后立即刷新服务端 `KbLlmRuntime`，**无需重启**。
+
+#### `POST /kb/platform/llm-config/test`
+
+请求体可选 `{ "message": "ping" }`。响应当前配置连通性 `{ success, latencyMs, model, replyPreview, error }`。
+
+#### 与 §3.1 关系
+
+| API | 说明 |
+|-----|------|
+| `GET /kb/ask/llm-config` | **保留**；Ask/Ingest 页探测 `available`，实现改为读 DB 优先 |
+| `GET /kb/platform/llm-config` | **管理**；含 baseUrl/model/脱敏 key，仅平台管理员 |
+
 ### `POST /kb/ask`
 
 请求体（JSON）：
@@ -1287,30 +1340,21 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 脚本 vs LLM 总矩阵：[knowledge-script-vs-llm-matrix.md](../test/knowledge-script-vs-llm-matrix.md)
 
-### 8.6b Wiki 治理工作台链路（历史 · 前端 enrich 编排）
+### 8.6b Wiki 治理工作台链路（历史 · 已废弃）
 
-> **已 superseded**：请按 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** 接 script-fix / ai-batch-fix / auto-fix。  
-> 产品方案：[`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)。  
-> **T16a ✅**：`POST /kb/wiki/lint-space`（§4.6）。**T16e ✅**：服务端 script-fix / ai-batch-fix / auto-fix。
+> **已 superseded**（2026-06-27）：治理页**不再**批量 `POST /kb/wiki/enrich`。  
+> 现行链路见 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** + §8.6：`script-fix` → `ai-batch-fix` → `auto-fix` → `merge-hint`（dup）。  
+> 产品方案：[`Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)。  
+> 单页 enrich 仍保留在 §8.4（T14），**不**用于空间级治理。
 
-推荐链路（勿颠倒）：
+<details>
+<summary>旧版 enrich 编排（仅供考古）</summary>
 
 ```
-选空间 → POST /kb/wiki/lint-space（文件真值）
-  → 勾选 issues[].page（= slug）
-  → 批量 POST /kb/wiki/enrich（items[]）或 POST /kb/wiki/ai-revise（逐页）
-  → 再 lint-space 复检
-  → POST /kb/sync/trigger
+选空间 → lint-space → 批量 enrich / ai-revise → 再 lint-space → sync
 ```
 
-| 步骤 | API | 说明 |
-|------|-----|------|
-| ① Lint | `POST /kb/wiki/lint-space` | 扫磁盘 wiki；`issue.page` = 修复目标 slug |
-| ② 修复 | `POST /kb/wiki/enrich` / `POST /kb/wiki/ai-revise` | **非 ingest**；ingest 仅旁路投喂新 raw |
-| ③ 复检 | `POST /kb/wiki/lint-space` | 确认 `stats.errors`/`warnings` 下降 |
-| ④ Sync | `POST /kb/sync/trigger` | wiki → `kb_document` |
-
-与 **健康体检页**（`GET /kb/lint` · DB 快照）并存：治理用文件真值；DB 体检验证 Sync 后线上库。
+</details>
 
 ### 8.7 权限
 
