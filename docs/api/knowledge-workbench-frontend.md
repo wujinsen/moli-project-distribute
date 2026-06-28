@@ -174,11 +174,19 @@ export interface KbWorkflowHintVo {
 
 | 场景 | **后端结论** |
 |------|----------------|
-| `useLlmGenerate=true` 且 LLM 不可用 | **`generate` / `prepare` / `express` 直接报错**（`llmClient.assertUsable()`），**不会**自动改模板模式。 |
-| `generatePlan`（Expert Plan） | LLM 不可用时 **降级 skeleton Plan**（仅 Plan，不是正文模板）。 |
-| 正文模板模式 | 仅当请求显式 **`useLlmGenerate=false`** → `templateMode=true`。 |
+| `useLlmGenerate=true` 且 LLM **未配置/已禁用** | **`generate` / `prepare` / `express` / `draft/regenerate` 自动降级模板模式**，不抛错。 |
+| 响应字段 | `templateMode=true`，`llmFallback=true`，`llmFallbackReason`（Toast 文案） |
+| `generatePlan`（Expert Plan） | LLM 不可用时 **降级 skeleton Plan**（仅 Plan，不是正文）。 |
+| 用户显式 `useLlmGenerate=false` | `templateMode=true`，`llmFallback=false` |
+| LLM **已配置但调用失败**（HTTP 超时等） | 单页 `failed++`，**不**整批自动降级；需人工重试或改模板 |
 
-**降级策略在前端**：捕获 LLM 错误 → 提示并改用 `useLlmGenerate=false` 重试；后端不会 silent fallback。
+**前端（meiling-ui）**：
+
+1. Expert **生成 / 重生成**：`useLlmGenerate: !templateMode`（与 Express 勾选一致）
+2. 响应 `llmFallback===true` → Toast `llmFallbackReason`（或固定「已改用模板模式」）
+3. 勾选「模板入库」时传 `useLlmGenerate=false`，Toast「未调用 LLM」
+
+**Swagger 联调**：LLM 关闭时 `POST .../generate?useLlmGenerate=true` 应 200 且 `data.llmFallback=true`。
 
 ---
 
@@ -236,6 +244,7 @@ export interface KbWorkflowHintVo {
 
 | 日期 | 说明 |
 |------|------|
+| 2026-06-28 | §8.1 B3 LLM 自动模板降级 + Expert 前端待办 |
 | 2026-06-28 | §8.1 B4 结构化冲突 `data`（`IngestRawConflictVo`） |
 | 2026-06-28 | §8.1 联调 FAQ（B1–B4 / W1·W5 后端定案） |
 | 2026-06-28 | §7 进度摘要 + §8 B1–B10 后端确认清单 |

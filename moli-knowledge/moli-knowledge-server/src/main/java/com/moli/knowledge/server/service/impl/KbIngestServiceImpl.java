@@ -53,6 +53,7 @@ import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiFileService;
 import com.moli.knowledge.server.service.ingest.IngestPlanPathResolver;
 import com.moli.knowledge.server.util.KbIngestTemplateWriter;
+import com.moli.knowledge.server.util.IngestLlmGenerateModeUtil;
 import com.moli.knowledge.server.util.KbWorkflowHints;
 import com.moli.knowledge.server.util.KbWikiFrontmatterUtil;
 import com.moli.knowledge.server.util.ShiroUtils;
@@ -624,9 +625,12 @@ public class KbIngestServiceImpl implements KbIngestService {
         KbIngestJob job = loadJob(jobId);
         KbSpace space = resolveSpace(job.getSpaceId());
         kbAclService.assertCanEdit(space.getId());
-        if (useLlmGenerate) {
-            llmClient.assertUsable();
+        IngestLlmGenerateModeUtil.Result llmMode = IngestLlmGenerateModeUtil.resolve(useLlmGenerate, llmClient.usable());
+        if (llmMode.isLlmFallback()) {
+            log.warn("[ingest] generate job={} useLlmGenerate=true but LLM unusable, fallback to template mode",
+                    jobId);
         }
+        boolean effectiveUseLlm = llmMode.isEffectiveUseLlm();
 
         KbIngestPlan plan = latestPlan(jobId);
         if (plan == null || StringUtils.isBlank(plan.getPlanJson())) {
@@ -681,7 +685,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                     continue;
                 }
                 try {
-                    fresh.add(genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today, useLlmGenerate));
+                    fresh.add(genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today, effectiveUseLlm));
                 } catch (Exception e) {
                     failed++;
                     log.warn("[ingest] generate create 页失败 job={} slug={}: {}", jobId, relPath, e.getMessage());
@@ -701,7 +705,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                     }
                 }
                 try {
-                    fresh.add(genEnrichDraft(job, space, item, linkCandidates, useLlmGenerate));
+                    fresh.add(genEnrichDraft(job, space, item, linkCandidates, effectiveUseLlm));
                 } catch (Exception e) {
                     failed++;
                     log.warn("[ingest] generate enrich 页失败 job={} slug={}: {}", jobId, planSlug, e.getMessage());
@@ -741,10 +745,12 @@ public class KbIngestServiceImpl implements KbIngestService {
         result.setSkipped(skipped);
         result.setFailed(failed);
         result.setResume(resume);
-        result.setTemplateMode(!useLlmGenerate);
+        result.setTemplateMode(llmMode.isTemplateMode());
+        result.setLlmFallback(llmMode.isLlmFallback());
+        result.setLlmFallbackReason(llmMode.getLlmFallbackReason());
         result.setDrafts(listDrafts(jobId));
-        log.info("[ingest] generate job={} resume={} useLlmGenerate={} generated={} skipped={} failed={}",
-                jobId, resume, useLlmGenerate, fresh.size(), skipped, failed);
+        log.info("[ingest] generate job={} resume={} useLlmGenerate={} effectiveUseLlm={} llmFallback={} generated={} skipped={} failed={}",
+                jobId, resume, useLlmGenerate, effectiveUseLlm, llmMode.isLlmFallback(), fresh.size(), skipped, failed);
         return result;
     }
 
@@ -924,9 +930,12 @@ public class KbIngestServiceImpl implements KbIngestService {
         KbIngestJob job = loadJob(jobId);
         KbSpace space = resolveSpace(job.getSpaceId());
         kbAclService.assertCanEdit(space.getId());
-        if (useLlmGenerate) {
-            llmClient.assertUsable();
+        IngestLlmGenerateModeUtil.Result llmMode = IngestLlmGenerateModeUtil.resolve(useLlmGenerate, llmClient.usable());
+        if (llmMode.isLlmFallback()) {
+            log.warn("[ingest] regenerate job={} slug={} useLlmGenerate=true but LLM unusable, fallback to template mode",
+                    jobId, slug);
         }
+        boolean effectiveUseLlm = llmMode.isEffectiveUseLlm();
         KbIngestDraft old = loadDraft(jobId, slug);
 
         KbIngestPlan plan = latestPlan(jobId);
@@ -939,9 +948,9 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         KbIngestDraft fresh;
         if (ACT_ENRICH.equals(old.getAction())) {
-            fresh = genEnrichDraft(job, space, item, linkCandidates, useLlmGenerate);
+            fresh = genEnrichDraft(job, space, item, linkCandidates, effectiveUseLlm);
         } else {
-            fresh = genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today, useLlmGenerate);
+            fresh = genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today, effectiveUseLlm);
         }
         old.setBaseline(fresh.getBaseline());
         old.setPatch(fresh.getPatch());
@@ -949,7 +958,11 @@ public class KbIngestServiceImpl implements KbIngestService {
         old.setApproval(AP_DRAFT);
         old.setUpdateTime(new Date());
         draftMapper.updateById(old);
-        return toDraftVo(old, job.getSpaceId(), plan);
+        IngestDraftVo vo = toDraftVo(old, job.getSpaceId(), plan);
+        vo.setTemplateMode(llmMode.isTemplateMode());
+        vo.setLlmFallback(llmMode.isLlmFallback());
+        vo.setLlmFallbackReason(llmMode.getLlmFallbackReason());
+        return vo;
     }
 
     @Override
@@ -1404,8 +1417,25 @@ public class KbIngestServiceImpl implements KbIngestService {
         try {
             String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
             int max = ingestProperties.getRawSnippetChars();
-            if (content.length() > max) {
+            if (max > 0 && content.length() > max) {
                 return content.substring(0, max) + "\n……（已截断）";
+            }
+            return content;
+        } catch (IOException e) {
+            return "（读取失败：" + e.getMessage() + "）";
+        }
+    }
+
+    /** 模板模式读 raw 全文；不受 {@link KbIngestProperties#getRawSnippetChars()} LLM 截断限制。 */
+    private String readRawFileForTemplate(Path file) {
+        if (!Files.isRegularFile(file)) {
+            return "（非文本文件或不存在，跳过）";
+        }
+        try {
+            String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+            int max = ingestProperties.getTemplateRawMaxChars();
+            if (max > 0 && content.length() > max) {
+                return content.substring(0, max) + "\n……（已截断，超过 templateRawMaxChars=" + max + "）";
             }
             return content;
         } catch (IOException e) {
@@ -1979,7 +2009,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
     }
 
-    /** 读 plan sources 引用的 raw 文件内容（截断拼接）。 */
+    /** 读 plan sources 引用的 raw 文件内容（模板模式：全文，不套用 LLM snippet 截断）。 */
     private String readRawBodyForTemplate(List<String> sources) {
         if (sources == null || sources.isEmpty()) {
             return "";
@@ -1998,7 +2028,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                 if (sb.length() > 0) {
                     sb.append("\n\n");
                 }
-                sb.append(readSnippet(f));
+                sb.append(readRawFileForTemplate(f));
             }
         }
         return sb.toString();

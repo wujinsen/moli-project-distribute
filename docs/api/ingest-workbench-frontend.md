@@ -103,12 +103,31 @@ POST /kb/ingest/jobs/{id}/publish?sync=true&approveAll=true
 - 草稿 = frontmatter + raw 正文（去掉 raw 自身 frontmatter）  
 - **LLM 不可用时的降级**：自动勾选模板模式 + Toast「已降级为模板入库」
 
-### 4.4 Expert 生成（同样支持模板）
+- **LLM 不可用时的降级（B3）**：请求仍传 `useLlmGenerate=true` 时，后端自动改模板模式；响应 `llmFallback=true` + `llmFallbackReason` → Toast
+
+### 4.4 Expert 生成 / 重生成
+
+**请求参数**（与 Express 模板勾选同一语义）：
+
+```typescript
+// templateMode = UI「模板入库（不调 LLM）」勾选
+useLlmGenerate: !templateMode
+```
 
 ```http
-POST /kb/ingest/jobs/{id}/generate?resume=false&useLlmGenerate=false
-POST /kb/ingest/jobs/{id}/draft/regenerate?slug=guides/foo&useLlmGenerate=false
+POST /kb/ingest/jobs/{id}/generate?resume=false&useLlmGenerate=true
+POST /kb/ingest/jobs/{id}/draft/regenerate?slug=guides/foo&useLlmGenerate=true
 ```
+
+**响应处理**：
+
+| 字段 | 含义 | UI |
+|------|------|-----|
+| `templateMode` | 实际是否模板生成 | 标签「模板模式」 |
+| `llmFallback` | 是否 LLM 不可用自动降级 | `true` → Toast `llmFallbackReason` |
+| `llmFallbackReason` | Toast 文案 | 例：「LLM 未配置…已自动改用模板模式」 |
+
+`regenerate` 的上述字段在 **`IngestDraftVo`** 上（非 `IngestGenerateResultVo`）。
 
 ---
 
@@ -214,6 +233,8 @@ export interface IngestGenerateResultVo {
   skipped: number
   failed: number
   templateMode: boolean
+  llmFallback?: boolean
+  llmFallbackReason?: string
   drafts: IngestDraftVo[]
 }
 
@@ -285,7 +306,7 @@ export function publishIngestJobApi(
 
 | ID | 项 | 后端 | 前端 | 验收 |
 |----|-----|------|------|------|
-| **I1** | Express + `useLlmGenerate=false` 模板入库 | ✅ | ⚠️ | 请求带参；响应 `templateMode=true`；Toast「未调用 LLM」 |
+| **I1** | Express / Expert 模板 & LLM 降级 | ✅ | ⚠️ | `useLlmGenerate=!templateMode`；`llmFallback` → Toast |
 | **I2** | `publish`/`commit` 后 **nextSteps** CTA | ✅ | 🔵 | 跳转 Wiki 治理 / 健康体检 |
 | **I3** | raw **覆盖/簇引用** commit 报错可读 | ✅ | 🔵 | 解析 `data.conflicts` + `msg`；引导 enrich（见 [ops §2.6](../ops/knowledge-workbench-operations.md#26-raw-覆盖与簇已引用)） |
 | **I4** | Express **`useLlmPlan`** 与模板勾选独立 | ✅ | ⚠️ | 两 checkbox 分别映射 query |
@@ -315,6 +336,7 @@ export function publishIngestJobApi(
 
 | 日期 | 说明 |
 |------|------|
+| 2026-06-28 | §4.4 Expert `useLlmGenerate=!templateMode`；B3 `llmFallback` 字段 |
 | 2026-06-28 | §11 I1–I5 验收进度 + §12 落点 |
 | 2026-06-28 | 新增前端对接文档：Express 参数、模板模式、nextSteps、raw 门禁 |
 | 2026-06-25 | T15 后端交付；Expert 六步已在 KNOWLEDGE_API §9 |

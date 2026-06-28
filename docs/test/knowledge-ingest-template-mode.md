@@ -39,9 +39,10 @@ Body: { spaceId, batchNo, topic, rawPaths: ["prd/foo.md"] }
 
 - **create**：`KbIngestTemplateWriter.buildCreatePage`
   - frontmatter：`title/slug/type/sources/related/created/updated`
-  - 正文：raw 文件去掉自身 frontmatter 后的内容
+  - 正文：**raw 全文**（去掉 raw 自身 frontmatter）；**不**套用 LLM 用的 `kb.ingest.raw-snippet-chars`（默认 4000）截断
 - **enrich**：追加 `## {reason}` + raw 正文（模板 patch）
 - **不调用** `kb.llm`（无需 api-key）
+- **可选上限**：`kb.ingest.template-raw-max-chars`（默认 `0` = 不截断；设正数则超大 raw 才截断）
 
 ---
 

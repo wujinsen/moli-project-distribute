@@ -54,4 +54,13 @@ public class IngestDraftVo {
 
     @ApiModelProperty("分类名称（只读）")
     private String categoryName;
+
+    @ApiModelProperty("重生成时：是否模板模式")
+    private Boolean templateMode;
+
+    @ApiModelProperty("重生成时：是否 LLM 不可用自动降级")
+    private Boolean llmFallback;
+
+    @ApiModelProperty("重生成时：LLM 自动降级说明（供前端 Toast）")
+    private String llmFallbackReason;
 }

@@ -34,6 +34,12 @@ public class KbIngestProperties {
     /** Plan 生成时单个 raw 文件喂给 LLM 的最大字符数（截断）。 */
     private int rawSnippetChars = 4000;
 
+    /**
+     * 模板模式（useLlmGenerate=false）读 raw 正文的最大字符数。
+     * {@code 0} 表示不截断（直贴全文）；正数为安全上限。
+     */
+    private int templateRawMaxChars = 0;
+
     /** raw-coverage wiki 索引内存缓存 TTL（秒）。 */
     private int coverageCacheSeconds = 300;
 
