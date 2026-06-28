@@ -229,6 +229,14 @@ public class KbAclServiceImpl implements KbAclService {
     }
 
     @Override
+    public void assertPlatformLlmManage() {
+        if (isAdmin() || isPermitted(PermissionConstants.KB_PLATFORM_LLM)) {
+            return;
+        }
+        throw new BaseException("无权管理平台 LLM 配置");
+    }
+
+    @Override
     public List<Long> resolveReadableSpaceIds(Long spaceId, List<Long> spaceIds) {
         if (spaceIds != null && !spaceIds.isEmpty()) {
             Set<Long> distinct = spaceIds.stream()

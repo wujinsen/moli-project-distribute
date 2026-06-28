@@ -4,7 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.moli.common.exception.BaseException;
-import com.moli.knowledge.server.config.KbLlmProperties;
+import com.moli.knowledge.server.llm.KbLlmEffectiveConfig;
+import com.moli.knowledge.server.llm.KbLlmRuntime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -18,14 +19,18 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
- * OpenAI 兼容 LLM HTTP 客户端（Ask / Wiki AI 改稿共用）。
+ * OpenAI 兼容 LLM HTTP 客户端（Ask / Wiki AI 改稿 / Ingest 共用）。
+ * <p>
+ * 配置来源：{@link KbLlmRuntime}（DB 优先，yaml 兜底）。
  */
 @Slf4j
 @Service
 public class KbLlmClient {
 
+    private static final String DEFAULT_TEST_SYSTEM = "You are a helpful assistant. Reply briefly.";
+
     @Resource
-    private KbLlmProperties llm;
+    private KbLlmRuntime llm;
 
     public boolean usable() {
         return llm.usable();
@@ -41,20 +46,18 @@ public class KbLlmClient {
 
     public void assertUsable() {
         if (!usable()) {
-            throw new BaseException("LLM 未配置或已禁用（kb.llm.enabled/api-key）");
+            throw new BaseException("LLM 未配置或已禁用（平台 LLM 设置或 kb.llm.enabled/api-key）");
         }
     }
 
-    /** 非流式 chat/completions，返回 assistant 文本。 */
     public String chat(String systemPrompt, String userPrompt) {
         return chat(systemPrompt, userPrompt, null);
     }
 
-    /** 非流式 chat/completions，可覆盖 model。 */
     public String chat(String systemPrompt, String userPrompt, String modelOverride) {
         assertUsable();
         try {
-            return doChat(systemPrompt, userPrompt, modelOverride);
+            return chatWithConfig(llm.current(), systemPrompt, userPrompt, modelOverride);
         } catch (BaseException e) {
             throw e;
         } catch (Exception e) {
@@ -63,8 +66,23 @@ public class KbLlmClient {
         }
     }
 
-    private String doChat(String systemPrompt, String userPrompt, String modelOverride) throws Exception {
-        String url = llm.getBaseUrl().replaceAll("/+$", "") + "/chat/completions";
+    /** 使用指定配置调用（连通性测试等），不依赖 Runtime 快照。 */
+    public String chatWithConfig(KbLlmEffectiveConfig cfg, String systemPrompt, String userPrompt, String modelOverride)
+            throws Exception {
+        if (cfg == null || !cfg.usable()) {
+            throw new BaseException("LLM 未配置或已禁用");
+        }
+        return doChat(cfg, systemPrompt, userPrompt, modelOverride);
+    }
+
+    public String testPing(KbLlmEffectiveConfig cfg, String userMessage) throws Exception {
+        String msg = userMessage == null || userMessage.trim().isEmpty() ? "ping" : userMessage.trim();
+        return chatWithConfig(cfg, DEFAULT_TEST_SYSTEM, msg, null);
+    }
+
+    private String doChat(KbLlmEffectiveConfig cfg, String systemPrompt, String userPrompt, String modelOverride)
+            throws Exception {
+        String url = cfg.getBaseUrl().replaceAll("/+$", "") + "/chat/completions";
 
         JSONArray messages = new JSONArray();
         JSONObject sys = new JSONObject();
@@ -78,19 +96,19 @@ public class KbLlmClient {
 
         JSONObject payload = new JSONObject();
         String model = modelOverride != null && !modelOverride.trim().isEmpty()
-                ? modelOverride.trim() : llm.getModel();
+                ? modelOverride.trim() : cfg.getModel();
         payload.put("model", model);
         payload.put("messages", messages);
-        payload.put("temperature", llm.getTemperature());
+        payload.put("temperature", cfg.getTemperature());
         payload.put("stream", false);
 
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         try {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + llm.getApiKey());
+            conn.setRequestProperty("Authorization", "Bearer " + cfg.getApiKey());
             conn.setDoOutput(true);
-            int timeout = (llm.getTimeoutSeconds() == null ? 90 : llm.getTimeoutSeconds()) * 1000;
+            int timeout = cfg.getTimeoutSeconds() * 1000;
             conn.setConnectTimeout(timeout);
             conn.setReadTimeout(timeout);
             try (OutputStream os = conn.getOutputStream()) {

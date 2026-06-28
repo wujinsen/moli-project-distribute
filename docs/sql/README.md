@@ -31,6 +31,7 @@
 | `02_seckill_schema.sql` | 秒杀压测表（在 moli.sql 之后追加） |
 | `03_knowledge_schema.sql` | 企业知识库表（在 moli.sql 之后追加） |
 | [`KNOWLEDGE_SCHEMA.md`](KNOWLEDGE_SCHEMA.md) | 知识库表结构设计说明 + ER 关系图 |
+| [`USER_CENTER_SCHEMA.md`](USER_CENTER_SCHEMA.md) | **用户中心**表结构（sys_* + operation_*） |
 | [`KNOWLEDGE_SCHEMA_ER.png`](KNOWLEDGE_SCHEMA_ER.png) | ER 关系图 PNG（任意 MD 阅读器可看） |
 | `04_knowledge_menu.sql` | 知识库菜单 + sys_action 动作（在 03 之后追加） |
 | `05_knowledge_action_patch.sql` | 已有环境修正 sys_action 分组（空间 CRUD / 体检+同步） |
@@ -38,6 +39,9 @@
 | `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 04_knowledge_menu 之后追加） |
 | `07_kb_space_ops_manual.sql` | **茉莉系统操作手册**独立空间 `moli-ops-manual` + 成员示例 |
 | `07_kb_space_ops_manual_fix_charset.sql` | 修复 `moli-ops-manual` 因错误导入导致的中文乱码 |
+| `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug`/`default_type` + 三空间目录种子（已有库必跑） |
+| `11_kb_platform_llm_config.sql` | **T19** 平台 LLM 配置表 `kb_platform_llm_config` |
+| `12_kb_platform_llm_menu.sql` | **T19** 系统管理菜单「知识库 LLM」+ `kb:platform:llm` |
 
 ## 新环境初始化
 

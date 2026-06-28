@@ -74,6 +74,8 @@ public final class PermissionConstants {
     public static final String KB_SPACE_EDIT = "kb:space:edit";
     public static final String KB_SPACE_REMOVE = "kb:space:remove";
     public static final String KB_SPACE_MEMBER = "kb:space:member";
+    /** 企业知识库 · 平台 LLM 系统设置（T19） */
+    public static final String KB_PLATFORM_LLM = "kb:platform:llm";
 
     public static final String ROLE_ASSIGN_REFRESH_MSG = "角色授权已更新，请通知相关用户刷新页面后查看新菜单";
 }

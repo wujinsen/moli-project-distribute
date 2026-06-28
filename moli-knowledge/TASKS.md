@@ -550,7 +550,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 5. 🔵 **T16f**（M7 Wiki 治理前端：lint-space → script/AI/auto-fix → merge-hint → 复检 → Sync）。后端 T16a/e/g ✅。
 6. 🔵 **T17a → T17b → T17c → T17d**（M6+ Ingest 落盘对齐文档分类 + 自定义 slug）。✅
 7. ✅ **T18**（M6+ Ingest 一键入库 Express 流）。
-8. 🔵 **T19**（M8 平台 LLM 系统设置：DB 存 Key + 系统管理 UI）。设计 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md)
+8. 🔵 **T19**（M8 平台 LLM 系统设置：DB 存 Key + 系统管理 UI）。后端 ✅；前端 T19d 📋。设计 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md)
 
 ---
 
@@ -561,14 +561,28 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | 子任务 | 内容 | 状态 |
 |--------|------|------|
 | **T19a** | DDL `11_kb_platform_llm_config.sql` + `KbLlmRuntime` + 加密 | ✅ |
-| **T19b** | `GET/PUT/POST test` `/kb/platform/llm-config` + `kb:platform:llm` | 📋 |
-| **T19c** | `KbLlmClient` 切 Runtime；回归 Ask/Ingest/Wiki | ✅（随 T19a 一并接入） |
-| **T19d** | `system/kb-llm/index` 设置页 + `12_kb_platform_llm_menu.sql` | 📋 |
-| **T19e** | API 契约 §3.5、运维说明 | 📋 |
+| **T19b** | `GET/PUT/POST test` `/kb/platform/llm-config` + `kb:platform:llm` | ✅ |
+| **T19c** | `KbLlmClient` 切 Runtime；回归 Ask/Ingest/Wiki | ✅ |
+| **T19d** | `system/kb-llm/index` 设置页 + `12_kb_platform_llm_menu.sql` | 📋（前端） |
+| **T19e** | API 契约 §3.5、前端对接文档、运维说明 | ✅ |
 
 **非目标（一期）**：moli-ai 独立服务、按空间多套 Key、用户自带 Key。
 
-> 读 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md) 后按 T19a→e 实现。
+**前端开工**：读 [`docs/api/kb-llm-platform-frontend.md`](../docs/api/kb-llm-platform-frontend.md)，按 §15 增 view + api + types + i18n；菜单由 `12_kb_platform_llm_menu.sql` + 动态路由加载。
+
+**开工提示词（可复制给前端对话）**：
+
+```
+实现 T19d 平台 LLM 设置页（meiling-ui）：
+- 先读 docs/api/kb-llm-platform-frontend.md（权威）
+- 菜单 component: system/kb-llm/index，权限 kb:platform:llm
+- API: GET/PUT /KnowledgeServer/kb/platform/llm-config，POST .../test
+- api-key 留空=不改；测试用表单值、保存才写库
+- 参考 src/views/system/DictManageView.vue 表单模式
+- 不改 KbLlmToggle / Ask 页
+```
+
+> 设计 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md)
 
 ---
 

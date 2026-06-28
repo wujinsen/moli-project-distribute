@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
-import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.dto.AskRequest;
 import com.moli.knowledge.server.dto.AskResponse;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -59,8 +58,6 @@ public class KbAskServiceImpl implements KbAskService {
     @Resource
     private KbQaLogMapper kbQaLogMapper;
     @Resource
-    private KbLlmProperties llm;
-    @Resource
     private KbLlmClient kbLlmClient;
     @Resource
     private KbAclService kbAclService;
@@ -84,8 +81,8 @@ public class KbAskServiceImpl implements KbAskService {
             empty.setMode("retrieval");
             empty.setScope(scope.include.isEmpty() ? "全部类型" : scope.include.toString());
             empty.setScopeReason(scope.reason);
-            empty.setProvider(llm.getProvider());
-            empty.setModel(llm.getModel());
+            empty.setProvider(kbLlmClient.getProvider());
+            empty.setModel(kbLlmClient.getModel());
             return empty;
         }
 
@@ -143,8 +140,8 @@ public class KbAskServiceImpl implements KbAskService {
         AskResponse resp = new AskResponse();
         resp.setScope(scope.include.isEmpty() ? "全部类型" : scope.include.toString());
         resp.setScopeReason(scope.reason);
-        resp.setProvider(llm.getProvider());
-        resp.setModel(llm.getModel());
+        resp.setProvider(kbLlmClient.getProvider());
+        resp.setModel(kbLlmClient.getModel());
 
         List<AskResponse.Citation> citations = new ArrayList<>();
         for (int i = 0; i < scored.size() && i < topK; i++) {
@@ -163,7 +160,7 @@ public class KbAskServiceImpl implements KbAskService {
                 resp.setMode("generative");
             } catch (Exception e) {                       // noqa
                 log.warn("LLM 调用失败，降级检索式: {}", e.getMessage());
-                resp.setAnswer("> 调用 " + llm.getProvider() + " 失败（" + e.getMessage()
+                resp.setAnswer("> 调用 " + kbLlmClient.getProvider() + " 失败（" + e.getMessage()
                         + "），已回退检索式。\n\n" + retrievalAnswer(question, citations));
                 resp.setMode("retrieval");
             }
@@ -171,8 +168,8 @@ public class KbAskServiceImpl implements KbAskService {
             String note = "";
             if (!Boolean.TRUE.equals(request.getUseLlm())) {
                 note = "> 本次未启用 LLM 生成式，当前为检索式。\n\n";
-            } else if (!llm.usable()) {
-                note = "> 后端未配置 LLM（kb.llm.enabled/api-key），当前为检索式。\n\n";
+            } else if (!kbLlmClient.usable()) {
+                note = "> 后端未配置 LLM（平台 LLM 设置或 kb.llm.enabled/api-key），当前为检索式。\n\n";
             }
             resp.setAnswer(note + retrievalAnswer(question, citations));
             resp.setMode("retrieval");
@@ -404,7 +401,7 @@ public class KbAskServiceImpl implements KbAskService {
 
     /** 前端显式 useLlm=true 且后端 kb.llm 已就绪时才调 LLM。 */
     private boolean shouldUseLlm(AskRequest request) {
-        return Boolean.TRUE.equals(request.getUseLlm()) && llm.usable();
+        return Boolean.TRUE.equals(request.getUseLlm()) && kbLlmClient.usable();
     }
 
     private String retrievalAnswer(String question, List<AskResponse.Citation> citations) {

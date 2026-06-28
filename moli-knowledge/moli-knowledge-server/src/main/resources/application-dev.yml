@@ -80,6 +80,8 @@ kb:
     model: glm-4-flash
     temperature: 0.3
     timeout-seconds: 90
+    # T19 · 平台 DB 存 api-key 时的 AES 密钥（32 字节 Base64 或任意字符串 SHA-256）
+    config-secret: ${KB_LLM_CONFIG_SECRET:}
   search:
     # fulltext：用 kb_document 上 ngram 全文索引 ftx_kb_document（MATCH AGAINST）；like：旧三字段 LIKE
     mode: fulltext

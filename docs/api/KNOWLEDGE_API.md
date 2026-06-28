@@ -267,11 +267,15 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 |------|------|
 | `available` | `kb.llm.enabled && api-key` 均已配置 |
 
-> **T19 规划**：平台管理员在 **系统管理 → 知识库 LLM** 维护配置（存 `kb_platform_llm_config`）；详见 [`../design/kb-llm-platform-settings.md`](../design/kb-llm-platform-settings.md) 与 §3.5。
+> **T19**：平台管理员在 **系统管理 → 知识库 LLM** 维护配置（`GET/PUT/POST test` §3.5）；Ask 探测仍用 §3.1。
 
-### 3.5 平台 LLM 配置（T19 · 规划中）
+### 3.5 平台 LLM 配置（T19 · 已实现）
 
-> **权限**：平台超管或 `kb:platform:llm`。API Key **加密存库**，响应永不回明文。
+> **前端对接**（T19d）：[`kb-llm-platform-frontend.md`](kb-llm-platform-frontend.md)  
+> **权限**：平台超管或 `kb:platform:llm`。API Key **加密存库**，响应永不回明文。  
+> **前置**：执行 [`../sql/11_kb_platform_llm_config.sql`](../sql/11_kb_platform_llm_config.sql)、[`../sql/12_kb_platform_llm_menu.sql`](../sql/12_kb_platform_llm_menu.sql)；保存 api-key 到 DB 须配置 `kb.llm.config-secret`（`KB_LLM_CONFIG_SECRET`，见设计文档 §7）。
+
+**网关路径**（meiling-ui）：`/KnowledgeServer/kb/platform/llm-config`
 
 #### `GET /kb/platform/llm-config`
 
@@ -290,9 +294,17 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
   "extraModels": ["glm-4-flash", "glm-4-air"],
   "available": true,
   "source": "database",
+  "persistedInDatabase": true,
   "updateTime": "2026-06-28 15:00:00"
 }
 ```
+
+| 字段 | 说明 |
+|------|------|
+| `available` | `enabled && apiKeyConfigured`（运行时是否可调用） |
+| `source` | `database` / `yaml_fallback` |
+| `persistedInDatabase` | DB 是否已有加密 api-key（与 yaml 兜底区分） |
+| `apiKeyMask` | 脱敏展示；**不是**可编辑用的明文 |
 
 #### `PUT /kb/platform/llm-config`
 
@@ -300,24 +312,44 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 |------|------|------|
 | `enabled` | 是 | 总开关 |
 | `provider` | 是 | `deepseek` / `qwen` / `glm` / `custom` |
-| `baseUrl` | 是 | OpenAI 兼容根 URL |
-| `apiKey` | 否 | 空=不修改；非空=替换并加密入库 |
+| `baseUrl` | 是 | OpenAI 兼容根 URL；禁止 localhost/127.0.0.1/169.254.x/metadata |
+| `apiKey` | 否 | **空字符串或不传 = 不修改**；非空 = 替换并加密入库 |
+| `clearApiKey` | 否 | `true` 时清除 DB 密文，运行时回退 yaml 中的 api-key |
 | `model` | 是 | 默认模型 |
-| `temperature` | 否 | 默认 0.3 |
-| `timeoutSeconds` | 否 | 默认 90 |
+| `temperature` | 否 | 0～2，默认 0.3 |
+| `timeoutSeconds` | 否 | 5～300，默认 90 |
 | `extraModels` | 否 | 治理/Ingest 模型下拉 |
 
 保存后立即刷新服务端 `KbLlmRuntime`，**无需重启**。
 
+常见错误 `msg`：`无权管理平台 LLM 配置`；`未配置 kb.llm.config-secret（KB_LLM_CONFIG_SECRET），无法将 api-key 加密存入数据库`；`base-url 不允许指向内网/元数据地址`。
+
 #### `POST /kb/platform/llm-config/test`
 
-请求体可选 `{ "message": "ping" }`。响应当前配置连通性 `{ success, latencyMs, model, replyPreview, error }`。
+请求体可选；字段缺省时使用**当前已保存/生效**配置。`apiKey` 非空则仅用于本次测试、**不写库**。
+
+| 字段 | 说明 |
+|------|------|
+| `message` | 默认 `ping` |
+| 其余 | 同 PUT，均可选，用于保存前测试 |
+
+响应 `data`（HTTP 始终 200，看 `success`）：
+
+```json
+{
+  "success": true,
+  "latencyMs": 842,
+  "model": "glm-4-flash",
+  "replyPreview": "pong",
+  "error": null
+}
+```
 
 #### 与 §3.1 关系
 
 | API | 说明 |
 |-----|------|
-| `GET /kb/ask/llm-config` | **保留**；Ask/Ingest 页探测 `available`，实现改为读 DB 优先 |
+| `GET /kb/ask/llm-config` | **保留**；Ask/Ingest 页探测 `available`，读 DB 优先 |
 | `GET /kb/platform/llm-config` | **管理**；含 baseUrl/model/脱敏 key，仅平台管理员 |
 
 ### `POST /kb/ask`
@@ -1047,17 +1079,19 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ## 7. 前端页面（meiling-ui）
 
-| 页面 | 路由 component | 主要接口 | 备注 |
-|------|----------------|----------|------|
-| 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index`（meta）+ `/kb/index/items|search|locate` + `/kb/page` | 顶部**空间选择器**；分组懒加载；`spaceId` 随 API 传递；**index 仅 `source=kb`** |
-| 文档管理 | `knowledge/documents/index` | `/kb/document/search?source=kb` + **Wiki 编辑** `/kb/wiki/page` | **新建/编辑均写 wiki**；列表不含 `manual` |
-| 智能问答 | `knowledge/ask/index` | `/kb/ask` + history/feedback | 空间选择器 + **跨空间多选**（`spaceIds[]`）；引用含 `spaceId` |
-| 关系图谱 | `knowledge/graph/index` | `/kb/graph` | 按所选空间过滤 |
-| 健康体检 | `knowledge/lint/index` | `/kb/lint*` + 同步 Tab | 体检与 `/kb/sync/*` 同页 |
-| **Wiki 编辑** | `knowledge/wiki/edit`（query `slug`/`spaceId`/`issueId?`）✅ T14 | `/kb/wiki/page` + `/kb/wiki/ai-revise` + `/kb/wiki/page/lint-preview` + **`/kb/wiki/enrich`** | 浏览/体检「编辑/修复」；源码编辑 + diff + **Enrich 治理** + AI 协助 + 保存并 Sync |
-| **Ingest 工作台** | `knowledge/ingest/index`（query `id?`）✅ T15 | `/kb/ingest/*`（§9 全量 **24** 个接口） | raw 选源 → Plan → 多页草稿 diff → lint → commit + Sync；含模板/续跑/删批次；**T18 一键预览/入库** |
-| **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16f | `/kb/wiki/lint-space` + `/kb/wiki/govern/*` + `/kb/sync/trigger` | 见 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** |
-| 空间管理 | `knowledge/spaces/index` | `/kb/space/*` + `/kb/space/member/*` | 需菜单权限 `kb:space:admin` 或空间 `canAdmin` |
+> **前端开发入口** → **[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)**（总览 + 子文档索引）
+
+| 页面 | 路由 component | 主要接口 | 前端对接 |
+|------|----------------|----------|----------|
+| 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index*` + `/kb/page` | KNOWLEDGE_API §2–3 |
+| 文档管理 | `knowledge/documents/index` | `/kb/document/search` + `/kb/wiki/page` | §8.1 |
+| 智能问答 | `knowledge/ask/index` | `/kb/ask` | §5 |
+| 关系图谱 | `knowledge/graph/index` | `/kb/graph` | §6 |
+| 健康体检 | `knowledge/lint/index` | `/kb/lint*` + `/kb/sync/*` | §4 |
+| **Wiki 编辑** | `knowledge/wiki/edit` ✅ T14 | `/kb/wiki/page` + `ai-revise` + `enrich` | §8 |
+| **Ingest 工作台** | `knowledge/ingest/index` ✅ T15 | `/kb/ingest/*`（§9 · 24 接口） | **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)** |
+| **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16f | `/kb/wiki/lint-space` + `/kb/wiki/govern/*` | **[wiki-govern-frontend.md](wiki-govern-frontend.md)** |
+| 空间管理 | `knowledge/spaces/index` | `/kb/space/*` | §3 |
 
 前端实现：`meiling-ui/src/composables/useKbSpace.ts`（共享空间上下文）、`src/components/knowledge/KbSpaceSelector.vue`。
 
@@ -1372,8 +1406,9 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 ## 9. Ingest 工作台（T15）
 
 > 产品方案：[`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
+> **前端对接** → **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)**（Express、模板模式、nextSteps）。  
 > **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。  
-> **状态**：T15a–e、**T18** 已全部实现（含 enrich patch、断点续跑、批次模板、Express 一键预览/入库）。
+> **状态**：T15a–e、**T18**、**T19（模板模式 + nextSteps + raw 门禁）** 已全部实现。
 
 统一前缀 **`/kb/ingest`**，返回 `MoliResult<T>`。经网关示例：`POST {VITE_API_BASE_URL}/KnowledgeServer/kb/ingest/jobs`。
 

@@ -1,6 +1,6 @@
 # 企业知识库 · 表结构设计
 
-> 更新：2026-06-23 · 配套脚本 [`03_knowledge_schema.sql`](03_knowledge_schema.sql)
+> 更新：2026-06-28 · 配套脚本 [`03_knowledge_schema.sql`](03_knowledge_schema.sql)、[`11_kb_platform_llm_config.sql`](11_kb_platform_llm_config.sql)（T19）
 > 范式：LLM-Wiki —— `kb/`（markdown）是**唯一写入源**，`moli-knowledge-server` 是**下游只读门面 + 对外 Web/API**。
 > 规划见 [`../../moli-knowledge/kb/ROADMAP.md`](../../moli-knowledge/kb/ROADMAP.md)。
 
@@ -19,6 +19,7 @@
 | **空间级 ACL（复用 Shiro/Dubbo）** | 🔜 | `kb_space_member` |
 | 面试题系列 / 作用域过滤（type/domain） | 🔜 | `kb_document`(+kb_type/domain) |
 | 全文检索（先 MySQL FULLTEXT，量大再外置） | 🔜 | `kb_document` ngram 全文索引 |
+| **平台 LLM Web 配置（T19）** | ✅ | `kb_platform_llm_config`（设计 [`../design/kb-llm-platform-settings.md`](../design/kb-llm-platform-settings.md)） |
 
 通用约定：`bigint` 雪花主键；`create_id/create_time/update_id/update_time` 审计字段（MyBatis-Plus 自动填充）；`is_delete` 逻辑删除；**`utf8mb4`**。
 
@@ -26,7 +27,7 @@
 
 ---
 
-## 2. 表清单（14 张）
+## 2. 表清单（15 张 · 含 T19 平台 LLM）
 
 ### 核心内容（9）
 
@@ -56,6 +57,12 @@
 | `kb_sync_log` | kb→DB 单向增量同步审计：批次、原始路径、`action`(insert/update/delete/skip)、内容 hash、结果 |
 | `kb_space_member` | 空间级 ACL：成员可为**用户或角色**（复用用户中心），角色 `viewer/editor/admin` |
 | `kb_qa_log` | Query 历史：问题、答案、`citations`(JSON 引用)、作用域、provider/model、token、`useful` 反馈 |
+
+### 平台配置（1 · T19）
+
+| 表 | 说明 |
+|----|------|
+| `kb_platform_llm_config` | 平台级 LLM 单例（`id=1`）：provider/base-url/加密 api-key/model；Web **系统管理 → 知识库 LLM** 维护 |
 
 > **向量库刻意不建**：ROADMAP §五把向量/ES 列为「按需」。先用 MySQL `ngram` 全文索引，文档量过千且召回变差时再外置 Meilisearch/ES/向量库，届时新增 `kb_chunk`/`kb_embedding` 即可，不影响现有表。
 

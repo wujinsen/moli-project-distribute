@@ -92,4 +92,7 @@ public interface KbAclService {
 
     /** 按文档 ID 断言可编辑。 */
     void assertCanEditDocument(Long documentId);
+
+    /** 平台 LLM 系统设置（超管或 {@code kb:platform:llm}）。 */
+    void assertPlatformLlmManage();
 }

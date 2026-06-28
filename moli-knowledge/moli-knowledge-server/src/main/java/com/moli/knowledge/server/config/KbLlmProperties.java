@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Query(/kb/ask) 使用的 LLM 配置。OpenAI 兼容接口（DeepSeek / Qwen / GLM 等）。
- * 主配置在 Nacos {@code knowledge-server-kb-llm-dev.yaml}；{@link RefreshScope} 支持热更新。
+ * 主配置：Web 平台设置写入 {@code kb_platform_llm_config}（T19）；无 DB key 时回退本 Properties / Nacos。
  * {@code enabled=false} 或 api-key 为空时 /kb/ask 自动降级为「检索式」答案。
  */
 @Data
@@ -36,6 +36,12 @@ public class KbLlmProperties {
 
     /** 调用超时（秒）。 */
     private Integer timeoutSeconds = 90;
+
+    /**
+     * 平台 DB 中 api-key 的 AES 密钥（32 字节 Base64 或任意字符串 SHA-256）。
+     * 环境变量 {@code KB_LLM_CONFIG_SECRET}。
+     */
+    private String configSecret = "";
 
     public boolean usable() {
         return enabled && apiKey != null && !apiKey.trim().isEmpty();

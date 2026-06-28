@@ -2,13 +2,24 @@
 
 > **本目录为 HTTP 接口契约的权威位置**（随代码演进，不依赖 ingest 进 wiki 才能联调）。
 
+## 前端开发入口（meiling-ui）
+
+| 文档 | 范围 |
+|------|------|
+| **[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)** | **总览**：优先级、两条链路、nextSteps、代码落点 |
+| [wiki-govern-frontend.md](wiki-govern-frontend.md) | **Wiki 治理 T16f**（Lint + script/AI/auto-fix + merge-hint） |
+| [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | **Ingest 增量**：Express、模板模式、nextSteps、raw 门禁 |
+
+产品需求索引：[../product/knowledge-workbench-requirements.md](../product/knowledge-workbench-requirements.md)
+
 ## 文件清单
 
 | 文件 | 范围 |
 |------|------|
-| [KNOWLEDGE_API.md](KNOWLEDGE_API.md) | 知识库模块 `/kb/*`（meiling-ui 对接）；**§9 Ingest 工作台**（T15，21 个接口） |
-| [wiki-govern-frontend.md](wiki-govern-frontend.md) | **Wiki 治理工作台前端对接**（T16e：Lint + 脚本/AI/一键修复） |
-| [../test/knowledge-ingest-template-mode.md](../test/knowledge-ingest-template-mode.md) | **Ingest 模板模式**（`useLlmGenerate=false`） |
+| [KNOWLEDGE_API.md](KNOWLEDGE_API.md) | 知识库模块 `/kb/*`（meiling-ui 对接）；§8 Wiki · §9 Ingest |
+| [wiki-govern-frontend.md](wiki-govern-frontend.md) | Wiki 治理工作台前端对接（T16e 后端 ✅，T16f 前端 🔵） |
+| [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | Ingest 工作台前端对接（含 T18/T19 增量） |
+| [../test/knowledge-ingest-template-mode.md](../test/knowledge-ingest-template-mode.md) | Ingest 模板模式（`useLlmGenerate=false`） |
 | [../test/knowledge-script-vs-llm-matrix.md](../test/knowledge-script-vs-llm-matrix.md) | 脚本 vs LLM 能力矩阵 |
 | [user-center-api-map.md](user-center-api-map.md) | 用户中心 ~70 接口地图（登录/RBAC/系统门户） |
 | [user-center-dubbo.md](user-center-dubbo.md) | 用户中心 Dubbo 契约（3 方法） |
@@ -27,3 +38,4 @@
 - 改接口 → **直接改本目录** + 必要时改 Controller/JavaDoc
 - 大版本 API 说明 PDF/Word → `raw/api/` → Ingest 只更新 **services/** 摘要页
 - 知识库 REST 变更须同步 [KNOWLEDGE_API.md](KNOWLEDGE_API.md) 与 `moli-knowledge-server` README
+- 前端可交付功能 → 同步 **knowledge-workbench-frontend.md** 及对应子文档

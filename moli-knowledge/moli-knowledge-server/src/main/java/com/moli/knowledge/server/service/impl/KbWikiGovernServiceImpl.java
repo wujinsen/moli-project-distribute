@@ -1,7 +1,7 @@
 package com.moli.knowledge.server.service.impl;
 
 import com.moli.common.exception.BaseException;
-import com.moli.knowledge.server.config.KbLlmProperties;
+import com.moli.knowledge.server.llm.KbLlmRuntime;
 import com.moli.knowledge.server.config.KbWikiGovernProperties;
 import com.moli.knowledge.server.config.KbWikiProperties;
 import com.moli.knowledge.server.dto.SyncTriggerVo;
@@ -54,7 +54,7 @@ public class KbWikiGovernServiceImpl implements KbWikiGovernService {
     @Resource
     private KbWikiGovernProperties governProperties;
     @Resource
-    private KbLlmProperties llmProperties;
+    private KbLlmRuntime llmRuntime;
     @Resource
     private KbWikiProperties wikiProperties;
     @Resource
@@ -69,12 +69,19 @@ public class KbWikiGovernServiceImpl implements KbWikiGovernService {
     @Override
     public WikiGovernOptionsVo getOptions() {
         WikiGovernOptionsVo vo = new WikiGovernOptionsVo();
-        vo.setLlmAvailable(llmProperties.usable());
-        vo.setProvider(llmProperties.getProvider());
+        vo.setLlmAvailable(llmRuntime.usable());
+        vo.setProvider(llmRuntime.getProvider());
 
         Set<String> ids = new LinkedHashSet<>();
-        if (llmProperties.getModel() != null) {
-            ids.add(llmProperties.getModel().trim());
+        if (llmRuntime.getModel() != null) {
+            ids.add(llmRuntime.getModel().trim());
+        }
+        if (llmRuntime.getExtraModels() != null) {
+            for (String m : llmRuntime.getExtraModels()) {
+                if (StringUtils.isNotBlank(m)) {
+                    ids.add(m.trim());
+                }
+            }
         }
         if (governProperties.getModels() != null) {
             for (String m : governProperties.getModels()) {
@@ -93,7 +100,7 @@ public class KbWikiGovernServiceImpl implements KbWikiGovernService {
         }
         vo.setModels(models);
 
-        String defaultModel = llmProperties.getModel();
+        String defaultModel = llmRuntime.getModel();
         if (StringUtils.isNotBlank(defaultModel)) {
             vo.setDefaultModel(defaultModel.trim());
         } else if (!models.isEmpty()) {
@@ -173,7 +180,7 @@ public class KbWikiGovernServiceImpl implements KbWikiGovernService {
     @Override
     public WikiGovernAiBatchFixResultVo aiBatchFix(WikiGovernAiBatchFixRequest request) {
         validateIssuesRequest(request == null ? null : request.getSpaceId(), request == null ? null : request.getIssues());
-        if (!llmProperties.usable()) {
+        if (!llmRuntime.usable()) {
             throw new BaseException("kb.llm 未配置，无法 AI 批量修复");
         }
         boolean dryRun = Boolean.TRUE.equals(request.getDryRun());
@@ -277,7 +284,7 @@ public class KbWikiGovernServiceImpl implements KbWikiGovernService {
                     .filter(i -> WikiGovernKindUtil.isAiFixable(i.getKind()))
                     .collect(Collectors.toList());
             if (!aiIssues.isEmpty()) {
-                if (!llmProperties.usable()) {
+                if (!llmRuntime.usable()) {
                     log.info("[wiki-govern] auto-fix skip ai: llm unavailable");
                 } else {
                     WikiGovernAiBatchFixRequest aiReq = new WikiGovernAiBatchFixRequest();
@@ -386,8 +393,8 @@ public class KbWikiGovernServiceImpl implements KbWikiGovernService {
         if (StringUtils.isNotBlank(model)) {
             return model.trim();
         }
-        if (StringUtils.isNotBlank(llmProperties.getModel())) {
-            return llmProperties.getModel().trim();
+        if (StringUtils.isNotBlank(llmRuntime.getModel())) {
+            return llmRuntime.getModel().trim();
         }
         throw new BaseException("未配置默认 LLM 模型");
     }
