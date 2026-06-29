@@ -5,9 +5,9 @@ type: interview
 status: active
 tags: [mysql, 事务, 锁, 面试题, MVCC]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/事务隔离级别中的可重复读能防幻读吗.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/事务隔离级别中的可重复读能防幻读吗.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
 related: [mysql-事务与锁, mysql-隔离级别与mvcc, mysql-innodb锁机制, mysql-死锁与排查, spring-事务]
 created: 2026-06-22
 updated: 2026-06-22

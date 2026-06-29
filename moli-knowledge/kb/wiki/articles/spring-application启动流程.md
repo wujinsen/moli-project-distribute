@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [spring-boot, 启动, 生命周期]
 sources:
-  - raw/wujinsen_markdown/Spring/SpringBoot源码解析/SpringApplication初始化阶段.note.md
-  - raw/wujinsen_markdown/Spring/Spring、SpringMVC和SpringBoot看这一篇就够了！.note.md
+ - raw/wujinsen_markdown/Spring/SpringBoot源码解析/SpringApplication初始化阶段.note.md
+ - raw/wujinsen_markdown/Spring/Spring、SpringMVC和SpringBoot看这一篇就够了！.note.md
 related: [spring-boot-自动配置, enableautoconfiguration原理, 服务调用与架构]
 created: 2026-06-22
 updated: 2026-06-22
@@ -14,7 +14,7 @@ updated: 2026-06-22
 
 # SpringApplication 启动流程
 
-> 自动配置 [[enableautoconfiguration原理]]；茉莉架构 [[服务调用与架构]]。
+> 自动配置 [[enableautoconfiguration原理]]；系统架构。
 
 ## 启动入口
 
@@ -36,7 +36,7 @@ SpringApplication.run(UserCenterApplication.class, args);
 
 ## bootstrap vs application
 
-茉莉各服务通常：
+各服务通常：
 
 - `bootstrap.yml` — Nacos 地址、应用名（Spring Cloud 上下文优先加载）
 - `application-dev.yml` — 数据源、Redis、Dubbo、端口
@@ -44,10 +44,6 @@ SpringApplication.run(UserCenterApplication.class, args);
 ## refresh 核心（与自动配置交汇）
 
 `AbstractApplicationContext.refresh()` → `invokeBeanFactoryPostProcessors` → 处理 `@Configuration` 与 **ConfigurationClassPostProcessor** → 解析 `@Import(AutoConfigurationImportSelector)` → 自动配置 Bean 注册。
-
-## 多服务启动顺序（茉莉）
-
-Nacos → Redis → MySQL → **user-center** → order/bi/knowledge → **gateway**。见 [[本地启动指南]]。
 
 ## 常见问题
 

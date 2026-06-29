@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Spring, HTTP, WebFlux]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [webflux-响应式入门, okhttp-与-http客户端, openfeign-与-http客户端, reactor-mono与-flux]
 created: 2026-06-21
 updated: 2026-06-21
@@ -21,21 +21,21 @@ updated: 2026-06-21
 |---|--------------|-----------|
 | 模型 | 阻塞 | 非阻塞（Reactor） |
 | Spring 状态 | 维护模式 | 推荐替代 |
-| 茉莉现状 | MVC 可用 | 新 HTTP 边界可选 |
+| 典型现状 | MVC 可用 | 新 HTTP 边界可选 |
 
 ## 2. WebClient 示例
 
 ```java
 WebClient client = WebClient.builder()
-    .baseUrl("http://user-center")
-    .defaultHeader("Authorization", token)
-    .build();
+ .baseUrl("http://user-center")
+ .defaultHeader("Authorization", token)
+ .build();
 
 Mono<User> user = client.get()
-    .uri("/api/user/{id}", id)
-    .retrieve()
-    .bodyToMono(User.class)
-    .timeout(Duration.ofSeconds(5));
+ .uri("/api/user/{id}", id)
+ .retrieve()
+ .bodyToMono(User.class)
+ .timeout(Duration.ofSeconds(5));
 ```
 
 ## 3. 何时仍用 RestTemplate / Feign

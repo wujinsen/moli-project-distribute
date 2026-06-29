@@ -144,7 +144,7 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 
 - ✅ 已定范式、写好 `AGENTS.md` 契约、搭好 wiki 骨架。
 - ✅ 已示范 ingest 顶层 README → 5 页（guides/services/concepts），含关系边。
-- ✅ **Phase 0 治理（2026-06-25）**：运维页归位 `wiki-ops/`；清批次占位页；wiki **375 页**；CI **`lint-strict` 门禁** + `sync-all` 三空间。
+- ✅ **Phase 0 治理（2026-06-25）**：运维页归位 `wiki-moli/`；清批次占位页；wiki **375 页**；CI **`lint-strict` 门禁** + `sync-all` 三空间。
 - ✅ **Agent 知识治理自动化**：[`kb/tools/lint.py`](tools/lint.py) 分级体检；PR 阻断 ERROR/WARN。
 - ✅ **M5 T14**：单篇 Wiki 在线编辑 + AI 改稿 + enrich（[[Wiki在线编辑与AI协助改稿]]）。
 - ✅ **M6 T15**：批次 Ingest 工作台（[[Ingest工作台产品方案]]）；前端 nextSteps/conflicts 🔵。

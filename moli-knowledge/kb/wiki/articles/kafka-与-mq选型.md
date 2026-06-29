@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [kafka, rocketmq, rabbitmq, 选型]
 sources:
-  - raw/wujinsen_markdown/面试笔试/高并发架构系列：Kafka、RocketMQ、RabbitMQ的优劣势比较.note.md
-  - raw/wujinsen_markdown/面试笔试/kafka/精尽 Kafka 面试题（最新更新时间：2019-12-14）.note.md
+ - raw/wujinsen_markdown/面试笔试/高并发架构系列：Kafka、RocketMQ、RabbitMQ的优劣势比较.note.md
+ - raw/wujinsen_markdown/面试笔试/kafka/精尽 Kafka 面试题（最新更新时间：2019-12-14）.note.md
 related: [消息队列, 秒杀设计, elasticsearch-搜索]
 created: 2026-06-22
 updated: 2026-06-22
@@ -14,7 +14,7 @@ updated: 2026-06-22
 
 # Kafka 与 MQ 选型
 
-> 枢纽 [[消息队列]]；茉莉秒杀 [[秒杀设计]]。
+> 枢纽 [[消息队列]]；秒杀。
 
 ## 1. 吞吐量与时延（量级印象）
 
@@ -55,7 +55,7 @@ updated: 2026-06-22
 - 多语言客户端少
 - 社区相对 Kafka 小
 
-**适合**：**订单、秒杀异步落库**（[[秒杀设计]] 演进首选之一）、金融级消息。
+**适合**：**订单、秒杀异步落库**（ 演进首选之一）、金融级消息。
 
 ## 4. RabbitMQ
 
@@ -78,7 +78,7 @@ updated: 2026-06-22
 | 日志/大数据/ELK | **Kafka** |
 | 电商订单/秒杀削峰 | **RocketMQ** |
 | 复杂路由/中小规模 | **RabbitMQ** |
-| 茉莉秒杀从 Redis 队列升级 | **RocketMQ** 或 Kafka（看团队栈） |
+| 秒杀从 Redis 队列升级 | **RocketMQ** 或 Kafka（看团队栈） |
 
 ## 6. Kafka 为什么快？（面试常问）
 
@@ -89,20 +89,8 @@ updated: 2026-06-22
 
 ## 7. 消息可靠性（通用）
 
-生产端：ack 级别（Kafka `acks=all`）、重试  
-消费端：手动 commit、幂等消费、死信队列  
+生产端：ack 级别（Kafka `acks=all`）、重试
+消费端：手动 commit、幂等消费、死信队列
 服务端：副本同步、持久化
 
-Redis List 队列（茉莉现状）缺持久化与标准 ACK，宕机可能丢消息。
-
-## 8. 茉莉落地 checklist
-
-若替换 [[秒杀设计]] 中 Redis 队列：
-
-1. 定义 topic + 消费者组
-2. 消息体含 activityId、userId、orderId（幂等键）
-3. 消费失败 → 重试 N 次 → 死信
-4. 监控堆积 lag
-5. 压测对比 Redis 队列与 MQ 延迟
-
-入口仍建议 [[sentinel-限流与熔断]]，MQ 只解决**写库削峰**。
+Redis List 队列（典型现状）缺持久化与标准 ACK，宕机可能丢消息。

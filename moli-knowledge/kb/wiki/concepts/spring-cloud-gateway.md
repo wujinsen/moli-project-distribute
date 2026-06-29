@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [gateway, Spring Cloud, 微服务, WebFlux]
 sources:
-  - moli-gateway/src/main/resources/application-dev.yml
-  - docs/zh-CN/ARCHITECTURE.md
+ - moli-gateway/src/main/resources/application-dev.yml
+ - docs/zh-CN/ARCHITECTURE.md
 related: [网关, gateway-路由与过滤器, spring-mvc请求流程, 服务调用与架构, 认证与会话机制, io模型与-netty, netty-reactor与线程模型, 跨域与前后端分离]
 created: 2026-06-22
 updated: 2026-06-22
@@ -14,9 +14,9 @@ updated: 2026-06-22
 
 # Spring Cloud Gateway（概念枢纽）
 
-> 茉莉实例页 [[网关]]；路由配置 [[gateway-路由与过滤器]]；全链路 [[服务调用与架构]]。
+> 实例页 ；路由配置 [[gateway-路由与过滤器]]；全链路。
 
-**Spring Cloud Gateway** 是 Spring 官方 API 网关：基于 **WebFlux + Netty**（Reactor 模型见 [[io模型与-netty]]），非 Tomcat Servlet。茉莉 `moli-gateway` 端口 **21000**，统一对外 HTTP 入口。
+**Spring Cloud Gateway** 是 Spring 官方 API 网关：基于 **WebFlux + Netty**（Reactor 模型见 [[io模型与-netty]]），非 Tomcat Servlet。 `moli-gateway` 端口 **21000**，统一对外 HTTP 入口。
 
 ## 与 Spring MVC 对比
 
@@ -37,17 +37,11 @@ updated: 2026-06-22
 | **Filter** | 改写请求/响应，如 `StripPrefix=1` |
 | **URI** | `lb://service-name` 经 Nacos + Ribbon 负载均衡 |
 
-## 茉莉现状（重要）
-
-- **不做鉴权**：不校验 token，只转发 `Authorization` 头 → 下游 Shiro，见 [[认证与会话机制]]
-- **未接 Sentinel**：无限流/熔断（架构文档为规划项）
-- **Nacos Discovery**：`lb://user-center-server` 等；Config 多未启用
-
 ## 典型访问
 
 ```
 http://localhost:21000/UserCenter/login
-  → StripPrefix → user-center:8888/login
+ → StripPrefix → user-center:8888/login
 ```
 
 ## 演进方向

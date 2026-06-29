@@ -17,7 +17,10 @@
                 #{sid}
             </foreach>
         </if>
-        <if test="categoryId != null">
+        <if test="uncategorizedOnly != null and uncategorizedOnly">
+            AND category_id IS NULL
+        </if>
+        <if test="categoryId != null and (uncategorizedOnly == null or !uncategorizedOnly)">
             AND category_id = #{categoryId}
         </if>
         <if test="status != null">

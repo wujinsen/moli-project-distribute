@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [nacos, 配置中心, RefreshScope]
 sources:
-  - raw/wujinsen_markdown/moli项目/使用Nacos作为配置中心和服务注册发现.note.md
-  - moli-user-center/moli-user-center-server/src/main/resources/bootstrap.yml
+ - raw/wujinsen_markdown/moli项目/使用Nacos作为配置中心和服务注册发现.note.md
+ - moli-user-center/moli-user-center-server/src/main/resources/bootstrap.yml
 related: [nacos-注册与配置, dubbo-与-nacos, 本地启动指南, 技术栈与版本]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,18 +15,6 @@ updated: 2026-06-22
 # Nacos Config 动态配置实践
 
 > 注册发现 [[nacos-注册与配置]]；Dubbo 注册 [[dubbo-与-nacos]]。
-
-## 1. 茉莉 dev 现状
-
-`bootstrap.yml` 中 **Nacos Config 默认关闭**：
-
-```yaml
-spring.cloud.nacos.config.enabled: false
-```
-
-本地开发以各模块 **`application-dev.yml`** 为准（MySQL/Redis/Dubbo）。**Discovery 开启**，服务注册到 `127.0.0.1:8848`、namespace `dev`。
-
-启用 Config 时，已预留 `extension-configs` 示例（`aaa-dev.yaml` / `bbb-dev.yaml`，`refresh: true`）。
 
 ## 2. 何时用 Nacos Config
 
@@ -43,8 +31,8 @@ spring.cloud.nacos.config.enabled: false
 
 ```xml
 <dependency>
-  <groupId>com.alibaba.cloud</groupId>
-  <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+ <groupId>com.alibaba.cloud</groupId>
+ <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
 </dependency>
 ```
 
@@ -52,22 +40,22 @@ spring.cloud.nacos.config.enabled: false
 
 ```yaml
 spring:
-  application:
-    name: user-center-server
-  cloud:
-    nacos:
-      config:
-        enabled: true
-        server-addr: 127.0.0.1:8848
-        namespace: dev
-        file-extension: yaml
-        extension-configs:
-          - data-id: datasource-dev.yaml
-            group: moli-user-center
-            refresh: true
-          - data-id: redis-dev.yaml
-            group: moli-user-center
-            refresh: true
+ application:
+ name: user-center-server
+ cloud:
+ nacos:
+ config:
+ enabled: true
+ server-addr: 127.0.0.1:8848
+ namespace: dev
+ file-extension: yaml
+ extension-configs:
+ - data-id: datasource-dev.yaml
+ group: moli-user-center
+ refresh: true
+ - data-id: redis-dev.yaml
+ group: moli-user-center
+ refresh: true
 ```
 
 > raw 笔记用 `ext-config` + `datasource.properties` / `redis.properties` 拆分，原理相同；**data-id + group + namespace** 三者唯一确定配置。
@@ -113,9 +101,3 @@ Discovery 与 Config 的 **namespace 必须一致**，否则「服务看见但�
 | 刷新无效 | `refresh: true` + `@RefreshScope` |
 | 启动读不到 | `bootstrap.yml` 先于 `application.yml` 加载 |
 | 仍用本地 Redis | Config 未启用时正常 [[nacos-注册与配置]] |
-
-## 7. 迁移建议（茉莉）
-
-1. 先把 **test/pre** 的 datasource/redis 迁到 Nacos
-2. dev 保持 `enabled: false` 降低新人门槛
-3. 文档化各 data-id 清单（与 [[本地启动指南]] 联动）

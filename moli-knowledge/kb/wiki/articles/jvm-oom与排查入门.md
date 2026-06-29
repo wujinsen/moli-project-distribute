@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [jvm, OOM, 排查, 调优]
 sources:
-  - raw/wujinsen_markdown/jvm/OutOfMemoryError异常与实战.note.md
-  - raw/wujinsen_markdown/jvm/调优/java CPU 100% 排查.note.md
-  - raw/wujinsen_markdown/jvm/cpu 100%.note.md
+ - raw/wujinsen_markdown/jvm/OutOfMemoryError异常与实战.note.md
+ - raw/wujinsen_markdown/jvm/调优/java CPU 100% 排查.note.md
+ - raw/wujinsen_markdown/jvm/cpu 100%.note.md
 related: [jvm-内存与gc, jvm-面试题, 故障排查指南]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,7 +15,7 @@ updated: 2026-06-22
 
 # JVM OOM 与排查入门
 
-> 内存结构 [[jvm-内存与gc]]；茉莉环境联调 [[故障排查指南]]。
+> 内存结构 [[jvm-内存与gc]]；环境联调。
 
 ## 常见 OOM 类型
 
@@ -37,8 +37,8 @@ updated: 2026-06-22
 ## CPU 100% 快查
 
 ```bash
-top -Hp <pid>          # 找高 CPU 线程 tid
-printf "%x\n" <tid>    # 转 16 进制
+top -Hp <pid> # 找高 CPU 线程 tid
+printf "%x\n" <tid> # 转 16 进制
 jstack <pid> | grep <hex> -A 30
 ```
 

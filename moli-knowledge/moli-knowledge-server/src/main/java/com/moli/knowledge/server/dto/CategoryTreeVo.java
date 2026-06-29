@@ -31,8 +31,11 @@ public class CategoryTreeVo {
     @ApiModelProperty("默认体裁 kb_type")
     private String defaultType;
 
-    @ApiModelProperty("该分类下文档数（withCount=true 时返回，否则 null）")
+    @ApiModelProperty("该分类下文档数（withCount=true；与浏览一致：已发布 source=kb）")
     private Integer docCount;
+
+    @ApiModelProperty("虚拟节点（如「未分类」）；true 时 id 为 null，dirSlug=uncategorized")
+    private Boolean virtualNode;
 
     @ApiModelProperty("排序")
     private Integer sort;

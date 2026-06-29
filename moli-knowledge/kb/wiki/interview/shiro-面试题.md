@@ -5,8 +5,8 @@ type: interview
 status: active
 tags: [Shiro, SSO, 面试题, 鉴权]
 sources:
-  - moli-user-center/moli-user-center-shiro-starter/
-  - docs/zh-CN/RBAC.md
+ - moli-user-center/moli-user-center-shiro-starter/
+ - docs/zh-CN/RBAC.md
 related: [shiro-鉴权体系, shiro-starter与跨服务校验, sso与系统门户, 认证与会话机制, rbac-权限模型]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,10 +15,6 @@ updated: 2026-06-22
 # Shiro 与 SSO（面试题系列）
 
 > [[shiro-鉴权体系]] [[shiro-starter与跨服务校验]] [[sso与系统门户]] [[认证与会话机制]]
-
-## Q1. 茉莉 token 是 JWT 吗？
-
-否。`login_token_*` 是 Shiro Session ID，存 Redis。
 
 ## Q2. 为什么业务服务不能 POST /login？
 
@@ -34,7 +30,7 @@ AuthenticationFilter：Session 恢复后 Dubbo `getUserById` 查停用/删除。
 
 ## Q5. Redis 不一致会怎样？
 
-Session 读不到 → 全链路 401。见 [[故障排查指南]]。
+Session 读不到 → 全链路 401。见。
 
 ## Q6. anon 路径有哪些？
 
@@ -50,7 +46,7 @@ INTERNAL 菜单内嵌；EXTERNAL 门户跳转 base_url（如 KnowledgeServer）�
 
 ## Q9. Shiro vs Spring Security？
 
-茉莉选型 Shiro + 自研 Starter；Session 存 Redis 非 JWT。
+选型 Shiro + 自研 Starter；Session 存 Redis 非 JWT。
 
 ## Q10. 新微服务如何接入鉴权？
 

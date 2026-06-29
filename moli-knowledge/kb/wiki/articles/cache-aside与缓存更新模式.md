@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [redis, 缓存, Cache-Aside, 一致性]
 sources:
-  - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
+ - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
 related: [redis-缓存, 秒杀设计, redis-面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -25,7 +25,7 @@ updated: 2026-06-22
 
 ## Cache-Aside 标准流程
 
-**读**：cache get → hit 返回 → miss 则读 DB → set cache → 返回  
+**读**：cache get → hit 返回 → miss 则读 DB → set cache → 返回
 **写**：update DB → **invalidate cache**（删 key 或设 TTL 过期）
 
 ## 错误写法：先删缓存再写库
@@ -44,7 +44,7 @@ Facebook/Memcached 实践：**delete 而非 update**，避免两个并发写交�
 
 ## 强一致？
 
-Cache + DB 非单事务 → 要么 2PC/XA（慢），要么接受最终一致 + 业务补偿。[[秒杀设计]] 用 Redis 预减 + 异步落库是另一种权衡。
+Cache + DB 非单事务 → 要么 2PC/XA（慢），要么接受最终一致 + 业务补偿。 用 Redis 预减 + 异步落库是另一种权衡。
 
 ## 面试一句话
 

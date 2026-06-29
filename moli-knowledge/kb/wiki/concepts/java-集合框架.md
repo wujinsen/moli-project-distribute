@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [Java, 集合, HashMap, ArrayList]
 sources:
-  - raw/wujinsen_markdown/language/Java/HashMap的工作原理.note.md
-  - raw/wujinsen_markdown/language/Java/java基础类源码分析/HashMap源码分析.note.md
+ - raw/wujinsen_markdown/language/Java/HashMap的工作原理.note.md
+ - raw/wujinsen_markdown/language/Java/java基础类源码分析/HashMap源码分析.note.md
 related: [hashmap-面试题, java-并发, java-并发面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -20,9 +20,9 @@ updated: 2026-06-22
 
 ```
 Collection
-├── List   (ArrayList, LinkedList)
-├── Set    (HashSet, TreeSet)
-└── Queue  (PriorityQueue, Deque)
+├── List (ArrayList, LinkedList)
+├── Set (HashSet, TreeSet)
+└── Queue (PriorityQueue, Deque)
 
 Map
 ├── HashMap / LinkedHashMap / TreeMap
@@ -47,7 +47,7 @@ Map
 
 ## 4. 与业务代码
 
-茉莉业务层少直接调优集合；读配置、缓存 Map、MyBatis 结果 List 常见。Stream API 操作集合注意 NPE 与并发修改。
+业务层少直接调优集合；读配置、缓存 Map、MyBatis 结果 List 常见。Stream API 操作集合注意 NPE 与并发修改。
 
 ## 相关
 

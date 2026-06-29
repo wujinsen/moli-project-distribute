@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [安全, Web, 前端]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [api-接口安全设计, https与-tls基础, 日志脱敏规范]
 created: 2026-06-21
 updated: 2026-06-21
@@ -27,7 +27,7 @@ updated: 2026-06-21
 
 - 同源 Cookie + **SameSite=Lax/Strict**
 - 关键写操作：**CSRF Token** 或 Header 自定义 token
-- 茉莉 API 以 `Authorization` SessionId 为主 [[登录与鉴权指南]]，跨站表单难带 Header → 降低经典 CSRF 面
+- API 以 `Authorization` SessionId 为主，跨站表单难带 Header → 降低经典 CSRF 面
 
 ## 3. 其他
 

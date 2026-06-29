@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [Redisson, Redis, 分布式锁]
 sources:
-  - raw/wujinsen_markdown/架构/分布式事务/redis/Redisson基本用法.note.md
-  - raw/wujinsen_markdown/DataBase/Redis/Jedis/Jedis与Redisson选型对比.note.md
+ - raw/wujinsen_markdown/架构/分布式事务/redis/Redisson基本用法.note.md
+ - raw/wujinsen_markdown/DataBase/Redis/Jedis/Jedis与Redisson选型对比.note.md
 related: [redis分布式锁实现, 分布式锁, 分布式锁面试题, redis-缓存]
 created: 2026-06-22
 updated: 2026-06-22
@@ -21,11 +21,11 @@ updated: 2026-06-22
 ```java
 RLock lock = redisson.getLock("order:" + orderId);
 try {
-  if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
-    // 业务
-  }
+ if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
+ // 业务
+ }
 } finally {
-  if (lock.isHeldByCurrentThread()) lock.unlock();
+ if (lock.isHeldByCurrentThread()) lock.unlock();
 }
 ```
 
@@ -42,11 +42,6 @@ try {
 | 续期 | 需自实现 | 看门狗 |
 | 可重入 | 需自实现 | 支持 |
 | 红锁 | 自行多节点 | RedLock 争议同 [[redis分布式锁实现]] |
-
-## 4. 茉莉建议
-
-- 秒杀库存：**Lua 脚本**原子 [[秒杀设计]]，非典型 RLock
-- 订单/定时任务互斥：Redisson 或 DB 乐观锁
 
 ## 相关
 

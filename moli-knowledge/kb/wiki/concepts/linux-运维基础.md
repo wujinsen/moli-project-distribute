@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [Linux, 运维, 服务器]
 sources:
-  - raw/wujinsen_markdown/moli项目/运维/启动脚本.note.md
-  - raw/wujinsen_markdown/架构/运维/安全/防火墙命令.note.md
-  - raw/wujinsen_markdown/前端/Vue/linux 安装nodejs.note.md
+ - raw/wujinsen_markdown/moli项目/运维/启动脚本.note.md
+ - raw/wujinsen_markdown/架构/运维/安全/防火墙命令.note.md
+ - raw/wujinsen_markdown/前端/Vue/linux 安装nodejs.note.md
 related: [nginx反向代理与前端部署指南, docker部署指南, 故障排查指南, jenkins-ci入门]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,7 +15,7 @@ updated: 2026-06-22
 
 # Linux 运维基础
 
-茉莉生产/测试机常见为 CentOS/Ubuntu 云主机，跑 MySQL、Redis、Nacos、Nginx、MinIO 与各 Java 进程。本文归纳**与项目相关的**运维动作，不含具体主机密码（凭据见团队密钥库）。
+生产/测试机常见为 CentOS/Ubuntu 云主机，跑 MySQL、Redis、Nacos、Nginx、MinIO 与各 Java 进程。本文归纳**与项目相关的**运维动作，不含具体主机密码（凭据见团队密钥库）。
 
 ## 1. 常用命令
 
@@ -29,7 +29,7 @@ updated: 2026-06-22
 
 ## 2. Java 服务启停
 
-典型脚本模式（与 [[本地启动指南]] 顺序一致）：
+典型脚本模式（与 顺序一致）：
 
 ```bash
 nohup java -jar user-center-server.jar --spring.profiles.active=pro > logs/uc.log 2>&1 &
@@ -51,12 +51,12 @@ nohup java -jar user-center-server.jar --spring.profiles.active=pro > logs/uc.lo
 
 - CPU 100%：见 raw「java CPU 100% 排查」思路 — 先 `top` 找 PID，再 `jstack`。
 - 连不上服务：安全组/防火墙端口、bind 地址、Nacos 注册。
-- 系统决策树：[[故障排查指南]]。
+- 系统决策树：。
 
 ## 5. 与 Docker 的关系
 
-单机可裸装；多环境复现优先 [[docker部署指南]] + compose，减少「仅在某台机器能跑」的问题。
+单机可裸装；多环境复现优先 + compose，减少「仅在某台机器能跑」的问题。
 
 ## 相关
 
-[[nginx反向代理与前端部署指南]] · [[moli生产部署拓扑备忘]] · [[容器与-docker]]
+[[nginx反向代理与前端部署指南]] · · [[容器与-docker]]

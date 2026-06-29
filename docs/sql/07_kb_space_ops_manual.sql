@@ -1,8 +1,8 @@
 -- =============================================================
--- 茉莉系统操作手册 · 独立知识空间
+-- 茉莉系统手册 · 独立知识空间（moli-project-distribute 全项目文档）
 -- 在 docs/sql/03_knowledge_schema.sql 之后执行；可重复执行。
--- wiki 源：moli-knowledge/kb/wiki-ops/
--- 同步：python kb/tools/sync_to_db.py --wiki-dir wiki-ops --space moli-ops-manual
+-- wiki 源：moli-knowledge/kb/wiki-moli/
+-- 同步：python kb/tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
 -- 导入务必带字符集：mysql --default-character-set=utf8mb4 moli < 本文件
 -- =============================================================
 
@@ -13,8 +13,8 @@ INSERT INTO `kb_space`
    `visibility`, `owner_id`, `status`, `sort`, `is_delete`)
 VALUES
   (900000000000000003, 1, NOW(), 1, NOW(),
-   'moli-ops-manual', '茉莉系统操作手册',
-   '茉莉微服务全家桶：本地启动、数据库、登录鉴权、权限、联调、部署与故障排查（与 enterprise-kb 技术文库分离）',
+   'moli-ops-manual', '茉莉系统手册',
+   'moli-project-distribute 用户指导手册：产品、技术、测试、运维与操作指南（wiki 源 kb/wiki-moli/）',
    'guide', 1, 1, 1, 3, 0)
 ON DUPLICATE KEY UPDATE
   `space_name` = VALUES(`space_name`),
@@ -24,7 +24,7 @@ ON DUPLICATE KEY UPDATE
   `sort` = VALUES(`sort`),
   `update_time` = NOW();
 
--- 分类=目录（单一真相源）：绑定 kb/wiki-ops/ 子目录，default_type 用于移动时对齐 frontmatter type
+-- 分类=目录（单一真相源）：绑定 kb/wiki-moli/ 子目录，default_type 用于移动时对齐 frontmatter type
 -- 2026-06-25：guides / product / develop / ops / test（废弃 services、concepts）
 UPDATE `kb_category` SET `is_delete` = 1, `update_time` = NOW()
 WHERE `space_id` = 900000000000000003 AND `dir_slug` IN ('services', 'concepts') AND `is_delete` = 0;

@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Spring Boot, 性能, JVM]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [spring-boot-自动配置, java-类加载与双亲委派, production-jvm启动参数]
 created: 2026-06-21
 updated: 2026-06-21
@@ -28,12 +28,6 @@ updated: 2026-06-21
 | 排除无用自动配置 | `@EnableAutoConfiguration(exclude=...)` |
 | 索引 cache | Spring 2.7+ `spring-context-index` |
 | 延迟注册 | Dubbo `register=false` 本地 dev |
-
-## 3. 茉莉 dev 建议
-
-- 本地只启必要服务 [[本地启动指南]]
-- Nacos 命名空间隔离，避免拉全量配置
-- CI 测启动时间回归 [[ci-知识库同步门禁]]
 
 ## 4. 测量
 

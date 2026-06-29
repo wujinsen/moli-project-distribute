@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [jvm, 内存, GC, 调优]
 sources:
-  - raw/wujinsen_markdown/jvm/JVM内存划分.note.md
-  - raw/wujinsen_markdown/jvm/垃圾收集算法.note.md
-  - raw/wujinsen_markdown/jvm/jdk7、8、9默认垃圾回收器.note.md
+ - raw/wujinsen_markdown/jvm/JVM内存划分.note.md
+ - raw/wujinsen_markdown/jvm/垃圾收集算法.note.md
+ - raw/wujinsen_markdown/jvm/jdk7、8、9默认垃圾回收器.note.md
 related: [jvm-垃圾收集算法与收集器, jvm-oom与排查入门, jvm-面试题, jmm与happens-before, java-并发]
 created: 2026-06-22
 updated: 2026-06-22
@@ -35,8 +35,8 @@ updated: 2026-06-22
 ```
 堆
 ├── 新生代 (Young)
-│   ├── Eden
-│   └── Survivor (From / To)
+│ ├── Eden
+│ └── Survivor (From / To)
 └── 老年代 (Old)
 ```
 
@@ -50,7 +50,7 @@ updated: 2026-06-22
 | 7 / 8 | Parallel Scavenge + Parallel Old |
 | 9+ | **G1** |
 
-茉莉项目 **JDK 8** → Parallel 组合；可用 `-XX:+PrintCommandLineFlags` 确认。
+目标系统 **JDK 8** → Parallel 组合；可用 `-XX:+PrintCommandLineFlags` 确认。
 
 ## 与微服务的关系
 
@@ -61,10 +61,10 @@ updated: 2026-06-22
 ## 常用 JVM 参数（入门）
 
 ```
--Xms512m -Xmx512m          # 堆固定，避免动态扩缩
+-Xms512m -Xmx512m # 堆固定，避免动态扩缩
 -XX:MetaspaceSize=128m
 -XX:+PrintGCDetails -XX:+PrintGCDateStamps
--Xloggc:gc.log             # JDK8
+-Xloggc:gc.log # JDK8
 ```
 
-详细排查见 [[jvm-oom与排查入门]]、[[故障排查指南]]。
+详细排查见 [[jvm-oom与排查入门]]、。

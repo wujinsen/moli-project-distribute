@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [redis, 数据结构, 场景]
 sources:
-  - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
-  - raw/wujinsen_markdown/面试笔试/面试题整理/游戏排行榜算法设计实现比较.note.md
+ - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
+ - raw/wujinsen_markdown/面试笔试/面试题整理/游戏排行榜算法设计实现比较.note.md
 related: [redis-缓存, 秒杀设计, redis-面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -26,13 +26,6 @@ updated: 2026-06-22
 | **Bitmap** | SETBIT/BITCOUNT | 签到、布隆替代 |
 | **HyperLogLog** | PFADD/PFCOUNT | UV 近似统计 |
 | **Stream** | XADD/XREADGROUP | 消息流（5.0+） |
-
-## 茉莉项目映射
-
-- **Session**：String（Shiro 序列化 Session）
-- **秒杀库存**：String + **Lua** 原子 DECR，见 [[秒杀设计]]
-- **分布式锁**：String + SET NX PX + Lua，见 [[redis分布式锁实现]]
-- **异步落库队列**：List 或 Stream（订单服务消费者）
 
 ## 选型原则
 

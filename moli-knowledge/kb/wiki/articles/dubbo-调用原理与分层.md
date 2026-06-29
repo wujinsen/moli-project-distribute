@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [dubbo, RPC, 微服务]
 sources:
-  - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
+ - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
 related: [dubbo-与-nacos, 服务调用与架构, dubbo-面试题, netty-reactor与线程模型, io模型与-netty]
 created: 2026-06-22
 updated: 2026-06-22
@@ -13,7 +13,7 @@ updated: 2026-06-22
 
 # Dubbo 调用原理与分层
 
-> 枢纽 [[dubbo-与-nacos]]；茉莉架构 [[服务调用与架构]]。
+> 枢纽 [[dubbo-与-nacos]]；系统架构。
 
 ## 一次 RPC 调用（Consumer → Provider）
 
@@ -28,9 +28,9 @@ updated: 2026-06-22
 ## 十层架构（简化为三层）
 
 ```
-Business   — Service 接口与实现（@DubboService / @DubboReference）
-RPC        — config / proxy / registry / cluster / monitor
-Remoting   — protocol / exchange / transport / serialize
+Business — Service 接口与实现（@DubboService / @DubboReference）
+RPC — config / proxy / registry / cluster / monitor
+Remoting — protocol / exchange / transport / serialize
 ```
 
 - **Proxy**：生成 Stub/Skeleton 透明代理
@@ -41,23 +41,6 @@ Remoting   — protocol / exchange / transport / serialize
 ## Dubbo SPI
 
 Dubbo **自研 SPI**（非 JDK SPI）：`META-INF/dubbo/` 扩展点，支持 Adaptive、Wrapper。
-
-## 茉莉配置示例
-
-```yaml
-dubbo:
-  application:
-    name: order-server
-  registry:
-    address: nacos://127.0.0.1:8848
-  protocol:
-    name: dubbo
-    port: 20882
-  scan:
-    base-packages: com.moli.order.server.provider
-```
-
-Provider 在用户中心暴露 `UserCenterServer`；Consumer 在 order/bi/knowledge 引用。
 
 ## 常见问题
 

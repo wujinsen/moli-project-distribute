@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [权限, RBAC, Shiro, 安全]
 sources:
-  - docs/zh-CN/RBAC.md
-  - docs/api-iteration-map.md
-  - moli-user-center/moli-user-center-server/
+ - docs/zh-CN/RBAC.md
+ - docs/api-iteration-map.md
+ - moli-user-center/moli-user-center-server/
 related: [用户中心, 认证与会话机制, 权限管理操作指南, 字段级数据权限设计]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,13 +15,13 @@ updated: 2026-06-22
 
 # RBAC 权限模型
 
-茉莉项目的权限基础，由 [[用户中心]] 实现。认证授权用 Apache Shiro，会话存 Redis（见 [[认证与会话机制]]）。
+目标系统的权限基础，由 实现。认证授权用 Apache Shiro，会话存 Redis（见 [[认证与会话机制]]）。
 
 ## 模型
 
 ```
 用户 SysUser ──N:N(sys_user_role)──▶ 角色 SysRole ──┬─N:N(sys_role_menu)──▶ 菜单 SysMenu
-                                                    └─N:N(sys_role_action)─▶ 动作 SysAction
+ └─N:N(sys_role_action)─▶ 动作 SysAction
 部门 SysDept（组织架构，独立于角色授权）
 ```
 
@@ -66,5 +66,5 @@ updated: 2026-06-22
 
 ## 相关
 
-- 怎么管用户/角色/授权：[[权限管理操作指南]]
+- 怎么管用户/角色/授权：
 - 登录与会话怎么走：[[认证与会话机制]]

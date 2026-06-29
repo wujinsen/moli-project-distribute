@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Redis, 延迟队列, ZSet]
 sources:
-  - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
+ - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
 related: [延迟消息与队列, redis-数据结构与使用场景, 订单-状态机设计, 秒杀设计]
 created: 2026-06-22
 updated: 2026-06-22
@@ -42,7 +42,7 @@ ZRANGEBYSCORE delay_queue 0 now LIMIT 0 1
 
 ## 4. 与秒杀
 
-未支付订单超时释放库存：ZSet 存 `(orderId, payDeadline)`，扫单线程关单并回滚 Redis 库存 [[秒杀设计]]。
+未支付订单超时释放库存：ZSet 存 `(orderId, payDeadline)`，扫单线程关单并回滚 Redis 库存。
 
 ## 相关
 

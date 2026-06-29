@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Dubbo, RPC, 超时]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [dubbo-调用原理与分层, rpc-超时重试与链路, feign-超时重试配置]
 created: 2026-06-21
 updated: 2026-06-21
@@ -33,11 +33,6 @@ dubbo.provider.timeout: 10000
 ## 3. 重试
 
 `retries=0` 写操作默认；读可适当 `retries=2`（幂等前提）。
-
-## 4. 茉莉
-
-- 用户中心鉴权接口短超时 + 快速失败
-- 订单调用户中心：避免外层长事务占连接 [[druid-连接池泄漏排查]]
 
 ## 相关
 

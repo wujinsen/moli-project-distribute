@@ -98,7 +98,7 @@
 ## 5. 约束与依赖
 
 - 必须先于业务服务启动（Dubbo Provider + Session 写入方）
-- Redis、MySQL、Nacos 与 [`本地启动指南`](../../wiki-ops/guides/本地启动指南.md) 一致
+- Redis、MySQL、Nacos 与 [`本地启动指南`](../../wiki-moli/guides/本地启动指南.md) 一致
 - 前端 `meiling-ui` 经网关 `/UserCenter/**` 访问
 
 ## 6. 里程碑
@@ -109,7 +109,7 @@
 | M2 | 多系统门户 + SSO Ticket | ✅ |
 | M3 | 动作码双轨 + capabilities | ✅ |
 | M4 | ApiTest 回归 + loadtest profile | ✅ |
-| M5 | 扩展能力（OAuth/多租户） | 📋 见 `wiki/articles/用户中心-扩展能力规划.md` |
+| M5 | 扩展能力（OAuth/多租户） | 📋 见 `wiki-moli/develop/articles/用户中心-扩展能力规划.md` |
 
 ## 7. 成功指标
 

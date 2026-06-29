@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Java, 并发, 可观测性]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [threadlocal-与上下文传递, mdc-日志链路上下文, spring-async与线程池, dubbo-调用原理与分层]
 created: 2026-06-21
 updated: 2026-06-21
@@ -20,7 +20,7 @@ updated: 2026-06-21
 ## 1. 问题回顾
 
 ```
-HTTP 线程 set(traceId) → 提交 Runnable 到 pool →  worker 线程 get() 为空
+HTTP 线程 set(traceId) → 提交 Runnable 到 pool → worker 线程 get() 为空
 ```
 
 `InheritableThreadLocal` 仅在线程**新建**时复制，池化无效。
@@ -31,7 +31,7 @@ HTTP 线程 set(traceId) → 提交 Runnable 到 pool →  worker 线程 get() �
 TransmittableThreadLocal<String> TTL_TRACE = new TransmittableThreadLocal<>();
 
 ExecutorService pool = TtlExecutors.getTtlExecutorService(
-    Executors.newFixedThreadPool(8));
+ Executors.newFixedThreadPool(8));
 
 TTL_TRACE.set(traceId);
 pool.submit(() -> log.info("trace={}", TTL_TRACE.get())); // 有值
@@ -42,15 +42,6 @@ Spring：`TaskDecorator` 包装 `ThreadPoolTaskExecutor` 亦可手动拷贝 MDC�
 ## 3. Dubbo / RPC
 
 `RpcContext` attachment 在 consumer/provider 间传递；异步调用需 TTL 或显式 `setAttachment`，否则链路断 [[rpc-超时重试与链路]]。
-
-## 4. 茉莉建议
-
-| 层级 | 做法 |
-|------|------|
-| Gateway | 生成 traceId → Header |
-| Filter | MDC + TTL 包装公共线程池 |
-| @Async | 专用池 + TTL 或不用 ThreadLocal |
-| 日志 | 优先 SkyWalking Agent [[skywalking-链路追踪]] |
 
 ## 5. 注意
 

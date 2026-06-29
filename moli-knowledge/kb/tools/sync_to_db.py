@@ -74,6 +74,52 @@ KB_TYPES = {"guide", "service", "concept", "article", "interview", "output"}
 # frontmatter status -> kb_document.status
 STATUS_MAP = {"draft": 0, "active": 1, "archived": 2}
 
+# wiki 根下非文档目录（不参与「分类=目录」校验）
+WIKI_NON_CATEGORY_DIRS = frozenset({"graph", "raw", ".git"})
+
+
+def wiki_category_dir_slugs(wiki_dir: Path) -> set[str]:
+    """wiki 根下一级子目录名（dry-run 时作 dir_slug 代理）。"""
+    out: set[str] = set()
+    if not wiki_dir.is_dir():
+        return out
+    for p in wiki_dir.iterdir():
+        if p.is_dir() and p.name not in WIKI_NON_CATEGORY_DIRS and not p.name.startswith("."):
+            out.add(p.name)
+    return out
+
+
+def find_uncategorized_docs(docs, valid_dir_slugs: set[str]):
+    """返回 [(Doc, slug, reason), ...]：slug 一级目录不在 valid_dir_slugs 内。"""
+    bad = []
+    for d in docs:
+        if "/" not in d.slug:
+            bad.append((d, d.slug, "根目录页（无一级目录）"))
+            continue
+        top = d.slug.split("/", 1)[0]
+        if top not in valid_dir_slugs:
+            bad.append((d, d.slug, f"一级目录 '{top}' 未绑定 kb_category.dir_slug"))
+    return bad
+
+
+def report_uncategorized(bad, *, space: str, strict: bool) -> int:
+    if not bad:
+        return 0
+    print("\n" + "!" * 60)
+    print(f"[warn] 未分类文档 {len(bad)} 篇（space={space}）")
+    print("  分类=目录：slug 一级目录须与 kb_category.dir_slug 一致。")
+    print("  请移入正确 wiki 子目录或补建分类后重跑 Sync。")
+    print("!" * 60)
+    for d, slug, reason in bad[:30]:
+        print(f"  - {slug}  «{d.title}»  ({reason})")
+    if len(bad) > 30:
+        print(f"  ... 另有 {len(bad) - 30} 篇")
+    if strict:
+        print("\n[error] 存在未分类文档，Sync 已中止。"
+              "临时放行请加 --allow-uncategorized")
+        return 4
+    return 0
+
 
 # ---------------------------------------------------------------------------
 # 简易雪花 ID（不依赖 DB 自增；与全家桶 bigint 主键兼容）
@@ -330,6 +376,20 @@ def report_dry_run(docs, rels, wiki_dir: Path):
     print("\n[dry-run] 未连接数据库，未写入任何数据。")
 
 
+def check_uncategorized_before_sync(docs, wiki_dir: Path | None, dir_to_cat: dict | None, args) -> int:
+    """校验 slug 一级目录是否可映射到分类；默认 strict（exit 4）。"""
+    if getattr(args, "allow_uncategorized", False):
+        return 0
+    if dir_to_cat is not None:
+        valid = set(dir_to_cat.keys())
+    elif wiki_dir is not None:
+        valid = wiki_category_dir_slugs(wiki_dir)
+    else:
+        return 0
+    bad = find_uncategorized_docs(docs, valid)
+    return report_uncategorized(bad, space=args.space, strict=True)
+
+
 # ---------------------------------------------------------------------------
 # 真正写库（pymysql）
 # ---------------------------------------------------------------------------
@@ -363,34 +423,71 @@ def sync_to_db(docs, rels, args):
             space_id = row[0]
             print(f"目标空间 {args.space} -> space_id={space_id}")
 
-            # 现存 kb 来源文档：slug -> (id, content_hash)
-            cur.execute("SELECT id, slug, content_hash FROM kb_document "
-                        "WHERE space_id=%s AND source='kb' AND is_delete=0", (space_id,))
-            existing = {r[1]: (r[0], r[2]) for r in cur.fetchall()}
+            # 空间内全部 slug（含软删 / manual / raw 遗留），避免 UK 冲突
+            cur.execute(
+                "SELECT id, slug, content_hash, is_delete, source FROM kb_document "
+                "WHERE space_id=%s",
+                (space_id,),
+            )
+            all_by_slug = {r[1]: (r[0], r[2], r[3], r[4]) for r in cur.fetchall()}
+            # 活跃 kb 行：用于 wiki 删页 → DB 软删判定
+            existing = {
+                slug: (info[0], info[1])
+                for slug, info in all_by_slug.items()
+                if info[2] == 0 and info[3] == "kb"
+            }
             slug_to_id: dict = {}
+
+            # 分类=目录映射：dir_slug -> category_id（文档按所在一级目录回填 category_id）
+            cur.execute("SELECT id, dir_slug FROM kb_category "
+                        "WHERE space_id=%s AND is_delete=0 AND dir_slug IS NOT NULL", (space_id,))
+            dir_to_cat = {r[1]: r[0] for r in cur.fetchall() if r[1]}
+
+            rc = check_uncategorized_before_sync(docs, None, dir_to_cat, args)
+            if rc != 0:
+                return rc
+
+            def _category_id(doc):
+                """按文档 slug 的一级目录匹配 kb_category.dir_slug；匹配不到归未分类(None)。"""
+                top = doc.slug.split("/", 1)[0] if "/" in doc.slug else ""
+                return dir_to_cat.get(top)
 
             # ---- upsert 文档 ----
             for d in docs:
-                if d.slug in existing:
-                    doc_id, old_hash = existing[d.slug]
+                if d.slug in all_by_slug:
+                    doc_id, old_hash, was_deleted, old_source = all_by_slug[d.slug]
                     slug_to_id[d.slug] = doc_id
-                    if old_hash == d.content_hash:
-                        stats["skip"] += 1
-                        _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                             "skip", d.content_hash, now)
+                    reactivate = was_deleted != 0 or old_source != "kb"
+                    new_cat = _category_id(d)
+                    if not reactivate and old_hash == d.content_hash:
+                        cur.execute("SELECT category_id FROM kb_document WHERE id=%s", (doc_id,))
+                        old_cat = cur.fetchone()[0]
+                        if old_cat != new_cat:
+                            cur.execute(
+                                "UPDATE kb_document SET category_id=%s, update_time=%s "
+                                "WHERE id=%s",
+                                (new_cat, now, doc_id))
+                            stats["update"] += 1
+                            _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                                 "category_fixup", d.content_hash, now)
+                        else:
+                            stats["skip"] += 1
+                            _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                                 "skip", d.content_hash, now)
                         continue
                     cur.execute(
                         "UPDATE kb_document SET title=%s, summary=%s, content=%s, "
-                        "kb_type=%s, domain=%s, status=%s, source_path=%s, "
-                        "content_hash=%s, version_no=version_no+1, update_id=%s, "
+                        "kb_type=%s, domain=%s, status=%s, source='kb', source_path=%s, "
+                        "category_id=%s, content_hash=%s, is_delete=0, "
+                        "version_no=version_no+1, update_id=%s, "
                         "update_time=%s, publish_time=COALESCE(publish_time, %s) "
                         "WHERE id=%s",
                         (d.title, _summary(d), d.body, d.kb_type, _domain(d),
-                         d.status, d.rel_path, d.content_hash, args.operator, now,
+                         d.status, d.rel_path, _category_id(d), d.content_hash, args.operator, now,
                          now if d.status == 1 else None, doc_id))
                     stats["update"] += 1
                     _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                         "update", d.content_hash, now)
+                         "reactivate" if reactivate else "update", d.content_hash, now)
                 else:
                     doc_id = idgen.next()
                     slug_to_id[d.slug] = doc_id
@@ -400,10 +497,10 @@ def sync_to_db(docs, rels, args):
                         "source_path, content_hash, title, summary, content, doc_type, "
                         "kb_type, domain, status, view_count, like_count, version_no, "
                         "publish_time, is_delete) VALUES "
-                        "(%s,%s,%s,%s,%s,%s,NULL,%s,'kb',%s,%s,%s,%s,%s,'markdown',"
+                        "(%s,%s,%s,%s,%s,%s,%s,%s,'kb',%s,%s,%s,%s,%s,'markdown',"
                         "%s,%s,%s,0,0,1,%s,0)",
                         (doc_id, args.operator, now, args.operator, now, space_id,
-                         d.slug, d.rel_path, d.content_hash, d.title, _summary(d),
+                         _category_id(d), d.slug, d.rel_path, d.content_hash, d.title, _summary(d),
                          d.body, d.kb_type, _domain(d), d.status,
                          now if d.status == 1 else None))
                     stats["insert"] += 1
@@ -714,6 +811,11 @@ def main():
         action="store_true",
         help="与 --purge-manual-web 联用：清理全部空间（忽略 --space）",
     )
+    ap.add_argument(
+        "--allow-uncategorized",
+        action="store_true",
+        help="允许未分类文档通过 Sync（不推荐；仅应急）",
+    )
     args = ap.parse_args()
 
     if args.purge_raw_archive:
@@ -736,7 +838,7 @@ def main():
 
     if args.dry_run:
         report_dry_run(docs, rels, wiki_dir)
-        return 0
+        return check_uncategorized_before_sync(docs, wiki_dir, None, args)
     return sync_to_db(docs, rels, args)
 
 

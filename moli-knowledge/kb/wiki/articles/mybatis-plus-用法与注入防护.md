@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [mybatis, mybatis-plus, SQL注入, 持久层]
 sources:
-  - raw/wujinsen_markdown/javaweb/Mybatis/mybatis的#{}和${}的区别以及order by注入问题.note.md
-  - raw/wujinsen_markdown/架构/编码规范/程序编码/如何更规范化编写Java 代码.note.md
+ - raw/wujinsen_markdown/javaweb/Mybatis/mybatis的#{}和${}的区别以及order by注入问题.note.md
+ - raw/wujinsen_markdown/架构/编码规范/程序编码/如何更规范化编写Java 代码.note.md
 related: [mybatis-与-druid持久层, mysql-索引, spring-声明式事务, 字段级数据权限设计]
 created: 2026-06-22
 updated: 2026-06-22
@@ -26,12 +26,12 @@ updated: 2026-06-22
 ```xml
 <!-- 安全：参数绑定 -->
 <select id="byName">
-  SELECT * FROM sys_user WHERE user_name = #{name}
+ SELECT * FROM sys_user WHERE user_name = #{name}
 </select>
 
 <!-- 危险：仅白名单字段 -->
 <select id="orderBy">
-  SELECT * FROM sys_user ORDER BY ${column}
+ SELECT * FROM sys_user ORDER BY ${column}
 </select>
 ```
 

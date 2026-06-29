@@ -40,7 +40,7 @@
 
 > 默认演示空间 `spaceId = 900000000000000001`（`space_code=enterprise-kb`，公开）。  
 > 日本語試験私有空间 `spaceId = 900000000000000002`（`space_code=jp-fe-ap-exam`），种子见 [`sql/04_kb_space_jp_exam.sql`](../sql/04_kb_space_jp_exam.sql)。  
-> **系统操作手册**独立空间 `spaceId = 900000000000000003`（`space_code=moli-ops-manual`，内部可见），wiki 源 `kb/wiki-ops/`，种子见 [`sql/07_kb_space_ops_manual.sql`](../sql/07_kb_space_ops_manual.sql)。  
+> **茉莉系统手册**独立空间 `spaceId = 900000000000000003`（`space_code=moli-ops-manual`，内部可见），wiki 源 `kb/wiki-moli/`，种子见 [`sql/07_kb_space_ops_manual.sql`](../sql/07_kb_space_ops_manual.sql)。  
 > 多数浏览/检索接口 `spaceId` 省略表示**当前用户可读的全部空间**（非字面「全库」）。
 
 ### 1.4 空间级权限（ACL）
@@ -131,7 +131,7 @@
 mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 mysql -u root -p moli < docs/sql/05_knowledge_action_patch.sql   # 动作权限（空间管理/体检按钮）
 mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql         # 可选：日本語試験私有空间
-mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统操作手册空间
+mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉系统手册空间
 ```
 
 执行后**重新登录**，前端会重新拉取 `getRouters`。
@@ -142,22 +142,23 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 
 ### 2.1 目录 meta `GET /kb/index`
 
-按 **groupBy** 分组的**计数**（**已发布**且 **`source='kb'`** 的 wiki 同步文档；**不含** Web 手工 `manual` 行；**不含 items**，轻量首屏）。
+按**分类（= wiki 一级目录）**分组的**计数**（**已发布**且 **`source='kb'`**；**不含 items**，轻量首屏）。
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
-| `groupBy` | query | 否 | **`category`**(默认，按分类=目录) / `type`(legacy 体裁) |
+| `groupBy` | query | 否 | **仅支持 `category`**；传 `type` 等其它值 **400 拒绝**（体裁分组已废弃） |
 
-响应 `data.groups[]` 含 `type/label/count`；`items` 为空数组。展开分组时调 **2.2**。
+响应 `data.groups[]` 含 `type/label/count`；`items` 为空。展开分组调 **2.2**。
 
-> `groupBy=category` 时 `group.type` 为 **categoryId** 字符串（或 `uncategorized`），`group.label` 为分类名。分类=目录（单一真相源），由 `kb_category.dir_slug` 绑定 wiki 子目录，sync 时按文档一级目录回填 `category_id`。
+> `group.type` 为 **categoryId** 字符串（或 `uncategorized`），`group.label` 为分类名。`kb_category.dir_slug` 绑定 wiki 子目录，Sync 按 slug 一级目录回填 `category_id`。**enterprise-kb 当前 3 类**：`concepts` / `articles` / `interview`。
 
 ```json
 {
-  "total": 3308,
+  "total": 156,
   "groups": [
-    { "type": "article", "label": "技术文章", "count": 1155, "items": [] }
+    { "type": "900000000000000114", "label": "技术文章", "count": 80, "items": [] },
+    { "type": "uncategorized", "label": "未分类", "count": 0, "items": [] }
   ]
 }
 ```
@@ -167,13 +168,11 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 同 index |
-| `groupBy` | query | 否 | **`category`**(默认) / `type`(legacy) |
-| `key` | query | 是* | 分组键：`type` 模式为 kb_type；`category` 模式为 categoryId 或 `uncategorized` |
-| `type` | query | 是* | 旧参数，等价 `key`（向后兼容，二选一） |
+| `groupBy` | query | 否 | 仅 `category`；其它值拒绝 |
+| `key` | query | 是* | **categoryId** 或 `uncategorized` |
+| `type` | query | 是* | 旧参数，等价 `key`（向后兼容） |
 | `pageNum` | query | 否 | 默认 1 |
 | `pageSize` | query | 否 | 默认 50，最大 200 |
-
-响应轻量条目（`id/slug/title/spaceId`，无 `summary`）。
 
 ### 2.3 目录搜索 `GET /kb/index/search`
 
@@ -182,11 +181,11 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | `spaceId` | query | 否 | 同 index |
 | `q` | query | 是 | 关键词（title/slug/summary LIKE） |
 | `limit` | query | 否 | 默认 200，最大 500 |
-| `groupBy` | query | 否 | **`category`**(默认) / `type`(legacy) |
+| `groupBy` | query | 否 | 仅 `category`；其它值拒绝 |
 
 ### 2.4 slug 定位 `GET /kb/index/locate`
 
-深链展开：根据 slug 找到所属 kb_type 分组，供侧栏自动展开对应分组并高亮条目。
+深链展开：根据 slug 找到所属**分类**分组，供侧栏自动展开并高亮条目。
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
@@ -511,7 +510,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 ### 4.2 体检（只算不落库）`GET /kb/lint`
 
 > **数据源**：扫描 **MySQL `kb_document`**（`KbInsightServiceImpl.loadDocs()`），**不读**部署机上的 `kb/wiki*` 文件。  
-> 若 wiki 已改但未 Sync，体检结果仍是**旧快照**。Sync 前门禁请用 **`lint.py`**（见 `wiki-ops/guides/查询与体检指南` §3）。  
+> 若 wiki 已改但未 Sync，体检结果仍是**旧快照**。Sync 前门禁请用 **`lint.py`**（见 `wiki-moli/guides/查询与体检指南` §3）。  
 > 同页 **Wiki 同步** Tab（`POST /kb/sync/trigger`）才是 wiki → DB，与「扫描并落库」不是同一操作。
 
 | 参数 | 位置 | 必填 |
@@ -552,11 +551,11 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 ### 4.6 文件级空间 Lint（T16a · 文件真值）✅
 
 > **与 §4.2–4.5 的区别**：本节扫**部署机磁盘** `kb/wiki*` markdown（调 `lint.py`），**不读** MySQL。改完 wiki 未 Sync 也能检出断链/孤儿/缺 sources 等，是 **Wiki 治理工作台** 与 Sync 前门禁的权威数据源。  
-> DB 快照体检仍用 `GET /kb/lint`（§4.2）；单页保存前轻量预检用 `POST /kb/wiki/page/lint-preview`（§8.3）。
+> DB 快照体检仍用 `GET /kb/lint`（§4.2）；单页保存前轻量预检用 `POST /kb/wiki-moli/page/lint-preview`（§8.3）。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/kb/wiki/lint-space` | 对指定空间 wiki 目录跑 `lint.py --wiki-dir {spaceDir} --json`；需空间 **editor** |
+| POST | `/kb/wiki-moli/lint-space` | 对指定空间 wiki 目录跑 `lint.py --wiki-dir {spaceDir} --json`；需空间 **editor** |
 
 **请求体** `WikiSpaceLintRequest`：
 
@@ -618,7 +617,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 |-------------|--------------|
 | `enterprise-kb` | `wiki` |
 | `jp-fe-ap-exam` | `wiki-jp-exam` |
-| `moli-ops-manual` | `wiki-ops` |
+| `moli-ops-manual` | `wiki-moli` |
 
 **配置**（`application-dev.yml` → `kb.wiki.*`）：
 
@@ -635,7 +634,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki --json /tmp/lint.json
 python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 ```
 
-产品方案与链路图：[`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md) · [`wiki-govern-frontend.md`](wiki-govern-frontend.md) · [`docs/diagrams/moli-kb-wiki-govern.drawio`](../diagrams/moli-kb-wiki-govern.drawio)
+产品方案与链路图：[`kb/wiki-moli/develop/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md) · [`wiki-govern-frontend.md`](wiki-govern-frontend.md) · [`docs/diagrams/moli-kb-wiki-govern.drawio`](../diagrams/moli-kb-wiki-govern.drawio)
 
 ---
 
@@ -644,7 +643,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 ### 5.1 文档 `/kb/document`
 
 > **写库铁律（2026-06-24）**：Web **不再**通过 `POST /kb/document` 新建/改正文、也不通过 publish/archive/delete 改状态。  
-> 唯一写路径：**`PUT /kb/wiki/page`** → **Wiki 同步**（`sync_to_db` / `POST /kb/sync/trigger`）。  
+> 唯一写路径：**`PUT /kb/wiki-moli/page`** → **Wiki 同步**（`sync_to_db` / `POST /kb/sync/trigger`）。  
 > 本组接口保留 **只读/检索** 与 **版本历史查询**；写接口调用将返回业务错误。
 
 | 方法 | 路径 | 说明 |
@@ -666,7 +665,8 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 |------|------|------|------|------|
 | `spaceId` | query | 否 | — | 单空间；与 `spaceIds` 同时传时 **`spaceIds` 优先** |
 | `spaceIds` | query | 否 | — | 多空间数组，如 `spaceIds=1&spaceIds=2` |
-| `categoryId` | query | 否 | — | 分类 ID |
+| `categoryId` | query | 否 | — | 分类 ID（与 `uncategorizedOnly` 互斥） |
+| `uncategorizedOnly` | query | 否 | — | `true` 时仅查 `category_id IS NULL`（治理未分类页） |
 | `keyword` | query | 否 | — | 关键词 |
 | `status` | query | 否 | — | `0` 草稿 / `1` 已发布 / `2` 已归档 |
 | `tagId` | query | 否 | — | 按标签过滤 |
@@ -681,7 +681,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 | `fulltext`（默认） | MySQL ngram 全文索引 `MATCH AGAINST`；索引异常时**自动降级**三字段 `LIKE` |
 | `like` | 始终用 `title`/`summary`/`content` 的 `LIKE` |
 
-> 前端「知识库浏览」侧栏用 `/kb/index` + …（**仅 `source=kb`**）；文档管理列表 **`/kb/document/search?source=kb`**，编辑走 **`/kb/wiki/page`**。
+> 前端「知识库浏览」侧栏用 `/kb/index` + …（**仅 `source=kb`**）；文档管理列表 **`/kb/document/search?source=kb`**，编辑走 **`/kb/wiki-moli/page`**。
 
 #### `GET /kb/document/{id}` 响应示例（`DocumentDetailVo`）
 
@@ -720,7 +720,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 
 #### ~~`POST /kb/document`~~（已停用）
 
-> 返回：`已停用 Web 直连写库：请通过 PUT /kb/wiki/page 保存 wiki 源文件，再触发 Wiki 同步（sync_to_db）`
+> 返回：`已停用 Web 直连写库：请通过 PUT /kb/wiki-moli/page 保存 wiki 源文件，再触发 Wiki 同步（sync_to_db）`
 
 <details>
 <summary>历史请求体（仅供迁移参考）</summary>
@@ -739,8 +739,9 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 
 ### 5.2 分类 `/kb/category`（分类=目录，单一真相源）
 
-> **模型（2026-06-27）**：每个分类绑定一个 wiki 子目录 `dir_slug`；浏览左树 `groupBy=category` 与文档移动都以它为准。  
-> `default_type` 用于「文档移入该分类时」把 frontmatter `type` 改成此体裁（空=不改）。
+> **模型（2026-06-27）**：每个分类绑定 wiki 子目录 `dir_slug`；浏览与管理计数均与 `/kb/index` 一致（**已发布 + source=kb**）。  
+> **enterprise-kb** 当前保留 **3 类**：`concepts` / `articles` / `interview`（ingest 需新类时先建分类再落盘）。  
+> Sync 若 slug 一级目录无法映射 `dir_slug` 将 **告警并 exit 4**（`--allow-uncategorized` 仅应急）。
 
 ![分类管理流程](../diagrams/png/moli-kb-category-flow.png)
 
@@ -748,7 +749,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/category/tree?spaceId=&withCount=` | 分类树 `CategoryTreeVo[]`；`withCount=true` 附带 `docCount` |
+| GET | `/kb/category/tree?spaceId=&withCount=` | 分类树；`withCount=true` 时 `docCount` 与浏览一致（已发布 source=kb）；末尾可附虚拟节点「未分类」`virtualNode=true` |
 | POST | `/kb/category` | 创建（body `KbCategory`）：**同时 `mkdir` 对应 `dir_slug` 目录**（+`.gitkeep`） |
 | PUT | `/kb/category` | 更新：**仅改** `categoryName/icon/sort/defaultType`；`dirSlug` 不可变 |
 | DELETE | `/kb/category/{id}` | 删除：要求**目录为空**（无 `.md`）且**无文档归属**，否则拒绝；通过则删目录 + 软删 |
@@ -940,14 +941,14 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 
 ## 6. kb→DB 同步管理（T10）
 
-> 需**空间管理权限**（owner / 空间 admin）或平台超管。用于把 `kb/wiki/`（或独立目录）markdown 同步进 MySQL。
+> 需**空间管理权限**（owner / 空间 admin）或平台超管。用于把 `kb/wiki-moli/`（或独立目录）markdown 同步进 MySQL。
 
 CLI 多空间同步：
 
 ```bash
 python moli-knowledge/kb/tools/sync_to_db.py --dry-run
 python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam
-python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-ops --space moli-ops-manual
+python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
 ```
 
 **清理遗留直连 DB 行**（Web 已停用 `POST /kb/document`，2026-06-24）：
@@ -973,7 +974,7 @@ powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute
 | GET | `/kb/sync/status?spaceId=` | 最近一批统计 `SyncStatusVo` |
 | POST | `/kb/sync/trigger?spaceId=&spaceCode=` | 触发 `sync_to_db.py`，返回 `SyncTriggerVo` |
 
-> **多空间 Sync**：脚本同时传 `--space {spaceCode}` 与 `--wiki-dir {kb.wiki.space-dirs[spaceCode]}`（如 `moli-ops-manual` → `wiki-ops`）。**勿**对所有空间默认扫 `wiki/`，否则操作手册空间会误入 enterprise-kb 的 300+ 篇文档。
+> **多空间 Sync**：脚本同时传 `--space {spaceCode}` 与 `--wiki-dir {kb.wiki.space-dirs[spaceCode]}`（如 `moli-ops-manual` → `wiki-moli`）。**勿**对所有空间默认扫 `wiki/`，否则茉莉系统手册空间会误入 enterprise-kb 的 300+ 篇文档。
 
 `SyncStatusVo` 示例：
 
@@ -1009,7 +1010,7 @@ Spring `@Scheduled` 任务，**默认关闭**。与 Git hook、手动 `POST /kb/
 | 方式 | 触发时机 | 权限 |
 |------|----------|------|
 | **定时任务** | `schedule-enabled=true` 且 `kb.sync.enabled=true` 时按 cron 跑 | 无需登录（服务端后台） |
-| **Git hook** | commit 变更 `kb/wiki/` 后 post-commit | 本地开发机 |
+| **Git hook** | commit 变更 `kb/wiki-moli/` 后 post-commit | 本地开发机 |
 | **API trigger** | 前端/运维手动调 | 空间 admin 或平台超管 |
 | **GitHub Actions** | CI push main / 手动 workflow | 见 §6.3 |
 
@@ -1025,33 +1026,33 @@ bash moli-knowledge/kb/tools/install_git_hook.sh
 powershell -ExecutionPolicy Bypass -File moli-knowledge/kb/tools/install_git_hook.ps1
 ```
 
-仅当 commit 变更 `moli-knowledge/kb/wiki/` 下文件时触发 `sync_to_db.py`。
+仅当 commit 变更 `moli-knowledge/kb/wiki-moli/` 下文件时触发 `sync_to_db.py`。
 
 ### 6.4 AI 自我进化（wiki MD 审校 → Lint → Sync）
 
-Web **不提供**「AI 改 MD」能力；推荐在 **Cursor Agent** 中改 `kb/wiki/*.md`，用 **`lint.py` 门禁**通过后再 Sync。
+Web **不提供**「AI 改 MD」能力；推荐在 **Cursor Agent** 中改 `kb/wiki-moli/*.md`，用 **`lint.py` 门禁**通过后再 Sync。
 
 **完整手册**（含 Ingest/Lint/Sync 分工、Crystallize、Web 体检与 Sync 区别、`kb_lint_issue` 后续操作）：
 
-`moli-knowledge/kb/wiki/guides/AI自我进化与MD审校流程.md`
+`moli-knowledge/kb/wiki-moli/develop/AI自我进化与MD审校流程.md`
 
 **范式**：LLM-Wiki — 知识在 wiki **编译一次、持续保鲜**；自我进化 = Ingest + Query/crystallize + Lint + Sync 闭环（非无人值守乱改库）。
 
 **推荐顺序**（不要颠倒）：
 
-1. AI/人工修改 `kb/wiki/**/*.md`（Ingest / crystallize / 单篇审校；只改 wiki，不改 raw）
+1. AI/人工修改 `kb/wiki-moli/**/*.md`（Ingest / crystallize / 单篇审校；只改 wiki，不改 raw）
 2. `python moli-knowledge/kb/tools/lint.py --strict`（wiki 文件级门禁，先于 Sync）
 3. `git diff` 人工确认
 4. `sync_to_db.py --dry-run` → 正式 sync，或 Web **健康体检 → Wiki 同步 → 触发同步**
 5. （可选）Web **扫描并落库**（写 `kb_lint_issue`）+ **智能问答** 验证；问答缺口 → crystallize 回到步骤 1
 
-**易混淆**（完整对照见 `wiki-ops/guides/查询与体检指南` §3）：
+**易混淆**（完整对照见 `wiki-moli/guides/查询与体检指南` §3）：
 
 | Web 按钮 | 实际作用 |
 |----------|----------|
 | **重新体检**（质量体检 Tab） | 只算 `GET /kb/lint`，**扫 DB**，不落库 |
 | **扫描并落库**（质量体检 Tab） | DB 体检问题 → `kb_lint_issue`；**不是** Sync |
-| **触发同步**（Wiki 同步 Tab） | `kb/wiki/` → `kb_document` |
+| **触发同步**（Wiki 同步 Tab） | `kb/wiki-moli/` → `kb_document` |
 | 同步一直提示成功 | 正常；hash 未变时全 `skip`，看 insert/update 数量 |
 | wiki 已改但体检无变化 | 尚未 Sync；DB 仍是旧快照 |
 
@@ -1084,13 +1085,13 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 页面 | 路由 component | 主要接口 | 前端对接 |
 |------|----------------|----------|----------|
 | 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index*` + `/kb/page` | KNOWLEDGE_API §2–3 |
-| 文档管理 | `knowledge/documents/index` | `/kb/document/search` + `/kb/wiki/page` | §8.1 |
+| 文档管理 | `knowledge/documents/index` | `/kb/document/search` + `/kb/wiki-moli/page` | §8.1 |
 | 智能问答 | `knowledge/ask/index` | `/kb/ask` | §5 |
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | §6 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + `/kb/sync/*` | §4 |
-| **Wiki 编辑** | `knowledge/wiki/edit` ✅ T14 | `/kb/wiki/page` + `ai-revise` + `enrich` | §8 |
+| **Wiki 编辑** | `knowledge/wiki/edit` ✅ T14 | `/kb/wiki-moli/page` + `ai-revise` + `enrich` | §8 |
 | **Ingest 工作台** | `knowledge/ingest/index` ✅ T15 | `/kb/ingest/*`（§9 · 24 接口） | **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)** |
-| **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16f | `/kb/wiki/lint-space` + `/kb/wiki/govern/*` | **[wiki-govern-frontend.md](wiki-govern-frontend.md)** |
+| **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16f | `/kb/wiki-moli/lint-space` + `/kb/wiki-moli/govern/*` | **[wiki-govern-frontend.md](wiki-govern-frontend.md)** |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` | §3 |
 
 前端实现：`meiling-ui/src/composables/useKbSpace.ts`（共享空间上下文）、`src/components/knowledge/KbSpaceSelector.vue`。
@@ -1101,16 +1102,16 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ## 8. Wiki 在线编辑 + AI 协助改稿（T14）
 
-> 产品方案：[`kb/wiki/guides/Wiki在线编辑与AI协助改稿.md`](../../moli-knowledge/kb/wiki/guides/Wiki在线编辑与AI协助改稿.md)。  
+> 产品方案：[`kb/wiki-moli/develop/Wiki在线编辑与AI协助改稿.md`](../../moli-knowledge/kb/wiki-moli/develop/Wiki在线编辑与AI协助改稿.md)。  
 > **保存铁律**：写回服务器 `kb/wiki*/*.md`，再 Sync；不默认只写 `kb_document`。
 
 ### 8.1 读/写 wiki 文件 ✅（T14a 已实现）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/wiki/page?slug=&spaceId=` | 返回 wiki 文件全文（frontmatter + body）；需空间 **editor**；文件不存在返回 `exists=false` 空壳，便于新建 |
-| PUT | `/kb/wiki/page` | 写 wiki 文件（必要时建父目录）；body 见下；需空间 **editor** |
-| POST | `/kb/wiki/lint-space` | **空间级文件 Lint**（文件真值，调 `lint.py`）；详见 **§4.6** |
+| GET | `/kb/wiki-moli/page?slug=&spaceId=` | 返回 wiki 文件全文（frontmatter + body）；需空间 **editor**；文件不存在返回 `exists=false` 空壳，便于新建 |
+| PUT | `/kb/wiki-moli/page` | 写 wiki 文件（必要时建父目录）；body 见下；需空间 **editor** |
+| POST | `/kb/wiki-moli/lint-space` | **空间级文件 Lint**（文件真值，调 `lint.py`）；详见 **§4.6** |
 
 后端：`KbWikiController` + `KbWikiFileService`（`moli-knowledge-server`）。
 
@@ -1148,7 +1149,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | space_code | wiki 子目录 |
 |------------|-------------|
 | `enterprise-kb` | `wiki` |
-| `moli-ops-manual` | `wiki-ops` |
+| `moli-ops-manual` | `wiki-moli` |
 | `jp-fe-ap-exam` | `wiki-jp-exam` |
 
 slug 做合法性校验（禁止 `..` / 绝对路径 / 盘符）并强制解析结果落在对应 wiki 目录内（防目录穿越）。**保存只写文件，不进库**；需再走 §6 Sync 才更新 `kb_document`。
@@ -1157,11 +1158,11 @@ slug 做合法性校验（禁止 `..` / 绝对路径 / 盘符）并强制解析�
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/kb/wiki/govern/options` | Wiki 治理选项（模型 + script/ai kind 列表） |
-| POST | `/kb/wiki/govern/script-fix` | 脚本批量修 metadata（不写 LLM） |
-| POST | `/kb/wiki/govern/ai-batch-fix` | AI 批量修复并写盘 |
-| POST | `/kb/wiki/govern/auto-fix` | 一键：脚本→AI→复检→可选 Sync |
-| POST | `/kb/wiki/ai-revise` | 调 `KbLlmClient`（OpenAI 兼容）；**不写盘**；可传 `model` |
+| GET | `/kb/wiki-moli/govern/options` | Wiki 治理选项（模型 + script/ai kind 列表） |
+| POST | `/kb/wiki-moli/govern/script-fix` | 脚本批量修 metadata（不写 LLM） |
+| POST | `/kb/wiki-moli/govern/ai-batch-fix` | AI 批量修复并写盘 |
+| POST | `/kb/wiki-moli/govern/auto-fix` | 一键：脚本→AI→复检→可选 Sync |
+| POST | `/kb/wiki-moli/ai-revise` | 调 `KbLlmClient`（OpenAI 兼容）；**不写盘**；可传 `model` |
 
 **配置**：
 
@@ -1184,7 +1185,7 @@ slug 做合法性校验（禁止 `..` / 绝对路径 / 盘符）并强制解析�
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/kb/wiki/ai-revise` | 调 `KbLlmClient`（复用 `kb.llm.*`）；**不写盘**，仅返回建议全文；需空间 **editor** + LLM 可用 |
+| POST | `/kb/wiki-moli/ai-revise` | 调 `KbLlmClient`（复用 `kb.llm.*`）；**不写盘**，仅返回建议全文；需空间 **editor** + LLM 可用 |
 
 System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmatter、slug 互链、sources；只输出完整 markdown）。
 
@@ -1205,13 +1206,13 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 
 **响应**：`{ "suggestedContent", "provider", "model", "notes?" }`
 
-前端：编辑页 AI 面板 → 「应用到编辑区」→ diff 对比 → `PUT /kb/wiki/page` 保存。
+前端：编辑页 AI 面板 → 「应用到编辑区」→ diff 对比 → `PUT /kb/wiki-moli/page` 保存。
 
 ### 8.3 保存前 lint 预检 ✅（T14d 已实现）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/kb/wiki/page/lint-preview` | 对**待保存全文**做轻量预检（断链 / frontmatter / sources）；需空间 **editor** |
+| POST | `/kb/wiki-moli/page/lint-preview` | 对**待保存全文**做轻量预检（断链 / frontmatter / sources）；需空间 **editor** |
 
 **请求体**：`{ "slug", "spaceId?", "content" }`
 
@@ -1226,7 +1227,7 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/kb/wiki/enrich` | enrich 单页或批次；需空间 **editor** |
+| POST | `/kb/wiki-moli/enrich` | enrich 单页或批次；需空间 **editor** |
 
 **请求体**（单页）：
 
@@ -1267,7 +1268,7 @@ System prompt 对齐 [[AI自我进化与MD审校流程]] **场景 B**（frontmat
 
 - 路由：`/knowledge/wiki/edit?slug=&spaceId=` → `KnowledgeWikiEditView.vue`
 - 工具栏 **「Enrich 治理」** 打开侧栏：填写 patch 或 raw 路径 → **预览合并**（`dryRun: true`）→ **应用 Enrich**（写盘 + 可选治理 + Sync）
-- 与 **保存并 Sync** 分工：Enrich 走 `POST /kb/wiki/enrich`（追加 patch + log/index/edges）；整页手改仍走 `PUT /kb/wiki/page`
+- 与 **保存并 Sync** 分工：Enrich 走 `POST /kb/wiki-moli/enrich`（追加 patch + log/index/edges）；整页手改仍走 `PUT /kb/wiki-moli/page`
 - 与 **AI 协助** 分工：AI 整页审校（场景 B）→ `ai-revise`；Enrich 只追加章节，不整页重写
 - 与 **Ingest 工作台 enrich** 分工：Ingest 为 raw 批次 Plan → 多页草稿 → commit；Wiki 编辑 Enrich 为**单页、已存 slug** 的快速治理入口（API/语义与 `enrich.py` 一致）
 
@@ -1294,23 +1295,23 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 > 页面：**① 文件真值 Lint** → **② 脚本修 metadata** → **③ AI 批量修复** → **④ 一键 auto-fix（含复检/可选 Sync）**。
 
 ```
-选空间 → POST /kb/wiki/lint-space
-  → GET /kb/wiki/govern/options（scriptFixableKinds / aiFixableKinds）
+选空间 → POST /kb/wiki-moli/lint-space
+  → GET /kb/wiki-moli/govern/options（scriptFixableKinds / aiFixableKinds）
   → 勾选 issues → 任选：
-       POST /kb/wiki/govern/script-fix        # 快，不调 LLM
-       POST /kb/wiki/govern/ai-batch-fix      # 断链/孤儿等
-       POST /kb/wiki/govern/auto-fix          # 一键：脚本→AI→relint→sync?
+       POST /kb/wiki-moli/govern/script-fix        # 快，不调 LLM
+       POST /kb/wiki-moli/govern/ai-batch-fix      # 断链/孤儿等
+       POST /kb/wiki-moli/govern/auto-fix          # 一键：脚本→AI→relint→sync?
 ```
 
 | 步骤 | API | LLM |
 |------|-----|-----|
-| ① Lint | `POST /kb/wiki/lint-space` | 否 |
-| ②a 脚本修复 | `POST /kb/wiki/govern/script-fix` | 否 |
-| ②b AI 修复 | `POST /kb/wiki/govern/ai-batch-fix` | **是** |
-| ②c 一键 | `POST /kb/wiki/govern/auto-fix` | 部分 |
+| ① Lint | `POST /kb/wiki-moli/lint-space` | 否 |
+| ②a 脚本修复 | `POST /kb/wiki-moli/govern/script-fix` | 否 |
+| ②b AI 修复 | `POST /kb/wiki-moli/govern/ai-batch-fix` | **是** |
+| ②c 一键 | `POST /kb/wiki-moli/govern/auto-fix` | 部分 |
 | ③ Sync | `syncAfter=true` 或 `POST /kb/sync/trigger` | 否 |
 
-#### `POST /kb/wiki/govern/script-fix`
+#### `POST /kb/wiki-moli/govern/script-fix`
 
 请求体：
 
@@ -1326,11 +1327,11 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 响应：`fixedPages` / `skippedPages` / `failedPages` + `pages[]`（`status`: ok|skipped|failed）。
 
-#### `POST /kb/wiki/govern/ai-batch-fix`
+#### `POST /kb/wiki-moli/govern/ai-batch-fix`
 
 请求体：`{ spaceId, issues[], model?, dryRun? }`。按 `page` 合并 issue，逐页 ai-revise 并写盘。
 
-#### `POST /kb/wiki/govern/auto-fix`
+#### `POST /kb/wiki-moli/govern/auto-fix`
 
 请求体：
 
@@ -1349,11 +1350,11 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 响应：`issuesBefore` / `issuesAfter` + `scriptFix` / `aiFix` / `relint` / `sync` 摘要。
 
-#### `GET /kb/wiki/govern/options`（扩展）
+#### `GET /kb/wiki-moli/govern/options`（扩展）
 
 除 `llmAvailable` / `defaultModel` / `models` 外，返回 `scriptFixableKinds`、`aiFixableKinds`、`manualOnlyKinds`。
 
-#### `POST /kb/wiki/govern/merge-hint`（P2）
+#### `POST /kb/wiki-moli/govern/merge-hint`（P2）
 
 请求：`{ spaceId, issues[] }`（仅 `dup_slug` / `dup_content` / `near_dup`）。
 
@@ -1374,7 +1375,7 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 脚本 vs LLM 总矩阵：[knowledge-script-vs-llm-matrix.md](../test/knowledge-script-vs-llm-matrix.md)
 
-> **Wiki 治理现行链路**（2026-06-27）：见 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** + §8.6（`script-fix` → `ai-batch-fix` → `auto-fix` → `merge-hint`）。空间级治理**不要**批量 `POST /kb/wiki/enrich`；单页 enrich 见 §8.4。
+> **Wiki 治理现行链路**（2026-06-27）：见 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** + §8.6（`script-fix` → `ai-batch-fix` → `auto-fix` → `merge-hint`）。空间级治理**不要**批量 `POST /kb/wiki-moli/enrich`；单页 enrich 见 §8.4。
 
 ### 8.7 权限
 
@@ -1391,7 +1392,7 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 ## 9. Ingest 工作台（T15）
 
-> 产品方案：[`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
+> 产品方案：[`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
 > **前端对接** → **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)**（Express、模板模式、nextSteps）。  
 > **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。  
 > **状态**：T15a–e、**T18**、**T19（模板模式 + nextSteps + raw 门禁）** 已全部实现。
@@ -1939,8 +1940,8 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
     "created": 3,
     "updated": 2,
     "files": [
-      "wiki/articles/redis-哨兵部署.md",
-      "wiki/concepts/redis-缓存.md"
+      "wiki-moli/develop/articles/redis-哨兵部署.md",
+      "wiki-moli/develop/concepts/redis-缓存.md"
     ],
     "edgesAppended": 1,
     "logAppended": true,

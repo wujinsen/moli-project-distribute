@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [spring-boot, 自动配置, spring.factories]
 sources:
-  - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguraton自动装配原理.note.md
-  - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguration自动装配.note.md
+ - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguraton自动装配原理.note.md
+ - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguration自动装配.note.md
 related: [spring-boot-自动配置, spring-application启动流程, spring-boot-面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -20,15 +20,15 @@ updated: 2026-06-22
 
 ```
 @SpringBootApplication
-  └─ @EnableAutoConfiguration
-       └─ @Import(AutoConfigurationImportSelector.class)
-            └─ 读取 META-INF/spring.factories
-                 key: org.springframework.boot.autoconfigure.EnableAutoConfiguration
-                 value: 各 XxxAutoConfiguration 全限定名列表
-            └─ 去重、排除 @SpringBootApplication(exclude=...)
-            └─ 按 @AutoConfigureOrder / @Order 排序
-            └─ 过滤 @ConditionalOnXxx 不满足的配置类
-            └─ 导入生效的 AutoConfiguration → 注册 Bean
+ └─ @EnableAutoConfiguration
+ └─ @Import(AutoConfigurationImportSelector.class)
+ └─ 读取 META-INF/spring.factories
+ key: org.springframework.boot.autoconfigure.EnableAutoConfiguration
+ value: 各 XxxAutoConfiguration 全限定名列表
+ └─ 去重、排除 @SpringBootApplication(exclude=...)
+ └─ 按 @AutoConfigureOrder / @Order 排序
+ └─ 过滤 @ConditionalOnXxx 不满足的配置类
+ └─ 导入生效的 AutoConfiguration → 注册 Bean
 ```
 
 ## spring.factories 示例
@@ -39,7 +39,7 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 com.example.MyAutoConfiguration
 ```
 
-茉莉 `moli-distribute-common`、`user-center-shiro-starter` 可用同一机制做 **Starter 化**（`META-INF/spring.factories` 已用于 MoliCommonAutoConfiguration）。
+ `moli-distribute-common`、`user-center-shiro-starter` 可用同一机制做 **Starter 化**（`META-INF/spring.factories` 已用于 MoliCommonAutoConfiguration）。
 
 ## 常用 @Conditional
 
@@ -64,7 +64,7 @@ com.example.MyAutoConfiguration
 
 ## Boot 3 变更（了解）
 
-`spring.factories` 的 AutoConfiguration 改为 **`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`**。茉莉当前 2.3 仍用 spring.factories。
+`spring.factories` 的 AutoConfiguration 改为 **`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`**。当前常见 2.3 仍用 spring.factories。
 
 ## 面试一句话
 

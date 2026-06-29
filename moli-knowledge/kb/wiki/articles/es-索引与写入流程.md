@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [elasticsearch, 写入, refresh, translog]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
 related: [elasticsearch-搜索, es-搜索与分片路由, mysql-事务与锁]
 created: 2026-06-22
 updated: 2026-06-22
@@ -29,10 +29,10 @@ shard = hash(document_id) % num_primary_shards
 
 ```
 请求 → 协调节点 → 主分片
-  → 写入 Memory Buffer
-  → 同时写 translog（防丢）
-  → refresh（默认约 1s）→ 进入 Filesystem Cache，可搜索（近实时）
-  → flush（定时或 translog 过大）→ 落盘 segment，清 translog
+ → 写入 Memory Buffer
+ → 同时写 translog（防丢）
+ → refresh（默认约 1s）→ 进入 Filesystem Cache，可搜索（近实时）
+ → flush（定时或 translog 过大）→ 落盘 segment，清 translog
 ```
 
 | 阶段 | 说明 |

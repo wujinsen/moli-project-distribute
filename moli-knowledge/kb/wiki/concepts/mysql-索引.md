@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [mysql, 索引, 性能优化, InnoDB, B+Tree]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
-  - raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
+ - raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md
 related: [b-plus树与-innodb索引结构, mysql-复合索引与最左前缀, mysql-覆盖索引与回表优化, mysql-索引失效场景, mysql-索引面试题, mysql-事务与锁]
 created: 2026-06-22
 updated: 2026-06-22
@@ -56,4 +56,4 @@ InnoDB 默认用 **B+Tree** 实现索引；Memory 引擎可用 Hash。日常 OLT
 
 ## 与本项目的关系
 
-茉莉项目 MySQL 8.0 + Druid 连接池（见 [[技术栈与版本]]）。用户中心、订单、知识库等服务的慢 SQL 排查，索引设计是第一步；秒杀场景 Redis 扛热点，但订单落库仍依赖合理索引。
+目标系统 MySQL 8.0 + Druid 连接池（见 ）。用户中心、订单、知识库等服务的慢 SQL 排查，索引设计是第一步；秒杀场景 Redis 扛热点，但订单落库仍依赖合理索引。

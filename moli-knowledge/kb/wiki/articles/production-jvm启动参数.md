@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [jvm, 运维, 生产, GC]
 sources:
-  - raw/wujinsen_markdown/moli项目/运维/启动脚本.note.md
-  - raw/wujinsen_markdown/moli项目/运维/JVM参数.note.md
+ - raw/wujinsen_markdown/moli项目/运维/启动脚本.note.md
+ - raw/wujinsen_markdown/moli项目/运维/JVM参数.note.md
 related: [jvm-内存与gc, jvm-oom与排查入门, jvm-垃圾收集算法与收集器, 故障排查指南, 生产环境服务启停脚本]
 created: 2026-06-22
 updated: 2026-06-22
@@ -72,17 +72,6 @@ updated: 2026-06-22
 | `CMSInitiatingOccupancyFraction=70` | 老年代 70% 触发 CMS |
 | `DisableExplicitGC` | 禁止 `System.gc()` 误触发 Full GC |
 | `log4j2.formatMsgNoLookups` | Log4j2 安全项 |
-
-## 3. 与茉莉本地开发的差异
-
-| 维度 | 本地 dev | 生产笔记 |
-|------|----------|----------|
-| 堆大小 | 默认或 IDE 小堆 | 6–10G 固定 |
-| GC | 默认 G1（JDK11）或 Parallel | CMS + ParNew |
-| 日志 | 控制台 | 独立 gc.log + heapdump 路径 |
-| Profile | `dev` / `loadtest` | `prod` |
-
-本地联调 JVM 问题见 [[故障排查指南]]；压测 profile 见 [[loadtest-profile与压测登录]]。
 
 ## 4. 现代化建议（JDK 11+）
 

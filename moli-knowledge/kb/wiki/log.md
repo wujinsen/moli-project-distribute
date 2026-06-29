@@ -1337,3 +1337,5 @@
 ## [2026-06-28] ingest | 批次#WB-20260628235749 test3 (Web工作台) → create fe_kamoku_b_set_sample_qs3 <!-- ingest-job:726572024717262848 -->
 ## [2026-06-29] ingest | 批次#WB-20260629001246 test3 (Web工作台) → create fe_kamoku_b_set_sample_qs3 <!-- ingest-job:726575787041505280 -->
 ## [2026-06-28] docs | P2 工程文档 + enterprise-kb services 补全（订单/网关/知识库/bi）+ ROADMAP M5–M7 同步 + index 修复
+
+## [2026-06-29] reset | purge batch skeletons deleted=1082 kept=156

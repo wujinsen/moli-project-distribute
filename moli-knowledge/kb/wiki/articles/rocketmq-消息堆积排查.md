@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [RocketMQ, MQ, 排查]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [rocketmq-架构与实战, 延迟消息与队列, 故障排查指南]
 created: 2026-06-21
 updated: 2026-06-21
@@ -13,7 +13,7 @@ updated: 2026-06-21
 
 # RocketMQ 消息堆积排查
 
-> 架构 [[rocketmq-架构与实战]]；延迟 [[延迟消息与队列]]；总指南 [[故障排查指南]]。
+> 架构 [[rocketmq-架构与实战]]；延迟 [[延迟消息与队列]]；总指南。
 
 ## 1. 现象
 
@@ -35,7 +35,7 @@ updated: 2026-06-21
 1. 扩容 Consumer 实例（同 Group）
 2. 提高 `consumeThreadMin/Max`（评估 DB 连接）
 3. 批量消费 + 幂等 [[接口幂等性实践]]
-4. 临时 **跳过非核心 Topic**，保秒杀主链路 [[秒杀设计]]
+4. 临时 **跳过非核心 Topic**，保秒杀主链路
 
 ## 4. 预防
 

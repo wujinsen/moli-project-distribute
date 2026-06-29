@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [java, synchronized, 锁升级, 偏向锁, 监视器]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md
+ - raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md
 related: [java-并发, jmm与happens-before, volatile与可见性, java-并发面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -18,9 +18,9 @@ updated: 2026-06-22
 ## 三种用法
 
 ```java
-public synchronized void instanceMethod() { }      // 锁 this
+public synchronized void instanceMethod() { } // 锁 this
 public static synchronized void staticMethod() { } // 锁 Class 对象
-synchronized (obj) { /* 代码块 */ }               // 锁 obj
+synchronized (obj) { /* 代码块 */ } // 锁 obj
 ```
 
 同一时刻，**同一把锁**上的 synchronized 块/方法互斥。

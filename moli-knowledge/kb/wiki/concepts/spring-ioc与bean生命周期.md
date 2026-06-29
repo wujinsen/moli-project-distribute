@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [spring, IoC, Bean, 生命周期]
 sources:
-  - raw/wujinsen_markdown/Spring/Spring循环依赖原理解析.note.md
-  - raw/wujinsen_markdown/Spring/什么是循环依赖.note.md
-  - raw/wujinsen_markdown/Spring/Spring解析，加载及实例化Bean的顺序（零配置）.note.md
+ - raw/wujinsen_markdown/Spring/Spring循环依赖原理解析.note.md
+ - raw/wujinsen_markdown/Spring/什么是循环依赖.note.md
+ - raw/wujinsen_markdown/Spring/Spring解析，加载及实例化Bean的顺序（零配置）.note.md
 related: [spring-三级缓存与循环依赖, spring-mvc请求流程, spring-容器面试题, spring-boot-自动配置, spring-声明式事务]
 created: 2026-06-22
 updated: 2026-06-22
@@ -23,13 +23,13 @@ updated: 2026-06-22
 
 ```
 扫描 → BeanDefinition
-  → 实例化（构造器）
-  → 属性填充（依赖注入）
-  → Aware / BeanPostProcessor 前置
-  → 初始化（@PostConstruct、InitializingBean）
-  → BeanPostProcessor 后置（含 AOP 代理）
-  → 放入 singletonObjects
-  → 销毁（容器关闭）
+ → 实例化（构造器）
+ → 属性填充（依赖注入）
+ → Aware / BeanPostProcessor 前置
+ → 初始化（@PostConstruct、InitializingBean）
+ → BeanPostProcessor 后置（含 AOP 代理）
+ → 放入 singletonObjects
+ → 销毁（容器关闭）
 ```
 
 循环依赖发生在 **实例化之后、属性填充** 阶段，见 [[spring-三级缓存与循环依赖]]。
@@ -41,12 +41,6 @@ updated: 2026-06-22
 | **singleton**（默认） | 容器内唯一，三级缓存仅解决单例循环依赖 |
 | prototype | 每次 getBean 新建，**不**走三级缓存 |
 | request/session | Web 环境 |
-
-## 与茉莉项目
-
-- 各 `*Application` 启动后容器加载 Controller、Service、Mapper、Dubbo `@Service` 等
-- `user-center-shiro-starter` 通过 `spring.factories` 自动注册 Shiro 相关 Bean，见 [[spring-boot-自动配置]]
-- `@Transactional` 依赖 AOP 代理 Bean，与循环依赖 + 三级缓存中的 **earlyReference** 相关
 
 ## 常见扩展点
 

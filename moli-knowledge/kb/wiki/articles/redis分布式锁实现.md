@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [分布式锁, Redis, Redisson, Redlock, Lua]
 sources:
-  - raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁进化史解读+缺陷分析.note.md
-  - raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁没这么简单，网上大多数都有 bug.note.md
-  - raw/wujinsen_markdown/面试笔试/redis/分布式锁之Redis实现.note.md
+ - raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁进化史解读+缺陷分析.note.md
+ - raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁没这么简单，网上大多数都有 bug.note.md
+ - raw/wujinsen_markdown/面试笔试/redis/分布式锁之Redis实现.note.md
 related: [分布式锁, 分布式锁面试题, 秒杀设计]
 created: 2026-06-22
 updated: 2026-06-22
@@ -43,20 +43,20 @@ SET lock_resource_name <uuid> NX PX 30000
 
 ```lua
 if redis.call("get", KEYS[1]) == ARGV[1] then
-  return redis.call("del", KEYS[1])
+ return redis.call("del", KEYS[1])
 else
-  return 0
+ return 0
 end
 ```
 
 ### 加解锁的代码位置（易错）
 
 ```java
-redisLock.lock();          // 必须在 try 外？不——放 try 内首行
+redisLock.lock(); // 必须在 try 外？不——放 try 内首行
 try {
-    // 业务
+ // 业务
 } finally {
-    redisLock.unlock();    // 释放必须放 finally，否则异常后锁不释放
+ redisLock.unlock(); // 释放必须放 finally，否则异常后锁不释放
 }
 ```
 

@@ -5,7 +5,7 @@ type: interview
 status: active
 tags: [elasticsearch, 面试, Lucene]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
 related: [elasticsearch-搜索, es-索引与写入流程, es-搜索与分片路由, mysql-索引面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -53,4 +53,4 @@ HyperLogLog++ 近似去重，内存与精度可配置，适合上亿 distinct。
 
 ## Q10. ES vs MySQL 索引？
 
-MySQL B+Tree 适合范围/精确（[[mysql-索引]]）；ES 倒排适合全文与相关性。茉莉知识库现用 MySQL LIKE，扩展见 [[elasticsearch-搜索]]。
+MySQL B+Tree 适合范围/精确（[[mysql-索引]]）；ES 倒排适合全文与相关性。知识库现用 MySQL LIKE，扩展见 [[elasticsearch-搜索]]。

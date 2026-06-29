@@ -113,6 +113,7 @@ KIND_META = {
     "outdated":        (WARN,  "过时（被 supersedes 取代仍 active）"),
     "slug_mismatch":   (WARN,  "slug 与文件名不一致"),
     "missing_dates":   (WARN,  "缺 created / updated"),
+    "space_branding":  (WARN,  "enterprise-kb 通用语料含「茉莉」或项目 branding"),
     "dup_content":     (INFO,  "正文完全重复"),
     "near_dup":        (INFO,  "正文近似重复"),
     "asym_related":    (INFO,  "related 单向（不对称）"),
@@ -340,9 +341,17 @@ def lint(wiki_dir: Path, *, missing_concept_min: int = 3, do_dups: bool = False,
                                  f"frontmatter slug={p.meta_slug!r} ≠ 文件名 {p.stem!r}",
                                  "把 frontmatter slug 改成与文件名一致，避免 [[]] 解析歧义"))
         if not p.created or not p.updated:
-            miss = [k for k, v in (("created", p.created), ("updated", p.updated)) if not v]
+            miss = [k for k in ("created", "updated") if not getattr(p, k)]
             issues.append(Issue("missing_dates", p.slug, f"缺 {', '.join(miss)}",
                                  "补 frontmatter created/updated（YYYY-MM-DD）"))
+        parts = p.slug.replace("\\", "/").split("/")
+        if wiki_dir.name == "wiki" and parts and parts[0] in ("articles", "concepts", "interview"):
+            if "茉莉" in (p.body or ""):
+                issues.append(Issue(
+                    "space_branding", p.slug,
+                    "enterprise-kb 通用语料正文含「茉莉」",
+                    "删改 branding 或移到 wiki-moli（AGENTS.md §1.0.1；kb_space_governance.py）",
+                ))
 
     # --- slug 歧义 ---
     for stem, slugs in sorted(dup_stems.items()):

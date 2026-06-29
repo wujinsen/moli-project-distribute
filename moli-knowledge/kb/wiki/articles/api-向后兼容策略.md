@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [API, 设计, 微服务]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [openapi3-与接口文档, dubbo-分组版本与环境, git-分支与发布策略]
 created: 2026-06-21
 updated: 2026-06-21

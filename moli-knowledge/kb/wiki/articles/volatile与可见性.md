@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [java, volatile, 可见性, 有序性, DCL]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Java面试题精选/【70期】面试官：对并发熟悉吗？谈谈对volatile的使用及其原理.note.md
-  - raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
+ - raw/wujinsen_markdown/面试笔试/Java面试题精选/【70期】面试官：对并发熟悉吗？谈谈对volatile的使用及其原理.note.md
+ - raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
 related: [java-并发, jmm与happens-before, synchronized与锁原理, concurrenthashmap原理, java-并发面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -29,7 +29,7 @@ updated: 2026-06-22
 ```java
 volatile boolean running = true;
 // 线程 A: running = false;
-// 线程 B: while (running) { ... }  // 能及时看到 false
+// 线程 B: while (running) { ... } // 能及时看到 false
 ```
 
 ### 2. DCL 单例防重排序
@@ -37,14 +37,14 @@ volatile boolean running = true;
 ```java
 private static volatile Singleton instance;
 public static Singleton getInstance() {
-    if (instance == null) {
-        synchronized (Singleton.class) {
-            if (instance == null) {
-                instance = new Singleton(); // 1分配 2初始化 3引用赋值，可能重排
-            }
-        }
-    }
-    return instance;
+ if (instance == null) {
+ synchronized (Singleton.class) {
+ if (instance == null) {
+ instance = new Singleton(); // 1分配 2初始化 3引用赋值，可能重排
+ }
+ }
+ }
+ return instance;
 }
 ```
 

@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [JVM, 排查, CPU, 运维]
 sources:
-  - raw/wujinsen_markdown/jvm/调优/java CPU 100% 排查.note.md
-  - raw/wujinsen_markdown/面试笔试/面试题整理/java CPU 100% 排查.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md
+ - raw/wujinsen_markdown/jvm/调优/java CPU 100% 排查.note.md
+ - raw/wujinsen_markdown/面试笔试/面试题整理/java CPU 100% 排查.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md
 related: [故障排查指南, jvm-oom与排查入门, production-jvm启动参数, druid连接池与监控, mysql-深分页与慢sql优化]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,14 +15,14 @@ updated: 2026-06-22
 
 # Java CPU 100% 排查实战
 
-> 决策树 [[故障排查指南]]；OOM [[jvm-oom与排查入门]]。
+> 决策树 ；OOM [[jvm-oom与排查入门]]。
 
 ## 1. 先分 Java vs 系统
 
 ```bash
-top          # 看哪个 PID
-top -H -p PID   # 看哪个线程占 CPU
-printf "%x\n" TID   # 转 16 进制
+top # 看哪个 PID
+top -H -p PID # 看哪个线程占 CPU
+printf "%x\n" TID # 转 16 进制
 jstack PID | grep -A 30 <hex-tid>
 ```
 
@@ -41,10 +41,6 @@ jstack PID | grep -A 30 <hex-tid>
 - 深分页 [[mysql-深分页与慢sql优化]]
 - 连接数过多 → Druid [[druid连接池与监控]]
 
-## 4. 茉莉压测场景
-
-k6 压测时 CPU 高：区分 **Gateway Netty** vs **Tomcat 业务**；看 Prometheus [[压测监控与prometheus]]。
-
 ## 5. 处理顺序
 
 1. 采样 jstack 3 次（间隔 5s）确认稳定热点
@@ -54,4 +50,4 @@ k6 压测时 CPU 高：区分 **Gateway Netty** vs **Tomcat 业务**；看 Prome
 
 ## 相关
 
-[[linux-运维基础]] · [[故障排查指南]]
+[[linux-运维基础]] ·

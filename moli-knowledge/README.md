@@ -78,8 +78,8 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 | wiki 目录 | space_code | 用途 |
 |-----------|------------|------|
-| `kb/wiki/` | `enterprise-kb` | 技术文库 |
-| `kb/wiki-ops/` | `moli-ops-manual` | 运维操作手册 |
+| `kb/wiki/` | `enterprise-kb` | 占位 index（茉莉正文在 wiki-moli） |
+| `kb/wiki-moli/` | `moli-ops-manual` | **茉莉系统手册**（全项目文档） |
 | `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 日版 FE/AP 题库 |
 
 用 `sync_to_db.py` / `run_sync.sh` **单向、增量、幂等**写进 `kb_document`：
@@ -93,7 +93,7 @@ bash kb/tools/ci/run_sync.sh dry-run-all
 bash kb/tools/ci/run_sync.sh sync-all
 ```
 
-详表与单空间命令见 `kb/wiki-ops/ops/wiki同步指南.md`。
+详表与单空间命令见 `kb/wiki-moli/ops/wiki同步指南.md`。
 
 机制：
 - **slug** = wiki 相对路径去扩展名（如 `services/用户中心`），空间内唯一、与 `edges.jsonl` 节点命名一致。
@@ -137,6 +137,6 @@ moli-knowledge/
 - Java 服务：[`moli-knowledge-server/README.md`](moli-knowledge-server/README.md)
 - 知识库范式与用法：[`kb/README.md`](kb/README.md)
 - 知识库契约（schema / 三操作）：[`kb/AGENTS.md`](kb/AGENTS.md)
-- **自我进化操作手册**（Ingest/Lint/Sync/Crystallize、AI 审校 MD）：[`kb/wiki/guides/AI自我进化与MD审校流程.md`](kb/wiki/guides/AI自我进化与MD审校流程.md)
+- **自我进化操作手册**（Ingest/Lint/Sync/Crystallize、AI 审校 MD）：[`kb/wiki-moli/develop/AI自我进化与MD审校流程.md`](kb/wiki-moli/develop/AI自我进化与MD审校流程.md)
 - 功能规划与双轨分工：[`kb/ROADMAP.md`](kb/ROADMAP.md)
 - 现有知识页目录：[`kb/wiki/index.md`](kb/wiki/index.md)

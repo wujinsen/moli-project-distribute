@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""将 wiki-ops 文档迁移到新分类目录（develop/product/ops/test/guides）。"""
+"""将 wiki-moli 文档迁移到新分类目录（develop/product/ops/test/guides）。"""
 from __future__ import annotations
 
 import json
@@ -9,7 +9,7 @@ import shutil
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-WIKI_OPS = HERE.parent / "wiki-ops"
+WIKI_OPS = HERE.parent / "wiki-moli"
 
 # 源相对路径 -> 目标一级目录
 MOVES: dict[str, str] = {
@@ -76,29 +76,29 @@ PREFIX_REWRITE = [
 ]
 
 PATH_TEXT_REWRITE = [
-    ("wiki-ops/guides/产品需求文档索引", "wiki-ops/product/产品需求文档索引"),
-    ("wiki-ops/guides/技术方案与架构索引", "wiki-ops/develop/技术方案与架构索引"),
-    ("wiki-ops/guides/API契约索引", "wiki-ops/develop/API契约索引"),
-    ("wiki-ops/guides/SQL与数据字典索引", "wiki-ops/develop/SQL与数据字典索引"),
-    ("wiki-ops/guides/模块README索引", "wiki-ops/develop/模块README索引"),
-    ("wiki-ops/guides/文档健康度巡检", "wiki-ops/develop/文档健康度巡检"),
-    ("wiki-ops/guides/v1发布Runbook", "wiki-ops/ops/v1发布Runbook"),
-    ("wiki-ops/guides/生产环境检查清单", "wiki-ops/ops/生产环境检查清单"),
-    ("wiki-ops/guides/SQL迁移顺序", "wiki-ops/ops/SQL迁移顺序"),
-    ("wiki-ops/guides/监控与日志", "wiki-ops/ops/监控与日志"),
-    ("wiki-ops/guides/发布回滚指南", "wiki-ops/ops/发布回滚指南"),
-    ("wiki-ops/guides/知识库工作台运维SOP", "wiki-ops/ops/知识库工作台运维SOP"),
-    ("wiki-ops/guides/user-center-运维要点", "wiki-ops/ops/user-center-运维要点"),
-    ("wiki-ops/guides/wiki同步指南", "wiki-ops/ops/wiki同步指南"),
-    ("wiki-ops/guides/故障排查指南", "wiki-ops/ops/故障排查指南"),
-    ("wiki-ops/guides/nginx反向代理与前端部署指南", "wiki-ops/ops/nginx反向代理与前端部署指南"),
-    ("wiki-ops/guides/docker部署指南", "wiki-ops/ops/docker部署指南"),
-    ("wiki-ops/guides/minio-附件存储指南", "wiki-ops/ops/minio-附件存储指南"),
-    ("wiki-ops/guides/测试文档索引", "wiki-ops/test/测试文档索引"),
-    ("wiki-ops/services/", "wiki-ops/develop/"),
-    ("wiki-ops/concepts/", "wiki-ops/develop/"),
-    ("kb/wiki-ops/services/", "kb/wiki-ops/develop/"),
-    ("kb/wiki-ops/concepts/", "kb/wiki-ops/develop/"),
+    ("wiki-moli/guides/产品需求文档索引", "wiki-moli/product/产品需求文档索引"),
+    ("wiki-moli/guides/技术方案与架构索引", "wiki-moli/develop/技术方案与架构索引"),
+    ("wiki-moli/guides/API契约索引", "wiki-moli/develop/API契约索引"),
+    ("wiki-moli/guides/SQL与数据字典索引", "wiki-moli/develop/SQL与数据字典索引"),
+    ("wiki-moli/guides/模块README索引", "wiki-moli/develop/模块README索引"),
+    ("wiki-moli/guides/文档健康度巡检", "wiki-moli/develop/文档健康度巡检"),
+    ("wiki-moli/guides/v1发布Runbook", "wiki-moli/ops/v1发布Runbook"),
+    ("wiki-moli/guides/生产环境检查清单", "wiki-moli/ops/生产环境检查清单"),
+    ("wiki-moli/guides/SQL迁移顺序", "wiki-moli/ops/SQL迁移顺序"),
+    ("wiki-moli/guides/监控与日志", "wiki-moli/ops/监控与日志"),
+    ("wiki-moli/guides/发布回滚指南", "wiki-moli/ops/发布回滚指南"),
+    ("wiki-moli/guides/知识库工作台运维SOP", "wiki-moli/ops/知识库工作台运维SOP"),
+    ("wiki-moli/guides/user-center-运维要点", "wiki-moli/ops/user-center-运维要点"),
+    ("wiki-moli/guides/wiki同步指南", "wiki-moli/ops/wiki同步指南"),
+    ("wiki-moli/guides/故障排查指南", "wiki-moli/ops/故障排查指南"),
+    ("wiki-moli/guides/nginx反向代理与前端部署指南", "wiki-moli/ops/nginx反向代理与前端部署指南"),
+    ("wiki-moli/guides/docker部署指南", "wiki-moli/ops/docker部署指南"),
+    ("wiki-moli/guides/minio-附件存储指南", "wiki-moli/ops/minio-附件存储指南"),
+    ("wiki-moli/guides/测试文档索引", "wiki-moli/test/测试文档索引"),
+    ("wiki-moli/services/", "wiki-moli/develop/"),
+    ("wiki-moli/concepts/", "wiki-moli/develop/"),
+    ("kb/wiki-moli/services/", "kb/wiki-moli/develop/"),
+    ("kb/wiki-moli/concepts/", "kb/wiki-moli/develop/"),
 ]
 
 

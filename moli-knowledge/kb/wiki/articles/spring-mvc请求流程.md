@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [spring, SpringMVC, DispatcherServlet]
 sources:
-  - raw/wujinsen_markdown/Spring/SpringMVC/SpringMVC工作原理.note.md
+ - raw/wujinsen_markdown/Spring/SpringMVC/SpringMVC工作原理.note.md
 related: [spring-ioc与bean生命周期, spring-cloud-gateway, 用户中心, 网关, tomcat与-servlet容器, servlet生命周期与请求流程]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,7 +15,7 @@ updated: 2026-06-22
 
 > IoC 容器 [[spring-ioc与bean生命周期]]；网关层 [[spring-cloud-gateway]]；Servlet 容器 [[tomcat与-servlet容器]]。
 
-茉莉各业务服务（[[用户中心]]、[[订单服务]] 等）内嵌 **Tomcat + Spring MVC**（Boot 2.3 `spring-boot-starter-web`），处理 REST API。
+各业务服务（、 等）内嵌 **Tomcat + Spring MVC**（Boot 2.3 `spring-boot-starter-web`），处理 REST API。
 
 ## 核心组件
 
@@ -30,19 +30,13 @@ updated: 2026-06-22
 
 ```
 Client HTTP
-  → DispatcherServlet
-  → HandlerMapping 找 Handler
-  → HandlerAdapter 执行 Controller
-  → 返回 ModelAndView 或 @ResponseBody 体
-  →（视图则 ViewResolver 渲染）
-  → 响应
+ → DispatcherServlet
+ → HandlerMapping 找 Handler
+ → HandlerAdapter 执行 Controller
+ → 返回 ModelAndView 或 @ResponseBody 体
+ →（视图则 ViewResolver 渲染）
+ → 响应
 ```
-
-## REST API 场景（茉莉）
-
-- Controller 返回 JSON：`@RestController` = `@Controller` + `@ResponseBody`
-- 参数绑定：`@RequestParam` / `@PathVariable` / `@RequestBody`
-- 登录接口在 [[用户中心]] `LoginController`；网关转发后路径见 [[网关]]
 
 ## 与 Gateway 的关系
 

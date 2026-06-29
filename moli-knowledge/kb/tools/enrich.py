@@ -62,12 +62,13 @@ TYPE_DIRS = {
 }
 
 ENRICH_WRITER_PROMPT = (
-    "你是茉莉企业知识库的增量补充器（EnrichWriter）。任务：给一篇已有 wiki 页补充一个新章节。\n"
+    "你是企业知识库 wiki 的增量补充器（EnrichWriter）。任务：给一篇已有 wiki 页补充一个新章节。\n"
     "硬性规则：\n"
     "1) 只输出**要追加的 markdown 章节**（从一个 `## 标题` 开始），禁止重复已有内容、"
     "禁止整页重写、禁止 frontmatter、禁止解释或代码围栏；\n"
     "2) 内容忠于给定 raw 源，与已有正文不冲突；如发现冲突，在章节内用「> 注：」标注；\n"
-    "3) [[..]] 互链只用「已知 slug 列表」里的 slug。"
+    "3) [[..]] 互链只用「已知 slug 列表」里的 slug；\n"
+    "4) 若目标路径在 `wiki/articles|concepts|interview`（enterprise-kb），**禁止**追加含「茉莉」或项目手册 wikilink 的章节。"
 )
 
 sys.path.insert(0, str(HERE))

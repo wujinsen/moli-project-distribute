@@ -5,7 +5,7 @@ type: interview
 status: active
 tags: [面试, Zookeeper, 分布式]
 sources:
-  - raw/wujinsen_markdown/面试笔试/框架/zookeeper/精尽 Zookeeper 面试题（最新更新时间：2020-09-01.note.md
+ - raw/wujinsen_markdown/面试笔试/框架/zookeeper/精尽 Zookeeper 面试题（最新更新时间：2020-09-01.note.md
 related: [zookeeper-与协调服务, dubbo-面试题, 分布式锁, 分布式理论面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -39,7 +39,7 @@ Looking → Following/Leading；过半 ack 新 Leader。
 
 ## Q7. ZK 做 Dubbo 注册中心路径？
 
-`/dubbo/{service}/providers` 等（老版本）；茉莉用 Nacos [[dubbo-与-nacos]]。
+`/dubbo/{service}/providers` 等（老版本）；用 Nacos [[dubbo-与-nacos]]。
 
 ## Q8. ZK 锁 vs Redis 锁？
 
@@ -48,7 +48,3 @@ ZK 可靠、性能低；Redis 快、需 Redisson/Lua 防 bug [[redis分布式锁
 ## Q9. 脑裂如何避免？
 
 epoch 递增，旧 Leader 写入被拒绝。
-
-## Q10. 茉莉为什么选 Nacos 不选 ZK？
-
-配置+注册一体、AP 可用性、Spring Cloud Alibaba 生态 [[nacos-注册与配置]]。

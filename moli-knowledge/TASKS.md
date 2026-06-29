@@ -16,7 +16,7 @@
 | 同步 | ✅ sync API + CI 多空间门禁（T12） | — |
 | Java API | ✅ CRUD/Ask/Browse/Graph/Lint/ACL/附件/全文检索/Ingest/Wiki 治理 API | Meilisearch/向量（量级触发再上） |
 | 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
-| kb 知识 | ✅ wiki + wiki-ops + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
+| kb 知识 | ✅ wiki + wiki-moli + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
 | 后端工作台 | ✅ T14 单页编辑 · T15 Ingest · T16a/e/g 治理 · T17 分类落盘 · T18 Express · T19 LLM 平台 | — |
 | 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理全链路 · **T19d** LLM 设置 UI · 空间 CRUD（二期） |
 

@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [jvm, GC, G1, CMS]
 sources:
-  - raw/wujinsen_markdown/jvm/垃圾收集算法.note.md
-  - raw/wujinsen_markdown/jvm/GC/各个GC收集器对比.note.md
-  - raw/wujinsen_markdown/jvm/jdk7、8、9默认垃圾回收器.note.md
+ - raw/wujinsen_markdown/jvm/垃圾收集算法.note.md
+ - raw/wujinsen_markdown/jvm/GC/各个GC收集器对比.note.md
+ - raw/wujinsen_markdown/jvm/jdk7、8、9默认垃圾回收器.note.md
 related: [jvm-内存与gc, jvm-面试题]
 created: 2026-06-22
 updated: 2026-06-22

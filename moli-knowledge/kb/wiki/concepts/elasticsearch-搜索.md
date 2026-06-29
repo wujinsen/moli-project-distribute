@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [elasticsearch, 搜索, 全文检索, 大数据]
 sources:
-  - raw/wujinsen_markdown/读书笔记/ElasticSearch/ElasticSearch基本概念和原理.note.md
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
+ - raw/wujinsen_markdown/读书笔记/ElasticSearch/ElasticSearch基本概念和原理.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
 related: [es-索引与写入流程, es-搜索与分片路由, es-match与bool查询, elasticsearch-面试题, mysql-索引, 知识库服务, 消息队列]
 created: 2026-06-22
 updated: 2026-06-22
@@ -16,7 +16,7 @@ updated: 2026-06-22
 
 > 写入 [[es-索引与写入流程]]；搜索 [[es-搜索与分片路由]]；DSL [[es-match与bool查询]]；面试 [[elasticsearch-面试题]]。
 
-**Elasticsearch（ES）** 是基于 **Lucene** 的分布式搜索与分析引擎，典型用于全文检索、日志分析、电商搜索。茉莉项目当前 **未部署 ES**；知识库检索为 MySQL `LIKE`（[[知识库服务]]），BI 为骨架。ES 是 **P1 扩展方向**（模糊搜、日志、与 MySQL 同步）。
+**Elasticsearch（ES）** 是基于 **Lucene** 的分布式搜索与分析引擎，典型用于全文检索、日志分析、电商搜索。目标系统当前 **未部署 ES**；知识库检索为 MySQL `LIKE`（），BI 为骨架。ES 是 **P1 扩展方向**（模糊搜、日志、与 MySQL 同步）。
 
 ## 1. 核心概念
 
@@ -33,7 +33,7 @@ updated: 2026-06-22
 
 ## 2. 与 MySQL 分工
 
-| 场景 | MySQL（茉莉现状） | ES |
+| 场景 | MySQL（典型现状） | ES |
 |------|-------------------|-----|
 | 事务、强一致 | ✅ 主库 | ❌ 近实时、最终一致 |
 | 精确 CRUD | ✅ | 可但非主场景 |
@@ -47,30 +47,19 @@ updated: 2026-06-22
 
 ```mermaid
 flowchart LR
-  Client --> Coord[协调节点]
-  Coord --> P1[主分片]
-  Coord --> R1[副本分片]
-  P1 --> Lucene[Lucene Segment]
+ Client --> Coord[协调节点]
+ Coord --> P1[主分片]
+ Coord --> R1[副本分片]
+ P1 --> Lucene[Lucene Segment]
 ```
 
 - **写**：路由到主分片 → Memory Buffer → refresh → translog → flush
 - **读**：Query Then Fetch（见 [[es-搜索与分片路由]]）
 - **选主**：ZenDiscovery，master 候选 `n/2+1` 票
 
-## 4. 茉莉触点
-
-| 模块 | 现状 | ES 潜在用途 |
-|------|------|-------------|
-| [[知识库服务]] | MySQL LIKE + 可选 LLM | 全文检索、slug/正文分词 |
-| [[bi服务]] | 骨架 | 报表/日志分析 |
-| 秒杀/订单 | MySQL | 一般仍走 DB；搜索类另建索引 |
-| 技术栈 | 未列 ES | 可增 ELK 做可观测（[[技术栈与版本]] 规划项） |
-
-MySQL → ES 同步常见方案：Canal、Logstash、双写；raw 语料有「同步 MySQL 到 ES」专题。
-
 ## 5. 与消息队列
 
-大批量导入 ES 时常配合 **Kafka** 做日志/变更流（[[消息队列]]、[[kafka-与-mq选型]]）。秒杀异步落库当前为 Redis 队列（[[秒杀设计]]），生产建议 RocketMQ/Kafka。
+大批量导入 ES 时常配合 **Kafka** 做日志/变更流（[[消息队列]]、[[kafka-与-mq选型]]）。秒杀异步落库当前为 Redis 队列（），生产建议 RocketMQ/Kafka。
 
 ## 6. 学习路径
 

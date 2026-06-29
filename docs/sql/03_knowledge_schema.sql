@@ -319,16 +319,13 @@ CREATE TABLE IF NOT EXISTS `kb_qa_log` (
 -- =============================================================
 INSERT INTO `kb_space` VALUES (900000000000000001, 1, NOW(), 1, NOW(), 'enterprise-kb', '企业知识库', '公司级知识沉淀与协作空间', 'book-open', 2, 1, 1, 1, 0);
 
--- 分类=目录（单一真相源）：每条绑定 enterprise-kb 的 wiki 子目录，default_type 用于移动时对齐 frontmatter type
+-- 分类=目录（单一真相源）：enterprise-kb 仅 3 类，与 wiki/ 一级目录一致
 INSERT INTO `kb_category`
   (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`default_type`,`sort`,`is_delete`)
 VALUES
-  (900000000000000111, 1, NOW(), 1, NOW(), 900000000000000001, 0, '操作指导', NULL, 'guides',    'guide',     1, 0),
-  (900000000000000112, 1, NOW(), 1, NOW(), 900000000000000001, 0, '微服务',   NULL, 'services',  'service',   2, 0),
-  (900000000000000113, 1, NOW(), 1, NOW(), 900000000000000001, 0, '概念',     NULL, 'concepts',  'concept',   3, 0),
-  (900000000000000114, 1, NOW(), 1, NOW(), 900000000000000001, 0, '技术文章', NULL, 'articles',  'article',   4, 0),
-  (900000000000000115, 1, NOW(), 1, NOW(), 900000000000000001, 0, '面试题',   NULL, 'interview', 'interview', 5, 0),
-  (900000000000000116, 1, NOW(), 1, NOW(), 900000000000000001, 0, '综合',     NULL, 'outputs',   'output',    6, 0)
+  (900000000000000113, 1, NOW(), 1, NOW(), 900000000000000001, 0, '概念',     NULL, 'concepts',  'concept',   1, 0),
+  (900000000000000114, 1, NOW(), 1, NOW(), 900000000000000001, 0, '技术文章', NULL, 'articles',  'article',   2, 0),
+  (900000000000000115, 1, NOW(), 1, NOW(), 900000000000000001, 0, '面试题',   NULL, 'interview', 'interview', 3, 0)
 ON DUPLICATE KEY UPDATE
   `category_name` = VALUES(`category_name`),
   `default_type`  = VALUES(`default_type`),
@@ -343,7 +340,7 @@ INSERT INTO `kb_document`
    `slug`,`source`,`source_path`,`content_hash`,`title`,`summary`,`content`,
    `doc_type`,`kb_type`,`domain`,`status`,`view_count`,`like_count`,`version_no`,`publish_time`,`is_delete`)
 VALUES
-  (900000000000000301, 1, NOW(), 1, NOW(), 900000000000000001, 900000000000000111,
+  (900000000000000301, 1, NOW(), 1, NOW(), 900000000000000001, 900000000000000113,
    'kb-quickstart', 'manual', NULL, NULL, '知识库快速上手', '介绍企业知识库的核心功能与使用方式',
    '# 企业知识库\n\n## 功能概览\n- 空间管理\n- 分类树\n- 文档编辑与发布\n- 标签检索\n- 版本历史\n- 评论与收藏',
    'markdown', 'guide', NULL, 1, 0, 0, 1, NOW(), 0);

@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [mysql, B+Tree, InnoDB, 聚簇索引, 数据结构]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
-  - raw/wujinsen_markdown/面试笔试/Database/mysql/B树与B+树.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
+ - raw/wujinsen_markdown/面试笔试/Database/mysql/B树与B+树.note.md
 related: [mysql-索引, mysql-覆盖索引与回表优化, mysql-索引面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -39,10 +39,10 @@ InnoDB 表**按主键顺序**以 B+Tree 存放 → **索引即数据**（Index O
 
 ```sql
 CREATE TABLE T (
-  id INT PRIMARY KEY,
-  k INT NOT NULL,
-  name VARCHAR(16),
-  INDEX (k)
+ id INT PRIMARY KEY,
+ k INT NOT NULL,
+ name VARCHAR(16),
+ INDEX (k)
 ) ENGINE=InnoDB;
 ```
 

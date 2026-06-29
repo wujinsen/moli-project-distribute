@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [安全, API, 鉴权, 防刷]
 sources:
-  - raw/wujinsen_markdown/面试笔试/安全性/App开放接口api安全性的设计与实现.note.md
+ - raw/wujinsen_markdown/面试笔试/安全性/App开放接口api安全性的设计与实现.note.md
 related: [登录与鉴权指南, shiro-鉴权体系, sentinel-限流与熔断, 接口幂等性实践, https与-tls基础]
 created: 2026-06-22
 updated: 2026-06-22
@@ -13,11 +13,11 @@ updated: 2026-06-22
 
 # API 接口安全设计
 
-> 茉莉鉴权 [[shiro-鉴权体系]]；网关 [[spring-cloud-gateway]]；限流 [[sentinel-限流与熔断]]。
+> 鉴权 [[shiro-鉴权体系]]；网关 [[spring-cloud-gateway]]；限流 [[sentinel-限流与熔断]]。
 
 ## 1. 身份认证
 
-| 层 | 茉莉 |
+| 层 | |
 |----|------|
 | 登录 | Shiro + Redis Session [[认证与会话机制]] |
 | 调 API | `Authorization` token |
@@ -51,4 +51,4 @@ sign = HMAC(appSecret, sortedParams + timestamp)
 
 ## 相关
 
-[[故障排查指南]] · [[茉莉登录与鉴权故障根因汇总]]
+ ·

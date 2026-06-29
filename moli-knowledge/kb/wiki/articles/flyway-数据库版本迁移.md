@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [MySQL, DevOps, 数据库]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [数据库初始化指南, api-向后兼容策略, git-分支与发布策略, 蓝绿与滚动发布]
 created: 2026-06-21
 updated: 2026-06-21
@@ -13,7 +13,7 @@ updated: 2026-06-21
 
 # Flyway 数据库版本迁移
 
-> 初始化 [[数据库初始化指南]]；API 兼容 [[api-向后兼容策略]]；发布 [[蓝绿与滚动发布]]。
+> 初始化 ；API 兼容 [[api-向后兼容策略]]；发布 [[蓝绿与滚动发布]]。
 
 **Flyway** 用版本化 SQL 管理 schema 变更，替代手工执行零散脚本。
 
@@ -21,9 +21,9 @@ updated: 2026-06-21
 
 ```
 db/migration/
-  V1__baseline.sql
-  V2__seckill_tables.sql
-  V3__kb_schema.sql
+ V1__baseline.sql
+ V2__seckill_tables.sql
+ V3__kb_schema.sql
 ```
 
 - `V{version}__{description}.sql` 只增不改历史
@@ -33,20 +33,12 @@ db/migration/
 
 ```yaml
 spring.flyway:
-  enabled: true
-  locations: classpath:db/migration
-  baseline-on-migrate: true
+ enabled: true
+ locations: classpath:db/migration
+ baseline-on-migrate: true
 ```
 
 启动时自动 migrate；多服务共享库需 **统一 migration 模块** 或严格分工。
-
-## 3. 与茉莉现状
-
-当前 `scripts/moli.sql` 手工初始化 [[数据库初始化指南]]；演进建议：
-
-- baseline 来自现有全量 dump
-- 增量 feature 只加新 `Vn__*.sql`
-- 与 [[ci-知识库同步门禁]] 类似，CI 对空库跑 migrate 验证
 
 ## 4. 安全原则
 
@@ -58,7 +50,7 @@ spring.flyway:
 
 ## 5. vs Liquibase
 
-Flyway 纯 SQL 直观；Liquibase XML/YAML 差分。茉莉 SQL 文化选 Flyway 即可。
+Flyway 纯 SQL 直观；Liquibase XML/YAML 差分。 SQL 文化选 Flyway 即可。
 
 ## 相关
 

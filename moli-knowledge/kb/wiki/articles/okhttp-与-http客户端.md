@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [HTTP, Java, 网络]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [openfeign-与-http客户端, webclient-与-resttemplate, https与-tls基础, feign-开发踩坑]
 created: 2026-06-21
 updated: 2026-06-21
@@ -17,7 +17,7 @@ updated: 2026-06-21
 
 ## 1. 客户端对比
 
-| 客户端 | 特点 | 茉莉 |
+| 客户端 | 特点 | |
 |--------|------|------|
 | **HttpURLConnection** | JDK 内置，难用 | 不推荐 |
 | **Apache HttpClient** | 成熟，连接池 | 老项目 |
@@ -28,15 +28,15 @@ updated: 2026-06-21
 
 ```java
 OkHttpClient client = new OkHttpClient.Builder()
-    .connectTimeout(3, TimeUnit.SECONDS)
-    .readTimeout(10, TimeUnit.SECONDS)
-    .connectionPool(new ConnectionPool(32, 5, TimeUnit.MINUTES))
-    .addInterceptor(chain -> {
-        Request req = chain.request().newBuilder()
-            .header("X-Trace-Id", MDC.get("traceId")).build();
-        return chain.proceed(req);
-    })
-    .build();
+ .connectTimeout(3, TimeUnit.SECONDS)
+ .readTimeout(10, TimeUnit.SECONDS)
+ .connectionPool(new ConnectionPool(32, 5, TimeUnit.MINUTES))
+ .addInterceptor(chain -> {
+ Request req = chain.request().newBuilder()
+ .header("X-Trace-Id", MDC.get("traceId")).build();
+ return chain.proceed(req);
+ })
+ .build();
 ```
 
 - **连接池**复用 TCP；idle 超时回收

@@ -17,6 +17,7 @@ public interface KbDocumentMapper extends BaseMapper<KbDocument> {
                                     @Param("spaceId") Long spaceId,
                                     @Param("spaceIds") List<Long> spaceIds,
                                     @Param("categoryId") Long categoryId,
+                                    @Param("uncategorizedOnly") Boolean uncategorizedOnly,
                                     @Param("status") Integer status,
                                     @Param("documentIds") List<Long> documentIds,
                                     @Param("keyword") String keyword,

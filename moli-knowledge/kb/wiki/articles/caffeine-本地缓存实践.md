@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [缓存, Java, 性能]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [多级缓存架构, spring-cache-注解缓存, redis-缓存, 缓存双写与一致性策略]
 created: 2026-06-21
 updated: 2026-06-21
@@ -28,13 +28,13 @@ updated: 2026-06-21
 
 ```java
 Cache<Long, SeckillActivityVo> local = Caffeine.newBuilder()
-    .maximumSize(10_000)
-    .expireAfterWrite(30, TimeUnit.SECONDS)
-    .recordStats()
-    .build();
+ .maximumSize(10_000)
+ .expireAfterWrite(30, TimeUnit.SECONDS)
+ .recordStats()
+ .build();
 
 SeckillActivityVo get(Long id) {
-    return local.get(id, k -> redisTemplate.opsForValue().get("act:" + k));
+ return local.get(id, k -> redisTemplate.opsForValue().get("act:" + k));
 }
 ```
 
@@ -48,12 +48,6 @@ SeckillActivityVo get(Long id) {
 | `expireAfterWrite` | 活动页、字典 |
 | `refreshAfterWrite` | 后台异步刷新，防击穿 |
 | `weakKeys` | 大对象场景慎用 |
-
-## 4. 茉莉场景
-
-- **秒杀活动元数据**（价、库存展示只读字段）：本地 5–30s + Redis 权威扣减 [[秒杀设计]]
-- **RBAC 菜单树**：变更频率低，evict 事件 [[spring-事件机制]]
-- **不宜本地**：Session、库存计数、分布式锁
 
 ## 5. 多实例一致性
 

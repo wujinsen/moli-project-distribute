@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Feign, Spring Cloud, 超时]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [feign-开发踩坑, openfeign-与-http客户端, rpc-超时重试与链路]
 created: 2026-06-21
 updated: 2026-06-21
@@ -19,8 +19,8 @@ updated: 2026-06-21
 
 ```yaml
 feign.client.config.default:
-  connectTimeout: 3000
-  readTimeout: 10000
+ connectTimeout: 3000
+ readTimeout: 10000
 ```
 
 Ribbon/Hystrix 时代需对齐；OpenFeign + LoadBalancer 以 Feign 为准。
@@ -30,7 +30,7 @@ Ribbon/Hystrix 时代需对齐；OpenFeign + LoadBalancer 以 Feign 为准。
 ```java
 @Bean
 Retryer feignRetryer() {
-  return new Retryer.Default(100, 1000, 2);
+ return new Retryer.Default(100, 1000, 2);
 }
 ```
 
@@ -41,7 +41,7 @@ Retryer feignRetryer() {
 
 ## 3. 与 Dubbo 对比
 
-茉莉内部 **Dubbo** 为主 [[dubbo-超时链路传递]]；Feign 仅 REST 边界。
+内部 **Dubbo** 为主 [[dubbo-超时链路传递]]；Feign 仅 REST 边界。
 
 ## 相关
 

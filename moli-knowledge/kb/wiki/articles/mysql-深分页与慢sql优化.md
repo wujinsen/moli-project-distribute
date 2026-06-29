@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [mysql, 慢sql, 分页, 优化]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md
 related: [mysql-索引, mysql-覆盖索引与回表优化, mysql-事务与锁, 故障排查指南]
 created: 2026-06-22
 updated: 2026-06-22
@@ -36,7 +36,7 @@ SELECT * FROM t WHERE val = 4 LIMIT 300000, 10;
 SELECT a.*
 FROM t AS a
 INNER JOIN (
-  SELECT id FROM t WHERE val = 4 LIMIT 300000, 10
+ SELECT id FROM t WHERE val = 4 LIMIT 300000, 10
 ) AS b ON a.id = b.id;
 ```
 
@@ -54,11 +54,6 @@ INNER JOIN (
 | 函数/on 列 | 改写 SQL，见 [[mysql-索引失效场景]] |
 | 大事务 | 拆批、缩短锁持有 |
 | CPU 高 | 慢 SQL、锁竞争、buffer pool 不足 |
-
-## 茉莉场景
-
-- 用户/订单列表：避免无脑 `LIMIT 超大 offset`
-- 知识库 `LIKE` 检索：数据量大后需 ES/Meilisearch（见 [[知识库服务]] 规划）
 
 ## 面试一句话
 

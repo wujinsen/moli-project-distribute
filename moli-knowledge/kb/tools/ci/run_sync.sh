@@ -27,7 +27,7 @@ KB_SYNC_SPACE="${KB_SYNC_SPACE:-enterprise-kb}"
 # dry-run-all / lint-strict-all / sync-all / verify-all 全部以它为准，避免单/多空间路径漂移。
 KB_SPACES=(
   "wiki:enterprise-kb"
-  "wiki-ops:moli-ops-manual"
+  "wiki-moli:moli-ops-manual"
   "wiki-jp-exam:jp-fe-ap-exam"
 )
 
@@ -88,7 +88,7 @@ case "${MODE}" in
     echo "[ci] import kb schema (skip sys_* seed if tables absent) ..."
     # 03 脚本末尾含 sys_system 增量 INSERT，CI 最小库无 user-center 表，截断到 sys 段之前
     awk '/INSERT INTO `sys_system`/ {exit} {print}' "${SCHEMA}" | mysql_cli "${KB_SYNC_DB}"
-    for extra in "04_kb_space_jp_exam.sql" "07_kb_space_ops_manual.sql"; do
+    for extra in "04_kb_space_jp_exam.sql" "07_kb_space_ops_manual.sql" "10_kb_category_dir_slug.sql" "11_kb_category_enterprise_trim.sql"; do
       extra_path="${REPO_ROOT}/docs/sql/${extra}"
       if [[ -f "${extra_path}" ]]; then
         echo "[ci] import optional space seed ${extra} ..."
@@ -153,7 +153,7 @@ case "${MODE}" in
     fi
     ;;
   verify-all)
-    # 逐空间校验：每个空间至少 1 篇 active 文档，任一空间为 0 即失败，避免被总量掩盖。
+    # 逐空间校验：每个空间至少 1 篇 active 文档，且无已发布未分类 wiki 文档。
     echo "[ci] verify each wiki space has synced documents ..."
     fail=0
     for entry in "${KB_SPACES[@]}"; do
@@ -164,6 +164,15 @@ case "${MODE}" in
       echo "[ci] space=${space_code} kb_document(source=kb, active)=${count}"
       if [[ "${count}" -lt 1 ]]; then
         echo "[ci] verify-all failed: space '${space_code}' has 0 synced documents" >&2
+        fail=1
+      fi
+      uncat="$(mysql_cli -N -e "SELECT COUNT(*) FROM \`${KB_SYNC_DB}\`.kb_document d \
+        JOIN \`${KB_SYNC_DB}\`.kb_space s ON s.id = d.space_id \
+        WHERE s.space_code='${space_code}' AND s.is_delete=0 AND d.is_delete=0 \
+          AND d.source='kb' AND d.status=1 AND d.category_id IS NULL;")"
+      echo "[ci] space=${space_code} uncategorized(published kb)=${uncat}"
+      if [[ "${uncat}" -gt 0 ]]; then
+        echo "[ci] verify-all failed: space '${space_code}' has ${uncat} uncategorized published docs" >&2
         fail=1
       fi
     done

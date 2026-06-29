@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Spring, 缓存, Redis]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
 related: [redis-缓存, cache-aside与缓存更新模式, caffeine-本地缓存实践, 缓存双写与一致性策略]
 created: 2026-06-21
 updated: 2026-06-21
@@ -40,11 +40,6 @@ public void update(SysUser user) { mapper.updateById(user); }
 - **TTL**：`RedisCacheConfiguration.entryTtl(Duration.ofMinutes(30))`
 - 多服务共享 cacheName 需约定前缀，防 key 冲突
 
-## 3. 与茉莉 RBAC
-
-- 用户权限列表可 `@Cacheable`，变更角色时 `@CacheEvict`
-- **Session 仍走 Redis Shiro**，勿与业务 cache 混用同一 logical name
-
 ## 4. 陷阱
 
 | 坑 | 处理 |
@@ -56,4 +51,4 @@ public void update(SysUser user) { mapper.updateById(user); }
 
 ## 相关
 
-[[redisson-看门狗与分布式锁]] · [[秒杀设计]]
+[[redisson-看门狗与分布式锁]] ·

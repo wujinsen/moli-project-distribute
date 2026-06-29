@@ -19,6 +19,9 @@ public class DocumentSearchRequest {
     @ApiModelProperty("分类ID")
     private Long categoryId;
 
+    @ApiModelProperty("仅未分类（category_id IS NULL）；与 categoryId 互斥")
+    private Boolean uncategorizedOnly;
+
     @ApiModelProperty("关键词")
     private String keyword;
 

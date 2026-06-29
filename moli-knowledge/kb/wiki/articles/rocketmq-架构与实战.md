@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [RocketMQ, MQ, 消息队列]
 sources:
-  - raw/wujinsen_markdown/架构/消息队列/RocketMQ/rocketmq常用命令.note.md
-  - raw/wujinsen_markdown/架构/消息队列/RocketMQ/安装部署/rocketmq4.5.2 - 服务安装， web管理界面安装.note.md
-  - raw/wujinsen_markdown/架构/消息队列/RocketMQ/问题解决/Rocketmq之No route info of this topic解决思路.note.md
+ - raw/wujinsen_markdown/架构/消息队列/RocketMQ/rocketmq常用命令.note.md
+ - raw/wujinsen_markdown/架构/消息队列/RocketMQ/安装部署/rocketmq4.5.2 - 服务安装， web管理界面安装.note.md
+ - raw/wujinsen_markdown/架构/消息队列/RocketMQ/问题解决/Rocketmq之No route info of this topic解决思路.note.md
 related: [消息队列, kafka-与-mq选型, rocketmq-事务消息实践, 秒杀设计]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,7 +15,7 @@ updated: 2026-06-22
 
 # RocketMQ 架构与实战
 
-> 选型 [[kafka-与-mq选型]]；茉莉秒杀当前 Redis 队列 [[秒杀设计]]。
+> 选型 [[kafka-与-mq选型]]；秒杀当前 Redis 队列。
 
 ## 1. 架构组件
 
@@ -42,13 +42,6 @@ mqadmin topicList -n localhost:9876
 
 - Broker 未注册 Topic、Producer 未连 NameServer、Topic 未创建
 - 排查：NameServer 地址、Broker 日志、`autoCreateTopicEnable`
-
-## 5. 与茉莉演进
-
-| 阶段 | 方案 |
-|------|------|
-| 现状 | Redis List/Stream 异步落库 |
-| 下一步 | RocketMQ 削峰 + 消费者幂等 [[接口幂等性实践]] |
 
 ## 相关
 

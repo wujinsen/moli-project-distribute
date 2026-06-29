@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [mysql, 事务, 锁, InnoDB, MVCC]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/全局锁和表锁 ：给表加个字段怎么有这么多阻碍？.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/全局锁和表锁 ：给表加个字段怎么有这么多阻碍？.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
 related: [mysql-隔离级别与mvcc, mysql-innodb锁机制, mysql-死锁与排查, mysql-深分页与慢sql优化, mysql-事务面试题, mysql-索引, spring-声明式事务]
 created: 2026-06-22
 updated: 2026-06-22
@@ -17,7 +17,7 @@ updated: 2026-06-22
 
 > 隔离与 MVCC [[mysql-隔离级别与mvcc]]；InnoDB 行锁 [[mysql-innodb锁机制]]；死锁 [[mysql-死锁与排查]]；慢 SQL [[mysql-深分页与慢sql优化]]；面试 [[mysql-事务面试题]]。索引见 [[mysql-索引]]；应用层事务见 [[spring-声明式事务]]。
 
-InnoDB 默认引擎，**支持事务 + 行级锁 + MVCC**。茉莉项目 MySQL 8.0 + Druid，订单/用户写操作既靠 Spring `@Transactional`，也受数据库隔离级别与锁行为约束。
+InnoDB 默认引擎，**支持事务 + 行级锁 + MVCC**。目标系统 MySQL 8.0 + Druid，订单/用户写操作既靠 Spring `@Transactional`，也受数据库隔离级别与锁行为约束。
 
 ## ACID（复习）
 
@@ -56,9 +56,3 @@ InnoDB 默认引擎，**支持事务 + 行级锁 + MVCC**。茉莉项目 MySQL 8
 | **行锁** | InnoDB DML：`Record / Gap / Next-Key` |
 
 分布式互斥跨 JVM 用 [[分布式锁]]，不是表锁替代。
-
-## 茉莉实践提示
-
-- 秒杀落库、订单写：短事务 + 合理索引，避免长事务占 MDL/行锁
-- 慢查询先 [[mysql-索引]] + EXPLAIN，再查锁等待 `performance_schema` / `SHOW ENGINE INNODB STATUS`
-- Spring 传播与 DB 隔离是两层面，见 [[spring-声明式事务]]

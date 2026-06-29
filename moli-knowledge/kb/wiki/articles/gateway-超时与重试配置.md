@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Gateway, Spring Cloud, 超时]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [spring-cloud-gateway, rpc-超时重试与链路, sentinel-限流与熔断]
 created: 2026-06-21
 updated: 2026-06-21
@@ -19,23 +19,23 @@ updated: 2026-06-21
 
 ```
 Client → Gateway → 下游 HTTP/Dubbo
-         ↑ 此处需小于客户端超时，并大于最慢下游 P99
+ ↑ 此处需小于客户端超时，并大于最慢下游 P99
 ```
 
 ## 2. 配置示例
 
 ```yaml
 spring.cloud.gateway:
-  httpclient:
-    connect-timeout: 3000
-    response-timeout: 10s
-  routes:
-    - id: user-center
-      filters:
-        - name: Retry
-          args:
-            retries: 2
-            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+ httpclient:
+ connect-timeout: 3000
+ response-timeout: 10s
+ routes:
+ - id: user-center
+ filters:
+ - name: Retry
+ args:
+ retries: 2
+ statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
 ```
 
 **写接口慎用 Retry**，配合幂等 [[接口幂等性实践]]。
@@ -43,11 +43,6 @@ spring.cloud.gateway:
 ## 3. 与 Sentinel
 
 Gateway 集成 Sentinel 规则 [[gateway-接入-sentinel规划]]：慢调用比例、异常比例熔断。
-
-## 4. 茉莉
-
-- 登录/鉴权路径超时优先查 Redis [[故障排查指南]]
-- 秒杀路由单独更短超时 + 限流 [[秒杀设计]]
 
 ## 相关
 

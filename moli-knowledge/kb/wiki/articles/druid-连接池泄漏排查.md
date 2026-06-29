@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [MySQL, Druid, 排查]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [druid连接池与监控, 故障排查指南, mybatis-与-druid持久层]
 created: 2026-06-21
 updated: 2026-06-21
@@ -13,7 +13,7 @@ updated: 2026-06-21
 
 # Druid 连接池泄漏排查
 
-> 池配置 [[druid连接池与监控]]；总指南 [[故障排查指南]]；持久层 [[mybatis-与-druid持久层]]。
+> 池配置 [[druid连接池与监控]]；总指南 ；持久层 [[mybatis-与-druid持久层]]。
 
 连接池「泄漏」= 借出连接未归还，活跃数持续涨直到 `maxActive` 耗尽。
 
@@ -38,18 +38,6 @@ updated: 2026-06-21
 2. `SHOW PROCESSLIST` / `information_schema.innodb_trx` 找长事务
 3. Arthas `thread -b` 看阻塞链 [[arthas-在线诊断]]
 4. 对照代码：所有 JDBC 资源在 `finally` 关闭
-
-## 4. 茉莉配置建议
-
-```yaml
-spring.datasource.druid:
-  max-active: 50
-  remove-abandoned: true
-  remove-abandoned-timeout: 300
-  log-abandoned: true
-```
-
-压测前核对 [[压测报告解读指南]]；秒杀消费者线程数 × 每线程连接 ≤ 池上限。
 
 ## 相关
 

@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [MySQL, 性能, 排查]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [mysql-索引, mysql-explain-执行计划进阶, mysql-深分页与慢sql优化]
 created: 2026-06-21
 updated: 2026-06-21
@@ -29,16 +29,8 @@ MySQL 8：`slow_query_log` 表 + `pt-query-digest` 聚合。
 
 ```
 慢 SQL 样本 → EXPLAIN → 是否走索引 / 回表 / 排序/filesort
-           → 改写 SQL 或加索引 → 压测验证
+ → 改写 SQL 或加索引 → 压测验证
 ```
-
-## 3. 茉莉高频模式
-
-| 模式 | 处理 |
-|------|------|
-| `kb_document` 全文 LIKE | 规划 ES [[知识库-全文检索规划]] |
-| 订单列表深分页 | 游标/延迟关联 [[mysql-深分页与慢sql优化]] |
-| RBAC 多表 JOIN | 覆盖索引、拆查询 |
 
 ## 4. 与监控联动
 

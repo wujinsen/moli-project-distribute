@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Java, 并发, 异步]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
 related: [spring-async与线程池, java-并发, rpc-超时重试与链路, 线程池-实战调优]
 created: 2026-06-21
 updated: 2026-06-21
@@ -32,27 +32,21 @@ JDK 8+ 声明式组合多个异步步骤，替代嵌套 `Future.get()` 回调地
 
 ```java
 CompletableFuture<User> userF = CompletableFuture.supplyAsync(
-    () -> userClient.getById(uid), queryPool);
+ () -> userClient.getById(uid), queryPool);
 CompletableFuture<List<String>> permF = CompletableFuture.supplyAsync(
-    () -> permClient.listByUser(uid), queryPool);
+ () -> permClient.listByUser(uid), queryPool);
 
 return userF.thenCombine(permF, (u, perms) -> {
-    u.setPermissions(perms);
-    return u;
+ u.setPermissions(perms);
+ return u;
 }).orTimeout(2, TimeUnit.SECONDS)
-  .exceptionally(ex -> User.fallback(uid));
+ .exceptionally(ex -> User.fallback(uid));
 ```
 
 ## 3. 线程池选择
 
 - **禁止** `supplyAsync` 无参（共用 `ForkJoinPool.commonPool()`）做 IO 密集
 - 独立 `Executor` 与 Tomcat/Dubbo 线程隔离 [[线程池-实战调优]]
-
-## 4. 茉莉场景
-
-- Gateway 聚合多个下游（若 BFF 层扩展）
-- BI 报表多数据源并行查询（注意连接池上限 [[druid连接池与监控]]）
-- **不适合** 秒杀核心路径（延迟与背压难控 → Redis+MQ [[秒杀设计]]）
 
 ## 5. 与响应式对比
 

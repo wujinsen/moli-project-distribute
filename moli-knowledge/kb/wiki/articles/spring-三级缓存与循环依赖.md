@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [spring, 循环依赖, 三级缓存, AOP]
 sources:
-  - raw/wujinsen_markdown/Spring/Spring循环依赖原理解析.note.md
-  - raw/wujinsen_markdown/Spring/什么是循环依赖.note.md
+ - raw/wujinsen_markdown/Spring/Spring循环依赖原理解析.note.md
+ - raw/wujinsen_markdown/Spring/什么是循环依赖.note.md
 related: [spring-ioc与bean生命周期, spring-容器面试题, spring-boot-自动配置]
 created: 2026-06-22
 updated: 2026-06-22

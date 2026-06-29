@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [netty, Reactor, EventLoop, 线程模型]
 sources:
-  - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
-  - raw/wujinsen_markdown/大数据资料-王/netty/netty核心概念.note.md
+ - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
+ - raw/wujinsen_markdown/大数据资料-王/netty/netty核心概念.note.md
 related: [io模型与-netty, bio-nio-aio对比, netty-pipeline与编解码, dubbo-调用原理与分层]
 created: 2026-06-22
 updated: 2026-06-22

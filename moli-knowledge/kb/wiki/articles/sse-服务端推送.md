@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [HTTP, 实时, 前端]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [websocket-实时通信, webflux-响应式入门, 跨域与前后端分离, 前端开发与联调指南]
 created: 2026-06-21
 updated: 2026-06-21
@@ -13,7 +13,7 @@ updated: 2026-06-21
 
 # SSE 服务端推送
 
-> WebSocket [[websocket-实时通信]]；WebFlux [[webflux-响应式入门]]；联调 [[前端开发与联调指南]]。
+> WebSocket [[websocket-实时通信]]；WebFlux [[webflux-响应式入门]]；联调。
 
 **Server-Sent Events**：HTTP 长连接，**服务端 → 客户端**单向文本流，`Content-Type: text/event-stream`。
 
@@ -31,22 +31,16 @@ updated: 2026-06-21
 ```java
 @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 public SseEmitter stream() {
-    SseEmitter emitter = new SseEmitter(30_000L);
-    executor.execute(() -> {
-        try {
-            emitter.send(SseEmitter.event().name("msg").data("hello"));
-            emitter.complete();
-        } catch (IOException e) { emitter.completeWithError(e); }
-    });
-    return emitter;
+ SseEmitter emitter = new SseEmitter(30_000L);
+ executor.execute(() -> {
+ try {
+ emitter.send(SseEmitter.event().name("msg").data("hello"));
+ emitter.complete();
+ } catch (IOException e) { emitter.completeWithError(e); }
+ });
+ return emitter;
 }
 ```
-
-## 3. 茉莉场景（规划）
-
-- 知识库 **Ask 流式回答**（token 逐字）
-- BI 报表生成进度
-- 秒杀排队序号（只读推送，下单仍走 HTTP POST）
 
 ## 4. 注意
 

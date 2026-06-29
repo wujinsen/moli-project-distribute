@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [elasticsearch, DSL, match, bool]
 sources:
-  - raw/wujinsen_markdown/BigData/ElasticSearch/教程/[Elasticsearch] 全文搜索 (三) - match查询和bool查询的关系，提升查询子句.note.md
+ - raw/wujinsen_markdown/BigData/ElasticSearch/教程/[Elasticsearch] 全文搜索 (三) - match查询和bool查询的关系，提升查询子句.note.md
 related: [elasticsearch-搜索, es-搜索与分片路由, 知识库服务]
 created: 2026-06-22
 updated: 2026-06-22
@@ -27,12 +27,12 @@ updated: 2026-06-22
 
 ```json
 {
-  "bool": {
-    "should": [
-      { "term": { "title": "brown" } },
-      { "term": { "title": "fox" } }
-    ]
-  }
+ "bool": {
+ "should": [
+ { "term": { "title": "brown" } },
+ { "term": { "title": "fox" } }
+ ]
+ }
 }
 ```
 
@@ -42,12 +42,12 @@ updated: 2026-06-22
 
 ```json
 {
-  "match": {
-    "title": {
-      "query": "quick brown fox",
-      "minimum_should_match": "75%"
-    }
-  }
+ "match": {
+ "title": {
+ "query": "quick brown fox",
+ "minimum_should_match": "75%"
+ }
+ }
 }
 ```
 
@@ -68,15 +68,15 @@ bool 可嵌套 bool，用于复杂业务检索。
 
 ```json
 {
-  "bool": {
-    "must": [
-      { "match": { "content": "full text search" } }
-    ],
-    "should": [
-      { "match": { "content": { "query": "Elasticsearch", "boost": 2 } } },
-      { "match": { "content": { "query": "Lucene", "boost": 3 } } }
-    ]
-  }
+ "bool": {
+ "must": [
+ { "match": { "content": "full text search" } }
+ ],
+ "should": [
+ { "match": { "content": { "query": "Elasticsearch", "boost": 2 } } },
+ { "match": { "content": { "query": "Lucene", "boost": 3 } } }
+ ]
+ }
 }
 ```
 
@@ -101,7 +101,7 @@ MySQL `=` 类似 term；`LIKE` 无分词相关性。
 
 ## 7. 知识库检索映射
 
-若 [[知识库服务]] 接 ES，典型 mapping：
+若 接 ES，典型 mapping：
 
 | 字段 | 类型 | 查询 |
 |------|------|------|

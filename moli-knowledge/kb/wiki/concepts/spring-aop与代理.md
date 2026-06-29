@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [Spring, AOP, 代理]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
-  - raw/wujinsen_markdown/面试笔试/spring框架中的设计模式.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
+ - raw/wujinsen_markdown/面试笔试/spring框架中的设计模式.note.md
 related: [spring-aop执行流程, spring框架中的设计模式, spring-声明式事务, spring-ioc与bean生命周期]
 created: 2026-06-22
 updated: 2026-06-22
@@ -33,13 +33,7 @@ updated: 2026-06-22
 |---|-------------|-------|
 | 条件 | 实现接口 | 类无接口或 `proxyTargetClass=true` |
 | 原理 | Proxy + InvocationHandler | 子类继承 |
-| 茉莉 | Dubbo/Feign 接口常见 | `@Transactional` 在 class 上 |
-
-## 3. 茉莉触点
-
-- `@Transactional` → AOP 代理 + TransactionInterceptor
-- Shiro `@RequiresPermissions` → 权限切面
-- 自定义 `@Log` 审计（若扩展）
+| | Dubbo/Feign 接口常见 | `@Transactional` 在 class 上 |
 
 ## 4. 自调用陷阱
 

@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Dubbo, RPC, 超时, 重试]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Dubbo/精尽 Dubbo 面试题.note.md
+ - raw/wujinsen_markdown/面试笔试/Dubbo/精尽 Dubbo 面试题.note.md
 related: [dubbo-负载均衡与集群容错, dubbo-调用原理与分层, 接口幂等性实践, 故障排查指南]
 created: 2026-06-22
 updated: 2026-06-22
@@ -42,10 +42,6 @@ A→B→C 每层 3s 超时，用户感知 9s+。治理：
 - Sentinel 熔断 [[sentinel-限流与熔断]]
 - 异步化非关键路径
 
-## 4. 茉莉 Dubbo 调用户中心
-
-`No provider` / 超时 → [[故障排查指南]]：Nacos、group/version、user-center 先起。
-
 ## 相关
 
-[[skywalking-链路追踪]] · [[服务调用与架构]]
+[[skywalking-链路追踪]] ·

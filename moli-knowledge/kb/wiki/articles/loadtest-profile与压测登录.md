@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [压测, loadtest, user-center, Shiro]
 sources:
-  - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/loadtest/LoadtestLoginController.java
-  - load-test/README.md
-  - moli-user-center/moli-user-center-server/src/main/resources/application-loadtest.yml
+ - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/loadtest/LoadtestLoginController.java
+ - load-test/README.md
+ - moli-user-center/moli-user-center-server/src/main/resources/application-loadtest.yml
 related: [秒杀压测指南, 认证与会话机制, 登录与鉴权指南, 用户中心]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,7 +15,7 @@ updated: 2026-06-22
 
 # loadtest Profile 与压测登录
 
-> 操作手册 [[秒杀压测指南]]；产品登录 [[登录与鉴权指南]]；Session 机制 [[认证与会话机制]]。
+> 操作手册 ；产品登录 ；Session 机制 [[认证与会话机制]]。
 
 ## 为什么单独压测登录？
 
@@ -36,7 +36,7 @@ k6 高并发下这些 IO 成为瓶颈，**不能代表**秒杀链路的登录吞
 | Shiro | `/loadtest/**` 为 `anon`，Controller 内手动 `Subject.login` |
 | 返回 | 精简 token + user，**无菜单/门户** |
 
-源码：`LoadtestLoginController.java`（[[用户中心]] 模块）。
+源码：`LoadtestLoginController.java`（ 模块）。
 
 ## 与产品登录的关系
 
@@ -67,4 +67,4 @@ k6 高并发下这些 IO 成为瓶颈，**不能代表**秒杀链路的登录吞
 
 - 404 on `/loadtest/login` → user-center **未启 loadtest profile**
 - 401 on 业务 API → token 未带或 Redis 不一致
-- 见 [[故障排查指南]]
+- 见

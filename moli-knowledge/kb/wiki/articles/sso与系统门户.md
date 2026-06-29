@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [SSO, 门户, sys_system, 多系统]
 sources:
-  - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/LoginController.java
-  - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/SsoController.java
-  - docs/sql/03_knowledge_schema.sql
+ - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/LoginController.java
+ - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/SsoController.java
+ - docs/sql/03_knowledge_schema.sql
 related: [shiro-鉴权体系, 用户中心, 知识库服务, 登录与鉴权指南, rbac-权限模型]
 created: 2026-06-22
 updated: 2026-06-22
@@ -53,19 +53,9 @@ updated: 2026-06-22
 
 ## 给用户分配系统
 
-管理端：`UserController#insertUserSystem` 或通过 [[权限管理操作指南]] 流程维护 `sys_user_system`。
+管理端：`UserController#insertUserSystem` 或通过 流程维护 `sys_user_system`。
 
 无分配 → `systemList` 空 → 登录后无门户入口。
-
-## 茉莉已注册系统（示例）
-
-见 `scripts/moli.sql` 中 `sys_system`（约 34 条，5 分组）。新增微服务需：
-
-1. INSERT `sys_system`（code、base_url、group）
-2. INSERT `sys_user_system` 绑定用户
-3. 网关路由可访问
-
-知识库注册见 `docs/sql/03_knowledge_schema.sql` patch。
 
 ## 与网关的关系
 

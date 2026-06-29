@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [K8s, 运维, 监控]
 sources:
-  - raw/wujinsen_markdown/
-related: [k8s入门与茉莉关系, spring-boot-actuator监控, docker部署指南]
+ - raw/wujinsen_markdown/
+related: [k8s入门与容器编排, spring-boot-actuator监控, docker部署指南]
 created: 2026-06-21
 updated: 2026-06-21
 ---
 
 # K8s 健康检查探针
 
-> K8s 入门 [[k8s入门与茉莉关系]]；Actuator [[spring-boot-actuator监控]]；Docker [[docker部署指南]]。
+> K8s 入门 [[k8s入门与容器编排]]；Actuator [[spring-boot-actuator监控]]；Docker。
 
 ## 1. 三类探针
 
@@ -27,21 +27,15 @@ updated: 2026-06-21
 
 ```yaml
 livenessProbe:
-  httpGet:
-    path: /actuator/health/liveness
-    port: 8080
+ httpGet:
+ path: /actuator/health/liveness
+ port: 8080
 readinessProbe:
-  httpGet:
-    path: /actuator/health/readiness
+ httpGet:
+ path: /actuator/health/readiness
 ```
 
 依赖（DB/Redis）放 **readiness**，避免全集群重启。
-
-## 3. 茉莉注意
-
-- Shiro 放行 actuator 路径
-- Dubbo 注册在 readiness 之后
-- 秒杀高峰慎用过激 liveness（GC STW 误杀）
 
 ## 相关
 

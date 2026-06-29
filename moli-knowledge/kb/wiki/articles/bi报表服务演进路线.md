@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [BI, 报表, 演进, 设计]
 sources:
-  - moli-bi/moli-bi-server/
-  - wiki/articles/字段级数据权限设计.md
-  - wiki/concepts/elasticsearch-搜索.md
+ - moli-bi/moli-bi-server/
+ - wiki/articles/字段级数据权限设计.md
+ - wiki/concepts/elasticsearch-搜索.md
 related: [bi服务, 字段级数据权限设计, elasticsearch-搜索, mybatis-与-druid持久层, rbac-权限模型]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,7 +15,7 @@ updated: 2026-06-22
 
 # BI 报表服务演进路线
 
-> 服务实体 [[bi服务]]；列级权限 [[字段级数据权限设计]]；检索扩展 [[elasticsearch-搜索]]。
+> 服务实体 ；列级权限 [[字段级数据权限设计]]；检索扩展 [[elasticsearch-搜索]]。
 
 针对当前 **bi-server 骨架** 的推荐落地顺序（非已实现功能）。
 
@@ -54,7 +54,7 @@ BI 是列级权限的**首要业务场景**。
 
 - 网关 `/BiServer/**` 已预留
 - SSO 门户可注册 `sys_system`（参考 [[sso与系统门户]]）
-- 压测 profile 已含 Bi 路由 [[秒杀压测指南]]
+- 压测 profile 已含 Bi 路由
 
 ## 反模式
 

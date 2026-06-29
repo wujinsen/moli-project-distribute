@@ -5,8 +5,8 @@ SET NAMES utf8mb4;
 
 UPDATE `kb_space`
 SET
-  `space_name` = '茉莉系统操作手册',
-  `description` = '茉莉微服务全家桶：本地启动、数据库、登录鉴权、权限、联调、部署与故障排查（与 enterprise-kb 技术文库分离）',
+  `space_name` = '茉莉系统手册',
+  `description` = 'moli-project-distribute 用户指导手册：产品、技术、测试、运维与操作指南（wiki 源 kb/wiki-moli/）',
   `update_time` = NOW()
 WHERE `space_code` = 'moli-ops-manual'
   AND `is_delete` = 0;

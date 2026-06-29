@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [测试, 微服务, API]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [junit5-单元测试, api-向后兼容策略, mockito-测试实战]
 created: 2026-06-21
 updated: 2026-06-21
@@ -23,12 +23,6 @@ updated: 2026-06-21
 Consumer 测试生成 pact.json → Pact Broker 存储
 Provider 测试 replay 请求 → 验证响应匹配
 ```
-
-## 2. 适用茉莉
-
-- Gateway → UserCenter REST 边界
-- 开放 API [[oauth2-与开放接口]]
-- Dubbo 可用专用工具或 REST 层 Pact
 
 ## 3. 与集成测试
 

@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Spring, 设计模式, IoC, AOP]
 sources:
-  - raw/wujinsen_markdown/Spring/SpringMVC/Spring 中经典的 9 种设计模式，打死也要记住啊！.note.md
+ - raw/wujinsen_markdown/Spring/SpringMVC/Spring 中经典的 9 种设计模式，打死也要记住啊！.note.md
 related: [设计模式, spring-ioc与bean生命周期, spring-mvc请求流程, spring-三级缓存与循环依赖, enableautoconfiguration原理]
 created: 2026-06-22
 updated: 2026-06-22
@@ -28,7 +28,7 @@ updated: 2026-06-22
 
 **FactoryBean**：容器 getBean 时实际调用 `getObject()`。
 
-典型：**MyBatis** `SqlSessionFactoryBean` → 得到 `SqlSessionFactory`。茉莉各服务 MyBatis-Plus 底层同类思路。
+典型：**MyBatis** `SqlSessionFactoryBean` → 得到 `SqlSessionFactory`。各服务 MyBatis-Plus 底层同类思路。
 
 ## 3. 单例
 
@@ -74,7 +74,7 @@ Dubbo **LoadBalance**（random、roundrobin…）也是策略族。
 
 **JdbcTemplate**：固定获取连接→执行→异常转换→释放，子步骤回调。
 
-`RestTemplate`、许多 `*Template` 同理。茉莉 JDBC 现以 **MyBatis-Plus** 为主，模板方法更多在 Spring 基础设施层。
+`RestTemplate`、许多 `*Template` 同理。 JDBC 现以 **MyBatis-Plus** 为主，模板方法更多在 Spring 基础设施层。
 
 ## 10. 对照表（面试用）
 
@@ -89,9 +89,3 @@ Dubbo **LoadBalance**（random、roundrobin…）也是策略族。
 | 7 | 观察者 | ApplicationEvent |
 | 8 | 策略 | Resource / LoadBalance |
 | 9 | 模板方法 | JdbcTemplate 等 |
-
-## 11. 茉莉代码中的例子
-
-- `@SpringBootApplication` + 自动配置 → 工厂 + 模板注册 Bean [[enableautoconfiguration原理]]
-- `UserCenterShiroAutoConfiguration` → 模板式 Starter [[shiro-starter与跨服务校验]]
-- Dubbo `@Reference` → 动态代理调用远程接口 [[dubbo-调用原理与分层]]

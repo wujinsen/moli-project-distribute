@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [java, 并发, 多线程, JMM, 线程安全]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
-  - raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+ - raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
 related: [jmm与happens-before, synchronized与锁原理, volatile与可见性, concurrenthashmap原理, java-并发面试题, 认证与会话机制, 秒杀设计]
 created: 2026-06-22
 updated: 2026-06-22
@@ -38,12 +38,6 @@ Java 并发要解决两件事：**线程如何通信**、**线程如何同步**�
 | **wait/notify** | 在 synchronized 块内协调条件变量 |
 | **Lock / AQS** | 显式锁、可中断、公平性（JUC） |
 | **线程池** | 复用线程，控制并发度 |
-
-## 茉莉项目中的并发触点
-
-- **Shiro Session 存 Redis**：多服务共享会话，见 [[认证与会话机制]]。
-- **秒杀**：Redis+Lua 原子扣减，避免 JVM 内锁扛不住流量，见 [[秒杀设计]]、[[分布式锁]]。
-- **Dubbo 多线程 RPC**：Provider/Consumer 线程池配置影响吞吐与超时。
 
 ## 选型速记
 

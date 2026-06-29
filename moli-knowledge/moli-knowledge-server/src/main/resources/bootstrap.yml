@@ -31,3 +31,21 @@ spring:
       discovery:
         server-addr: http://127.0.0.1:8848
         namespace: 8cf9fb08-7e7c-4084-9ba5-b87ac9da2f78
+
+---
+
+spring:
+  profiles: pro
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:prod}
+
+dubbo:
+  registry:
+    address: spring-cloud://${NACOS_SERVER_ADDR:127.0.0.1:8848}
+  cloud:
+    subscribed-services: user-center-server

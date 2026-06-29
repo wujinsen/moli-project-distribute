@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [mysql, 索引, 优化, EXPLAIN, 踩坑]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/索引/MySQL索引索引不生效的情况.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/MySQL索引索引不生效的情况.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md
 related: [mysql-索引, mysql-复合索引与最左前缀, mysql-索引面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -37,7 +37,7 @@ SELECT * FROM t WHERE id = 2;
 
 ```sql
 -- security_code 是 VARCHAR
-SELECT * FROM t WHERE security_code = 688688;  -- ❌ 可能全表扫
+SELECT * FROM t WHERE security_code = 688688; -- ❌ 可能全表扫
 SELECT * FROM t WHERE security_code = '688688'; -- ✅
 ```
 
@@ -60,7 +60,7 @@ SELECT * FROM t WHERE security_code = '688688'; -- ✅
 
 ```sql
 -- INDEX(a,b,c)
-WHERE b=1 AND c=2;  -- ❌ 缺 a
+WHERE b=1 AND c=2; -- ❌ 缺 a
 ```
 
 详见 [[mysql-复合索引与最左前缀]]。

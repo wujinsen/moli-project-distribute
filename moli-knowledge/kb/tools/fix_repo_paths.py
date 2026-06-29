@@ -27,7 +27,7 @@ IMAGE_RE = re.compile(
 def to_repo_path(raw_target: str) -> str:
     """Normalize relative link target to repo-root path."""
     t = raw_target.strip().lstrip("/")
-    # wiki-ops/guides -> kb/raw via ../../raw
+    # wiki-moli/guides -> kb/raw via ../../raw
     if t.startswith("raw/"):
         return f"kb/{t}"
     return t
@@ -50,7 +50,7 @@ def fix_content(text: str) -> str:
 
 
 def main() -> int:
-    wiki_dirs = [KB_DIR / "wiki-ops"]
+    wiki_dirs = [KB_DIR / "wiki-moli"]
     if len(sys.argv) > 1:
         wiki_dirs = [KB_DIR / sys.argv[1]]
 

@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [RocketMQ, 分布式事务, 最终一致]
 sources:
-  - raw/wujinsen_markdown/架构/分布式事务/基于RocketMQ实现分布式事务 - 完整示例.note.md
-  - raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
-  - raw/wujinsen_markdown/源码分析/RocketMQ/RocketMQ 源码分析 —— 事务消息.note.md
+ - raw/wujinsen_markdown/架构/分布式事务/基于RocketMQ实现分布式事务 - 完整示例.note.md
+ - raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
+ - raw/wujinsen_markdown/源码分析/RocketMQ/RocketMQ 源码分析 —— 事务消息.note.md
 related: [分布式事务, 消息队列, rocketmq-架构与实战, 接口幂等性实践]
 created: 2026-06-22
 updated: 2026-06-22
@@ -37,10 +37,6 @@ updated: 2026-06-22
 - 消费端也要幂等 [[接口幂等性实践]]
 - 与 Seata AT 二选一，勿叠床架屋
 
-## 4. 茉莉场景示例（演进）
-
-订单创建成功 → 发 MQ → 扣库存/发券消费者；失败则回滚或补偿。当前 order 模块可先用 DB 状态机 + Redis 队列，再迁 RocketMQ。
-
 ## 相关
 
-[[kafka-与-mq选型]] · [[秒杀设计]]
+[[kafka-与-mq选型]] ·

@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [elasticsearch, 搜索, 分片, Query-Then-Fetch]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
 related: [elasticsearch-搜索, es-索引与写入流程, es-match与bool查询]
 created: 2026-06-22
 updated: 2026-06-22
@@ -73,13 +73,3 @@ Master 管集群元数据，**不处理文档级** CRUD。
 ## 7. 客户端路由
 
 TransportClient（旧）/ REST：轮询连接节点，由协调节点分发。生产用 **同版本 JVM**（ES 本地序列化敏感）。
-
-## 8. 茉莉关联
-
-[[知识库服务]] 若升级全文检索，可：
-
-1. 文档 sync 到 ES index（`kb_document` 字段分词）
-2. `/kb/document/search` 走 ES，详情仍 MySQL
-3. 分页用 `search_after` 而非大 offset
-
-当前 `kb.search.mode: fulltext` 仍为 MySQL 路径。

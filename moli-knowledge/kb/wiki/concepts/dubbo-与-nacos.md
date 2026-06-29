@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [dubbo, nacos, 微服务, 注册发现]
 sources:
-  - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
-  - raw/wujinsen_markdown/moli项目/使用Nacos作为配置中心和服务注册发现.note.md
+ - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
+ - raw/wujinsen_markdown/moli项目/使用Nacos作为配置中心和服务注册发现.note.md
 related: [dubbo-调用原理与分层, nacos-注册与配置, 服务调用与架构, dubbo-面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -14,28 +14,18 @@ updated: 2026-06-22
 
 # Dubbo 与 Nacos（概念枢纽）
 
-> Dubbo 原理 [[dubbo-调用原理与分层]]；Nacos 用法 [[nacos-注册与配置]]；全链路 [[服务调用与架构]]；面试 [[dubbo-面试题]]。
+> Dubbo 原理 [[dubbo-调用原理与分层]]；Nacos 用法 [[nacos-注册与配置]]；全链路 ；面试 [[dubbo-面试题]]。
 
-茉莉微服务栈：**Nacos** 做注册发现（+ 可选配置中心），**Spring Cloud Dubbo** 做服务间 RPC。
+典型微服务栈：**Nacos** 做注册发现（+ 可选配置中心），**Spring Cloud Dubbo** 做服务间 RPC。
 
 ## 分工
 
 | 组件 | 角色 |
 |------|------|
 | **Nacos Discovery** | 服务注册/发现，健康检查 |
-| **Nacos Config** | 集中配置（茉莉 dev 多为本地 yml，Nacos Config 可注释） |
-| **Dubbo** | 业务服务 → [[用户中心]] 等 Provider 的 **RPC** |
+| **Nacos Config** | 集中配置（开发环境 多为本地 yml，Nacos Config 可注释） |
+| **Dubbo** | 业务服务 → 等 Provider 的 **RPC** |
 | **Gateway** | 外部 HTTP 统一入口 |
-
-## 调用关系（茉莉）
-
-```
-浏览器 --HTTP--> Gateway:21000
-业务服务 --Dubbo(version=1.0.0, group=moli)--> user-center Provider
-各服务 --注册--> Nacos:8848 (namespace=dev)
-```
-
-订单服务通过 Dubbo 调 `UserCenterServer` 做鉴权/权限，见 [[用户中心]]。
 
 ## 配置要点
 
@@ -51,4 +41,4 @@ updated: 2026-06-22
 | 前端/外部 | HTTP → Gateway |
 | 服务间内部 | **Dubbo RPC**（已移除 OpenFeign） |
 
-见 [[服务调用与架构]]。
+见。

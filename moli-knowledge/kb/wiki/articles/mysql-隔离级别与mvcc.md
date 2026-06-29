@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [mysql, MVCC, 隔离级别, 快照读]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/正确的理解MySQL的MVCC及实现原理.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/事务隔离级别中的可重复读能防幻读吗.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/正确的理解MySQL的MVCC及实现原理.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/事务隔离级别中的可重复读能防幻读吗.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
 related: [mysql-事务与锁, mysql-innodb锁机制, mysql-事务面试题]
 created: 2026-06-22
 updated: 2026-06-22

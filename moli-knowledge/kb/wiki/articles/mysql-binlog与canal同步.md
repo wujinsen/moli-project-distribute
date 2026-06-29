@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [MySQL, Binlog, Canal, 同步]
 sources:
-  - raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
+ - raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
 related: [mysql-主从读写分离, elasticsearch-搜索, 知识库-全文检索规划, 缓存双写与一致性策略]
 created: 2026-06-22
 updated: 2026-06-22
@@ -32,14 +32,6 @@ MySQL binlog → Canal Server → MQ/直接写 ES/Redis
 ```
 
 用途：缓存失效、搜索引擎增量、异构同步。
-
-## 3. 与茉莉
-
-| 场景 | 现状 | 演进 |
-|------|------|------|
-| wiki → MySQL | `sync_to_db.py` 单向 | 已够用 [[wiki同步指南]] |
-| wiki → ES | 规划 | Canal 或应用双写 [[知识库-全文检索规划]] |
-| 缓存失效 | 应用层删缓存 | Canal 监听表变更删 Redis |
 
 ## 4. 注意
 

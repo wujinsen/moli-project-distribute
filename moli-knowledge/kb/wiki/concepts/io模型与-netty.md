@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [netty, NIO, IO, 高并发]
 sources:
-  - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之IO篇.note.md
+ - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之IO篇.note.md
 related: [bio-nio-aio对比, netty-reactor与线程模型, netty-pipeline与编解码, netty-与-io面试题, dubbo-与-nacos, spring-cloud-gateway, kafka-与-mq选型]
 created: 2026-06-22
 updated: 2026-06-22
@@ -16,7 +16,7 @@ updated: 2026-06-22
 
 > BIO/NIO/AIO [[bio-nio-aio对比]]；Reactor [[netty-reactor与线程模型]]；Pipeline [[netty-pipeline与编解码]]；面试 [[netty-与-io面试题]]。
 
-**Netty** 是基于 Java NIO 的**异步事件驱动**网络框架，广泛用于 RPC、MQ、网关。茉莉栈中 **Dubbo 默认 Netty 传输**、**Spring Cloud Gateway 基于 WebFlux/Netty**，理解 IO 模型有助于读压测超时与 RPC 性能。
+**Netty** 是基于 Java NIO 的**异步事件驱动**网络框架，广泛用于 RPC、MQ、网关。栈中 **Dubbo 默认 Netty 传输**、**Spring Cloud Gateway 基于 WebFlux/Netty**，理解 IO 模型有助于读压测超时与 RPC 性能。
 
 ## 1. 三代 IO 模型（速览）
 
@@ -36,17 +36,6 @@ updated: 2026-06-22
 | **零拷贝** | `DirectBuffer`、sendfile（Kafka 亦用，[[kafka-与-mq选型]]） |
 | **无同步阻塞** | IO 线程不 wait 单连接 |
 | **Pipeline** | 编解码/业务 Handler 链式 [[netty-pipeline与编解码]] |
-
-## 3. 与茉莉技术栈
-
-| 组件 | IO 层 |
-|------|--------|
-| [[网关]] | Spring Cloud Gateway → Reactor Netty |
-| [[dubbo-与-nacos]] | Dubbo 协议默认 Netty Server/Client |
-| [[redis-缓存]] | Redis 单线程 epoll 多路复用（类比 NIO 思想） |
-| Tomcat（各 Spring Boot 服务） | 传统 BIO/NIO2 容器，HTTP 入口 |
-
-秒杀 HTTP 经 Gateway → order-server（Tomcat），Dubbo 调 user-center 走 Netty。
 
 ## 4. 核心概念映射
 

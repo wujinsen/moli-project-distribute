@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Linux, 运维, 排查]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [linux-运维基础, nginx-限流与缓冲调优, 故障排查指南, tomcat-连接器调优]
 created: 2026-06-21
 updated: 2026-06-21
@@ -20,7 +20,7 @@ updated: 2026-06-21
 ## 1. 查看
 
 ```bash
-ulimit -n          # 当前 shell
+ulimit -n # 当前 shell
 cat /proc/<pid>/limits
 lsof -p <pid> | wc -l
 ```
@@ -34,15 +34,6 @@ appuser hard nofile 65535
 ```
 
  systemd 服务还可 `LimitNOFILE=65535`。
-
-## 3. 与茉莉组件
-
-| 组件 | 关联 |
-|------|------|
-| Nginx worker × connections | `worker_connections` |
-| Tomcat maxConnections | ≤ 系统 fd 预算 |
-| Redis/MySQL 客户端 | 每连接 1 fd |
-| 压测机 k6 VU | 大量短连接 [[秒杀压测指南]] |
 
 ## 4. 排查流程
 

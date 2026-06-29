@@ -5,10 +5,10 @@ type: concept
 status: active
 tags: [sentinel, 限流, 熔断, 微服务, 高可用]
 sources:
-  - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/Sentinel滑动窗口介绍.note.md
-  - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/Hystrix/聊聊高并发系统/聊聊高并发系统之限流特技-1.note.md
-  - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
-  - docs/zh-CN/TECH_STACK.md
+ - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/Sentinel滑动窗口介绍.note.md
+ - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/Hystrix/聊聊高并发系统/聊聊高并发系统之限流特技-1.note.md
+ - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
+ - docs/zh-CN/TECH_STACK.md
 related: [限流算法与令牌桶, sentinel-接入与规则配置, spring-cloud-gateway, dubbo-与-nacos, 秒杀设计, redis-缓存, 故障排查指南, sentinel-面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -41,26 +41,15 @@ updated: 2026-06-22
 
 限流是「防备调用方/流量过大」；熔断是「怀疑被调用方有问题」。二者常配合：限流阀值触发后可排队、拒绝或降级返回。
 
-## 3. 茉莉项目现状
-
-| 项 | 状态 |
-|----|------|
-| 父 POM Sentinel 版本 | 1.8.1（见 [[技术栈与版本]]） |
-| **Gateway** | **未接入**，仅 StripPrefix 路由 |
-| **业务服务** | 无 `@SentinelResource`、无 Dashboard 规则 |
-| 秒杀 | Redis+Lua 扛热点；**无网关/应用层 Sentinel**（见 [[秒杀设计]]） |
-
-架构文档与 [[gateway-路由与过滤器]] 均标注 Sentinel 为**规划项**。压测高并发时若 DB/登录被打满，除 [[redis-缓存]] 与业务优化外，应优先在 **Gateway + 热点接口** 接入 Sentinel。
-
 ## 4. 推荐接入层次
 
 ```mermaid
 flowchart TB
-  Client --> GW[Gateway Sentinel]
-  GW --> UC[用户中心]
-  GW --> Order[订单/秒杀]
-  UC --> Dubbo[Dubbo + Sentinel]
-  Order --> Dubbo
+ Client --> GW[Gateway Sentinel]
+ GW --> UC[用户中心]
+ GW --> Order[订单/秒杀]
+ UC --> Dubbo[Dubbo + Sentinel]
+ Order --> Dubbo
 ```
 
 | 层次 | 建议规则 |
@@ -71,7 +60,7 @@ flowchart TB
 
 ## 5. 与 Redis 限流的关系
 
-秒杀已用 **Redis+Lua** 做库存原子扣减（[[秒杀设计]]）。Sentinel 解决的是 **HTTP/RPC 入口** 与 **依赖链** 保护，二者互补：
+秒杀已用 **Redis+Lua** 做库存原子扣减（）。Sentinel 解决的是 **HTTP/RPC 入口** 与 **依赖链** 保护，二者互补：
 
 - Redis Lua：业务级「能不能买」
 - Sentinel：「能不能进系统/调这个接口」
@@ -81,5 +70,5 @@ flowchart TB
 ## 6. 排查提示
 
 - 「网关没限流」→ **预期**，未接入 Sentinel
-- 压测 502/超时 → 先 [[故障排查指南]]（Redis/Nacos/池），再考虑加 Sentinel
+- 压测 502/超时 → 先 （Redis/Nacos/池），再考虑加 Sentinel
 - Dubbo 降级 → 也可配 Sentinel 规则，见 [[dubbo-与-nacos]]

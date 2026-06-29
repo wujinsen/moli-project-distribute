@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [sentinel, gateway, dubbo, 配置]
 sources:
-  - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/Sentinel滑动窗口介绍.note.md
-  - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/sentinel动态规则源.note.md
-  - moli-knowledge/kb/wiki/articles/gateway-路由与过滤器.md
+ - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/Sentinel滑动窗口介绍.note.md
+ - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/sentinel动态规则源.note.md
+ - moli-knowledge/kb/wiki/articles/gateway-路由与过滤器.md
 related: [sentinel-限流与熔断, spring-cloud-gateway, gateway-路由与过滤器, dubbo-与-nacos, 限流算法与令牌桶, 网关]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,9 +15,9 @@ updated: 2026-06-22
 
 # Sentinel 接入与规则配置
 
-> 概念枢纽 [[sentinel-限流与熔断]]；茉莉路由 [[gateway-路由与过滤器]]；Dubbo [[dubbo-与-nacos]]。
+> 概念枢纽 [[sentinel-限流与熔断]]；路由 [[gateway-路由与过滤器]]；Dubbo [[dubbo-与-nacos]]。
 
-**茉莉当前未接入**，本文为规划与面试/实施参考。版本见 [[技术栈与版本]]（Sentinel 1.8.1 + SCA 2.2.7）。
+**当前常见未接入**，本文为规划与面试/实施参考。版本见 （Sentinel 1.8.1 + SCA 2.2.7）。
 
 ## 1. 处理链（Slot Chain）
 
@@ -45,12 +45,12 @@ NodeSelector → ClusterBuilder → Statistic → Authority → System → Flow 
 
 ```xml
 <dependency>
-  <groupId>com.alibaba.cloud</groupId>
-  <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+ <groupId>com.alibaba.cloud</groupId>
+ <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
 </dependency>
 <dependency>
-  <groupId>com.alibaba.cloud</groupId>
-  <artifactId>spring-cloud-alibaba-sentinel-gateway</artifactId>
+ <groupId>com.alibaba.cloud</groupId>
+ <artifactId>spring-cloud-alibaba-sentinel-gateway</artifactId>
 </dependency>
 ```
 
@@ -58,16 +58,16 @@ NodeSelector → ClusterBuilder → Statistic → Authority → System → Flow 
 
 ```yaml
 spring:
-  cloud:
-    sentinel:
-      transport:
-        dashboard: 127.0.0.1:8858
-      eager: true
+ cloud:
+ sentinel:
+ transport:
+ dashboard: 127.0.0.1:8858
+ eager: true
 ```
 
 3. **规则**：在 Sentinel Dashboard 对 routeId 或自定义 API 分组配 **QPS / 并发线程数**
 
-4. **茉莉优先资源**：
+4. **优先资源**：
 
 | 资源 | 建议 |
 |------|------|
@@ -85,7 +85,7 @@ spring:
 - 规则：QPS、并发、慢调用比例熔断
 - 与 Nacos 可配合 **动态规则源**（`ReadableDataSource` → Nacos）
 
-茉莉 Dubbo 现状：`group=moli` `version=1.0.0`，无 Sentinel Filter。
+ Dubbo 现状：`group=moli` `version=1.0.0`，无 Sentinel Filter。
 
 ## 4. 规则类型
 
@@ -102,7 +102,7 @@ spring:
 
 限流触发 → 快速失败或 warm-up；熔断触发 → 走 fallback（需业务实现，非 Sentinel 自动兜底数据）。
 
-降级思路（丢卒保帅）：读服务走缓存默认值、写服务异步化——见高并发降级笔记，秒杀落库已异步（[[秒杀设计]]）。
+降级思路（丢卒保帅）：读服务走缓存默认值、写服务异步化——见高并发降级笔记，秒杀落库已异步（）。
 
 ## 6. 验证清单
 

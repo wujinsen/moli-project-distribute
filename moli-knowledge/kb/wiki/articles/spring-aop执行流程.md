@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Spring, AOP, 源码]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
 related: [spring-aop与代理, spring-mvc请求流程, spring-声明式事务, spring-容器面试题]
 created: 2026-06-22
 updated: 2026-06-22

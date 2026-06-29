@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Shiro, Starter, Dubbo, 微服务, 循环依赖, SpringBoot]
 sources:
-  - moli-user-center/moli-user-center-shiro-starter/README.md
-  - moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/
-  - moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/autoconfigure/UserCenterShiroAutoConfiguration.java
-related: [shiro-鉴权体系, 认证与会话机制, 用户中心, 订单服务, dubbo-与-nacos, spring-aop与代理, 茉莉登录与鉴权故障根因汇总]
+ - moli-user-center/moli-user-center-shiro-starter/README.md
+ - moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/
+ - moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/autoconfigure/UserCenterShiroAutoConfiguration.java
+related: [shiro-鉴权体系, 认证与会话机制, 用户中心, 订单服务, dubbo-与-nacos, spring-aop与代理, 登录与鉴权故障根因汇总]
 created: 2026-06-22
 updated: 2026-06-23
 ---
@@ -36,23 +36,23 @@ updated: 2026-06-23
 
 ```xml
 <dependency>
-  <artifactId>moli-user-center-shiro-starter</artifactId>
+ <artifactId>moli-user-center-shiro-starter</artifactId>
 </dependency>
 ```
 
 ```yaml
-spring.redis:          # 与 user-center 完全一致
-  host / port / password / database
+spring.redis: # 与 user-center 完全一致
+ host / port / password / database
 
 dubbo:
-  cloud.subscribed-services: user-center-server
-  consumer.check: false
+ cloud.subscribed-services: user-center-server
+ consumer.check: false
 
 moli.user-center.shiro:
-  enabled: true
-  session-expire-seconds: 86400
-  anon-paths:            # 可选，如 /sso/**
-    - /actuator/**
+ enabled: true
+ session-expire-seconds: 86400
+ anon-paths: # 可选，如 /sso/**
+ - /actuator/**
 ```
 
 ## user-center vs 业务服务 ShiroConfig
@@ -71,7 +71,7 @@ moli.user-center.shiro:
 | 403 权限不足 | 角色未赋 perm；缓存未清 |
 | Dubbo No provider | user-center 未起或未注册 Nacos |
 
-见 [[故障排查指南]]。
+见。
 
 ## 设计意图
 
@@ -109,28 +109,28 @@ Springfox（`@EnableSwagger2`）的 `objectMapperConfigurer` 触发 AOP 自动�
 
 1. **按具体类型注入，消除 SessionManager 歧义**：`sessionManager()` 返回类型与 `securityManager(...)` 的参数都改成具体类 `ShiroSessionManager`。`DefaultWebSecurityManager` 不是 `ShiroSessionManager`，候选唯一，自循环彻底消失。
 
-   ```java
-   public ShiroSessionManager sessionManager(...) { ... }
+ ```java
+ public ShiroSessionManager sessionManager(...) { ... }
 
-   public SecurityManager securityManager(ShiroRealm shiroRealm,
-                                          ShiroSessionManager sessionManager,   // 具体类型，非 SessionManager 接口
-                                          RedisCacheManager cacheManager) { ... }
-   ```
+ public SecurityManager securityManager(ShiroRealm shiroRealm,
+ ShiroSessionManager sessionManager, // 具体类型，非 SessionManager 接口
+ RedisCacheManager cacheManager) { ... }
+ ```
 
 2. **Advisor 延迟回填 securityManager**：`authorizationAttributeSourceAdvisor()` 创建期不再注入 `securityManager`，改由 `SmartInitializingSingleton` 在所有单例就绪后回填。注解式鉴权拦截器只在请求期用到 securityManager，此时早已回填完成。
 
-   ```java
-   @Bean
-   public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor() {
-       return new AuthorizationAttributeSourceAdvisor();  // 创建期不依赖 securityManager
-   }
+ ```java
+ @Bean
+ public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor() {
+ return new AuthorizationAttributeSourceAdvisor(); // 创建期不依赖 securityManager
+ }
 
-   @Bean
-   public SmartInitializingSingleton shiroSecurityManagerInitializer(
-           AuthorizationAttributeSourceAdvisor advisor, SecurityManager securityManager) {
-       return () -> advisor.setSecurityManager(securityManager);
-   }
-   ```
+ @Bean
+ public SmartInitializingSingleton shiroSecurityManagerInitializer(
+ AuthorizationAttributeSourceAdvisor advisor, SecurityManager securityManager) {
+ return () -> advisor.setSecurityManager(securityManager);
+ }
+ ```
 
 结果：`Started KnowledgeApplication`，8090 正常监听。改动在共享的 `moli-user-center-shiro-starter`，user-center 等接入方同样受益。
 

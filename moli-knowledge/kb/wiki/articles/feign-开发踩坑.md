@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [Feign, Spring Cloud, 踩坑]
 sources:
-  - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/采坑记录/spring cloud Dalston.SR4 feign 实际开发中踩坑(一).note.md
-  - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/采坑记录/Spring Cloud Feign 上传文件的常见问题.note.md
+ - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/采坑记录/spring cloud Dalston.SR4 feign 实际开发中踩坑(一).note.md
+ - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/采坑记录/Spring Cloud Feign 上传文件的常见问题.note.md
 related: [openfeign-与-http客户端, 跨域与前后端分离, dubbo-与-nacos]
 created: 2026-06-22
 updated: 2026-06-22
@@ -14,7 +14,7 @@ updated: 2026-06-22
 
 # Feign 开发踩坑
 
-> 概念 [[openfeign-与-http客户端]]。茉莉 Dubbo 为主，本文供 Spring Cloud HTTP 栈参考。
+> 概念 [[openfeign-与-http客户端]]。 Dubbo 为主，本文供 Spring Cloud HTTP 栈参考。
 
 ## 1. GET 带 @RequestBody
 
@@ -40,4 +40,4 @@ Feign 默认重试 → 写接口需 **幂等** [[接口幂等性实践]] 或关�
 
 ## 相关
 
-[[故障排查指南]] · [[nacos-注册与配置]]
+ · [[nacos-注册与配置]]

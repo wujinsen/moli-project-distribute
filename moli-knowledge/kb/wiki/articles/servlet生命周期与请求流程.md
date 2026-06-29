@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [servlet, tomcat, Filter, 生命周期]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
+ - raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
 related: [tomcat与-servlet容器, spring-mvc请求流程, shiro-鉴权体系, http与-servlet面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -19,9 +19,9 @@ updated: 2026-06-22
 
 ```
 容器启动 → load-on-startup / 首次请求
-  → init()
-  → service() 循环（每次请求）
-  → destroy()（容器关闭）
+ → init()
+ → service() 循环（每次请求）
+ → destroy()（容器关闭）
 ```
 
 | 方法 | 次数 |
@@ -40,21 +40,6 @@ Spring MVC 的 `DispatcherServlet` 在 `init` 中初始化 WebApplicationContext
 4. 按 `load-on-startup` 顺序 `init` Servlet
 
 Spring Boot 省略 web.xml，用 `@ServletComponentScan` / 自动注册 `DispatcherServlet`。
-
-## 3. 一次 HTTP 请求路径（茉莉）
-
-```
-Client
-  → Gateway (Netty) 转发
-  → Tomcat Connector 接收
-  → Filter 链（Encoding → Shiro AuthenticationFilter → …）
-  → DispatcherServlet
-  → HandlerMapping 找 Controller
-  → HandlerAdapter 执行
-  → 返回 JSON (MoliResult)
-```
-
-Shiro 在 Filter 阶段即可返回 401 JSON，**不到达 Controller**（[[shiro-鉴权体系]]）。
 
 ## 4. Filter vs Servlet
 
@@ -88,4 +73,4 @@ Tomcat 从 **线程池** 取线程执行整个 Filter + Servlet 链。长耗时 
 | 401 无 body | Shiro Filter 拦截 |
 | 两次 Filter | 同时配了 ShiroConfig + Starter（勿重复） |
 
-Gateway 404 与 Tomcat 404 排查路径不同，见 [[故障排查指南]]。
+Gateway 404 与 Tomcat 404 排查路径不同，见。

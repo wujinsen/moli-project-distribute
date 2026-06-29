@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [netty, Pipeline, 粘包, 编解码]
 sources:
-  - raw/wujinsen_markdown/大数据资料-王/netty/netty核心概念.note.md
-  - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
+ - raw/wujinsen_markdown/大数据资料-王/netty/netty核心概念.note.md
+ - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
 related: [io模型与-netty, netty-reactor与线程模型, dubbo-调用原理与分层]
 created: 2026-06-22
 updated: 2026-06-22

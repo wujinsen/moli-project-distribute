@@ -5,8 +5,8 @@ type: article
 status: active
 tags: [gateway, 路由, Filter, Sentinel]
 sources:
-  - moli-gateway/src/main/resources/application-dev.yml
-  - moli-gateway/src/main/resources/application-loadtest.yml
+ - moli-gateway/src/main/resources/application-dev.yml
+ - moli-gateway/src/main/resources/application-loadtest.yml
 related: [spring-cloud-gateway, 网关, 服务调用与架构, 秒杀设计, 故障排查指南, sentinel-限流与熔断, sentinel-接入与规则配置]
 created: 2026-06-22
 updated: 2026-06-22
@@ -14,19 +14,7 @@ updated: 2026-06-22
 
 # Gateway 路由与过滤器
 
-> 概念 [[spring-cloud-gateway]]；服务页 [[网关]]。
-
-## 茉莉 dev 路由表
-
-| id | Path 前缀 | 目标 | Filter |
-|----|-----------|------|--------|
-| user-center-route | `/UserCenter/**` | `lb://user-center-server` | StripPrefix=1 |
-| order-route | `/OrderServer/**` | `lb://order-server` | StripPrefix=1 |
-| bi-route | `/BiServer/**` | `lb://bi-server` | StripPrefix=1 |
-| knowledge-route | `/KnowledgeServer/**` | `lb://knowledge-server` | StripPrefix=1 |
-
-`StripPrefix=1`：去掉第一段路径再转发。  
-例：`/UserCenter/api/user` → `/api/user`。
+> 概念 [[spring-cloud-gateway]]；服务页。
 
 ## Discovery 配置
 
@@ -45,11 +33,11 @@ spring.cloud.gateway.discovery.locator.lower-case-service-id: true
 | RequestRateLimiter | 限流（需 Redis + 配置） |
 | Retry | 失败重试 |
 
-**现状**：茉莉仅 StripPrefix；限流未启用。
+**现状**：仅 StripPrefix；限流未启用。
 
 ## loadtest profile
 
-压测配置可能**不含** knowledge 路由，仅 UserCenter/Order/Bi。压秒杀时注意 profile，见项目 `load-test/` 与 [[秒杀设计]]。
+压测配置可能**不含** knowledge 路由，仅 UserCenter/Order/Bi。压秒杀时注意 profile，见项目 `load-test/` 与。
 
 ## Sentinel 接入（规划）
 
@@ -61,7 +49,7 @@ spring.cloud.gateway.discovery.locator.lower-case-service-id: true
 2. 配 Sentinel Dashboard / Nacos 规则源
 3. 对 `/UserCenter/login`、`/OrderServer/seckill/**` 等配 QPS/并发线程数
 
-当前排查「网关没限流」属预期行为，见 [[故障排查指南]]。
+当前排查「网关没限流」属预期行为，见。
 
 ## 调试
 

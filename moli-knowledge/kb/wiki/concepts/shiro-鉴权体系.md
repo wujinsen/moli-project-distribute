@@ -5,9 +5,9 @@ type: concept
 status: active
 tags: [Shiro, 鉴权, SSO, 微服务]
 sources:
-  - moli-user-center/moli-user-center-shiro-starter/
-  - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/shiro/
-  - docs/zh-CN/RBAC.md
+ - moli-user-center/moli-user-center-shiro-starter/
+ - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/shiro/
+ - docs/zh-CN/RBAC.md
 related: [认证与会话机制, shiro-starter与跨服务校验, sso与系统门户, rbac-权限模型, 用户中心, shiro-面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -17,7 +17,7 @@ updated: 2026-06-22
 
 > Session/token 见 [[认证与会话机制]]；Starter 细节 [[shiro-starter与跨服务校验]]；多系统门户 [[sso与系统门户]]；权限模型 [[rbac-权限模型]]。
 
-茉莉用 **Apache Shiro + Redis Session + Dubbo** 实现「用户中心签发、业务服务校验」的 SSO 式鉴权。
+用 **Apache Shiro + Redis Session + Dubbo** 实现「用户中心签发、业务服务校验」的 SSO 式鉴权。
 
 面试速记 [[shiro-面试题]]。
 
@@ -34,7 +34,7 @@ updated: 2026-06-22
 
 ```
 anon: /swagger*, /static/**, 配置的 anonPaths
-authc: /**  → 自定义 AuthenticationFilter
+authc: /** → 自定义 AuthenticationFilter
 ```
 
 `AuthenticationFilter` 在 Shiro 判定已登录后，**额外 Dubbo 查用户**是否停用/删除，失效则 logout + JSON 401。
@@ -65,12 +65,12 @@ Starter 注册 `AuthorizationAttributeSourceAdvisor`，触发 Shiro AOP；权限
 登出: POST /UserCenter/logout
 ```
 
-实操见 [[登录与鉴权指南]]；压测专用 [[loadtest-profile与压测登录]]。
+实操见 ；压测专用 [[loadtest-profile与压测登录]]。
 
 ## 模块依赖
 
 ```
-moli-user-center-api          → Dubbo 接口 UserCenterServer
+moli-user-center-api → Dubbo 接口 UserCenterServer
 moli-user-center-shiro-starter → AutoConfiguration + Realm + Filter
 ```
 

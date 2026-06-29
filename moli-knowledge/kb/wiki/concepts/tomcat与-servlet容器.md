@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [tomcat, servlet, Spring Boot, HTTP]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
-  - docs/zh-CN/ARCHITECTURE.md
+ - raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
+ - docs/zh-CN/ARCHITECTURE.md
 related: [servlet生命周期与请求流程, http与-servlet面试题, spring-mvc请求流程, spring-cloud-gateway, io模型与-netty]
 created: 2026-06-22
 updated: 2026-06-22
@@ -16,7 +16,7 @@ updated: 2026-06-22
 
 > 生命周期 [[servlet生命周期与请求流程]]；MVC 映射 [[spring-mvc请求流程]]；网关对比 [[spring-cloud-gateway]]；面试 [[http与-servlet面试题]]。
 
-茉莉业务服务（user-center、order、bi、knowledge）均为 **Spring Boot 内嵌 Tomcat**（Servlet 容器）处理 HTTP。**Gateway** 则用 **Netty**（[[io模型与-netty]]），二者不要混为一谈。
+业务服务（user-center、order、bi、knowledge）均为 **Spring Boot 内嵌 Tomcat**（Servlet 容器）处理 HTTP。**Gateway** 则用 **Netty**（[[io模型与-netty]]），二者不要混为一谈。
 
 ## 1. Tomcat 容器层次
 
@@ -44,7 +44,7 @@ Shiro `AuthenticationFilter`、Spring `CharacterEncodingFilter` 都在 **Filter 
 
 ## 3. Spring Boot 与 Tomcat
 
-| 项 | 茉莉默认 |
+| 项 | 默认 |
 |----|----------|
 | 容器 | 内嵌 Tomcat（spring-boot-starter-web） |
 | 端口 | 各服务独立（8888/8087/1128/8090） |
@@ -59,15 +59,9 @@ Shiro `AuthenticationFilter`、Spring `CharacterEncodingFilter` 都在 **Filter 
 |---|-----------------|-------------------|
 | 模型 | WebFlux 响应式 | Servlet 阻塞 |
 | 职责 | 路由转发 | 业务 + Shiro + Dubbo |
-| 茉莉端口 | 21000 | 8888… |
+| 端口 | 21000 | 8888… |
 
 见 [[spring-cloud-gateway]]。
-
-## 5. 茉莉触点
-
-- **Shiro 过滤器链**在 Tomcat 到达 `DispatcherServlet` 之前 [[shiro-鉴权体系]]
-- **Swagger UI** 静态资源由 Tomcat 提供 [[swagger接口调试指南]]
-- 压测瓶颈常在 **Tomcat 线程 + Druid 池**，非 Netty 层
 
 ## 6. 学习路径
 

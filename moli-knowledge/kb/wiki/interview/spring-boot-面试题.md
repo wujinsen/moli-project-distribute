@@ -5,8 +5,8 @@ type: interview
 status: active
 tags: [spring-boot, 自动配置, 面试题]
 sources:
-  - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguraton自动装配原理.note.md
-  - raw/wujinsen_markdown/Spring/SpringBoot源码解析/SpringApplication初始化阶段.note.md
+ - raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguraton自动装配原理.note.md
+ - raw/wujinsen_markdown/Spring/SpringBoot源码解析/SpringApplication初始化阶段.note.md
 related: [spring-boot-自动配置, enableautoconfiguration原理, spring-application启动流程, spring-声明式事务]
 created: 2026-06-22
 updated: 2026-06-22

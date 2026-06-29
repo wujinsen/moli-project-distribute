@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Nginx, 限流, 运维]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [nginx反向代理与前端部署指南, 限流算法与令牌桶, sse-服务端推送, gateway-超时与重试配置]
 created: 2026-06-21
 updated: 2026-06-21
@@ -21,8 +21,8 @@ updated: 2026-06-21
 limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
 
 location /api/ {
-    limit_req zone=api burst=20 nodelay;
-    proxy_pass http://gateway;
+ limit_req zone=api burst=20 nodelay;
+ proxy_pass http://gateway;
 }
 ```
 
@@ -46,14 +46,10 @@ limit_conn addr 50;
 | 大文件上传 | `client_max_body_size`；调超时 |
 | 普通 API | 默认 buffer 即可 |
 
-## 4. 茉莉拓扑
-
-Nginx → Gateway → 微服务 [[moli生产部署拓扑备忘]]。静态前端 [[cdn-与静态加速]] 可 offload。
-
 ## 5. 排查
 
 - 502/504：upstream 超时 vs Gateway [[gateway-超时与重试配置]]
-- 499：客户端断开；看是否压测过早结束 [[压测报告解读指南]]
+- 499：客户端断开；看是否压测过早结束
 
 ## 相关
 

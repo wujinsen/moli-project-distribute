@@ -5,7 +5,7 @@ type: concept
 status: active
 tags: [Spring, 并发, 异步]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
 related: [spring-事件机制, 线程池-实战调优, completablefuture-异步编排, java-并发]
 created: 2026-06-21
 updated: 2026-06-21
@@ -23,23 +23,23 @@ updated: 2026-06-21
 @EnableAsync
 @Configuration
 class AsyncConfig {
-    @Bean("bizExecutor")
-    Executor bizExecutor() {
-        ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
-        ex.setCorePoolSize(8);
-        ex.setMaxPoolSize(32);
-        ex.setQueueCapacity(500);
-        ex.setThreadNamePrefix("biz-async-");
-        ex.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        ex.initialize();
-        return ex;
-    }
+ @Bean("bizExecutor")
+ Executor bizExecutor() {
+ ThreadPoolTaskExecutor ex = new ThreadPoolTaskExecutor();
+ ex.setCorePoolSize(8);
+ ex.setMaxPoolSize(32);
+ ex.setQueueCapacity(500);
+ ex.setThreadNamePrefix("biz-async-");
+ ex.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+ ex.initialize();
+ return ex;
+ }
 }
 
 @Service
 class NotifyService {
-    @Async("bizExecutor")
-    public void sendAfterOrder(Long orderId) { /* ... */ }
+ @Async("bizExecutor")
+ public void sendAfterOrder(Long orderId) { /* ... */ }
 }
 ```
 
@@ -49,14 +49,6 @@ class NotifyService {
 ## 2. 与 @Transactional 顺序
 
 `@Async` 方法内**新开线程**，事务上下文**不会**自动传播 → 需要数据一致性时改 **MQ + 消费者事务** 或显式传参。
-
-## 3. 茉莉触点
-
-| 场景 | 建议 |
-|------|------|
-| 秒杀下单后通知 | MQ 优先；@Async 仅非关键 |
-| 登录审计日志 | @Async + 独立小池，防拖垮主线程 |
-| Dubbo 回调 | 不用 @Async，走 RPC 线程模型 [[dubbo-调用原理与分层]] |
 
 ## 4. 常见坑
 

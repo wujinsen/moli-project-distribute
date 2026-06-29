@@ -15,6 +15,8 @@ import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbCategoryService;
+import com.moli.knowledge.server.support.KbCategoryConstants;
+import com.moli.knowledge.server.support.KbPublishedWikiFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -62,24 +64,34 @@ public class KbCategoryServiceImpl implements KbCategoryService {
         Map<Long, Integer> countMap = withCount ? countByCategory(spaceId) : null;
         Map<Long, List<KbCategory>> grouped = categories.stream()
                 .collect(Collectors.groupingBy(c -> c.getParentId() == null ? 0L : c.getParentId()));
-        return buildTree(grouped, 0L, countMap);
+        List<CategoryTreeVo> result = buildTree(grouped, 0L, countMap);
+        if (withCount && countMap != null) {
+            int uncatCount = countMap.getOrDefault(-1L, 0);
+            if (uncatCount > 0) {
+                CategoryTreeVo virtual = new CategoryTreeVo();
+                virtual.setVirtualNode(true);
+                virtual.setCategoryName(KbCategoryConstants.UNCATEGORIZED_LABEL);
+                virtual.setDirSlug(KbCategoryConstants.UNCATEGORIZED_DIR_SLUG);
+                virtual.setDocCount(uncatCount);
+                virtual.setSort(9999);
+                virtual.setSpaceId(spaceId);
+                result.add(virtual);
+            }
+        }
+        return result;
     }
 
-    /** 统计本空间各分类下未删除文档数（含草稿，便于管理视角）。 */
+    /** 统计各分类下已发布 wiki 文档数（与浏览 /kb/index 一致：source=kb + status=published）。 */
     private Map<Long, Integer> countByCategory(Long spaceId) {
-        QueryWrapper<KbDocument> qw = new QueryWrapper<>();
-        qw.select("category_id AS category_id", "count(*) AS cnt")
-                .eq("space_id", spaceId)
-                .eq("is_delete", CommonConstant.UN_DELETE)
-                .isNotNull("category_id")
-                .groupBy("category_id");
+        QueryWrapper<KbDocument> qw = KbPublishedWikiFilter.publishedKbQuery(spaceId);
+        qw.select("category_id AS category_id", "count(*) AS cnt");
+        qw.groupBy("category_id");
         Map<Long, Integer> map = new HashMap<>();
         for (Map<String, Object> row : kbDocumentMapper.selectMaps(qw)) {
             Object cid = row.get("category_id");
             Object cnt = row.get("cnt");
-            if (cid != null) {
-                map.put(Long.valueOf(cid.toString()), Integer.valueOf(cnt.toString()));
-            }
+            Long key = cid == null ? -1L : Long.valueOf(cid.toString());
+            map.put(key, cnt == null ? 0 : Integer.valueOf(cnt.toString()));
         }
         return map;
     }

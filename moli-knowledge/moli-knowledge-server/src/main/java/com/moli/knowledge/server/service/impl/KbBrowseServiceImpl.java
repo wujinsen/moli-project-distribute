@@ -8,14 +8,12 @@ import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.dto.IndexItemsPageVo;
 import com.moli.knowledge.server.dto.IndexLocateVo;
 import com.moli.knowledge.server.dto.IndexTreeVo;
-import com.moli.knowledge.server.dto.KbTypeCountRow;
 import com.moli.knowledge.server.dto.PageDetailVo;
 import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbDocumentTag;
 import com.moli.knowledge.server.entity.KbRelation;
 import com.moli.knowledge.server.entity.KbTag;
-import com.moli.knowledge.server.enums.DocumentStatus;
 import com.moli.knowledge.server.mapper.KbCategoryMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
@@ -23,40 +21,23 @@ import com.moli.knowledge.server.mapper.KbRelationMapper;
 import com.moli.knowledge.server.mapper.KbTagMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbBrowseService;
+import com.moli.knowledge.server.support.KbCategoryConstants;
+import com.moli.knowledge.server.support.KbPublishedWikiFilter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class KbBrowseServiceImpl implements KbBrowseService {
 
     private static final int SEARCH_DEFAULT_LIMIT = 200;
-
-    private static final String GROUP_CATEGORY = "category";
-    private static final String UNCATEGORIZED = "uncategorized";
-    private static final String UNCATEGORIZED_LABEL = "未分类";
-
-    private static final String[][] TYPE_LABELS = {
-            {"guide", "操作指导"}, {"service", "微服务"}, {"concept", "概念"},
-            {"article", "技术文章"}, {"interview", "面试题"}, {"output", "综合"},
-    };
-
-    private static final Set<String> KNOWN_TYPES = Arrays.stream(TYPE_LABELS)
-            .map(t -> t[0])
-            .collect(Collectors.toCollection(HashSet::new));
-
-    /** 文档浏览只展示 wiki 同步入库的页面，不含 Web 手工 MySQL 文档（source=manual） */
-    private static final String BROWSE_DOC_SOURCE = "kb";
 
     @Resource
     private KbDocumentMapper kbDocumentMapper;
@@ -72,67 +53,23 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     private KbAclService kbAclService;
 
     @Override
-    public IndexTreeVo index(Long spaceId, String groupBy) {
+    public IndexTreeVo index(Long spaceId) {
         SpaceScope scope = resolveScope(spaceId);
         if (scope.isEmpty()) {
             return new IndexTreeVo();
         }
-        if (GROUP_CATEGORY.equals(groupBy)) {
-            return indexByCategory(scope);
-        }
-        return indexByType(scope);
-    }
-
-    private IndexTreeVo indexByType(SpaceScope scope) {
-        List<KbTypeCountRow> counts = kbDocumentMapper.countPublishedByKbType(
-                scope.singleSpaceId,
-                scope.multiSpaceIds,
-                DocumentStatus.PUBLISHED.getCode());
-
-        Map<String, IndexTreeVo.Group> groups = new LinkedHashMap<>();
-        for (String[] tl : TYPE_LABELS) {
-            groups.put(tl[0], new IndexTreeVo.Group(tl[0], tl[1]));
-        }
-        IndexTreeVo.Group other = new IndexTreeVo.Group("other", "其它");
-
-        int total = 0;
-        for (KbTypeCountRow row : counts) {
-            int cnt = row.getCnt() == null ? 0 : row.getCnt().intValue();
-            if (cnt <= 0) {
-                continue;
-            }
-            total += cnt;
-            String kbType = row.getKbType();
-            if (kbType != null && groups.containsKey(kbType)) {
-                groups.get(kbType).setCount(groups.get(kbType).getCount() + cnt);
-            } else {
-                other.setCount(other.getCount() + cnt);
-            }
-        }
-
-        IndexTreeVo vo = new IndexTreeVo();
-        vo.setTotal(total);
-        for (IndexTreeVo.Group g : groups.values()) {
-            if (g.getCount() > 0) {
-                vo.getGroups().add(g);
-            }
-        }
-        if (other.getCount() > 0) {
-            vo.getGroups().add(other);
-        }
-        return vo;
+        return indexByCategory(scope);
     }
 
     /** 按分类（=目录）分组计数。category_id 为空归「未分类」。 */
     private IndexTreeVo indexByCategory(SpaceScope scope) {
         List<KbCategory> cats = loadScopeCategories(scope);
         Map<String, IndexTreeVo.Group> groups = new LinkedHashMap<>();
-        Map<Long, String> catName = new LinkedHashMap<>();
         for (KbCategory c : cats) {
             groups.put(c.getId().toString(), new IndexTreeVo.Group(c.getId().toString(), c.getCategoryName()));
-            catName.put(c.getId(), c.getCategoryName());
         }
-        IndexTreeVo.Group uncat = new IndexTreeVo.Group(UNCATEGORIZED, UNCATEGORIZED_LABEL);
+        IndexTreeVo.Group uncat = new IndexTreeVo.Group(
+                KbCategoryConstants.UNCATEGORIZED_KEY, KbCategoryConstants.UNCATEGORIZED_LABEL);
 
         int total = 0;
         for (Map.Entry<String, Integer> e : countPublishedByCategory(scope).entrySet()) {
@@ -163,7 +100,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     @Override
-    public IndexItemsPageVo indexItems(Long spaceId, String groupBy, String key, int pageNum, int pageSize) {
+    public IndexItemsPageVo indexItems(Long spaceId, String key, int pageNum, int pageSize) {
         if (StringUtils.isBlank(key)) {
             throw new BaseException("分组 key 不能为空");
         }
@@ -184,14 +121,8 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         }
 
         LambdaQueryWrapper<KbDocument> wrapper = publishedScopeWrapper(scope);
-        String label;
-        if (GROUP_CATEGORY.equals(groupBy)) {
-            applyCategoryFilter(wrapper, k);
-            label = categoryLabel(scope, k);
-        } else {
-            applyKbTypeFilter(wrapper, k);
-            label = typeLabel(k);
-        }
+        applyCategoryFilter(wrapper, k);
+        String label = categoryLabel(scope, k);
         wrapper.select(KbDocument::getId, KbDocument::getSlug, KbDocument::getTitle, KbDocument::getSpaceId);
         wrapper.orderByAsc(KbDocument::getTitle);
 
@@ -210,10 +141,10 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     @Override
-    public IndexTreeVo indexSearch(Long spaceId, String q, int limit, String groupBy) {
+    public IndexTreeVo indexSearch(Long spaceId, String q, int limit) {
         String keyword = StringUtils.trimToEmpty(q);
         if (StringUtils.isBlank(keyword)) {
-            return index(spaceId, groupBy);
+            return index(spaceId);
         }
         if (limit < 1) {
             limit = SEARCH_DEFAULT_LIMIT;
@@ -230,7 +161,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         String pattern = "%" + keyword + "%";
         LambdaQueryWrapper<KbDocument> wrapper = publishedScopeWrapper(scope);
         wrapper.select(KbDocument::getId, KbDocument::getSlug, KbDocument::getTitle, KbDocument::getSpaceId,
-                KbDocument::getKbType, KbDocument::getCategoryId);
+                KbDocument::getCategoryId);
         wrapper.and(w -> w.like(KbDocument::getTitle, keyword)
                 .or().like(KbDocument::getSlug, keyword)
                 .or().like(KbDocument::getSummary, pattern));
@@ -238,14 +169,11 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         wrapper.last("limit " + limit);
 
         List<KbDocument> docs = kbDocumentMapper.selectList(wrapper);
-        if (GROUP_CATEGORY.equals(groupBy)) {
-            return groupLightItemsByCategory(scope, docs);
-        }
-        return groupLightItems(docs);
+        return groupLightItemsByCategory(scope, docs);
     }
 
     @Override
-    public IndexLocateVo locate(Long spaceId, String slug, String groupBy) {
+    public IndexLocateVo locate(Long spaceId, String slug) {
         if (StringUtils.isBlank(slug)) {
             throw new BaseException("slug 不能为空");
         }
@@ -257,23 +185,19 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         LambdaQueryWrapper<KbDocument> wrapper = publishedScopeWrapper(scope);
         wrapper.eq(KbDocument::getSlug, slug.trim());
         wrapper.select(KbDocument::getId, KbDocument::getSlug, KbDocument::getTitle, KbDocument::getSpaceId,
-                KbDocument::getKbType, KbDocument::getCategoryId);
+                KbDocument::getCategoryId);
         wrapper.last("limit 1");
         KbDocument d = kbDocumentMapper.selectOne(wrapper);
         if (d == null) {
             throw new BaseException("页面不存在: " + slug);
         }
 
+        String key = d.getCategoryId() == null
+                ? KbCategoryConstants.UNCATEGORIZED_KEY
+                : d.getCategoryId().toString();
         IndexLocateVo vo = new IndexLocateVo();
-        if (GROUP_CATEGORY.equals(groupBy)) {
-            String key = d.getCategoryId() == null ? UNCATEGORIZED : d.getCategoryId().toString();
-            vo.setType(key);
-            vo.setLabel(categoryLabel(scope, key));
-        } else {
-            String type = resolveDocType(d.getKbType());
-            vo.setType(type);
-            vo.setLabel(typeLabel(type));
-        }
+        vo.setType(key);
+        vo.setLabel(categoryLabel(scope, key));
         vo.setItem(toLightItem(d));
         return vo;
     }
@@ -312,38 +236,10 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         return vo;
     }
 
-    private IndexTreeVo groupLightItems(List<KbDocument> docs) {
-        Map<String, IndexTreeVo.Group> groups = new LinkedHashMap<>();
-        for (String[] tl : TYPE_LABELS) {
-            groups.put(tl[0], new IndexTreeVo.Group(tl[0], tl[1]));
-        }
-        IndexTreeVo.Group other = new IndexTreeVo.Group("other", "其它");
-
-        for (KbDocument d : docs) {
-            String type = resolveDocType(d.getKbType());
-            IndexTreeVo.Group g = "other".equals(type) ? other : groups.get(type);
-            g.getItems().add(toLightItem(d));
-        }
-
-        IndexTreeVo vo = new IndexTreeVo();
-        vo.setTotal(docs.size());
-        for (IndexTreeVo.Group g : groups.values()) {
-            if (!g.getItems().isEmpty()) {
-                g.setCount(g.getItems().size());
-                vo.getGroups().add(g);
-            }
-        }
-        if (!other.getItems().isEmpty()) {
-            other.setCount(other.getItems().size());
-            vo.getGroups().add(other);
-        }
-        return vo;
-    }
-
-    private IndexItemsPageVo emptyItemsPage(String type, int pageNum, int pageSize) {
+    private IndexItemsPageVo emptyItemsPage(String key, int pageNum, int pageSize) {
         IndexItemsPageVo vo = new IndexItemsPageVo();
-        vo.setType(type);
-        vo.setLabel(typeLabel(type));
+        vo.setType(key);
+        vo.setLabel(KbCategoryConstants.UNCATEGORIZED_LABEL);
         vo.setTotal(0);
         vo.setPageNum(pageNum);
         vo.setPageSize(pageSize);
@@ -353,33 +249,6 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     private IndexTreeVo.Item toLightItem(KbDocument d) {
         return new IndexTreeVo.Item(d.getId(), d.getSlug(), d.getTitle(), null, d.getSpaceId());
     }
-
-    private String resolveDocType(String kbType) {
-        if (kbType != null && KNOWN_TYPES.contains(kbType)) {
-            return kbType;
-        }
-        return "other";
-    }
-
-    private String typeLabel(String type) {
-        for (String[] tl : TYPE_LABELS) {
-            if (tl[0].equals(type)) {
-                return tl[1];
-            }
-        }
-        return "其它";
-    }
-
-    private void applyKbTypeFilter(LambdaQueryWrapper<KbDocument> wrapper, String type) {
-        if ("other".equals(type)) {
-            wrapper.and(w -> w.isNull(KbDocument::getKbType)
-                    .or().notIn(KbDocument::getKbType, KNOWN_TYPES));
-            return;
-        }
-        wrapper.eq(KbDocument::getKbType, type);
-    }
-
-    // ----------------------------------------------------------------- 分类(=目录)分组
 
     private List<KbCategory> loadScopeCategories(SpaceScope scope) {
         LambdaQueryWrapper<KbCategory> w = new LambdaQueryWrapper<KbCategory>()
@@ -394,31 +263,28 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         return kbCategoryMapper.selectList(w);
     }
 
-    /** 统计已发布(source=kb)文档按 category_id 分组数；null 归 UNCATEGORIZED。 */
+    /** 统计已发布(source=kb)文档按 category_id 分组数；null 归 uncategorized。 */
     private Map<String, Integer> countPublishedByCategory(SpaceScope scope) {
-        QueryWrapper<KbDocument> qw = new QueryWrapper<>();
-        qw.select("category_id AS category_id", "count(*) AS cnt")
-                .eq("is_delete", CommonConstant.UN_DELETE)
-                .eq("status", DocumentStatus.PUBLISHED.getCode())
-                .eq("source", BROWSE_DOC_SOURCE);
-        if (scope.singleSpaceId != null) {
-            qw.eq("space_id", scope.singleSpaceId);
-        } else if (scope.multiSpaceIds != null) {
+        QueryWrapper<KbDocument> qw = KbPublishedWikiFilter.publishedKbQuery(scope.singleSpaceId);
+        if (scope.multiSpaceIds != null) {
             qw.in("space_id", scope.multiSpaceIds);
         }
+        qw.select("category_id AS category_id", "count(*) AS cnt");
         qw.groupBy("category_id");
         Map<String, Integer> map = new LinkedHashMap<>();
         for (Map<String, Object> row : kbDocumentMapper.selectMaps(qw)) {
             Object cid = row.get("category_id");
             Object cnt = row.get("cnt");
-            String key = cid == null ? UNCATEGORIZED : cid.toString();
+            String key = cid == null
+                    ? KbCategoryConstants.UNCATEGORIZED_KEY
+                    : cid.toString();
             map.merge(key, cnt == null ? 0 : Integer.valueOf(cnt.toString()), Integer::sum);
         }
         return map;
     }
 
     private void applyCategoryFilter(LambdaQueryWrapper<KbDocument> wrapper, String key) {
-        if (UNCATEGORIZED.equals(key)) {
+        if (KbCategoryConstants.UNCATEGORIZED_KEY.equals(key)) {
             wrapper.isNull(KbDocument::getCategoryId);
             return;
         }
@@ -430,15 +296,15 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     private String categoryLabel(SpaceScope scope, String key) {
-        if (UNCATEGORIZED.equals(key)) {
-            return UNCATEGORIZED_LABEL;
+        if (KbCategoryConstants.UNCATEGORIZED_KEY.equals(key)) {
+            return KbCategoryConstants.UNCATEGORIZED_LABEL;
         }
         for (KbCategory c : loadScopeCategories(scope)) {
             if (c.getId().toString().equals(key)) {
                 return c.getCategoryName();
             }
         }
-        return UNCATEGORIZED_LABEL;
+        return KbCategoryConstants.UNCATEGORIZED_LABEL;
     }
 
     private IndexTreeVo groupLightItemsByCategory(SpaceScope scope, List<KbDocument> docs) {
@@ -446,9 +312,12 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         for (KbCategory c : loadScopeCategories(scope)) {
             groups.put(c.getId().toString(), new IndexTreeVo.Group(c.getId().toString(), c.getCategoryName()));
         }
-        IndexTreeVo.Group uncat = new IndexTreeVo.Group(UNCATEGORIZED, UNCATEGORIZED_LABEL);
+        IndexTreeVo.Group uncat = new IndexTreeVo.Group(
+                KbCategoryConstants.UNCATEGORIZED_KEY, KbCategoryConstants.UNCATEGORIZED_LABEL);
         for (KbDocument d : docs) {
-            String key = d.getCategoryId() == null ? UNCATEGORIZED : d.getCategoryId().toString();
+            String key = d.getCategoryId() == null
+                    ? KbCategoryConstants.UNCATEGORIZED_KEY
+                    : d.getCategoryId().toString();
             IndexTreeVo.Group g = groups.getOrDefault(key, uncat);
             g.getItems().add(toLightItem(d));
         }
@@ -468,13 +337,8 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     private LambdaQueryWrapper<KbDocument> publishedScopeWrapper(SpaceScope scope) {
-        LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
-        wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
-        wrapper.eq(KbDocument::getSource, BROWSE_DOC_SOURCE);
-        if (scope.singleSpaceId != null) {
-            wrapper.eq(KbDocument::getSpaceId, scope.singleSpaceId);
-        } else if (scope.multiSpaceIds != null) {
+        LambdaQueryWrapper<KbDocument> wrapper = KbPublishedWikiFilter.publishedKbWrapper(scope.singleSpaceId);
+        if (scope.multiSpaceIds != null) {
             wrapper.in(KbDocument::getSpaceId, scope.multiSpaceIds);
         }
         return wrapper;

@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [Zookeeper, 分布式, CAP, Dubbo]
 sources:
-  - raw/wujinsen_markdown/BigData/Zookeeper/Zookeeper介绍.note.md
-  - raw/wujinsen_markdown/面试笔试/框架/zookeeper/精尽 Zookeeper 面试题（最新更新时间：2020-09-01.note.md
+ - raw/wujinsen_markdown/BigData/Zookeeper/Zookeeper介绍.note.md
+ - raw/wujinsen_markdown/面试笔试/框架/zookeeper/精尽 Zookeeper 面试题（最新更新时间：2020-09-01.note.md
 related: [dubbo-与-nacos, 分布式锁, 分布式理论基础, zookeeper-面试题, nacos-注册与配置]
 created: 2026-06-22
 updated: 2026-06-22
@@ -14,7 +14,7 @@ updated: 2026-06-22
 
 # Zookeeper 与协调服务
 
-> 茉莉 **注册中心用 Nacos**，非 ZK；ZK 仍常见于 Dubbo 老架构、Kafka、分布式锁。面试 [[zookeeper-面试题]]。
+> **注册中心用 Nacos**，非 ZK；ZK 仍常见于 Dubbo 老架构、Kafka、分布式锁。面试 [[zookeeper-面试题]]。
 
 ## 1. 是什么
 
@@ -34,7 +34,7 @@ Zookeeper（ZK）是 **CP** 型分布式协调服务：强一致、选举期间�
 
 ## 3. 与 Nacos / Dubbo
 
-| | Zookeeper | Nacos（茉莉） |
+| | Zookeeper | Nacos（） |
 |---|-----------|---------------|
 | 一致性 | CP 倾向 | AP 注册 + 配置 |
 | Dubbo 注册 | 历史默认 | ✅ 项目用 Nacos |

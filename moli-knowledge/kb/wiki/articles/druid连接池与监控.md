@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [druid, 连接池, 监控, prometheus]
 sources:
-  - moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
-  - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/DruidPoolMetricsConfiguration.java
-  - moli-knowledge/kb/wiki/articles/压测监控与prometheus.md
+ - moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
+ - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/DruidPoolMetricsConfiguration.java
+ - moli-knowledge/kb/wiki/articles/压测监控与prometheus.md
 related: [mybatis-与-druid持久层, 故障排查指南, 压测监控与prometheus, mysql-深分页与慢sql优化, 限流算法与令牌桶, sentinel-限流与熔断]
 created: 2026-06-22
 updated: 2026-06-22
@@ -15,9 +15,9 @@ updated: 2026-06-22
 
 # Druid 连接池与监控
 
-> 持久层总览 [[mybatis-与-druid持久层]]；压测看板 [[压测监控与prometheus]]；池耗尽排查 [[故障排查指南]]。
+> 持久层总览 [[mybatis-与-druid持久层]]；压测看板 [[压测监控与prometheus]]；池耗尽排查。
 
-Alibaba **Druid** 是茉莉各服务默认 JDBC 连接池（1.1.14），除池化外支持 **SQL 监控、防泄漏、Wall 防火墙**（按模块启用情况）。
+Alibaba **Druid** 是各服务默认 JDBC 连接池（1.1.14），除池化外支持 **SQL 监控、防泄漏、Wall 防火墙**（按模块启用情况）。
 
 ## 1. 核心配置（dev 示例）
 
@@ -25,18 +25,18 @@ Alibaba **Druid** 是茉莉各服务默认 JDBC 连接池（1.1.14），除池�
 
 ```yaml
 spring:
-  datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
-    druid:
-      initial-size: 10
-      min-idle: 10
-      max-active: 100
-      max-wait: 10000
-      validation-query: SELECT 1
-      test-while-idle: true
-      remove-abandoned: true
-      remove-abandoned-timeout: 120
-      log-abandoned: true
+ datasource:
+ type: com.alibaba.druid.pool.DruidDataSource
+ druid:
+ initial-size: 10
+ min-idle: 10
+ max-active: 100
+ max-wait: 10000
+ validation-query: SELECT 1
+ test-while-idle: true
+ remove-abandoned: true
+ remove-abandoned-timeout: 120
+ log-abandoned: true
 ```
 
 | 参数 | 说明 |
@@ -78,12 +78,12 @@ loadtest profile 可增大 `max-active` 以扛压测并发。
 |------|----------|------|
 | active ≈ max 持续 | 慢 SQL / 长事务 / 泄漏 | EXPLAIN、查事务、看 abandoned 日志 |
 | waiting > 0 增长 | 池过小或 DB 阻塞 | 调池/优化 SQL/限流入口 [[sentinel-限流与熔断]] |
-| create_error 增 | DB 宕机/密码/网络 | [[故障排查指南]] |
+| create_error 增 | DB 宕机/密码/网络 | |
 | 压测后 active 不降 | 未 commit/未关流 | 代码审查 Mapper 用法 |
 
 ## 5. Druid 内置监控页（可选）
 
-Druid 可配 `stat-view-servlet` 看 SQL 统计、URI 监控。茉莉 dev **未统一开启**；生产若开启需 **鉴权 + 勿公网暴露**。
+Druid 可配 `stat-view-servlet` 看 SQL 统计、URI 监控。开发环境 **未统一开启**；生产若开启需 **鉴权 + 勿公网暴露**。
 
 ## 6. 与慢 SQL 联动
 

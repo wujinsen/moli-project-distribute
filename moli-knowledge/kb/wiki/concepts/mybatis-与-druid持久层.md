@@ -5,8 +5,8 @@ type: concept
 status: active
 tags: [mybatis, druid, 持久层, 数据库]
 sources:
-  - docs/zh-CN/TECH_STACK.md
-  - moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
+ - docs/zh-CN/TECH_STACK.md
+ - moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
 related: [mybatis-plus-用法与注入防护, druid连接池与监控, mysql-索引, mysql-事务与锁, spring-声明式事务, 技术栈与版本, 故障排查指南]
 created: 2026-06-22
 updated: 2026-06-22
@@ -16,16 +16,16 @@ updated: 2026-06-22
 
 > SQL 写法与 `#{}` [[mybatis-plus-用法与注入防护]]；池监控 [[druid连接池与监控]]；事务 [[spring-声明式事务]] + [[mysql-事务与锁]]。
 
-茉莉全家桶持久层：**MySQL 8.0 + MyBatis-Plus 3.4.2 + Druid 1.1.14**（见 [[技术栈与版本]]）。用户中心、订单、BI、知识库等服务均走 `DruidDataSource` + Mapper。
+全家桶持久层：**MySQL 8.0 + MyBatis-Plus 3.4.2 + Druid 1.1.14**（见 ）。用户中心、订单、BI、知识库等服务均走 `DruidDataSource` + Mapper。
 
 ## 1. 分层职责
 
 ```mermaid
 flowchart TB
-  Controller --> Service
-  Service --> Mapper["Mapper (MyBatis-Plus)"]
-  Mapper --> Pool["Druid 连接池"]
-  Pool --> MySQL[(MySQL moli)]
+ Controller --> Service
+ Service --> Mapper["Mapper (MyBatis-Plus)"]
+ Mapper --> Pool["Druid 连接池"]
+ Pool --> MySQL[(MySQL moli)]
 ```
 
 | 层 | 职责 |
@@ -34,16 +34,6 @@ flowchart TB
 | **Mapper** | SQL 映射；Plus 提供 CRUD、Wrapper |
 | **Druid** | 连接池、慢 SQL、防泄漏 |
 | **MySQL** | 索引/锁/MVCC（[[mysql-索引]]） |
-
-## 2. MyBatis-Plus 在茉莉中的用法
-
-- 实体 `@TableName`、`@TableId`
-- `BaseMapper<T>`：`insert/selectById/updateById/...`
-- 复杂条件：`QueryWrapper` / `LambdaQueryWrapper`
-- 分页：`Page<T>` + 插件
-- 自动填充：各服务 `MetaObjectHandler`（createTime/updateTime）
-
-知识库、用户、订单表均通过 Mapper 访问；**无 JPA**。
 
 ## 3. Druid 统一配置模式
 

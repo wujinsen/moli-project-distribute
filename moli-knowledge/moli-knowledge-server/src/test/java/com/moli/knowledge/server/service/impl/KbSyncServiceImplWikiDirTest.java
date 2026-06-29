@@ -26,7 +26,7 @@ public class KbSyncServiceImplWikiDirTest {
     @Test
     public void resolveWikiDirForSpace_opsManual() {
         stubSpaceDirs();
-        Assert.assertEquals("wiki-ops", service.resolveWikiDirForSpace("moli-ops-manual"));
+        Assert.assertEquals("wiki-moli", service.resolveWikiDirForSpace("moli-ops-manual"));
     }
 
     @Test
@@ -44,7 +44,7 @@ public class KbSyncServiceImplWikiDirTest {
     private void stubSpaceDirs() {
         Map<String, String> dirs = new LinkedHashMap<>();
         dirs.put("enterprise-kb", "wiki");
-        dirs.put("moli-ops-manual", "wiki-ops");
+        dirs.put("moli-ops-manual", "wiki-moli");
         dirs.put("jp-fe-ap-exam", "wiki-jp-exam");
         when(wikiProperties.getSpaceDirs()).thenReturn(dirs);
     }

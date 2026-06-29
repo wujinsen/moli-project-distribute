@@ -103,7 +103,7 @@ kb:
     # space_code → wiki 子目录（相对 root）
     space-dirs:
       enterprise-kb: wiki
-      moli-ops-manual: wiki-ops
+      moli-ops-manual: wiki-moli
       jp-fe-ap-exam: wiki-jp-exam
     max-bytes: 2097152
     lint-script-path: moli-knowledge/kb/tools/lint.py
@@ -125,5 +125,5 @@ kb:
     # Expert commit / Express publish 未传 sync 时自动 wiki→MySQL（ingest 完即入库）
     commit-auto-sync: true
   browse:
-    # 浏览侧栏默认按分类（= wiki 一级目录）；legacy 体裁分组传 groupBy=type
+    # 浏览与管理统一按分类（= wiki 一级目录）；groupBy=type 已废弃
     default-group-by: category

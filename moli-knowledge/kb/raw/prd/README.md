@@ -2,7 +2,7 @@
 
 放入 **PRD、产品方案、需求评审稿**（Word/PDF 转 markdown 或原生 `.md`）。
 
-- **成品维护**：`kb/wiki/guides/`（`tags` 含 `product`）
+- **成品维护**：`kb/wiki-moli/guides/`（`tags` 含 `product`）
 - **索引**：[`docs/product/README.md`](../../../docs/product/README.md)
 - **再 ingest**：`AGENTS.md` §4.1
 

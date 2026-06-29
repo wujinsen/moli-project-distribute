@@ -5,8 +5,8 @@ type: interview
 status: active
 tags: [jvm, 面试题, GC, 内存]
 sources:
-  - raw/wujinsen_markdown/面试笔试/精尽面试题/JVM/精尽 Java【虚拟机】面试题.note.md
-  - raw/wujinsen_markdown/jvm/JVM内存划分.note.md
+ - raw/wujinsen_markdown/面试笔试/精尽面试题/JVM/精尽 Java【虚拟机】面试题.note.md
+ - raw/wujinsen_markdown/jvm/JVM内存划分.note.md
 related: [jvm-内存与gc, jvm-垃圾收集算法与收集器, jvm-oom与排查入门, jmm与happens-before]
 created: 2026-06-22
 updated: 2026-06-22

@@ -5,10 +5,10 @@ type: interview
 status: active
 tags: [java, 并发, 面试题, JMM, 线程池]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
-  - raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md
-  - raw/wujinsen_markdown/面试笔试/Java面试题精选/【70期】面试官：对并发熟悉吗？谈谈对volatile的使用及其原理.note.md
-  - raw/wujinsen_markdown/面试笔试/Java面试题精选/【67期】谈谈ConcurrentHashMap是如何保证线程安全的？.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+ - raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md
+ - raw/wujinsen_markdown/面试笔试/Java面试题精选/【70期】面试官：对并发熟悉吗？谈谈对volatile的使用及其原理.note.md
+ - raw/wujinsen_markdown/面试笔试/Java面试题精选/【67期】谈谈ConcurrentHashMap是如何保证线程安全的？.note.md
 related: [java-并发, jmm与happens-before, synchronized与锁原理, volatile与可见性, concurrenthashmap原理]
 created: 2026-06-22
 updated: 2026-06-22
@@ -53,9 +53,3 @@ JMM 可见性规则：程序顺序、锁、volatile、传递性等。见 [[jmm�
 ## Q9. ThreadLocal 原理与泄漏？
 
 每线程一个 ThreadLocalMap，key 弱引用、value 强引用；线程池场景线程复用可能导致 value 泄漏，用完 **remove()**。
-
-## Q10. 茉莉/后端场景怎么答并发？
-
-- 会话：**Redis 共享 Session**，非 JVM 锁（[[认证与会话机制]]）。
-- 秒杀：**Redis+Lua 原子**，异步落库（[[秒杀设计]]）。
-- 服务内：线程池处理 Dubbo/HTTP；Map 用 CHM；跨实例用 [[分布式锁]]。

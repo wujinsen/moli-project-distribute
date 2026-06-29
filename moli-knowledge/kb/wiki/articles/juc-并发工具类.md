@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Java, 并发, JUC]
 sources:
-  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+ - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
 related: [java-并发, java-并发面试题, completablefuture-异步编排, 线程池-实战调优]
 created: 2026-06-21
 updated: 2026-06-21
@@ -24,13 +24,13 @@ updated: 2026-06-21
 ```java
 CountDownLatch latch = new CountDownLatch(3);
 for (int i = 0; i < 3; i++) {
-    pool.execute(() -> { doShard(); latch.countDown(); });
+ pool.execute(() -> { doShard(); latch.countDown(); });
 }
 latch.await(30, TimeUnit.SECONDS);
 mergeResults();
 ```
 
-**茉莉**：压测脚本等多实例就绪信号（测试侧）；生产更常用 MQ 消费确认。
+****：压测脚本等多实例就绪信号（测试侧）；生产更常用 MQ 消费确认。
 
 ## 2. CyclicBarrier
 

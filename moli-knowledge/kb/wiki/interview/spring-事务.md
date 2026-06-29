@@ -5,12 +5,12 @@ type: interview
 status: active
 tags: [Spring, 事务, Transaction, 面试题, Java]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Spring/关于Spring事务的面试题.note.md
-  - raw/wujinsen_markdown/面试笔试/Spring/一文带你深入理解 Spring 事务原理.note.md
-  - raw/wujinsen_markdown/面试笔试/Spring/介绍一下Spring的事务管理.note.md
-  - raw/wujinsen_markdown/面试笔试/Spring/@transactional注解在什么情况下会失效，为什么。.note.md
-  - raw/wujinsen_markdown/Spring/事务/@Transactional失效的几种场景.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/关于Spring事务的面试题.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/一文带你深入理解 Spring 事务原理.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/介绍一下Spring的事务管理.note.md
+ - raw/wujinsen_markdown/面试笔试/Spring/@transactional注解在什么情况下会失效，为什么。.note.md
+ - raw/wujinsen_markdown/Spring/事务/@Transactional失效的几种场景.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
 related: [spring-声明式事务, spring-boot-自动配置]
 created: 2026-06-22
 updated: 2026-06-22
@@ -87,10 +87,10 @@ updated: 2026-06-22
 ## Q7. `@Transactional` 失效的常见场景？（高频陷阱）
 
 1. **自调用**：同类中 A 方法（无事务）调用本类的 B 方法（有事务）→ 不走代理，失效。最常见。
-   - 解法：注入自身代理、拆到别的 Bean、或用 `AopContext.currentProxy()`。
+ - 解法：注入自身代理、拆到别的 Bean、或用 `AopContext.currentProxy()`。
 2. **非 public 方法**：`@Transactional` 只对 public 生效（拦截器读不到属性）。
 3. **异常类型不匹配**：默认只回滚 **unchecked 异常（RuntimeException/Error）**；checked 异常不回滚。
-   - 解法：`@Transactional(rollbackFor = Exception.class)`。
+ - 解法：`@Transactional(rollbackFor = Exception.class)`。
 4. **异常被 catch 吞掉**：方法内 try-catch 了异常没抛出 → 事务感知不到，不回滚。
 5. **存储引擎不支持**：MySQL 用了 **MyISAM**（不支持事务），要用 **InnoDB**。
 6. **未开启注解驱动 / 未被扫描**：没配 `<tx:annotation-driven>`（或 `@EnableTransactionManagement`）、包没被 component-scan 扫到。

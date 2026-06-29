@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [Elasticsearch, 搜索, 知识库]
 sources:
-  - raw/wujinsen_markdown/
+ - raw/wujinsen_markdown/
 related: [elasticsearch-搜索, es-match与bool查询, 知识库-全文检索规划, es-索引与写入流程]
 created: 2026-06-21
 updated: 2026-06-21
@@ -13,7 +13,7 @@ updated: 2026-06-21
 
 # Elasticsearch IK 分词与分析器
 
-> ES 总览 [[elasticsearch-搜索]]；查询 [[es-match与bool查询]]；茉莉规划 [[知识库-全文检索规划]]。
+> ES 总览 [[elasticsearch-搜索]]；查询 [[es-match与bool查询]]；规划 [[知识库-全文检索规划]]。
 
 中文检索依赖 **analysis** 链：`character filter → tokenizer → token filter`。
 
@@ -26,14 +26,14 @@ updated: 2026-06-21
 
 ```json
 {
-  "settings": {
-    "analysis": {
-      "analyzer": {
-        "ik_index": { "tokenizer": "ik_max_word" },
-        "ik_search": { "tokenizer": "ik_smart" }
-      }
-    }
-  }
+ "settings": {
+ "analysis": {
+ "analyzer": {
+ "ik_index": { "tokenizer": "ik_max_word" },
+ "ik_search": { "tokenizer": "ik_smart" }
+ }
+ }
+ }
 }
 ```
 
@@ -42,12 +42,6 @@ updated: 2026-06-21
 - **ext_dict**：行业词（「秒杀」「RBAC」）
 - **stopwords**：停用词
 - 热更新：挂载 dict 文件 + `reload` 或重建 index
-
-## 3. 茉莉知识库注意
-
-- `title` 用 ik_search；`body` 可 ik_index + 子字段 keyword 排序
-- 与 MySQL `LIKE` 过渡方案对比 [[mysql-slow-log慢查询分析]]
-- 同步源：wiki markdown [[kb-wiki到es同步流水线]]
 
 ## 4. 常见问题
 

@@ -5,8 +5,8 @@ type: interview
 status: active
 tags: [sentinel, 面试, 限流, 熔断]
 sources:
-  - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
-  - raw/wujinsen_markdown/面试笔试/高级java/2018年一线互联网公司Java高级面试题总结.note.md
+ - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
+ - raw/wujinsen_markdown/面试笔试/高级java/2018年一线互联网公司Java高级面试题总结.note.md
 related: [sentinel-限流与熔断, 限流算法与令牌桶, sentinel-接入与规则配置, dubbo-面试题, redis-面试题]
 created: 2026-06-22
 updated: 2026-06-22
@@ -26,7 +26,7 @@ updated: 2026-06-22
 
 ## Q3. Sentinel 和 Hystrix 对比？
 
-Hystrix 已停维；Sentinel 侧重**流控+熔断+系统保护**，Dashboard 实时规则，与 Dubbo/Gateway 集成更好。茉莉父 POM 引 Sentinel 但未配 Hystrix。
+Hystrix 已停维；Sentinel 侧重**流控+熔断+系统保护**，Dashboard 实时规则，与 Dubbo/Gateway 集成更好。父 POM 引 Sentinel 但未配 Hystrix。
 
 ## Q4. Sentinel 滑动窗口做什么？
 
@@ -51,7 +51,3 @@ Redis+Lua 原子计数、Sentinel 集群流控、Gateway 统一 QPS。秒杀库�
 ## Q9. 热点参数限流场景？
 
 秒杀商品 id、恶意刷某一 SKU。对参数值单独 QPS 限制。
-
-## Q10. 茉莉 Gateway 限流现状？
-
-**未接 Sentinel**；仅 StripPrefix。规划对 login/seckill 配 QPS。见 [[gateway-路由与过滤器]]。

@@ -80,6 +80,10 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             documentIds = relations.stream().map(KbDocumentTag::getDocumentId).collect(Collectors.toList());
         }
 
+        if (request.getCategoryId() != null && Boolean.TRUE.equals(request.getUncategorizedOnly())) {
+            throw new BaseException("categoryId 与 uncategorizedOnly 不能同时传");
+        }
+
         if (StringUtils.isNotBlank(request.getKeyword()) && kbSearchProperties.fullTextEnabled()) {
             try {
                 return kbDocumentMapper.searchFullText(
@@ -87,6 +91,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                         singleSpaceId,
                         multiSpaceIds,
                         request.getCategoryId(),
+                        Boolean.TRUE.equals(request.getUncategorizedOnly()),
                         request.getStatus(),
                         documentIds,
                         request.getKeyword().trim(),
@@ -103,7 +108,9 @@ public class KbDocumentServiceImpl implements KbDocumentService {
         } else {
             wrapper.in(KbDocument::getSpaceId, scopeSpaces);
         }
-        if (request.getCategoryId() != null) {
+        if (Boolean.TRUE.equals(request.getUncategorizedOnly())) {
+            wrapper.isNull(KbDocument::getCategoryId);
+        } else if (request.getCategoryId() != null) {
             wrapper.eq(KbDocument::getCategoryId, request.getCategoryId());
         }
         if (request.getStatus() != null) {

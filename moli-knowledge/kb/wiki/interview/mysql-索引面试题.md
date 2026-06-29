@@ -5,10 +5,10 @@ type: interview
 status: active
 tags: [mysql, 索引, 面试题, InnoDB, B+Tree]
 sources:
-  - raw/wujinsen_markdown/面试笔试/Database/【MySQL】20个经典面试题，全部答对月薪10k+.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
-  - raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md
+ - raw/wujinsen_markdown/面试笔试/Database/【MySQL】20个经典面试题，全部答对月薪10k+.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
+ - raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md
 related: [mysql-索引, b-plus树与-innodb索引结构, mysql-复合索引与最左前缀, mysql-覆盖索引与回表优化, mysql-索引失效场景]
 created: 2026-06-22
 updated: 2026-06-22

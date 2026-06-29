@@ -5,9 +5,9 @@ type: article
 status: active
 tags: [mysql, 索引, 复合索引, 最左前缀, 性能优化]
 sources:
-  - raw/wujinsen_markdown/DataBase/mysql/索引/复合索引的优点和注意事项.note.md
-  - raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md
-  - raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/复合索引的优点和注意事项.note.md
+ - raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md
+ - raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md
 related: [mysql-索引, mysql-覆盖索引与回表优化, mysql-索引失效场景, mysql-索引面试题]
 created: 2026-06-22
 updated: 2026-06-22
