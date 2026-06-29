@@ -1,8 +1,24 @@
 # 茉莉企业知识库 · Wiki 维护契约（AGENTS.md）
 
-> 本文件是这套知识库的**唯一规则源**（schema / 契约）。
-> 范式：以 Karpathy「LLM-Wiki」为主、AutoSci 为辅。
-> 任何 AI Agent 在本目录工作时，**必须先读本文件**，再执行 Ingest / Query / Lint。
+> **作用域：仅 `moli-knowledge/kb/`**（Ingest / Query / Lint / sync）。  
+> **全仓库规则**（含 draw.io、各微服务文档落点）：见仓库根 [`AGENTS.md`](../../AGENTS.md) + [`.cursor/rules/`](../../.cursor/rules/)。  
+> 各微服务**不要**再复制本文件；模块差异写在 `moli-xxx/README.md`。
+>
+> 本文件是知识库的**L2 规则源**（wiki schema / 契约）。  
+> 范式：以 Karpathy「LLM-Wiki」为主、AutoSci 为辅。  
+> 在 **`kb/` 目录**工作时，**必须先读本文件**，再执行 Ingest / Query / Lint。
+
+---
+
+## 0.0 与全仓库规则的关系
+
+| 层级 | 文件 | 何时读 |
+|------|------|--------|
+| L1 | [`/AGENTS.md`](../../AGENTS.md) | 任何模块文档、架构图、API 索引 |
+| **L2** | **本文件** | 仅 `kb/raw`、`kb/wiki*` 维护 |
+| L3 | [`.cursor/skills/drawio-diagrams/`](../../.cursor/skills/drawio-diagrams/SKILL.md) | 文档需架构/ER/流程图时 **必须**调用 |
+
+**draw.io**：wiki 页与 `docs/` 同样禁止用 ASCII 箭头图作主图；优先链到 `docs/diagrams/moli-*.drawio` + PNG（见 L1 §3）。
 
 ---
 
@@ -23,9 +39,18 @@
 kb/
   AGENTS.md              # 本契约
   raw/                   # 只读源头, Agent 绝不修改
-    docs/                #   项目/微服务文档(可放副本或软链)
+    prd/                 #   产品 PRD / 产品方案外部稿
+    design/              #   技术方案 / 架构设计外部稿
+    api/                 #   API 说明外部稿（契约权威在 docs/api/）
+    test/                #   测试 / 压测 / QA 外部稿
+    ops/                 #   运维 SOP / 变更说明外部稿
+    school/              #   日本語試験 raw（FE/AP，见 school/README.md）
+      fe/                #     基本情報技術者
+      ap/                #     応用情報技術者
+    docs/                #   项目文档副本（README、ARCHITECTURE 等）
     articles/            #   技术文章(P1)
     interview/           #   面试题原始材料(P2)
+    wujinsen_markdown/   #   历史语料（只读归档）
   wiki/                  # Agent 全权拥有的知识页
     index.md             #   内容目录(catalog), 每次 ingest/crystallize 后更新
     log.md               #   append-only 时间线
@@ -44,6 +69,52 @@ kb/
 - `wiki/` —— Agent 拥有，自由创建/编辑。
 - `wiki/log.md` —— append-only，永不原地重写。
 - `wiki/graph/edges.jsonl` —— append-only。
+
+### 1.1 五类项目文档 · 落点（与 `docs/README.md` 一致）
+
+| 文档类型 | raw 投喂 | wiki 成品（浏览） | 工程契约（不 ingest 全文） |
+|----------|----------|-------------------|---------------------------|
+| PRD / 产品 | `raw/prd/` | `wiki/guides/`（tag: product） | `docs/product/` 索引 |
+| 技术方案 | `raw/design/` | `wiki/concepts/`、`wiki/articles/` | `docs/design/` + `docs/zh-CN/` |
+| API | `raw/api/`（可选） | `wiki/services/` 摘要 + 链到契约 | **`docs/api/`** 权威 |
+| 测试 | `raw/test/` | `wiki/guides/`（压测等） | `docs/test/` + `load-test/` |
+| 运维 | `raw/ops/` | **`wiki-ops/guides/`** | `docs/ops/` 索引 |
+| 日本語 FE/AP | **`raw/school/fe/`**、**`raw/school/ap/`** | **`wiki-jp-exam/`** | —（空间 `jp-fe-ap-exam`） |
+
+运维正文 **只维护 `wiki-ops/`**，不同步写进 `wiki/guides/` 运维副本。API 联调 **只维护 `docs/api/`**。日本语试题 **只维护 `wiki-jp-exam/`**，raw 源在 **`raw/school/`**（见 [`raw/school/README.md`](../raw/school/README.md)）。
+
+### 1.2 微服务文档归属（统一入口 + 按服务写源）
+
+> 完整说明见 [`docs/README.md`](../../docs/README.md)「微服务：统一放还是各项目各自放？」。
+
+**原则**：入口统一（`docs/` + `kb/wiki*`），正文按归属；**禁止**每个微服务各写一套《本地启动全家桶》（统一看 `wiki-ops/guides/本地启动指南`）。
+
+| 文档 | 第一稿 / 源 | Agent Ingest 目标 | 说明 |
+|------|-------------|-------------------|------|
+| PRD、产品路线图 | `raw/prd/` | `wiki/guides/` | 跨服务，偏平台 |
+| 跨服务架构（网关、鉴权、拓扑） | `raw/design/`、`docs/zh-CN/` | `wiki/concepts/`、`articles/` | 全局一份 |
+| **单服务设计** | **`moli-xxx/README.md`** | **`wiki/services/{服务名}.md`** | 随服务 PR 改 README；ingest 时 **enrich** 已有 services 页，sources 指向模块 README |
+| HTTP 联调契约 | — | `wiki/services/` 仅摘要 | **勿** ingest 全文覆盖；链到 `docs/api/` |
+| 运维 SOP | `raw/ops/` | **`wiki-ops/guides/`** | 不进 `enterprise-kb` 的 `wiki/guides/` |
+| 压测 | `load-test/README.md` | enrich `wiki/guides/秒杀压测指南` 等 | 脚本留原仓 |
+
+**Ingest 微服务 README 时**（P0 专项扩展）：
+
+1. 读 `moli-{gateway,user-center,order,bi,knowledge}/README.md`（或用户指定路径）。
+2. 查 `wiki/index.md`：已有 `services/{名}` → **enrich**；无 → **create**。
+3. frontmatter `sources` 必须含该模块 README 路径；跨服务概念链到 `concepts/`，操作链到 `wiki-ops/` 而非在 services 页重复运维步骤。
+4. 版本再 ingest 同服务文档 → §4.1 策略 A（同 slug enrich）。
+
+**决策树（Agent 写/改文档前）**：
+
+```
+讲整个产品或多服务协作？     → wiki/guides、concepts + docs/design
+只讲单个服务实现？           → 先认 moli-xxx/README，再 wiki/services/
+HTTP 契约给前端/测试？       → 只链 docs/api/，不复制全文进 wiki
+部署、排障、权限？           → wiki-ops/（或链过去，不在 services 页展开）
+```
+
+**多 Git 仓库**（若服务独立成仓）：各仓保留 README；平台仓 Ingest 汇总到 `wiki/services/`，产品/运维/API 契约仍在平台 `docs/` + `wiki*`。
 
 ---
 
@@ -105,7 +176,7 @@ updated: 2026-06-22
 
 流程：
 1. **读源**，提炼要点；判断属于哪个/哪些实体类型。
-2. **查重**：读 `wiki/index.md`，看是否已有同主题页。
+2. **查重**：读 `wiki/index.md`，看是否已有同主题页（**同主题再 ingest 见 §4.1**）。
    - 已有 → **编辑补充**（不要新建重复页）。
    - 没有 → **新建页**（按 §2 格式）。
 3. 一个源通常会触及 **5–15 个页**：新建主页 + 更新相关概念/服务页 + 补交叉引用。
@@ -114,7 +185,65 @@ updated: 2026-06-22
 6. 向 `wiki/log.md` 追加一行（见 §6 语法）。
 7. 向用户汇报：新建/更新了哪些页、建立了哪些关系、发现的矛盾或缺口。
 
-**P0 专项**：ingest 微服务文档时，优先产出 `guides/`（怎么操作）+ `services/`（服务实体），并在 guide 里用 `[[服务页]]` 串起来。
+**P0 专项**：ingest 微服务文档时，优先产出 `guides/`（怎么操作）+ `services/`（服务实体），并在 guide 里用 `[[服务页]]` 串起来。模块 README → `services/` 的 enrich 规则见 **§1.2**。
+
+### 4.1 版本再 Ingest（产品/技术文档 v2+ 进库）
+
+同一主题的外部文档多次进库（如产品 PRD v1.0 → v5.0）时，**不是**在 wiki 再建一套带版本号的平行页，而是**规划式合并**进已有 slug。详见 [[增量ingest与raw投喂指南]]；Plan JSON 形态见 [[Ingest工作台产品方案]]（T15）。
+
+**权威写入位置**：进库后的日常维护改 `wiki/`（见 §4 与 §8），**不要**指望改 `docs/` 或旧 `raw/` 自动同步到 wiki。
+
+#### raw 侧（投喂）
+
+- 新版本以**新文件**放入 `raw/`（如 `raw/products/xxx-v5.md`），**不覆盖**已 ingest 过的 v1 raw。
+- `raw/` 只读、只追加；版本历史靠 **多条 `sources` + `log.md`** 追溯，不靠 wiki 文件名带 `-v5`。
+
+#### 规划（写 wiki 前必做）
+
+读新源后、改任何 wiki 文件前，Agent 必须先读 `wiki/index.md` 与疑似同主题页，产出**规划**（对话汇报或 Plan JSON），每源/每主题四类动作：
+
+| 动作 | 含义 | 默认优先级 |
+|------|------|------------|
+| **enrich** | 已有 slug：增补章节、改写过时段落 | **默认**（同一产品/同一主题） |
+| **create** | 确无同主题页，或 v5 全新子模块 | 仅规划确认后 |
+| **skip** | 与 wiki 已 ingest 内容重复，不再写 | 常配合 enrich |
+| **conflicts** | 新旧结论矛盾 | **只报告，等人确认后再改** |
+
+**禁止**：未做规划直接批量新建 `xxx-v2`、`xxx-v5` 等同主题 slug（除非用户 **§4.1 策略 C** 明确要求并列保留）。
+
+#### 三种合并策略（默认 A）
+
+| 策略 | 何时 | Agent 行为 |
+|------|------|------------|
+| **A. 原地演进（默认）** | 同一产品/文档连续迭代 | **enrich** 原 slug；`sources` 追加新 raw 路径；更新 `updated` |
+| **B. 归档旧版** | v5 整体推翻 v1 方向 | 旧页 `status: archived`；新建或 enrich 新页；`edges.jsonl` 加 `supersedes`（新 → 旧） |
+| **C. 版本并列** | 用户要求同时保留 v1 与 v5 供对比 | 新建带版本后缀 slug + 枢纽页 `[[]]` 互链；**须用户显式指定** |
+
+用户未说明时，**一律按策略 A**；若检测到可能需 B/C，在 **conflicts** 中说明并**停笔等人选**。
+
+#### 冲突与人审
+
+- **conflicts** 不得静默吞掉：须在汇报中列出（页 slug、矛盾摘要、建议 A/B/C）。
+- **未经用户确认**，不得删除大段旧正文、不得 `archived` 旧页、不得写入与现有页矛盾的结论。
+- 小改（错别字、补一段）可不经再 ingest，**直接改 wiki** → lint → sync（§8.1）。
+
+#### 交付物（与 §4 一致）
+
+- enrich/create 的页：更新 frontmatter `sources`（保留 v1 与 v5 路径）、`updated`。
+- `wiki/index.md`：更新说明，**不**为同主题重复加 slug。
+- `wiki/log.md`：append 一行，含批次号与动作摘要，例：`ingest | 批次#1300 产品v5 → enrich Ingest工作台产品方案 (+1 create, 2 skip)`。
+- `wiki/graph/edges.jsonl`：按需 `relates_to` / `supersedes` / `derived_from`。
+- 完成后 **lint.py --strict** → sync（§8.1）。
+
+#### 用户指令模板（可复制）
+
+```
+请对 kb/raw/{路径} 做 ingest 批次#{N}：
+- 主题：{如 Ingest 工作台产品}
+- 与已有 wiki 合并，默认策略 A（enrich 优先）
+- 先输出规划（create/enrich/skip/conflicts），conflicts 等我确认再写盘
+- 只改 wiki/**，更新 index/log/edges
+```
 
 ---
 

@@ -46,9 +46,8 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 | 类型 | 路径 |
 |------|------|
 | API | [docs/api/bi-api.md](../docs/api/bi-api.md) |
-| 网关 | [docs/api/gateway-routes.md](../docs/api/gateway-routes.md) |
-| 架构 | [docs/design/gateway-design.md](../docs/design/gateway-design.md) |
-| 冒烟 | [docs/test/release-smoke-checklist.md](../docs/test/release-smoke-checklist.md) G4 |
+| 设计 | [docs/design/bi-module-overview.md](../docs/design/bi-module-overview.md) |
+| 冒烟 | [docs/test/bi-smoke.md](../docs/test/bi-smoke.md) · [release-smoke-checklist.md](../docs/test/release-smoke-checklist.md) G4 |
 
 ## 后续（v2+）
 

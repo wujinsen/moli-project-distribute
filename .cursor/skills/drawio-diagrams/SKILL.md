@@ -2,18 +2,20 @@
 name: drawio-diagrams
 description: >-
   Create and maintain draw.io (.drawio) architecture, ER, and flow diagrams
-  for the Moli project. Outputs to docs/diagrams/ with moli-*.drawio naming,
-  correct mxGraph XML formatting (no broken swimlane HTML), and project color
-  conventions. Use when the user asks for draw.io/diagrams.net diagrams,
-  architecture diagrams, ER diagrams, flowcharts, C4 containers, or says
-  「用 draw.io 画」「画架构图」「画 ER 图」「画流程图」.
+  for the Moli monorepo (all modules). Mandatory per root AGENTS.md §3 when
+  docs need architecture/ER/flow visuals — read this skill first. Outputs to
+  docs/diagrams/ with moli-*.drawio naming. Use when editing docs/**/*.md,
+  kb/wiki*, moli-*/README, or user says draw.io / 架构图 / ER / 流程图.
 ---
 
 # Moli · draw.io 绘图 Skill
 
+> **全仓库强制策略**：[`AGENTS.md`](../../AGENTS.md) §3 · Cursor 规则 [`.cursor/rules/drawio-in-docs.mdc`](../../.cursor/rules/drawio-in-docs.mdc)  
+> ASCII / Mermaid **不得**作为架构/ER/流程的**主图**；须本 skill 产出 `.drawio` + PNG 嵌入 MD。
+
 ## 何时使用
 
-用户要求用 **draw.io / diagrams.net** 可视化，或要画 **架构图 / ER 图 / 流程图 / 数据流图** 时，读本 skill 并直接写入 `.drawio` 源文件（Agent 写 XML，用户自行预览）。
+用户要求用 **draw.io / diagrams.net** 可视化，或编辑文档时需补充 **架构图 / ER 图 / 流程图 / 部署拓扑 / 调用链** 时，**必须先读本 skill** 再写 XML（含 `@drawio-diagrams`、`画架构图`、或 Agent 发现 MD 里仅有 ASCII 箭头主图待替换）。
 
 ## 输出位置与命名
 

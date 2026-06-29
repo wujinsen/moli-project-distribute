@@ -80,7 +80,7 @@ public class KbRawCoverageServiceImplAssertTest {
                 + "status: active\n"
                 + "tags: [test]\n"
                 + "sources:\n"
-                + "  - kb/raw/fe/\n"
+                + "  - kb/raw/school/fe/\n"
                 + "related: []\n"
                 + "created: 2026-06-27\n"
                 + "updated: 2026-06-27\n"
@@ -103,18 +103,18 @@ public class KbRawCoverageServiceImplAssertTest {
                     SPACE_ID,
                     JOB_ID,
                     new HashSet<>(Collections.singletonList("fe/new-page")),
-                    Collections.singletonList("fe/fe_kamoku_b_set_sample_qs2.md"));
+                    Collections.singletonList("school/fe/fe_kamoku_b_set_sample_qs2.md"));
 
             Assert.fail("expected IngestRawConflictException");
         } catch (IngestRawConflictException e) {
-            Assert.assertTrue(e.getErrorMsg().contains("raw/fe/fe_kamoku_b_set_sample_qs2.md"));
+            Assert.assertTrue(e.getErrorMsg().contains("raw/school/fe/fe_kamoku_b_set_sample_qs2.md"));
             IngestRawConflictVo detail = e.getDetail();
             Assert.assertNotNull(detail);
             Assert.assertEquals(IngestRawConflictVo.ERROR_KIND, detail.getErrorKind());
             Assert.assertEquals(SPACE_ID, detail.getSpaceId());
             Assert.assertEquals(JOB_ID, detail.getJobId());
             Assert.assertEquals(1, detail.getConflicts().size());
-            Assert.assertEquals("fe/fe_kamoku_b_set_sample_qs2.md", detail.getConflicts().get(0).getPath());
+            Assert.assertEquals("school/fe/fe_kamoku_b_set_sample_qs2.md", detail.getConflicts().get(0).getPath());
             Assert.assertEquals("cluster", detail.getConflicts().get(0).getCoverage());
             Assert.assertEquals("dir_prefix", detail.getConflicts().get(0).getMatchKind());
             Assert.assertTrue(detail.getConflicts().get(0).getWikiSlugs()

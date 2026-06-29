@@ -6,6 +6,7 @@
 
 | 文档 | 范围 |
 |------|------|
+| **[api-iteration-map.md](api-iteration-map.md)** | 跨服务 API 成熟度 / v1→v2 索引 |
 | **[gateway-routes.md](gateway-routes.md)** | 网关四路由、StripPrefix、Swagger 经网关 |
 | [frontend-routes-map.md](frontend-routes-map.md) | meiling-ui 菜单 ↔ 后端 API |
 | [gateway-design.md](../design/gateway-design.md) | 网关概要设计 |

@@ -1,7 +1,7 @@
 # Export draw.io diagrams to PNG
 param(
     [string]$DrawIo = "C:\Program Files\draw.io\draw.io.exe",
-    [string]$Root = (Split-Path -Parent $PSScriptRoot)
+    [string]$Root = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 )
 
 $ErrorActionPreference = "Stop"

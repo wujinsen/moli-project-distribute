@@ -4,7 +4,7 @@ slug: basic-information-technician-examination-subject-b-sample-questions
 type: article
 status: active
 tags: [基本情報技術者試験, 科目B, サンプル問題]
-sources: [raw/fe/fe_kamoku_b_set_sample_qs.md]
+sources: [raw/school/fe/fe_kamoku_b_set_sample_qs.md]
 created: 2026-06-28
 updated: 2026-06-28
 related: []

@@ -6,6 +6,7 @@
 |------|------|
 | **[release-smoke-checklist.md](release-smoke-checklist.md)** | **上线冒烟（P0 必跑）** |
 | [gateway-smoke.md](gateway-smoke.md) | 网关路由专项冒烟 |
+| [bi-smoke.md](bi-smoke.md) | BI 骨架冒烟（v1 占位） |
 | [order-seckill.md](order-seckill.md) | 秒杀手测 |
 | [user-center.md](user-center.md) | 用户中心 ApiTest |
 

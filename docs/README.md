@@ -69,7 +69,8 @@ scripts/                 ← DB 初始化（见 docs/ops/）
 | **操作知识入库 + Wiki 治理** | **[ops/knowledge-workbench-operations.md](ops/knowledge-workbench-operations.md)** |
 | 看产品 PRD | [product/knowledge-workbench-requirements.md](product/knowledge-workbench-requirements.md) → `kb/wiki/guides/` |
 | 看架构/方案 | [design/README.md](design/README.md) → `docs/zh-CN/ARCHITECTURE.md` |
-| 对接 HTTP 接口 | [api/README.md](api/README.md) |
+| 对接 HTTP 接口 | [api/README.md](api/README.md) · [api-iteration-map.md](api/api-iteration-map.md) |
+| 文档健康度巡检 | [DOCUMENTATION_AUDIT.md](DOCUMENTATION_AUDIT.md) |
 | 压测 / 测试 | [test/README.md](test/README.md) |
 | 部署 / 排障 | [ops/README.md](ops/README.md) → `kb/wiki-ops/` |
 | 画架构图 | [diagrams/README.md](diagrams/README.md) · `@drawio-diagrams` · [AGENTS.md §3](../AGENTS.md) |

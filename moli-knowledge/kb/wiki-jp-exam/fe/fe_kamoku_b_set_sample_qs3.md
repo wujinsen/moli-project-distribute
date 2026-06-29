@@ -5,7 +5,7 @@ type: article
 status: active
 tags: []
 sources:
-  - raw/fe/fe_kamoku_b_set_sample_qs3.md
+  - raw/school/fe/fe_kamoku_b_set_sample_qs3.md
 related:
   []
 created: 2026-06-29

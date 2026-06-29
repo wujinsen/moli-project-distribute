@@ -107,6 +107,16 @@ public class IngestPlanPathResolverTest {
     }
 
     @Test
+    public void inferCategoryFromRawSource_matchesSchoolFePath() {
+        Map<String, KbCategory> map = IngestPlanPathResolver.indexCategoriesByDirSlug(
+                java.util.Collections.singletonList(feCategory()));
+        KbCategory found = IngestPlanPathResolver.inferCategoryFromRawSource(
+                "raw/school/fe/fe_kamoku_b_set_sample_qs.md", map);
+        Assert.assertNotNull(found);
+        Assert.assertEquals("fe", found.getDirSlug());
+    }
+
+    @Test
     public void inferCategoryFromRawSource_noMatchForRootFile() {
         Map<String, KbCategory> map = IngestPlanPathResolver.indexCategoriesByDirSlug(
                 java.util.Collections.singletonList(feCategory()));

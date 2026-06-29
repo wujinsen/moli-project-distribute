@@ -15,13 +15,17 @@
 | 文档 | 路径 | 状态 |
 |------|------|------|
 | **v1.0 发布范围** | [`moli-v1-release-scope.md`](moli-v1-release-scope.md) | 2026-06-28 |
+| **网关需求（工程索引）** | [`gateway-requirements.md`](gateway-requirements.md) | v1 ✅ |
 | **用户中心需求（工程索引）** | [`user-center-requirements.md`](user-center-requirements.md) | v1 ✅ |
 | **秒杀压测需求** | [`order-seckill-requirements.md`](order-seckill-requirements.md) | v1 ✅ |
 | **知识库模块需求（工程索引）** | [`knowledge-module-requirements.md`](knowledge-module-requirements.md) | v1 ✅ |
 | **知识库工作台需求总览** | [`knowledge-workbench-requirements.md`](knowledge-workbench-requirements.md) | 2026-06-27 |
+| **网关 PRD 原文** | [`kb/raw/prd/gateway-prd-v1.md`](../../moli-knowledge/kb/raw/prd/gateway-prd-v1.md) | raw |
+| **订单秒杀 PRD 原文** | [`kb/raw/prd/order-seckill-prd-v1.md`](../../moli-knowledge/kb/raw/prd/order-seckill-prd-v1.md) | raw |
 | **用户中心 PRD 原文** | [`kb/raw/prd/user-center-prd-v1.md`](../../moli-knowledge/kb/raw/prd/user-center-prd-v1.md) | raw |
 | **Ingest 工作台产品方案** | [`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md) | wiki |
 | **Wiki 治理产品方案** | [`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md) | wiki |
+| **各服务产品摘要（wiki）** | 网关 / 用户中心 / 订单秒杀 / BI / 知识库 → `kb/wiki/guides/*产品说明.md` | wiki |
 | 路线图 | `kb/ROADMAP.md` | 模块级 |
 
 ## 工作流

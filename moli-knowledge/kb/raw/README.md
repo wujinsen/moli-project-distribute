@@ -5,12 +5,21 @@
 
 ## 放什么
 
-| 子目录建议 | 内容 |
-|------------|------|
-| `raw/docs/` | 项目文档副本（README、ARCHITECTURE 等） |
-| `raw/articles/` | 技术文章、笔记导出（`.note.md`） |
-| `raw/interview/` | 面试题原始材料 |
-| 任意层级 | 现有 `wujinsen_markdown/` 等历史语料 |
+| 子目录 | 内容 | 成品见 |
+|--------|------|--------|
+| **`raw/prd/`** | 产品 PRD、产品方案 | `wiki/guides/` → [docs/product/](../../../docs/product/) |
+| **`raw/design/`** | 技术方案、架构评审稿 | `wiki/concepts/`、`articles/` → [docs/design/](../../../docs/design/) |
+| **`raw/api/`** | API 外部稿（可选） | `wiki/services/`；契约 → **[docs/api/](../../../docs/api/)** |
+| **`raw/test/`** | 测试/QA 外部稿 | `wiki/guides/`；压测 → [load-test/](../../../load-test/) |
+| **`raw/ops/`** | 运维 SOP | **`wiki-ops/`** → [docs/ops/](../../../docs/ops/) |
+| **`raw/school/fe/`** | 日本語 FE 试题/答案 | **`wiki-jp-exam/`**（`jp-fe-ap-exam`） |
+| **`raw/school/ap/`** | 日本語 AP 试题/答案 | **`wiki-jp-exam/`**（`jp-fe-ap-exam`） |
+| `raw/docs/` | 项目文档副本 | ingest 后分散到 wiki 各类型 |
+| `raw/articles/` | 技术文章、笔记导出 | `wiki/articles/` |
+| `raw/interview/` | 面试题原始材料 | `wiki/interview/` |
+| `wujinsen_markdown/` 等 | 历史语料 | 按主题簇 ingest |
+
+总导航：[**docs/README.md**](../../../docs/README.md)
 
 文件名建议 UTF-8；`.note.md` 为常见导出格式。
 
@@ -31,10 +40,11 @@
 4. **可选体检**：`python kb/tools/serve.py` → 体检页，或 [[查询与体检指南]]
 5. **同步 DB**（wiki 变更后）：
    ```bash
-   python kb/tools/sync_to_db.py --dry-run
-   python kb/tools/sync_to_db.py
+   python kb/tools/lint.py --strict
+   bash kb/tools/ci/run_sync.sh dry-run-all
+   bash kb/tools/ci/run_sync.sh sync-all
    ```
-   详见 [[wiki同步指南]]（wiki 内）或 `kb/wiki/guides/增量ingest与raw投喂指南.md`。
+   详见 [[系统操作手册入口]]（Sync 映射）与 ops 空间 `guides/wiki同步指南`；或 `kb/wiki/guides/增量ingest与raw投喂指南.md`。
 
 ## 不要做什么
 

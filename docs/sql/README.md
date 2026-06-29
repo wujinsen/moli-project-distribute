@@ -39,7 +39,10 @@
 | `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 04_knowledge_menu 之后追加） |
 | `07_kb_space_ops_manual.sql` | **茉莉系统操作手册**独立空间 `moli-ops-manual` + 成员示例 |
 | `07_kb_space_ops_manual_fix_charset.sql` | 修复 `moli-ops-manual` 因错误导入导致的中文乱码 |
+| `08_kb_ingest_workbench.sql` | Ingest 工作台表（job/plan/draft 等） |
+| `09_kb_ingest_t15e.sql` | Ingest T15e 增量字段 |
 | `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug`/`default_type` + 三空间目录种子（已有库必跑） |
+| `11_kb_wiki_govern_menu.sql` | Wiki 治理菜单 + `kb:wiki:govern` 动作 |
 | `11_kb_platform_llm_config.sql` | **T19** 平台 LLM 配置表 `kb_platform_llm_config` |
 | `12_kb_platform_llm_menu.sql` | **T19** 系统管理菜单「知识库 LLM」+ `kb:platform:llm` |
 

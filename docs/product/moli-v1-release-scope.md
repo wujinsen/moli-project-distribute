@@ -54,7 +54,7 @@
 
 | 能力 | v1 | 文档 |
 |------|-----|------|
-| 四服务路由 + 负载均衡 | ✅ | [gateway-routes.md](../api/gateway-routes.md) |
+| 四服务路由 + 负载均衡 | ✅ | [gateway-requirements.md](gateway-requirements.md) · [gateway-routes.md](../api/gateway-routes.md) |
 | Authorization 头透传 | ✅ | [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md) |
 | Sentinel / 限流 | 🟡 配置预留 | TECH_STACK |
 

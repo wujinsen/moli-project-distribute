@@ -38,12 +38,13 @@ moli-project-distribute/
 │   └── moli-user-center-server/  # 用户中心主服务（Shiro、Dubbo Provider）
 ├── moli-order/                   # 订单服务
 │   └── moli-order-server/
-├── moli-bi/                      # BI 服务
-│   └── moli-bi-server/
-└── docs/
-    ├── zh-CN/                    # 中文文档
-    ├── en/                       # English docs
-    └── ja/                       # 日本語ドキュメント
+├── moli-ai/                      # BI 服务（Nacos 名 bi-server）
+│   └── moli-ai-server/
+├── moli-knowledge/               # 企业知识库
+│   └── moli-knowledge-server/
+└── docs/                         # 文档总览 docs/README.md
+    ├── product/ design/ api/ test/ ops/ sql/
+    └── zh-CN/ en/ ja/
 ```
 
 ### 服务模块说明
@@ -51,9 +52,10 @@ moli-project-distribute/
 | 模块 | 服务名 | 默认端口 | 说明 |
 |------|--------|----------|------|
 | moli-gateway | `moli-gateway` | 21000 | 统一 API 网关 |
-| moli-user-center-server | `user-center-server` | 1127 | 用户、角色、菜单、字典等基础能力 |
-| moli-order-server | `order-server` | 8087 | 订单业务，通过 Dubbo 调用用户中心 |
-| moli-bi-server | `bi-server` | 1128 | BI 相关服务 |
+| moli-user-center-server | `user-center-server` | **8888** | 用户、角色、菜单、字典等基础能力 |
+| moli-order-server | `order-server` | 8087 | 订单业务（含秒杀），通过 Dubbo 调用用户中心 |
+| moli-ai-server | `bi-server` | 1128 | BI 骨架服务（v1 占位） |
+| moli-knowledge-server | `knowledge-server` | 见模块 README | 企业知识库 / Ingest / 问答 |
 
 ### 网关路由
 
@@ -61,6 +63,10 @@ moli-project-distribute/
 |----------|----------|
 | `/UserCenter/**` | `lb://user-center-server` |
 | `/OrderServer/**` | `lb://order-server` |
+| `/BiServer/**` | `lb://bi-server` |
+| `/KnowledgeServer/**` | `lb://knowledge-server` |
+
+> 详见 [docs/api/gateway-routes.md](docs/api/gateway-routes.md)。
 
 ---
 
@@ -163,14 +169,17 @@ mvn clean package -DskipTests
 
 1. `moli-user-center-server` — 用户中心
 2. `moli-order-server` — 订单服务
-3. `moli-bi-server` — BI 服务（可选）
-4. `moli-gateway` — API 网关
+3. `moli-ai-server` — BI 服务（可选，v1 骨架）
+4. `moli-knowledge-server` — 知识库（可选）
+5. `moli-gateway` — API 网关
 
 启动后可通过网关访问，例如：
 
 ```
 http://localhost:21000/UserCenter/...
 http://localhost:21000/OrderServer/...
+http://localhost:21000/BiServer/...
+http://localhost:21000/KnowledgeServer/...
 ```
 
 ---
@@ -229,10 +238,14 @@ http://localhost:21000/OrderServer/...
 - [架构 / 调用 / 鉴权设计](docs/zh-CN/ARCHITECTURE.md)
 - [技术栈详细文档](docs/zh-CN/TECH_STACK.md)
 - [RBAC 权限设计文档](docs/zh-CN/RBAC.md)
-- [API 接口文档](docs/api/README.md)
+- [API 接口文档](docs/api/README.md) · [API 迭代地图](docs/api-iteration-map.md)
+- [网关模块](moli-gateway/README.md)
 - [用户中心模块](moli-user-center/README.md)
 - [订单模块](moli-order/README.md)
+- [BI 模块（moli-ai）](moli-ai/README.md)
 - [知识库模块](moli-knowledge/README.md)
+- [公共模块](moli-distribute-common/README.md)
+- [运维索引](docs/ops/README.md) · [压测](load-test/README.md)
 
 ---
 

@@ -5,7 +5,7 @@ type: article
 status: active
 tags: []
 sources:
-  - raw/fe/fe_kamoku_b_set_sample_qs.md
+  - raw/school/fe/fe_kamoku_b_set_sample_qs.md
 related:
   - articles/basic-information-technician-examination-subject-b-sample-questions
   - articles/基本情報技術者試験 科目 B サンプル問題

@@ -33,12 +33,13 @@ BI / 报表微服务 **v1 骨架**：可启动、接 Shiro+Dubbo，尚无真实�
 
 | 类型 | 链接 |
 |------|------|
-| API | [docs/api/bi-api.md](docs/api/bi-api.md) |
-| 模块 README | [moli-ai/README.md](moli-ai/README.md) |
+| API | [docs/api/bi-api.md](../../../../docs/api/bi-api.md) |
+| 测试 | [docs/test/bi-smoke.md](../../../../docs/test/bi-smoke.md) |
+| 模块 README | [moli-ai/README.md](../../../../moli-ai/README.md) |
 
 ## 运维手册
 
-[[系统操作手册入口]] · [wiki-ops/services/bi服务](wiki-ops/services/bi服务.md)。
+[[系统操作手册入口]] · [wiki-ops/services/bi服务](../../wiki-ops/services/bi服务.md)。
 
 ## 概念关联
 

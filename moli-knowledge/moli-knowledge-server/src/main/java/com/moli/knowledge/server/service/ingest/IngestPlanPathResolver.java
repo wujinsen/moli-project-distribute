@@ -155,7 +155,34 @@ public final class IngestPlanPathResolver {
     }
 
     /**
-     * raw/fe/foo.md 或 raw/fe/foo → 匹配 {@code dir_slug=fe} 的分类。
+     * 从 {@code raw/} 之后的路径取用于匹配 {@code dir_slug} 的首段。
+     * <ul>
+     *   <li>{@code school/fe/foo.md} → {@code fe}</li>
+     *   <li>{@code school/ap/foo.md} → {@code ap}</li>
+     *   <li>{@code fe/foo.md} → {@code fe}（历史路径，仍兼容）</li>
+     * </ul>
+     */
+    static String dirSlugSegmentFromPathAfterRaw(String pathAfterRaw) {
+        if (StringUtils.isBlank(pathAfterRaw)) {
+            return null;
+        }
+        String p = pathAfterRaw.trim().replace('\\', '/');
+        if (p.startsWith("school/")) {
+            p = p.substring("school/".length());
+        }
+        int slash = p.indexOf('/');
+        if (slash <= 0) {
+            return null;
+        }
+        String seg = p.substring(0, slash);
+        if (seg.contains(".")) {
+            return null;
+        }
+        return seg;
+    }
+
+    /**
+     * {@code raw/school/fe/foo.md}、{@code raw/fe/foo.md} 等 → 匹配 {@code dir_slug=fe} 的分类。
      */
     public static KbCategory inferCategoryFromRawSource(String rawSource, Map<String, KbCategory> categoriesByDirSlug) {
         if (categoriesByDirSlug == null || categoriesByDirSlug.isEmpty() || StringUtils.isBlank(rawSource)) {
@@ -165,12 +192,8 @@ public final class IngestPlanPathResolver {
         if (path.startsWith("raw/")) {
             path = path.substring(4);
         }
-        int slash = path.indexOf('/');
-        if (slash <= 0) {
-            return null;
-        }
-        String seg = path.substring(0, slash);
-        if (seg.contains(".")) {
+        String seg = dirSlugSegmentFromPathAfterRaw(path);
+        if (seg == null) {
             return null;
         }
         return categoriesByDirSlug.get(seg);

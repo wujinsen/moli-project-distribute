@@ -38,12 +38,13 @@ moli-project-distribute/
 │   └── moli-user-center-server/  # Shiro、Dubbo Provider
 ├── moli-order/
 │   └── moli-order-server/
-├── moli-bi/
-│   └── moli-bi-server/
-└── docs/
-    ├── zh-CN/
-    ├── en/
-    └── ja/
+├── moli-ai/                      # BI（Nacos: bi-server）
+│   └── moli-ai-server/
+├── moli-knowledge/
+│   └── moli-knowledge-server/
+└── docs/                         # docs/README.md 参照
+    ├── product/ design/ api/ test/ ops/ sql/
+    └── zh-CN/ en/ ja/
 ```
 
 ### サービス一覧
@@ -51,9 +52,10 @@ moli-project-distribute/
 | モジュール | サービス名 | デフォルトポート | 説明 |
 |-----------|-----------|----------------|------|
 | moli-gateway | `moli-gateway` | 21000 | 統一 API ゲートウェイ |
-| moli-user-center-server | `user-center-server` | 1127 | ユーザー・ロール・メニュー・辞書 |
-| moli-order-server | `order-server` | 8087 | 注文；Dubbo でユーザーセンター呼び出し |
-| moli-bi-server | `bi-server` | 1128 | BI サービス |
+| moli-user-center-server | `user-center-server` | **8888** | ユーザー・ロール・メニュー・辞書 |
+| moli-order-server | `order-server` | 8087 | 注文（秒殺含む）；Dubbo でユーザーセンター |
+| moli-ai-server | `bi-server` | 1128 | BI スケルトン（v1 プレースホルダ） |
+| moli-knowledge-server | `knowledge-server` | モジュール README 参照 | ナレッジベース / Ingest |
 
 ### ゲートウェイルート
 
@@ -61,6 +63,10 @@ moli-project-distribute/
 |---------------------|--------|
 | `/UserCenter/**` | `lb://user-center-server` |
 | `/OrderServer/**` | `lb://order-server` |
+| `/BiServer/**` | `lb://bi-server` |
+| `/KnowledgeServer/**` | `lb://knowledge-server` |
+
+> [docs/api/gateway-routes.md](docs/api/gateway-routes.md) 参照。
 
 ---
 
@@ -145,14 +151,17 @@ cd ../moli-user-center && mvn clean package -DskipTests
 
 1. `moli-user-center-server`
 2. `moli-order-server`
-3. `moli-bi-server`（任意）
-4. `moli-gateway`
+3. `moli-ai-server`（任意・v1 スケルトン）
+4. `moli-knowledge-server`（任意）
+5. `moli-gateway`
 
 ゲートウェイ経由でアクセス：
 
 ```
 http://localhost:21000/UserCenter/...
 http://localhost:21000/OrderServer/...
+http://localhost:21000/BiServer/...
+http://localhost:21000/KnowledgeServer/...
 ```
 
 ---

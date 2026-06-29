@@ -19,6 +19,7 @@
 | **订单 · 秒杀** | [`order-seckill-design.md`](order-seckill-design.md) |
 | **知识库 LLM 平台设置（T19）** | [`kb-llm-platform-settings.md`](kb-llm-platform-settings.md) · 前端 [`../api/kb-llm-platform-frontend.md`](../api/kb-llm-platform-frontend.md) |
 | **知识库模块总览** | [`knowledge-module-overview.md`](knowledge-module-overview.md) |
+| **BI 模块（v1 骨架）** | [`bi-module-overview.md`](bi-module-overview.md) · [bi-api.md](../api/bi-api.md) |
 | **API 网关** | [`gateway-design.md`](gateway-design.md) · 路由 [`../api/gateway-routes.md`](../api/gateway-routes.md) |
 | 方案长文、踩坑、最佳实践 | `articles/` |
 | 微服务边界一页纸 | `services/` |

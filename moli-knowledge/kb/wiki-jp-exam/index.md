@@ -4,8 +4,10 @@
 
 | 领域 | raw 源 | 说明 |
 |------|--------|------|
-| 基本情報 FE | `kb/raw/fe/` | 基本情報技術者 |
-| 応用情報 AP | `kb/raw/ap/` | 応用情報技術者 |
+| 基本情報 FE | **`kb/raw/school/fe/`** | 基本情報技術者（真题/样题/答案） |
+| 応用情報 AP | **`kb/raw/school/ap/`** | 応用情報技術者（暂无文件时可先建空目录） |
+
+约定详见 [`raw/school/README.md`](../raw/school/README.md)。
 
 同步：与 `enterprise-kb` / `moli-ops-manual` 一并执行 `run_sync.sh sync-all`；映射表见 ops 空间 `guides/wiki同步指南` §1。
 

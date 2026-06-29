@@ -10,8 +10,8 @@
 
 | 优先级 | 页面 | 路由 | 后端 | 前端 | 对接文档 |
 |--------|------|------|------|------|----------|
-| **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19 | ⚠️ **部分**（Express/模板 ✅；nextSteps / raw 提示待完善） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) |
-| **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | ⚠️ **部分**（Lint + AI；缺 script/auto/merge-hint） | [wiki-govern-frontend.md](wiki-govern-frontend.md) |
+| **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19 | 🔵 **Spec 已定**（见 §10.1；UI 待 meiling-ui 落地） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) |
+| **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | 🔵 **Spec 已定**（见 §10.2；当前 MVP 仅 Lint+AI） | [wiki-govern-frontend.md](wiki-govern-frontend.md) |
 | P1 | Wiki 编辑 | `knowledge/wiki/edit` | ✅ T14 | ✅ 已有 | KNOWLEDGE_API §8 |
 | P1 | 健康体检 | `knowledge/lint/index` | ✅ | ✅ 已有 | KNOWLEDGE_API §4 |
 
@@ -114,9 +114,9 @@ export interface KbWorkflowHintVo {
 
 | 模块 | 后端 | 前端 UI | 缺口摘要 |
 |------|------|---------|----------|
-| **Ingest** | ✅ T15+T18+T19 | ⚠️ 部分 | 模板/Express 已用；`nextSteps` CTA、raw 簇引用文案可加强 |
-| **Wiki 治理** | ✅ T16a/e/g | ⚠️ MVP 两步 | 仅 Lint + AI；缺 script-fix / auto-fix / merge-hint / Sync·复检 |
-| **共享** | ✅ `nextSteps` 字段 | 🔵 | 建议 `KbWorkflowNextSteps.vue` 复用 |
+| **Ingest** | ✅ T15+T18+T19 | 🔵 Spec ✅ | §10.1：`KbWorkflowNextSteps` + raw 冲突面板 |
+| **Wiki 治理** | ✅ T16a/e/g | 🔵 MVP 两步 | §10.2：script/auto/merge-hint 四步闭环 |
+| **共享** | ✅ `nextSteps` 字段 | 🔵 | `KbWorkflowNextSteps.vue` 复用（§10.1） |
 
 **现 UI「只有 2 步」指 Wiki 治理**（① Lint ② AI 批量修复），不是 Ingest 六步缺失。详见 [ops §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距)。
 
@@ -136,8 +136,8 @@ export interface KbWorkflowHintVo {
 | **B6** | 合并提示 | `POST /kb/wiki/govern/merge-hint` | ✅ | ❌ | `dup_slug` / `dup_content` / `near_dup` |
 | **B7** | Sync | `POST /kb/sync/trigger` | ✅ | ⚠️ 它页 | 治理页建议 `syncAfter` 或链健康体检 |
 | **B8** | Ingest 模板模式 | `useLlmGenerate=false` on express/generate/prepare/regenerate | ✅ | ⚠️ 已接 | 响应 `templateMode=true` |
-| **B9** | 入库后引导 | `commit.nextSteps` / `publish.nextSteps` / `SyncTriggerVo.nextSteps` | ✅ | 🔵 | keys: `wiki_govern_lint`, `kb_health_scan` |
-| **B10** | raw 覆盖门禁 | commit/publish 业务错误 | ✅ | ⚠️ 部分 | 需展示 message + 引导 enrich |
+| **B9** | 入库后引导 | `commit.nextSteps` / `publish.nextSteps` / `SyncTriggerVo.nextSteps` | ✅ | 🔵 Spec §10.1 | keys: `wiki_govern_lint`, `kb_health_scan` |
+| **B10** | raw 覆盖门禁 | commit/publish 业务错误 | ✅ | 🔵 Spec §10.1 | `code=10012` + `IngestRawConflictVo` |
 
 **后端实现入口**：`KbWikiController`（govern/*）、`KbIngestController`（§9）、`KbRawCoverageServiceImpl.assertRawOpenForCommit`、`KbWorkflowHints`。
 
@@ -240,10 +240,73 @@ export interface KbWorkflowHintVo {
 
 ---
 
-## 9. 变更记录
+## 10. 前端实现规格（meiling-ui · 2026-06-20 定案）
+
+> 本节补全原「待完善」项：**契约与 UI 行为已写死**，前端按表实现即可勾选 B9/B10/W3–W6。
+
+### 10.1 Ingest · nextSteps + raw 冲突（B9 / B10）
+
+#### 组件 `KbWorkflowNextSteps.vue`
+
+| 项 | 规格 |
+|----|------|
+| 挂载点 | Ingest 详情页 commit/publish 成功弹窗/底栏；Sync 成功 Toast 旁 |
+| 输入 | `nextSteps: KbWorkflowHintVo[]`（可能为空） |
+| 渲染 | 每个 hint：`el-button` 或 link，`label` 作标题，`description` 作副文案 |
+| 点击 | `router.push({ path: hint.routePath, query: hint.routeQuery })` — **勿写死 spaceId** |
+| 已知 key | `wiki_govern_lint` → 治理页；`kb_health_scan` → 健康体检 |
+
+#### raw 冲突面板（`code=10012`）
+
+| 项 | 规格 |
+|----|------|
+| 触发 | `POST .../publish` 或 commit 返回 `code=10012` |
+| Toast | 首行用 `msg`（整句可读） |
+| 详情抽屉 | 表格列：`path`、`coverage`（open/covered/cluster）、`matchKind`、`wikiSlugs[]` |
+| cluster 文案 | `coverage=cluster` 时副标题：「目录级 sources 已引用该 raw 簇，请 enrich 已有页或收窄 sources」 |
+| CTA | 每行 wikiSlug → 链 Ingest enrich 或 Wiki 编辑（带 `spaceId` query） |
+| 预检（可选 P1） | 勾选 raw 时调 `GET /kb/ingest/raw-coverage`，`cluster`/`covered` 行黄色标记 |
+
+#### Express 两步（B1）
+
+| 步骤 | API | UI |
+|------|-----|-----|
+| 1 预览 | `POST .../jobs/express` | 展示 Plan + 草稿 diff，**禁止**静默 publish |
+| 2 确认 | `POST .../jobs/{id}/publish?sync=&approveAll=` | 成功后再渲染 nextSteps |
+
+### 10.2 Wiki 治理 · 四步闭环（W3–W6）
+
+当前 MVP 仅 **① Lint ② AI**；完整 v1 目标 UI：
+
+```
+① lint-space → ② script-fix（metadata）→ ③ ai-batch-fix（断链/孤儿）
+     → ④ merge-hint（dup_slug）→ ⑤ auto-fix（一键）→ ⑥ Sync → ⑦ 复检 lint-space
+```
+
+| 步骤 | API | UI 要点 |
+|------|-----|---------|
+| W3 script-fix | `POST /kb/wiki/govern/script-fix` | 勾选 kinds：`missing_dates` / `slug_mismatch` / `missing_source`；展示 `fixed/skipped` |
+| W4 merge-hint | `POST /kb/wiki/govern/merge-hint` | `dup_slug` 仅复制 Cursor 指令 + 跳转单页编辑（无自动合并） |
+| W5 auto-fix | `POST /kb/wiki/govern/auto-fix` | 默认 `relintAfter=true`；展示 `issuesBefore` → `issuesAfter` |
+| W6 Sync | `POST /kb/sync/trigger` 或 auto-fix 的 `syncAfter` | 成功后 nextSteps 同 §10.1 |
+
+**options 下拉**：`GET /kb/wiki/govern/options` 的 `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds` 用于禁用不可点的 kind。
+
+### 10.3 完成定义（前端 DoD）
+
+| 页面 | DoD |
+|------|-----|
+| Ingest | Express 两步 + templateMode/llmFallback Toast + nextSteps + 10012 冲突抽屉 |
+| Wiki 治理 | lint-space + script + AI + merge-hint 入口 + auto-fix + Sync + 复检 |
+| 共享 | `KbWorkflowNextSteps.vue` 被 Ingest / Sync / 治理复用 |
+
+---
+
+## 11. 变更记录
 
 | 日期 | 说明 |
 |------|------|
+| 2026-06-20 | §10 前端实现规格（nextSteps / raw 冲突 / 治理四步闭环 DoD） |
 | 2026-06-28 | §8.1 B3 LLM 自动模板降级 + Expert 前端待办 |
 | 2026-06-28 | §8.1 B4 结构化冲突 `data`（`IngestRawConflictVo`） |
 | 2026-06-28 | §8.1 联调 FAQ（B1–B4 / W1·W5 后端定案） |

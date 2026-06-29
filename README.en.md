@@ -38,12 +38,13 @@ moli-project-distribute/
 │   └── moli-user-center-server/  # Shiro, Dubbo Provider
 ├── moli-order/
 │   └── moli-order-server/
-├── moli-bi/
-│   └── moli-bi-server/
-└── docs/
-    ├── zh-CN/
-    ├── en/
-    └── ja/
+├── moli-ai/                      # BI (Nacos: bi-server)
+│   └── moli-ai-server/
+├── moli-knowledge/
+│   └── moli-knowledge-server/
+└── docs/                         # See docs/README.md
+    ├── product/ design/ api/ test/ ops/ sql/
+    └── zh-CN/ en/ ja/
 ```
 
 ### Services
@@ -51,9 +52,10 @@ moli-project-distribute/
 | Module | Service Name | Default Port | Description |
 |--------|--------------|--------------|-------------|
 | moli-gateway | `moli-gateway` | 21000 | Unified API Gateway |
-| moli-user-center-server | `user-center-server` | 1127 | Users, roles, menus, dictionaries |
-| moli-order-server | `order-server` | 8087 | Orders; calls user center via Dubbo |
-| moli-bi-server | `bi-server` | 1128 | BI service |
+| moli-user-center-server | `user-center-server` | **8888** | Users, roles, menus, dictionaries |
+| moli-order-server | `order-server` | 8087 | Orders (incl. seckill); Dubbo to user center |
+| moli-ai-server | `bi-server` | 1128 | BI skeleton (v1 placeholder) |
+| moli-knowledge-server | `knowledge-server` | see module README | Knowledge base / Ingest / Ask |
 
 ### Gateway Routes
 
@@ -61,6 +63,10 @@ moli-project-distribute/
 |--------------|----------------|
 | `/UserCenter/**` | `lb://user-center-server` |
 | `/OrderServer/**` | `lb://order-server` |
+| `/BiServer/**` | `lb://bi-server` |
+| `/KnowledgeServer/**` | `lb://knowledge-server` |
+
+> See [docs/api/gateway-routes.md](docs/api/gateway-routes.md).
 
 ---
 
@@ -145,14 +151,17 @@ cd ../moli-user-center && mvn clean package -DskipTests
 
 1. `moli-user-center-server`
 2. `moli-order-server`
-3. `moli-bi-server` (optional)
-4. `moli-gateway`
+3. `moli-ai-server` (optional, v1 skeleton)
+4. `moli-knowledge-server` (optional)
+5. `moli-gateway`
 
 Access via gateway:
 
 ```
 http://localhost:21000/UserCenter/...
 http://localhost:21000/OrderServer/...
+http://localhost:21000/BiServer/...
+http://localhost:21000/KnowledgeServer/...
 ```
 
 ---
@@ -204,6 +213,7 @@ User (SysUser) ──N:N──▶ Role (SysRole) ──N:N──▶ Menu (SysMen
 
 ## Documentation
 
+- [Docs hub](docs/README.md) · [Documentation audit](docs/DOCUMENTATION_AUDIT.md)
 - [Architecture / Invocation / Auth (EN)](docs/en/ARCHITECTURE.md)
 - [Tech Stack (EN)](docs/en/TECH_STACK.md)
 - [RBAC Design (EN)](docs/en/RBAC.md)

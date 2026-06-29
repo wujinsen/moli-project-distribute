@@ -36,6 +36,7 @@
 - [[Wiki在线编辑与AI协助改稿]] — Web 单篇编辑 wiki、AI 改稿、diff、保存（draft · T14/M5）
 - [[Ingest工作台产品方案]] — Web 批次厚 Ingest：raw→Plan→草稿→diff→lint→commit+Sync；含 Express、**模板模式**（**active · T15+T18+T19**）
 - [[Wiki治理工作台产品方案]] — Web 空间级治理：Lint→script-fix/ai-batch-fix/auto-fix→merge-hint→复检→Sync（**active · T16/M7**；后端 ✅，前端 T16f 🔵）
+- **各服务产品摘要（`tags: product`）**：[[网关产品说明]] · [[用户中心产品说明]] · [[订单秒杀产品说明]] · [[BI服务产品说明]] · [[知识库模块产品说明]]
 
 ## services（微服务实体）
 
