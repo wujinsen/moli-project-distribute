@@ -1370,25 +1370,11 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 #### Ingest 模板模式（P1）
 
-`useLlmGenerate=false`：`generate` / `prepare` / `express` / `draft/regenerate`。详见 [knowledge-ingest-template-mode.md](../test/knowledge-ingest-template-mode.md)。
+`useLlmGenerate=false`：`generate` / `prepare` / `express` / `draft/regenerate`。详见 [knowledge-ingest-acceptance.md](../test/knowledge-ingest-acceptance.md) §1。
 
 脚本 vs LLM 总矩阵：[knowledge-script-vs-llm-matrix.md](../test/knowledge-script-vs-llm-matrix.md)
 
-### 8.6b Wiki 治理工作台链路（历史 · 已废弃）
-
-> **已 superseded**（2026-06-27）：治理页**不再**批量 `POST /kb/wiki/enrich`。  
-> 现行链路见 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** + §8.6：`script-fix` → `ai-batch-fix` → `auto-fix` → `merge-hint`（dup）。  
-> 产品方案：[`Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)。  
-> 单页 enrich 仍保留在 §8.4（T14），**不**用于空间级治理。
-
-<details>
-<summary>旧版 enrich 编排（仅供考古）</summary>
-
-```
-选空间 → lint-space → 批量 enrich / ai-revise → 再 lint-space → sync
-```
-
-</details>
+> **Wiki 治理现行链路**（2026-06-27）：见 **[wiki-govern-frontend.md](wiki-govern-frontend.md)** + §8.6（`script-fix` → `ai-batch-fix` → `auto-fix` → `merge-hint`）。空间级治理**不要**批量 `POST /kb/wiki/enrich`；单页 enrich 见 §8.4。
 
 ### 8.7 权限
 
@@ -1683,7 +1669,7 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 | `categoryId` | **推荐** | 目标空间 `kb_category.id`；落盘一级目录 = 该分类 `dir_slug` |
 | `slug` | 是 | **裸文件名**（无 `.md`、无 `/`）；有 `categoryId` 时禁止含 `/` |
 | `title` | 否 | 页标题；PageWriter 写 frontmatter |
-| `sources` | 是 | raw 路径数组，如 `["raw/fe/fe_kamoku_b_set_sample_qs.md"]` |
+| `sources` | 是 | raw 路径数组，如 `["raw/school/fe/fe_kamoku_b_set_sample_qs.md"]` |
 | `type` | 否 | **legacy 兜底**：无 `categoryId` 时用 `typeDir(type)` 映射目录；有 `categoryId` 时默认取 `category.defaultType` 写 frontmatter |
 | `reason` | 否 | 规划说明 |
 
@@ -1708,7 +1694,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
       "categoryId": "900000000000000010",
       "slug": "fe_kamoku_b_set_sample_qs",
       "title": "科目B 样题集",
-      "sources": ["raw/fe/fe_kamoku_b_set_sample_qs.md"],
+      "sources": ["raw/school/fe/fe_kamoku_b_set_sample_qs.md"],
       "reason": "新题入库 fe 分类"
     }
   ],
@@ -1921,7 +1907,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 ```json
 {
   "code": 10012,
-  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/fe/foo.md → wiki [guides/说明]。请对已有页 enrich 或更换 raw 源。",
+  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/school/fe/foo.md → wiki [guides/说明]。请对已有页 enrich 或更换 raw 源。",
   "data": {
     "errorKind": "INGEST_RAW_ALREADY_COVERED",
     "spaceId": 900000000000000002,
@@ -2097,7 +2083,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 ```
 
 - `committed=false` 时**不抛错**：返回 lint 报告（ERROR 阻塞或仍有未批准页）；前端提示修正后重试或改用逐步 `commit`。
-- Express Plan 的 create 行：`slug` = raw 文件名 stem；`categoryId` 由 `raw/fe/...` → 空间内 `dir_slug=fe` 分类推断（T17）。
+- Express Plan 的 create 行：`slug` = raw 文件名 stem；`categoryId` 由 `raw/school/fe/...`（兼容历史 `raw/fe/...`）→ 空间内 `dir_slug=fe` 分类推断（T17）。
 
 ### 9.7 数据表 / 权限 / 前端
 

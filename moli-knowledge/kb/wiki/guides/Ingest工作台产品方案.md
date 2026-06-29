@@ -19,7 +19,7 @@ updated: 2026-06-27
 # Ingest 工作台（产品方案）
 
 > **状态：active（T15a–e + T18 + 模板模式 · 2026-06-27）**  
-> **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)  
+> **操作手册**：[`docs/ops/knowledge-workbench-operations.md`](../../../docs/ops/knowledge-workbench-operations.md) · **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)  
 > 目标：Web 完成 **Agent 厚 Ingest** — raw → Plan → 草稿 → 审阅 → lint → commit → Sync。  
 > **HTTP 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) **§9**。
 
@@ -112,7 +112,7 @@ LLM **只输出 JSON**。Web **T17c** 提供可视化表：分类下拉（`GET /
       "categoryId": "900000000000000010",
       "slug": "fe_kamoku_b_set_sample_qs",
       "title": "科目B 样题集",
-      "sources": ["raw/fe/fe_kamoku_b_set_sample_qs.md"]
+      "sources": ["raw/school/fe/fe_kamoku_b_set_sample_qs.md"]
     }
   ],
   "enrich": [],
@@ -144,7 +144,7 @@ LLM **只输出 JSON**。Web **T17c** 提供可视化表：分类下拉（`GET /
 }
 ```
 
-UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高亮；用户确认后锁定 plan 版本。骨架 Plan（LLM 未配置）从 raw 文件名预填 `slug`；`raw/fe/...` 可自动推断 `fe` 分类。
+UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高亮；用户确认后锁定 plan 版本。骨架 Plan（LLM 未配置）从 raw 文件名预填 `slug`；`raw/school/fe/...` 可自动推断 `fe` 分类。
 
 ### 3.2 多页 Diff（④）
 
@@ -166,7 +166,7 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 | `useLlmGenerate` | `true` | **`false`** = 模板模式（raw 直贴，不调 LLM） |
 
 - Expert 仍可用逐步 Plan / 逐页 approve / `commit`。
-- 契约：§9.6.6 · [knowledge-ingest-template-mode.md](../../../docs/test/knowledge-ingest-template-mode.md)
+- 契约：§9.6.6 · [knowledge-ingest-acceptance.md](../../../docs/test/knowledge-ingest-acceptance.md) §1–§2
 
 ### 3.4 模板入库（T19 · 2026-06）
 
@@ -340,7 +340,7 @@ DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_wor
 - 单篇 Web 编辑 + **Enrich 治理**：[[Wiki在线编辑与AI协助改稿]]（T14 / T14f）
 - 闭环手册：[[AI自我进化与MD审校流程]]
 - **HTTP API 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §9
-- **模板模式**：[`docs/test/knowledge-ingest-template-mode.md`](../../../docs/test/knowledge-ingest-template-mode.md)
+- **模板模式**：[`docs/test/knowledge-ingest-acceptance.md`](../../../docs/test/knowledge-ingest-acceptance.md) §1
 - **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)
 - 单页 Enrich（T14，非治理页）：[[Wiki在线编辑与AI协助改稿]] §2.2
 - **DDL**：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_workbench.sql)、[`09_kb_ingest_t15e.sql`](../../../docs/sql/09_kb_ingest_t15e.sql)

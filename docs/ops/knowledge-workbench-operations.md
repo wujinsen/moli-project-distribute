@@ -105,7 +105,7 @@ raw 勾选 → Plan → 生成草稿 → diff 审阅 → lint → commit 落盘 
 | 首次演练 / raw 已是 md | **Express + 模板** | `useLlmPlan=false`，`useLlmGenerate=false` |
 | 快速 1 raw → 1 页 | **Express + LLM** | 默认 |
 | 多页规划、改 slug/分类 | **Expert 六步** | 逐步 Plan / approve |
-| 题库、文档搬运 | **模板入库** | 不调 LLM，见 [`knowledge-ingest-template-mode.md`](../test/knowledge-ingest-template-mode.md) |
+| 题库、文档搬运 | **模板入库** | 不调 LLM，见 [`knowledge-ingest-acceptance.md`](../test/knowledge-ingest-acceptance.md) §1 |
 
 ### 2.3 操作 · Web Express（推荐）
 
@@ -180,7 +180,7 @@ git diff --stat moli-knowledge/kb/wiki/
 | 生成失败 / 很慢 | 无 LLM → 勾选模板模式 `useLlmGenerate=false` |
 | 落盘目录不对 | Expert 模式编辑 Plan 的 `categoryId` / slug 后重新 generate |
 | lint ERROR 阻塞 commit | 改草稿断链/frontmatter 后再 publish |
-| raw **簇已引用** / commit 被拒 | 说明页 `sources` 写了目录（如 `kb/raw/fe/`）→ 改 Plan 为 **enrich** 已有 slug，或收窄 sources；见 [§2.6](#26-raw-覆盖与簇已引用) |
+| raw **簇已引用** / commit 被拒 | 说明页 `sources` 写了目录（如 `kb/raw/school/fe/`）→ 改 Plan 为 **enrich** 已有 slug，或收窄 sources；见 [§2.6](#26-raw-覆盖与簇已引用) |
 
 ### 2.6 raw 覆盖与「簇已引用」
 
@@ -189,7 +189,7 @@ Ingest 列表里 raw 可能显示：
 | UI 标签 | 含义 |
 |---------|------|
 | **已 ingest** | 该 raw 文件已被某 wiki 页 `sources` **精确引用** |
-| **簇已引用** | 被某页 **目录级** sources 覆盖（如 `sources: kb/raw/fe/`） |
+| **簇已引用** | 被某页 **目录级** sources 覆盖（如 `sources: kb/raw/school/fe/`） |
 
 **commit 时**：若 raw 已被引用，且本批是 **create 新 slug**（非 enrich 同一 slug）→ 拒绝。响应 `code=10012`，`data.errorKind=INGEST_RAW_ALREADY_COVERED`，`data.conflicts[]` 含 `path` / `wikiSlugs` / `coverage` / `matchKind`（详见 [ingest-workbench-frontend §6](../api/ingest-workbench-frontend.md#6-raw-覆盖门禁commit-错误处理)）。典型 `msg`：
 
@@ -198,7 +198,7 @@ Ingest 列表里 raw 可能显示：
 | 你想做的 | 做法 |
 |----------|------|
 | 把 qs2 并进已有页 | Expert Plan → **enrich** 指向已有 slug |
-| 新建独立页 `fe/xxx.md` | 先改说明页 sources，去掉 `kb/raw/fe/` 整目录占位 |
+| 新建独立页 `fe/xxx.md` | 先改说明页 sources，去掉 `kb/raw/school/fe/` 整目录占位 |
 | 换路径 | raw 放到未被引用的目录（不推荐，不如 enrich） |
 
 **绿色「已使用模板入库」只表示草稿生成成功**；若随后 commit 报错，**磁盘不会有新文件**（勿在 `wiki-jp-exam/fe/` 等路径空等）。
@@ -455,8 +455,7 @@ POST /kb/sync/trigger
 | HTTP 契约 | [`docs/api/KNOWLEDGE_API.md`](../api/KNOWLEDGE_API.md) §8–9 |
 | 前端对接 | [`docs/api/knowledge-workbench-frontend.md`](../api/knowledge-workbench-frontend.md) |
 | Lint / Sync / 体检 | [`kb/wiki-ops/guides/查询与体检指南.md`](../../moli-knowledge/kb/wiki-ops/guides/查询与体检指南.md) |
-| 模板模式细节 | [`docs/test/knowledge-ingest-template-mode.md`](../test/knowledge-ingest-template-mode.md) |
-| Express 手测 | [`docs/test/knowledge-ingest-express.md`](../test/knowledge-ingest-express.md) |
+| Ingest 验收 | [`docs/test/knowledge-ingest-acceptance.md`](../test/knowledge-ingest-acceptance.md) |
 | 治理 API 测试 | [`docs/test/knowledge-wiki-lint-space.md`](../test/knowledge-wiki-lint-space.md) |
 | 治理前端对接 | [`docs/api/wiki-govern-frontend.md`](../api/wiki-govern-frontend.md) |
 

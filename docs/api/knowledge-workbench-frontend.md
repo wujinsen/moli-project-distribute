@@ -69,7 +69,7 @@ export interface KbWorkflowHintVo {
 | 能力 | LLM | 文档 |
 |------|-----|------|
 | Ingest Plan | 可选（Express 默认 skeleton） | ingest-workbench §4 |
-| Ingest 正文 | 默认是；模板模式否 | [knowledge-ingest-template-mode.md](../test/knowledge-ingest-template-mode.md) |
+| Ingest 正文 | 默认是；模板模式否 | [knowledge-ingest-acceptance.md](../test/knowledge-ingest-acceptance.md) §1 |
 | Wiki 治理 metadata | 否（script-fix） | wiki-govern §8 |
 | Wiki 治理断链/孤儿 | 是（ai-batch-fix） | wiki-govern §8 |
 
@@ -207,7 +207,7 @@ export interface KbWorkflowHintVo {
 ```json
 {
   "code": 10012,
-  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/fe/foo.md → wiki [guides/说明]。请对已有页 enrich 或更换 raw 源。",
+  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/school/fe/foo.md → wiki [guides/说明]。请对已有页 enrich 或更换 raw 源。",
   "data": {
     "errorKind": "INGEST_RAW_ALREADY_COVERED",
     "spaceId": "900000000000000002",

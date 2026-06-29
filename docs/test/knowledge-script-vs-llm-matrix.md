@@ -46,7 +46,7 @@
 | 入库后引导 | `commit.nextSteps` | ✅ | | 链到 Wiki 治理 / 健康体检 |
 
 **模板模式参数**：`useLlmGenerate=false` on `generate` / `prepare` / `express` / `draft/regenerate`  
-详见 [knowledge-ingest-template-mode.md](knowledge-ingest-template-mode.md)
+详见 [knowledge-ingest-acceptance.md](knowledge-ingest-acceptance.md) §1
 
 ---
 
@@ -80,5 +80,5 @@
 | 文档 | 内容 |
 |------|------|
 | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | 治理 UI + merge-hint |
-| [knowledge-ingest-template-mode.md](knowledge-ingest-template-mode.md) | 模板入库 |
+| [knowledge-ingest-acceptance.md](knowledge-ingest-acceptance.md) | Ingest 验收（含模板入库 §1） |
 | [knowledge-wiki-lint-space.md](knowledge-wiki-lint-space.md) | lint-space 验收 |

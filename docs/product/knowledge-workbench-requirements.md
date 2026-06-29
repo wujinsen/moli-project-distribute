@@ -1,7 +1,8 @@
 # 知识库工作台 · 需求总览（现行版）
 
 > **本文是产品需求的导航页**（2026-06-27 对齐实现）。长篇正文在 wiki `guides/`，HTTP 契约在 `docs/api/`。  
-> **若与旧文档冲突，以本页 + 下表「现行决策」为准。**
+> **若与旧文档冲突，以本页 + 下表「现行决策」为准。**  
+> **按文档操作入库 + 治理** → **[`docs/ops/knowledge-workbench-operations.md`](../ops/knowledge-workbench-operations.md)**
 
 ---
 
@@ -9,8 +10,8 @@
 
 | 产品线 | 菜单 | 产品方案 | 前端对接 | 后端状态 |
 |--------|------|----------|----------|----------|
-| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] | KNOWLEDGE_API §9 | T15a–e + T18 + T19 ✅ |
-| **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g ✅；T16f 前端 🔵 |
+| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) | T15+T18+T19 ✅ |
+| **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [knowledge-workbench-frontend.md](../api/knowledge-workbench-frontend.md) · [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g ✅；**T16f 前端 🔵** |
 | **单页编辑** | Wiki 编辑 | [[Wiki在线编辑与AI协助改稿]] | KNOWLEDGE_API §8.2–8.4 | T14 ✅ |
 | **健康体检** | 健康体检 | wiki-ops / 查询与体检指南 | KNOWLEDGE_API §4 | DB 快照，与治理分工 |
 
@@ -59,7 +60,7 @@
 | **Express** | 一键预览 + 确认入库 | `useLlmPlan=false` + `publish` |
 | **模板入库** | raw 已是 md，不需 LLM 改写 | **`useLlmGenerate=false`** |
 
-详见 [knowledge-ingest-template-mode.md](../test/knowledge-ingest-template-mode.md)。
+详见 [knowledge-ingest-acceptance.md](../test/knowledge-ingest-acceptance.md) §1。
 
 ---
 
@@ -67,9 +68,12 @@
 
 | 类型 | 路径 |
 |------|------|
+| **操作手册（入库+治理）** | **[`docs/ops/knowledge-workbench-operations.md`](../ops/knowledge-workbench-operations.md)** |
 | 产品方案（wiki） | `moli-knowledge/kb/wiki/guides/*产品方案.md` |
 | HTTP 契约 | `docs/api/KNOWLEDGE_API.md` |
-| 治理前端 | `docs/api/wiki-govern-frontend.md` |
+| **前端总览 + B1–B10** | `docs/api/knowledge-workbench-frontend.md` |
+| 治理前端（W1–W8） | `docs/api/wiki-govern-frontend.md` |
+| Ingest 前端（I1–I5） | `docs/api/ingest-workbench-frontend.md` |
 | 测试 / 验收 | `docs/test/knowledge-*.md` |
 | 架构图 | `docs/diagrams/moli-kb-wiki-govern.drawio`、`moli-kb-ingest-workbench.drawio` |
 
@@ -79,6 +83,7 @@
 
 | 日期 | 说明 |
 |------|------|
+| 2026-06-28 | 操作手册统一至 `docs/ops/knowledge-workbench-operations.md` |
 | 2026-06-27 | T16e/g：治理 script/AI/auto/merge-hint；Ingest 模板模式 + nextSteps + raw 门禁 |
 | 2026-06-25 | T15 Ingest 工作台交付 |
 | 2026-06（初稿） | T16 草案含 enrich 批量（**已废弃**） |

@@ -1,6 +1,6 @@
 # 企业知识库 · 待办任务清单（可并行开工）
 
-> 更新：2026-06-25
+> 更新：2026-06-28
 > 用途：每个任务**自包含、文件边界清晰**，可在不同对话框/工作区并行开工，尽量不互相冲突。
 > 范式与分工见 [`kb/ROADMAP.md`](kb/ROADMAP.md)；表结构见 [`../docs/sql/KNOWLEDGE_SCHEMA.md`](../docs/sql/KNOWLEDGE_SCHEMA.md)。
 >
@@ -12,12 +12,13 @@
 
 | 模块 | 已完成 | 未完成 |
 |------|--------|--------|
-| 表结构 | ✅ 14 张表 SQL + 设计文档；**14 个 entity/mapper 全部就绪**（T1 完成） | — |
-| 同步 | ✅ sync API + git hook + 定时任务 + **GitHub Actions CI(T12)** | — |
-| Java API | ✅ CRUD、Query(+**历史/反馈 T11**)、Browse（**meta 目录 + 分组分页/搜索/locate**）、Graph/Lint、ACL、附件(+**列表 T11**)、**MySQL ngram 全文检索（M4）** | Meilisearch/向量（召回/量级信号触发再上） |
-| 文档 | ✅ **`docs/KNOWLEDGE_API.md`(T8)** 含附件 API §5.6 + **菜单 getRouters(T13)** | — |
-| kb 知识 | ✅ **375 页** wiki（Phase 0 治理后）；**`lint-strict` CI 门禁**；`wiki-ops` 运维空间独立 | M5 T14 单篇编辑 |
-| 前端 meiling-ui | ✅ **T6 已完成**（2026-06-22）；**T15 Ingest 工作台 UI**（2026-06-25） | 空间 CRUD（可选二期） |
+| 表结构 | ✅ 14 张表 + entity/mapper（T1） | — |
+| 同步 | ✅ sync API + CI 多空间门禁（T12） | — |
+| Java API | ✅ CRUD/Ask/Browse/Graph/Lint/ACL/附件/全文检索/Ingest/Wiki 治理 API | Meilisearch/向量（量级触发再上） |
+| 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
+| kb 知识 | ✅ wiki + wiki-ops + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
+| 后端工作台 | ✅ T14 单页编辑 · T15 Ingest · T16a/e/g 治理 · T17 分类落盘 · T18 Express · T19 LLM 平台 | — |
+| 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理全链路 · **T19d** LLM 设置 UI · 空间 CRUD（二期） |
 
 ---
 
@@ -346,7 +347,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ---
 
-## T17 · Ingest 落盘对齐文档分类（categoryId + 自定义 slug）🔵
+## T17 · Ingest 落盘对齐文档分类（categoryId + 自定义 slug）✅
 
 > **背景**：文档管理「分类」= `kb_category.dir_slug` = wiki 一级目录（Sync 回填 `category_id`）；Ingest Commit 仍用硬编码 `type → guides/articles/...`，与分类体系脱节，导致落盘路径不可选（如 `fe/`）、文件名被 LLM 英文 slug 覆盖 raw 原名。  
 > **目标**：Plan/Commit 与 [[文档管理]]、[[wiki同步指南]] 单一真相一致：`{dir_slug}/{slug}.md`，UI 可选分类 + 可改文件名。
@@ -355,7 +356,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 角色 | 场景 |
 |------|------|
-| editor | 勾选 `raw/fe/fe_kamoku_b_set_sample_qs.md` → 规划页 **分类选「FE 题库/fe」**、**slug 默认 `fe_kamoku_b_set_sample_qs` 可改** → 生成草稿 → 批准 → Commit → 落盘 `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md` |
+| editor | 勾选 `raw/school/fe/fe_kamoku_b_set_sample_qs.md` → 规划页 **分类选「FE 题库/fe」**、**slug 默认 `fe_kamoku_b_set_sample_qs` 可改** → 生成草稿 → 批准 → Commit → 落盘 `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md` |
 | editor | 仅改分类不重生成：Plan 表改 `categoryId` → 保存 Plan → 重新生成或 Commit 前校验路径预览 |
 
 **Plan JSON 契约（v2，向后兼容 v1）**
@@ -489,7 +490,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 
 - `docs/api/KNOWLEDGE_API.md` §9.3 Plan JSON 表 + 示例（jp-fe-ap-exam + `fe` 分类）
 - `moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md` §Plan 形态增补 T17
-- 可选：`docs/test/knowledge-ingest-category-slug.md` 手测用例
+- 手测：[`docs/test/knowledge-ingest-acceptance.md`](../docs/test/knowledge-ingest-acceptance.md) §3
 
 **E2E 验收**（jp-fe-ap-exam）
 
@@ -533,7 +534,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 
 **验收（jp-fe-ap-exam）**：
 
-1. 列表勾选 `raw/fe/fe_kamoku_b_set_sample_qs.md` →「一键预览」
+1. 列表勾选 `raw/school/fe/fe_kamoku_b_set_sample_qs.md` →「一键预览」
 2. 详情 Express 模式：Plan create 行 `categoryId`→FE、`slug`→`fe_kamoku_b_set_sample_qs`
 3.「确认入库」→ `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md` + Sync 成功
 
@@ -548,7 +549,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 3. ✅ **T15a → T15b → T15c → T15d → T15e**（M6 Ingest 工作台闭环）。
 4. T14c–d 可并行增强。
 5. 🔵 **T16f**（M7 Wiki 治理前端：lint-space → script/AI/auto-fix → merge-hint → 复检 → Sync）。后端 T16a/e/g ✅。
-6. 🔵 **T17a → T17b → T17c → T17d**（M6+ Ingest 落盘对齐文档分类 + 自定义 slug）。✅
+6. ✅ **T17a → T17b → T17c → T17d**（M6+ Ingest 落盘对齐文档分类 + 自定义 slug）。
 7. ✅ **T18**（M6+ Ingest 一键入库 Express 流）。
 8. 🔵 **T19**（M8 平台 LLM 系统设置：DB 存 Key + 系统管理 UI）。后端 ✅；前端 T19d 📋。设计 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md)
 

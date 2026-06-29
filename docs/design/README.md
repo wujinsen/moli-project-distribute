@@ -29,8 +29,7 @@
 - [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md)
 - [RBAC.md](../zh-CN/RBAC.md)
 - [diagrams/README.md](../diagrams/README.md)
-- [KB Sync / Ask 代码审查纪要（2026-06-25）](kb-sync-ask-code-review-2026-06-25.md)
-- [KB Ingest 工作台（T15）代码审查报告（2026-06-25）](kb-ingest-workbench-code-review-2026-06-25.md)
+- 历史审查纪要：[archive/](archive/)（2026-06-25 Ingest / Sync·Ask）
 - [知识库 LLM 平台系统设置（T19）](kb-llm-platform-settings.md)
 
 ## 可视化（draw.io）
