@@ -24,6 +24,19 @@ ON DUPLICATE KEY UPDATE
   `sort` = VALUES(`sort`),
   `update_time` = NOW();
 
+-- 分类=目录（单一真相源）：绑定 kb/wiki-ops/ 子目录，default_type 用于移动时对齐 frontmatter type
+INSERT INTO `kb_category`
+  (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`default_type`,`sort`,`is_delete`)
+VALUES
+  (900000000000000131, 1, NOW(), 1, NOW(), 900000000000000003, 0, '操作指导', NULL, 'guides',   'guide',   1, 0),
+  (900000000000000132, 1, NOW(), 1, NOW(), 900000000000000003, 0, '微服务',   NULL, 'services', 'service', 2, 0),
+  (900000000000000133, 1, NOW(), 1, NOW(), 900000000000000003, 0, '概念',     NULL, 'concepts', 'concept', 3, 0)
+ON DUPLICATE KEY UPDATE
+  `category_name` = VALUES(`category_name`),
+  `default_type`  = VALUES(`default_type`),
+  `sort`          = VALUES(`sort`),
+  `is_delete`     = 0;
+
 -- 演示成员：admin 可管理；普通演示用户只读
 INSERT INTO `kb_space_member`
   (`id`, `create_id`, `create_time`, `update_id`, `update_time`,

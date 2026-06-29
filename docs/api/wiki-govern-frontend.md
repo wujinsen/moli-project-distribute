@@ -1,8 +1,10 @@
 # Wiki 治理工作台 · 前端对接说明（meiling-ui）
 
-> **读者**：meiling-ui 前端。后端 **T16e ✅** 已就绪；本文是联调权威说明。  
-> **HTTP 契约总表**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §4.6（Lint）+ §8.2 / §8.6（治理修复）。  
-> **产品方案**：[Wiki治理工作台产品方案.md](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)。
+> **读者**：meiling-ui 前端。后端 **T16a/e/g ✅** 已就绪；**T16f 待开发**。  
+> **现 UI 与完整方案差距**（仅 Lint + AI 两步时）：[`docs/ops/knowledge-workbench-operations.md` §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距)  
+> **总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
+> **HTTP 契约总表**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §4.6 + §8.6  
+> **产品方案**：[Wiki治理工作台产品方案.md](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)
 
 ---
 
@@ -11,7 +13,9 @@
 | 项 | 值 |
 |----|-----|
 | 路由 path | `knowledge/wiki-govern/index` |
-| 组件名 | `KnowledgeWikiGovernView` |
+| 组件名 | `KnowledgeWikiGovernView`（建议目录 `src/views/knowledge/wiki-govern/`） |
+| API 模块 | `src/api/knowledge/kbWikiGovern.ts` |
+| 类型 | `src/types/knowledge/kbWikiGovern.ts` |
 | 菜单 perms | `kb:wiki:govern:list`（菜单 910，见 `docs/sql/11_kb_wiki_govern_menu.sql`） |
 | 网关前缀 | `{VITE_API_BASE_URL}/KnowledgeServer` + 下表路径 |
 
@@ -82,7 +86,9 @@ idle → linted → fixing → (relinted) → (synced)
 |------|-----------|----------|
 | **脚本** | `missing_dates`, `slug_mismatch`, `missing_source` | `script-fix` |
 | **AI** | `broken_link`, `bad_type`, `missing_title`, `orphan`, `missing_concept`, `outdated`, `asym_related`, `near_dup`, `dup_content` | `ai-batch-fix` |
-| **仅人工** | `dup_slug` | 跳转 `/knowledge/wiki/edit?slug=` 或提示 Cursor 合并 |
+| **仅人工** | `dup_slug` | `merge-hint` 或跳转 `/knowledge/wiki/edit?slug=` |
+
+> `near_dup` / `dup_content` 可走 **AI 修复** 或 **merge-hint**（复制 Cursor 指令手动合并）。
 
 **Lint 完成后默认勾选**：全部「脚本 + AI」可修项；**不勾选** `dup_slug` 与 `level=info` 项（可选：info 默认折叠）。
 
@@ -144,6 +150,17 @@ export interface KbWikiGovernOptions {
   models: { id: string; displayName: string }[]
   scriptFixableKinds: string[]
   aiFixableKinds: string[]
+  manualOnlyKinds: string[]   // 默认 ['dup_slug']
+}
+
+export interface WikiGovernMergeHintItem {
+  kind: string
+  page: string
+  detail?: string
+  relatedSlugs?: string[]
+  canonicalSlug?: string
+  cursorPrompt: string
+  manualSteps?: string[]
 }
 
 /** script-fix / ai-batch-fix 共用 issue 列表 */
@@ -350,20 +367,48 @@ export function wikiGovernMergeHintApi(data: { spaceId: number; issues: KbWikiLi
 
 ---
 
-## 13. 验收清单（前端自测）
+## 13. 验收清单与进度（W1–W8）
 
-- [ ] 选 `enterprise-kb` Lint，issues 按 kind 分组且可勾选
-- [ ] Lint 后默认勾选 script+AI 可修项，不含 `dup_slug`
-- [ ] **脚本修复**：`missing_dates` 页修复后 frontmatter 有 created/updated
-- [ ] **AI 修复**：`broken_link` 页在 kb.llm 可用时写盘成功
-- [ ] **一键修复**：响应含 `issuesBefore` > `issuesAfter`（或 0）
-- [ ] `syncAfter=true` 后健康体检 DB 体检与文件一致（需等待 Sync 完成）
-- [ ] `llmAvailable=false` 时 AI / 一键 AI 部分 disabled
-- [ ] `dup_slug` 仅展示手动入口，不进批量 API
+### 13.1 总清单
+
+| ID | 项 | 后端 | 前端 | 验收 |
+|----|-----|------|------|------|
+| **W1** | `lint-space` + issues 分组勾选 | ✅ | ⚠️ | 按 kind 分组；`exitCode≠0` 仍展示列表 |
+| **W2** | **脚本修复** `script-fix` | ✅ | ❌ | `slug_mismatch` **不要**进「需手改」 |
+| **W3** | **AI 修复** `ai-batch-fix` | ✅ | ⚠️ | 模型下拉；`llmAvailable=false` 时 disabled |
+| **W4** | **一键修复** `auto-fix` | ✅ | ❌ | `issuesBefore→issuesAfter` + 可选 `syncAfter` |
+| **W5** | **merge-hint** 复制 Cursor 指令 | ✅ | ❌ | `dup_slug` / `dup_content` / `near_dup` |
+| **W6** | kind 分类读 **options** | ✅ | ❌ | 以 `scriptFixableKinds` 为准，勿硬编码误分手改 |
+| **W7** | 复检 + Sync 摘要 | ✅ | ❌ | `relintAfter` 或再 Lint；Sync 勾选 |
+| **W8** | 禁止治理页批量 **enrich** | — | ✅ | 无 enrich 批量入口 |
+
+**现 UI 约等于 W1 + W3 + 部分 W8**；W2/W4/W5/W6/W7 待补。对照 [ops §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距)。
+
+### 13.2 回归场景（手工）
+
+- [ ] `enterprise-kb` 或 `wiki-jp-exam` Lint → 勾选 → script → AI → auto 顺序  
+- [ ] `missing_dates` 经 script-fix 补 frontmatter  
+- [ ] `dup_slug` 仅 merge-hint / 编辑，不进 ai-batch-fix  
+- [ ] `syncAfter=true` 后 DB 体检一致  
 
 ---
 
-## 14. 相关文件（后端已实现，供联调对照）
+## 14. 代码落点（meiling-ui）
+
+| 文件 | 职责 |
+|------|------|
+| `src/api/knowledge/kbWikiGovern.ts` | §7 六个 API |
+| `src/types/knowledge/kbWikiGovern.ts` | §6 类型 + `isScriptFixable` 等 |
+| `src/views/knowledge/wiki-govern/index.vue` | 页面容器 |
+| `src/views/knowledge/wiki-govern/GovernLintPanel.vue` | W1 勾选逻辑 |
+| `src/views/knowledge/wiki-govern/GovernFixPanel.vue` | W2–W4 按钮 + W7 Sync/摘要 |
+| `src/components/knowledge/KbMergeHintDialog.vue`（建议） | W5 复制 `cursorPrompt` |
+
+菜单：`docs/sql/11_kb_wiki_govern_menu.sql` · perm `kb:wiki:govern:list`。
+
+---
+
+## 15. 相关文件（后端 · 联调对照）
 
 | 路径 | 说明 |
 |------|------|
@@ -375,8 +420,10 @@ export function wikiGovernMergeHintApi(data: { spaceId: number; issues: KbWikiLi
 
 ---
 
-## 15. 变更记录
+## 16. 变更记录
 
 | 日期 | 说明 |
 |------|------|
+| 2026-06-28 | §13 W1–W8 验收进度 + §14 落点；对齐 ops §3.2 |
+| 2026-06-28 | 对齐总览；补 manualOnlyKinds、merge-hint 类型、代码落点 |
 | 2026-06-27 | T16e：新增 script-fix / ai-batch-fix / auto-fix；治理页不再推荐 enrich 批量 |

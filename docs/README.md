@@ -65,7 +65,9 @@ scripts/                 ← DB 初始化（见 docs/ops/）
 
 | 我要… | 打开 |
 |--------|------|
-| 看产品 PRD | [product/knowledge-workbench-requirements.md](product/knowledge-workbench-requirements.md)（知识库工作台现行需求）→ [product/README.md](product/README.md) → `kb/wiki/guides/` |
+| **v1 发布范围 / 冒烟** | **[product/moli-v1-release-scope.md](product/moli-v1-release-scope.md)** · [test/release-smoke-checklist.md](test/release-smoke-checklist.md) · [ops/v1-release-runbook.md](ops/v1-release-runbook.md) |
+| **操作知识入库 + Wiki 治理** | **[ops/knowledge-workbench-operations.md](ops/knowledge-workbench-operations.md)** |
+| 看产品 PRD | [product/knowledge-workbench-requirements.md](product/knowledge-workbench-requirements.md) → `kb/wiki/guides/` |
 | 看架构/方案 | [design/README.md](design/README.md) → `docs/zh-CN/ARCHITECTURE.md` |
 | 对接 HTTP 接口 | [api/README.md](api/README.md) |
 | 压测 / 测试 | [test/README.md](test/README.md) |

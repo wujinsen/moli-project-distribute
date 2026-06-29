@@ -133,6 +133,7 @@ moli-knowledge/
 ## 文档导航
 
 - 模块总览（本文）：`README.md`
+- **工程概要设计**：[`docs/design/knowledge-module-overview.md`](../docs/design/knowledge-module-overview.md)
 - Java 服务：[`moli-knowledge-server/README.md`](moli-knowledge-server/README.md)
 - 知识库范式与用法：[`kb/README.md`](kb/README.md)
 - 知识库契约（schema / 三操作）：[`kb/AGENTS.md`](kb/AGENTS.md)

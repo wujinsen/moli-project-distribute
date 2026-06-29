@@ -16,6 +16,10 @@
 
 认证与鉴权由 **Apache Shiro** 实现，Session 与权限缓存存储在 **Redis**，支持多实例部署下的分布式会话。
 
+![RBAC 模型](../diagrams/png/moli-rbac-model.png)
+
+> 可编辑源文件：[moli-rbac-model.drawio](../diagrams/moli-rbac-model.drawio)
+
 ```
 ┌─────────┐     N:N      ┌─────────┐     N:N      ┌─────────┐
 │  用户   │─────────────▶│  角色   │─────────────▶│  菜单   │

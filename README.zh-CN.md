@@ -224,11 +224,15 @@ http://localhost:21000/OrderServer/...
 
 ## 相关文档
 
+- [文档总览（PRD / 方案 / API / 测试 / 运维）](docs/README.md)
+- **[v1.0 发布范围](docs/product/moli-v1-release-scope.md)**
 - [架构 / 调用 / 鉴权设计](docs/zh-CN/ARCHITECTURE.md)
 - [技术栈详细文档](docs/zh-CN/TECH_STACK.md)
 - [RBAC 权限设计文档](docs/zh-CN/RBAC.md)
+- [API 接口文档](docs/api/README.md)
 - [用户中心模块](moli-user-center/README.md)
 - [订单模块](moli-order/README.md)
+- [知识库模块](moli-knowledge/README.md)
 
 ---
 

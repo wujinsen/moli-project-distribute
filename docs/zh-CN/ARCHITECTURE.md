@@ -12,6 +12,8 @@
 > **可视化架构图（draw.io，可编辑）**：[`docs/diagrams/`](../diagrams/README.md)  
 > - [容器架构图](../diagrams/moli-container-architecture.drawio)  
 > - [鉴权流程图](../diagrams/moli-auth-flow.drawio)  
+> - [网关路由图](../diagrams/moli-gateway-routes.drawio)  
+> - [本地部署拓扑](../diagrams/moli-deploy-topology.drawio)  
 > - [知识库同步双轨图](../diagrams/moli-knowledge-sync.drawio)
 
 ```
@@ -24,7 +26,7 @@ moli-gateway :21000            Spring Cloud Gateway（路由/限流/CORS）
 order-server / bi-server       Shiro authc 校验会话（共享 Redis Session）
    │  Dubbo RPC（version=1.0.0, group=moli）
    ▼
-user-center-server :1127       Dubbo Provider → 业务处理
+user-center-server :8888       Dubbo Provider → 业务处理
    │
    ▼
 Redis（共享 Session/缓存）   /   MySQL（业务与权限数据）
@@ -84,6 +86,11 @@ sequenceDiagram
 | `/UserCenter/**` | `lb://user-center-server` | `StripPrefix=1` |
 | `/OrderServer/**` | `lb://order-server` | `StripPrefix=1` |
 | `/BiServer/**` | `lb://bi-server` | `StripPrefix=1` |
+| `/KnowledgeServer/**` | `lb://knowledge-server` | `StripPrefix=1` |
+
+![网关路由一览](../diagrams/png/moli-gateway-routes.png)
+
+> 可编辑源文件：[moli-gateway-routes.drawio](../diagrams/moli-gateway-routes.drawio)
 
 > `StripPrefix=1` 去掉第一段前缀，例如 `/UserCenter/user/list` → 转发 `/user/list`。
 
@@ -91,6 +98,12 @@ sequenceDiagram
 
 - 通过 Nacos 服务名 + Ribbon 选实例。
 - 透传 `Authorization` 头，供下游 Shiro 还原会话。
+
+### 3.2.1 秒杀链路（order-server）
+
+![秒杀全链路](../diagrams/png/moli-seckill-flow.png)
+
+> 可编辑源文件：[moli-seckill-flow.drawio](../diagrams/moli-seckill-flow.drawio) · 压测说明见 [`docs/test/README.md`](../test/README.md)
 
 ### 3.3 服务 A ↔ 服务 B（Dubbo RPC，统一方式）
 
@@ -232,8 +245,12 @@ flowchart TB
 
 ## 9. 启动顺序
 
-1. Nacos（`:8848`）、Redis、MySQL
-2. `moli-gateway`（`:21000`）
-3. `user-center-server`（`:1127`，Dubbo `20881`）
-4. `order-server`（`:8087`，Dubbo `20882`）、`bi-server`（`:1128`，Dubbo `20883`）
-5. 前端 `meiling-ui` 代理指向 `http://localhost:21000/UserCenter`
+![本地部署拓扑](../diagrams/png/moli-deploy-topology.png)
+
+> 可编辑源文件：[moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio) · 操作细节见 [`kb/wiki-ops/guides/本地启动指南`](../../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md)
+
+1. **基础设施**：Nacos（`:8848`）、MySQL（`:3306`）、Redis（`:6379`，db=2）
+2. **user-center-server**（`:8888`，Dubbo `20881`）—— 权限中枢，须先于业务服务
+3. **order-server**（`:8087`，Dubbo `20882`）、**bi-server**（`:1128`，Dubbo `20883`）、**knowledge-server**（`:8090`，可选）
+4. **moli-gateway**（`:21000`）—— 统一入口，建议最后启动
+5. 前端 **meiling-ui** 代理指向 `http://localhost:21000`

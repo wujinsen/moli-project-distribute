@@ -36,7 +36,7 @@
 
 ### `SystemController`（前缀 `/system`）
 
-- `GET /system/my`：当前用户可访问系统；`SystemVo` 含 `systemGroup`（门户分组，见 `docs/portal-system-group.md`）
+- `GET /system/my`：当前用户可访问系统；`SystemVo` 含 `systemGroup`（门户分组，见 [`docs/design/portal-system-group.md`](../design/portal-system-group.md)）
 - `POST /system/enter`、`POST /system/switch`：进入/切换系统（同一 Session）；INTERNAL 返回 `menuVoList`；EXTERNAL 返回 `redirectUrl`
   - `SystemEnterVo` 含 `permissions`、`fullPermission`（与 `LoginVo` 对齐）
 - `GET /auth/capabilities`：当前系统上下文 `{ permissions, fullPermission }`；F5 / 缓存缺失时补拉

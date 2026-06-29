@@ -1,0 +1,54 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="deploy" name="Local Deploy Topology">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="本地部署拓扑&#xa;启动顺序：Nacos/MySQL/Redis → user-center → order/bi/knowledge → gateway → 前端" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="15" width="700" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="infra" value="基础设施（先启动）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#d79b00;startSize=28;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1120" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="nacos" value="Nacos :8848&#xa;ns=dev" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="infra">
+          <mxGeometry x="30" y="45" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="mysql" value="MySQL :3306&#xa;库 moli utf8mb4" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;size=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="infra">
+          <mxGeometry x="200" y="40" width="130" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="redis" value="Redis :6379&#xa;db=2 Session" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="infra">
+          <mxGeometry x="380" y="45" width="130" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="minio" value="MinIO :9000&#xa;附件(可选)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;" vertex="1" parent="infra">
+          <mxGeometry x="550" y="45" width="110" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="svc" value="业务微服务" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=28;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="1120" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="s1" value="① user-center&#xa;:8888" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="svc">
+          <mxGeometry x="30" y="45" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2" value="② order&#xa;:8087" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="svc">
+          <mxGeometry x="180" y="45" width="100" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3" value="③ bi&#xa;:1128" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="svc">
+          <mxGeometry x="310" y="45" width="90" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4" value="④ knowledge&#xa;:8090" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="svc">
+          <mxGeometry x="430" y="45" width="110" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="s5" value="⑤ gateway&#xa;:21000" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="svc">
+          <mxGeometry x="570" y="45" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe" value="⑥ meiling-ui&#xa;devServer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="svc">
+          <mxGeometry x="720" y="45" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="init" value="DB 初始化&#xa;scripts/moli.sql + docs/sql 增量&#xa;init-db.ps1 --default-character-set=utf8mb4" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="340" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="warn" value="⚠ 全服务共用同一 Redis 实例与 db=2&#xa;否则跨服务 Session 校验失败" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="420" y="380" width="320" height="55" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

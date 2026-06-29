@@ -1,0 +1,34 @@
+# 多系统门户 · system_group 分组说明
+
+> 字段：`sys_system.system_group` · 常量：[`SystemGroupConstant`](../../moli-distribute-common/src/main/java/com/moli/common/constant/SystemGroupConstant.java)
+
+## 1. 用途
+
+登录后若启用 SSO 门户（`sso.enabled=true` 且存在 `sys_system`），前端「选系统」页按 **业务域** 分组展示，便于大厂式多系统导航。
+
+## 2. 取值
+
+| 值 | 含义 | 示例系统 |
+|----|------|----------|
+| `platform` | 平台/管理类 | moli-admin |
+| `business` | 业务应用 | CRM、电商、OA |
+| `data` | 数据/BI | bi-report |
+| `tech` | 技术/开放平台 | api-portal、ai-copilot |
+| `ops` | 运维 | moli-ops |
+
+非法或空值归一化为 **`business`**（`SystemGroupConstant.normalize`）。
+
+## 3. API 行为
+
+- `GET /system/my`：`SystemVo.systemGroup` 供前端分组渲染
+- `GET /system/list?systemGroup=`：管理端按分组筛选
+- `POST/PUT /system`：维护时可设置 `systemGroup`
+
+## 4. 数据
+
+基线种子见 `scripts/moli.sql` → `sys_system` INSERT（每条含 `system_group` 列）。
+
+## 5. 相关
+
+- [`user-center-api-map.md`](../api/user-center-api-map.md) §2 SystemController
+- [`user-center-overview.md`](user-center-overview.md) §3.3

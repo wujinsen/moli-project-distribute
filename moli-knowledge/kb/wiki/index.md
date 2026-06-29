@@ -39,17 +39,11 @@
 
 ## services（微服务实体）
 
-
-
-- [[系统操作手册入口]] — 权限中枢：用户/角色/菜单/权限 + Shiro 认证 + Dubbo Provider（HTTP 8888）
-
-- [[系统操作手册入口]] — Spring Cloud Gateway 统一入口，按路径转发（HTTP 21000，无鉴权/无 Sentinel）
-
-- [[系统操作手册入口]] — 订单业务（通用为骨架）+ 秒杀子系统（HTTP 8087）
-
-- [[系统操作手册入口]] — BI 骨架（1128）：Shiro+Dubbo 就绪，报表 API 待建；演进 [[bi报表服务演进路线]]
-
-- [[系统操作手册入口]] — 企业知识库 Java REST 后端，检索走 MySQL ngram 全文（HTTP 8090）
+- [[用户中心]] — 权限中枢：Shiro + RBAC + Dubbo Provider（HTTP 8888）
+- [[网关]] — Spring Cloud Gateway 四路由（HTTP 21000）
+- [[订单服务]] — 秒杀子系统 v1 + 通用订单骨架（HTTP 8087）
+- [[bi服务]] — BI 骨架（1128）；演进 [[bi报表服务演进路线]]
+- [[知识库服务]] — 浏览/Ingest/Wiki 治理 REST（HTTP 8090；运维细节见 [[系统操作手册入口]]）
 
 
 
@@ -541,3 +535,19 @@ _增量 ingest 见 [[增量ingest与raw投喂指南]]。_
 ## 批次 #WB-20260628053754（Web Ingest 2026-06-28） <!-- ingest-job:726295221004025856 -->
 
 - [[basic-information-technologist-examination-subject-b-sample-questions]] — create article
+
+## 批次 #WB-20260628201200（Web Ingest 2026-06-28） <!-- ingest-job:726515194037157888 -->
+
+- [[fe_kamoku_b_set_sample_qs2]] — create article
+
+## 批次 #WB-20260628235749（Web Ingest 2026-06-28） <!-- ingest-job:726572024717262848 -->
+
+- [[fe_kamoku_b_set_sample_qs3]] — create article
+
+## 批次 #WB-20260629001246（Web Ingest 2026-06-29） <!-- ingest-job:726575787041505280 -->
+
+- [[fe_kamoku_b_set_sample_qs3]] — create article
+
+## 批次 #WB-20260629002429（Web Ingest 2026-06-29） <!-- ingest-job:726578733703643136 -->
+
+- [[fe_kamoku_b_set_sample_qs3]] — create article

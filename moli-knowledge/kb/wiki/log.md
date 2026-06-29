@@ -1332,3 +1332,8 @@
 ## [2026-06-24] feature | 全面移除 Web 直连写库：删 KbDocumentEditPanel、停用 POST/PUT publish/archive/DELETE /kb/document；文档管理仅 wiki 编辑
 ## [2026-06-24] maintenance | sync_to_db --purge-manual-web + purge_manual_web.ps1 清理 source=manual 遗留行
 ## [2026-06-27] plan | T16 Wiki 治理工作台落档：create guides/Wiki治理工作台产品方案 + moli-kb-wiki-govern.drawio/png；TASKS T16a–d、diagrams/index 登记
+## [2026-06-28] ingest | 批次#WB-20260628053754 a (Web工作台) → create basic-information-technologist-examination-subject-b-sample-questions <!-- ingest-job:726295221004025856 -->
+## [2026-06-28] ingest | 批次#WB-20260628201200 test1 (Web工作台) → create fe_kamoku_b_set_sample_qs2 <!-- ingest-job:726515194037157888 -->
+## [2026-06-28] ingest | 批次#WB-20260628235749 test3 (Web工作台) → create fe_kamoku_b_set_sample_qs3 <!-- ingest-job:726572024717262848 -->
+## [2026-06-29] ingest | 批次#WB-20260629001246 test3 (Web工作台) → create fe_kamoku_b_set_sample_qs3 <!-- ingest-job:726575787041505280 -->
+## [2026-06-28] docs | P2 工程文档 + enterprise-kb services 补全（订单/网关/知识库/bi）+ ROADMAP M5–M7 同步 + index 修复
