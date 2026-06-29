@@ -72,7 +72,7 @@ scripts/                 ← DB 初始化（见 docs/ops/）
 | 对接 HTTP 接口 | [api/README.md](api/README.md) · [api-iteration-map.md](api/api-iteration-map.md) |
 | 文档健康度巡检 | [DOCUMENTATION_AUDIT.md](DOCUMENTATION_AUDIT.md) |
 | 压测 / 测试 | [test/README.md](test/README.md) |
-| 部署 / 排障 | [ops/README.md](ops/README.md) → `kb/wiki-ops/` |
+| 部署 / 排障 / **全项目文档** | [ops/README.md](ops/README.md) → **`kb/wiki-ops/guides/项目文档总览.md`** |
 | 画架构图 | [diagrams/README.md](diagrams/README.md) · `@drawio-diagrams` · [AGENTS.md §3](../AGENTS.md) |
 | 建表 / ER | [sql/KNOWLEDGE_SCHEMA.md](sql/KNOWLEDGE_SCHEMA.md) |
 | 知识库 API | [api/KNOWLEDGE_API.md](api/KNOWLEDGE_API.md) |

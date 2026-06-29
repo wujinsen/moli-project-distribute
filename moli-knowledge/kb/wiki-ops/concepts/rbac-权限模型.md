@@ -6,7 +6,7 @@ status: active
 tags: [权限, RBAC, Shiro, 安全]
 sources:
   - docs/zh-CN/RBAC.md
-  - docs/api-iteration-map.md
+  - docs/api/user-center-api-map.md
   - moli-user-center/moli-user-center-server/
 related: [用户中心, 认证与会话机制, 权限管理操作指南, 字段级数据权限设计]
 created: 2026-06-22
@@ -33,7 +33,7 @@ updated: 2026-06-22
 2. **动作码 sys_action**：`sys_role_action` 关联的、启用的 `SysAction.permCode` → 进授权集。
 3. `menuType=F`（按钮菜单）**已废弃**，按钮级权限改用 `sys_action`。
 
-> 这是文档校准点：`docs/zh-CN/RBAC.md` 里把接口权限写成"预留"，但实际 `docs/api-iteration-map.md` + 源码已经在用 `@RequiresPermissions` 强制校验，以代码为准。
+> 这是文档校准点：`docs/zh-CN/RBAC.md` 里把接口权限写成"预留"，但实际在 `docs/api/user-center-api-map.md` + 源码中已经在用 `@RequiresPermissions` 强制校验，以代码为准。
 
 ## 权限标识规范
 

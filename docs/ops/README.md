@@ -27,6 +27,7 @@
 
 | 场景 | 页面 |
 |------|------|
+| **全项目文档地图** | `guides/项目文档总览.md` |
 | 本地启动 | `guides/本地启动指南.md` |
 | 数据库 | `guides/数据库初始化指南.md` + [scripts/README.md](../../scripts/README.md) |
 | 登录鉴权 | `guides/登录与鉴权指南.md` |

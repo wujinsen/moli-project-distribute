@@ -35,7 +35,8 @@
 
 | 项 | 说明 |
 |----|------|
-| meiling-ui 落地 §10 | 前端代码实现 nextSteps / 治理四步 |
+| 运维 / 发布索引 | ✅ `wiki-ops/guides/项目文档总览.md` 及各分类索引 |
+| meiling-ui 工作台 §10 | 🔵 前端代码待落地 |
 | raw/design 外部稿 | 有评审 PDF 时再投喂 |
 | 向量检索 / Meilisearch | v2+ |
 
