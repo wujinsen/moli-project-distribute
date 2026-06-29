@@ -45,4 +45,10 @@ public class KbIngestProperties {
 
     /** raw-coverage 单次返回的最大文件项数（防超大目录）。 */
     private int maxCoverageFiles = 10000;
+
+    /**
+     * Expert {@code POST .../commit} 未传 {@code sync} 时是否自动触发 wiki→MySQL Sync。
+     * Express {@code publish} 默认仍为 sync=true；显式 {@code sync=false} 可跳过。
+     */
+    private boolean commitAutoSync = true;
 }

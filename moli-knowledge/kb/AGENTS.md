@@ -51,18 +51,25 @@ kb/
     articles/            #   技术文章(P1)
     interview/           #   面试题原始材料(P2)
     wujinsen_markdown/   #   历史语料（只读归档）
-  wiki/                  # Agent 全权拥有的知识页
+  wiki/                  # Agent 全权拥有的知识页（按**空间**对应 wiki / wiki-ops / wiki-jp-exam）
     index.md             #   内容目录(catalog), 每次 ingest/crystallize 后更新
     log.md               #   append-only 时间线
-    guides/              #   P0 操作指导页(面向"怎么用")
-    services/            #   微服务实体页(每个服务一页)
-    concepts/            #   跨文档概念页(RBAC/秒杀/MySQL优化...)
-    articles/            #   P1 技术文章沉淀页
-    interview/           #   P2 面试题页(精炼后)
-    outputs/             #   Query 回写的综合页
+    {分类目录}/          #   **一级目录 = Web 分类 dir_slug**（如 guides/ product/ develop/ ops/ fe/）
     graph/
       edges.jsonl        #   类型化关系边(append-only)
 ```
+
+> **分类 = 目录（单一真相）**：Web 浏览、Ingest 落盘、Sync 回填 `category_id` 均以 **wiki 一级子目录** 为准。  
+> **体裁 `type`**（frontmatter → `kb_type`）为内部字段，用于 Query/图谱/Lint；通常由分类的 `default_type` 自动带出，**不对用户展示分组**。  
+> legacy 目录名（`guides/`、`services/`、`articles/` 等）在 enterprise-kb 仍可作为分类名使用。
+
+**三空间 wiki 源**（见 [[wiki同步指南]] / ops `wiki同步指南`）：
+
+| 空间 | wiki 源 | 分类示例 |
+|------|---------|----------|
+| enterprise-kb | `wiki/` | guides、services、concepts、articles、interview |
+| moli-ops-manual | `wiki-ops/` | guides、product、develop、ops、test |
+| jp-fe-ap-exam | `wiki-jp-exam/` | guides、fe、ap、interview |
 
 **所有权规则**：
 - `raw/` —— 用户拥有，Agent 只读，绝不覆盖。
@@ -78,7 +85,7 @@ kb/
 | 技术方案 | `raw/design/` | `wiki/concepts/`、`wiki/articles/` | `docs/design/` + `docs/zh-CN/` |
 | API | `raw/api/`（可选） | `wiki/services/` 摘要 + 链到契约 | **`docs/api/`** 权威 |
 | 测试 | `raw/test/` | `wiki/guides/`（压测等） | `docs/test/` + `load-test/` |
-| 运维 | `raw/ops/` | **`wiki-ops/guides/`** | `docs/ops/` 索引 |
+| 运维 | `raw/ops/` | **`wiki-ops/`**（`guides/`·`product/`·`develop/`·`ops/`·`test/`） | `docs/ops/` 索引 |
 | 日本語 FE/AP | **`raw/school/fe/`**、**`raw/school/ap/`** | **`wiki-jp-exam/`** | —（空间 `jp-fe-ap-exam`） |
 
 运维正文 **只维护 `wiki-ops/`**，不同步写进 `wiki/guides/` 运维副本。API 联调 **只维护 `docs/api/`**。日本语试题 **只维护 `wiki-jp-exam/`**，raw 源在 **`raw/school/`**（见 [`raw/school/README.md`](../raw/school/README.md)）。
@@ -87,7 +94,7 @@ kb/
 
 > 完整说明见 [`docs/README.md`](../../docs/README.md)「微服务：统一放还是各项目各自放？」。
 
-**原则**：入口统一（`docs/` + `kb/wiki*`），正文按归属；**禁止**每个微服务各写一套《本地启动全家桶》（统一看 `wiki-ops/guides/本地启动指南`）。
+**原则**：入口统一（`docs/` + `kb/wiki*`），正文按归属；**禁止**每个微服务各写一套《本地启动全家桶》（统一看 `wiki-ops/guides/本地启动指南`）。ops 空间按 **分类=目录**：`guides/` 操作 · `product/` 产品 · `develop/` 技术 · `ops/` 运维 · `test/` 测试。
 
 | 文档 | 第一稿 / 源 | Agent Ingest 目标 | 说明 |
 |------|-------------|-------------------|------|
@@ -116,14 +123,24 @@ HTTP 契约给前端/测试？       → 只链 docs/api/，不复制全文进 w
 
 **多 Git 仓库**（若服务独立成仓）：各仓保留 README；平台仓 Ingest 汇总到 `wiki/services/`，产品/运维/API 契约仍在平台 `docs/` + `wiki*`。
 
+### 1.3 分类优先 · 新建分类（Ingest / 新 raw）
+
+1. **浏览与落盘只认分类**（`{dir_slug}/{slug}.md`），不认「按体裁分目录」为新页默认路径。
+2. Ingest Plan 的 `create[]` **必须**带 `categoryId`；Express/骨架 Plan 会按 `raw/` 路径首段推断（如 `raw/prd/`→`product`，`raw/school/fe/`→`fe`）。
+3. **无合适分类时**（新主题 raw）：
+   - **Web**：空间 → 分类管理 → 新建（填 `categoryName` + `dir_slug`，系统自动 `mkdir` wiki 子目录）。
+   - **Cursor Agent**：与用户确认 `dir_slug`（单段 `[A-Za-z0-9_-]`）→ 告知用户在 Web 建分类，或自行在 `wiki*/{dir_slug}/` 建目录并让用户补分类 → 再落盘 → `sync`。
+4. `frontmatter.type` 取分类 `default_type`（缺省 `guide`）；Sync 后 Web 侧栏 **只按分类** 展示（`groupBy=category`）。
+
 ---
 
 ## 2. 页面格式约定
 
 ### 2.1 文件名（slug）
-- 路径：`wiki/{类型}/{slug}.md`
-- slug 允许中文、英文、数字，词间用连字符 `-`；同一类型内唯一。
-- 例：`wiki/services/用户中心.md`、`wiki/concepts/rbac-权限模型.md`
+- 路径：`wiki/{分类dir_slug}/{slug}.md`（或 `wiki-ops/`、`wiki-jp-exam/` 下同级结构）
+- slug 允许中文、英文、数字，词间用连字符 `-`；**同一分类目录内** stem 唯一。
+- 例：`wiki-ops/develop/用户中心.md`、`wiki/guides/本地启动指南.md`
+- DB / API 全路径 slug：`develop/用户中心`（含分类前缀）
 
 ### 2.2 frontmatter（YAML 头，必填）
 每个页面开头必须有：
@@ -132,7 +149,7 @@ HTTP 契约给前端/测试？       → 只链 docs/api/，不复制全文进 w
 ---
 title: 用户中心
 slug: 用户中心
-type: service            # guide | service | concept | article | interview | output
+type: service            # 内部体裁；新建页优先用分类 default_type，勿手选目录
 status: active           # draft | active | archived
 tags: [微服务, 权限]
 sources:                 # 该页知识来源(raw 路径或 URL), 保证可追溯
@@ -147,6 +164,7 @@ updated: 2026-06-22
 ### 2.3 正文
 - 用 Markdown。关键陈述尽量带来源/交叉引用。
 - **交叉引用语法**：`[[slug]]`，例如「认证由 [[rbac-权限模型]] 提供」。
+- **工程文件路径**（`docs/`、模块 README、raw）：写 **仓库相对路径 + 反引号**，如 `` `docs/api/gateway-routes.md` ``。**禁止**在正文用 `` [text](../../../../docs/...) `` —— Web 端不解析文件相对链接，会显示成原始 markdown。
 - `output` 类型(Query 回写)额外要求 frontmatter 含 `query`(原始问题) 与 `source_pages`(引用到的页 slug)。
 
 ---
@@ -175,7 +193,7 @@ updated: 2026-06-22
 输入：`raw/` 下一个文件或一段材料 / 一个 URL。
 
 流程：
-1. **读源**，提炼要点；判断属于哪个/哪些实体类型。
+1. **读源**，提炼要点；判断应落入哪个 **分类**（`dir_slug`），无则按 §1.3 新建。
 2. **查重**：读 `wiki/index.md`，看是否已有同主题页（**同主题再 ingest 见 §4.1**）。
    - 已有 → **编辑补充**（不要新建重复页）。
    - 没有 → **新建页**（按 §2 格式）。
@@ -313,6 +331,7 @@ updated: 2026-06-22
 改 wiki/*.md（Ingest / crystallize / AI 审校）
   → python kb/tools/lint.py --strict     # wiki 门禁，先于 Sync
   → 人工确认 git diff
+  → （Web Ingest commit/publish 默认已 Sync；CLI/Agent 手改 wiki 时）
   → python kb/tools/sync_to_db.py        # 或 Web「Wiki 同步」
   → （可选）Web「扫描并落库」+ Query 验证
 ```

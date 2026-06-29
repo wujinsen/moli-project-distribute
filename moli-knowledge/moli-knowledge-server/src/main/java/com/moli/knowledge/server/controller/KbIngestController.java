@@ -19,6 +19,7 @@ import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
 import com.moli.knowledge.server.dto.RawCoverageVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
+import com.moli.knowledge.server.config.KbIngestProperties;
 import com.moli.knowledge.server.service.KbIngestService;
 import com.moli.knowledge.server.service.KbRawCoverageService;
 import io.swagger.annotations.Api;
@@ -47,6 +48,9 @@ public class KbIngestController {
 
     @Resource
     private KbIngestService kbIngestService;
+
+    @Resource
+    private KbIngestProperties ingestProperties;
 
     @Resource
     private KbRawCoverageService kbRawCoverageService;
@@ -161,10 +165,11 @@ public class KbIngestController {
     }
 
     @PostMapping("/jobs/{id}/commit")
-    @ApiOperation("原子落盘；sync=true 时一键 Sync")
+    @ApiOperation("原子落盘；默认 commit 后自动 Sync（sync=false 可跳过）")
     public MoliResult<IngestCommitResultVo> commit(@PathVariable Long id,
-                                                   @RequestParam(defaultValue = "false") boolean sync) {
-        return MoliResult.success(kbIngestService.commit(id, sync));
+                                                   @RequestParam(required = false) Boolean sync) {
+        boolean doSync = sync != null ? sync : ingestProperties.isCommitAutoSync();
+        return MoliResult.success(kbIngestService.commit(id, doSync));
     }
 
     @PostMapping("/jobs/express")
@@ -184,11 +189,12 @@ public class KbIngestController {
     }
 
     @PostMapping("/jobs/{id}/publish")
-    @ApiOperation("T18 确认入库：可选全部批准 + lint + commit（+ Sync）")
+    @ApiOperation("T18 确认入库：可选全部批准 + lint + commit（默认 Sync）")
     public MoliResult<IngestPublishResultVo> publish(@PathVariable Long id,
-                                                     @RequestParam(defaultValue = "true") boolean sync,
+                                                     @RequestParam(required = false) Boolean sync,
                                                      @RequestParam(defaultValue = "true") boolean approveAll) {
-        return MoliResult.success(kbIngestService.publish(id, sync, approveAll));
+        boolean doSync = sync != null ? sync : ingestProperties.isCommitAutoSync();
+        return MoliResult.success(kbIngestService.publish(id, doSync, approveAll));
     }
 
     // ------------------------------------------------------------ T15e 模板

@@ -8,5 +8,5 @@
 
 ## [2026-06-25] maintenance | wiki同步指南 三空间映射表 + sync-all / dry-run-all 统一入口
 ## [2026-06-28] ingest | 批次#WB-20260628201240 test1 (Web工作台) → create fe_kamoku_b_set_sample_qs <!-- ingest-job:726515364753719296 -->
-## [2026-06-20] ingest | 项目文档总览 + 五类索引（PRD/设计/API/测试/SQL/README）+ 发布 Runbook/检查/迁移/监控/回滚/工作台 SOP → moli-ops-manual
+## [2026-06-25] reorg | 分类=目录：guides/product/develop/ops/test（原 services/concepts 并入 develop）
 ## [2026-06-20] maintenance | 移除误 ingest 的 jp-exam 页 fe_kamoku_b_set_sample_qs（应属 wiki-jp-exam）

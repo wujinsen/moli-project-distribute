@@ -147,7 +147,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
-| `groupBy` | query | 否 | `type`(默认，按 kb_type 体裁) / `category`(按分类=目录) |
+| `groupBy` | query | 否 | **`category`**(默认，按分类=目录) / `type`(legacy 体裁) |
 
 响应 `data.groups[]` 含 `type/label/count`；`items` 为空数组。展开分组时调 **2.2**。
 
@@ -167,7 +167,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 同 index |
-| `groupBy` | query | 否 | `type`(默认) / `category` |
+| `groupBy` | query | 否 | **`category`**(默认) / `type`(legacy) |
 | `key` | query | 是* | 分组键：`type` 模式为 kb_type；`category` 模式为 categoryId 或 `uncategorized` |
 | `type` | query | 是* | 旧参数，等价 `key`（向后兼容，二选一） |
 | `pageNum` | query | 否 | 默认 1 |
@@ -182,7 +182,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：系统
 | `spaceId` | query | 否 | 同 index |
 | `q` | query | 是 | 关键词（title/slug/summary LIKE） |
 | `limit` | query | 否 | 默认 200，最大 500 |
-| `groupBy` | query | 否 | `type`(默认) / `category` |
+| `groupBy` | query | 否 | **`category`**(默认) / `type`(legacy) |
 
 ### 2.4 slug 定位 `GET /kb/index/locate`
 
@@ -1420,7 +1420,7 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 | 12 | POST | `/kb/ingest/jobs/{id}/draft/regenerate?slug=` | 单页重生成 | **editor** + LLM |
 | 13 | PUT | `/kb/ingest/jobs/{id}/draft/approval?slug=&approval=` | 审批 `approved`/`rejected`/`draft` | **editor** |
 | 14 | POST | `/kb/ingest/jobs/{id}/lint` | commit 前 lint 预检 | viewer |
-| 15 | POST | `/kb/ingest/jobs/{id}/commit?sync=false` | 原子落盘 wiki；`sync=true` 一键 Sync | **editor** |
+| 15 | POST | `/kb/ingest/jobs/{id}/commit?sync=` | 原子落盘 wiki；**默认 `sync=true` 自动 Sync**（`sync=false` 仅落盘） | **editor** |
 | 16 | GET | `/kb/ingest/templates?spaceId=` | 批次模板列表 | viewer |
 | 17 | POST | `/kb/ingest/templates` | 创建批次模板 | **editor** |
 | 18 | DELETE | `/kb/ingest/templates/{id}` | 删除批次模板（软删） | **editor** |
@@ -1890,7 +1890,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 
 | 参数 | 类型 | 默认 | 说明 |
 |------|------|------|------|
-| `sync` | boolean | `false` | `true` 时落盘后调用 `KbSyncService.trigger` |
+| `sync` | boolean | **`true`**（`kb.ingest.commit-auto-sync`） | `true` 时落盘后调用 `KbSyncService.trigger`；`false` 仅写 markdown |
 
 **落盘路径**：与 Plan `create` 解析一致（T17）；已批准页的 `KbIngestDraft.slug` 即 wiki 相对路径。前端在 commit 前展示 `kb/{wikiDir}/{slug}.md` 预览（`wikiDir`：`enterprise-kb`→`wiki`，`jp-fe-ap-exam`→`wiki-jp-exam`，见 `kb.wiki.space-dirs`）。
 

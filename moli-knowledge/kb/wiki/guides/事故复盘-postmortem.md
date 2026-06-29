@@ -6,14 +6,14 @@ status: active
 tags: [运维, 质量, 协作]
 sources:
   - raw/wujinsen_markdown/
-related: [故障排查指南, 代码审查-checklist, 技术债-管理]
+related: [系统操作手册入口, 代码审查-checklist, 技术债-管理]
 created: 2026-06-21
 updated: 2026-06-21
 ---
 
 # 事故复盘（Postmortem）
 
-> 排查 [[故障排查指南]]；CR [[代码审查-checklist]]；技术债 [[技术债-管理]]。
+> 排查 [[系统操作手册入口]]；CR [[代码审查-checklist]]；技术债 [[技术债-管理]]。
 
 ## 1. 模板
 

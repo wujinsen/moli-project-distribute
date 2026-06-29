@@ -72,7 +72,7 @@
 | 能力 | v1 后端 | v1 前端 | 文档 |
 |------|---------|---------|------|
 | 浏览 / 问答 / 搜索 | ✅ | ✅ | [KNOWLEDGE_API.md](../api/KNOWLEDGE_API.md) |
-| 三空间 Sync | ✅ | ✅ | [wiki同步指南](../../moli-knowledge/kb/wiki-ops/guides/wiki同步指南.md) |
+| 三空间 Sync | ✅ | ✅ | [wiki同步指南](../../moli-knowledge/kb/wiki-ops/ops/wiki同步指南.md) |
 | Ingest 工作台 | ✅ | ⚠️ 部分 | [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) |
 | Wiki 单页编辑 + AI | ✅ | ✅ | KNOWLEDGE_API §8 |
 | Wiki 治理（lint/script/AI/auto） | ✅ | ⚠️ T16f 部分 | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) |

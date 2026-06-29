@@ -19,9 +19,9 @@ updated: 2026-06-27
 # Ingest 工作台（产品方案）
 
 > **状态：active（T15a–e + T18 + 模板模式 · 2026-06-27）**  
-> **操作手册**：[`docs/ops/knowledge-workbench-operations.md`](../../../docs/ops/knowledge-workbench-operations.md) · **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)  
+> **操作手册**：`docs/ops/knowledge-workbench-operations.md` · **需求总览**：`docs/product/knowledge-workbench-requirements.md`  
 > 目标：Web 完成 **Agent 厚 Ingest** — raw → Plan → 草稿 → 审阅 → lint → commit → Sync。  
-> **HTTP 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) **§9**。
+> **HTTP 契约**：`docs/api/KNOWLEDGE_API.md` **§9**。
 
 ### 与 [[Wiki在线编辑与AI协助改稿]] / [[AI自我进化与MD审校流程]] 的关系
 
@@ -59,7 +59,7 @@ updated: 2026-06-27
 
 ## 2. 六步状态机
 
-主图（draw.io）：[`docs/diagrams/moli-kb-ingest-workbench.drawio`](../../../docs/diagrams/moli-kb-ingest-workbench.drawio)
+主图（draw.io）：`docs/diagrams/moli-kb-ingest-workbench.drawio`
 
 | 步骤 | 用户 | 系统 | 质量门禁 | 对应 job.status |
 |------|------|------|----------|-----------------|
@@ -166,7 +166,7 @@ UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高�
 | `useLlmGenerate` | `true` | **`false`** = 模板模式（raw 直贴，不调 LLM） |
 
 - Expert 仍可用逐步 Plan / 逐页 approve / `commit`。
-- 契约：§9.6.6 · [knowledge-ingest-acceptance.md](../../../docs/test/knowledge-ingest-acceptance.md) §1–§2
+- 契约：§9.6.6 · `docs/test/knowledge-ingest-acceptance.md` §1–§2
 
 ### 3.4 模板入库（T19 · 2026-06）
 
@@ -198,8 +198,8 @@ POST .../express?useLlmPlan=false&useLlmGenerate=false
 2. append `wiki/log.md`（`ingest | 批次#N ...`）  
 3. append `wiki/graph/edges.jsonl`  
 4. 更新 `wiki/index.md` 相关条目  
-5. 可选：`POST /kb/ingest/jobs/{id}/commit?sync=true`（落盘后立即 Sync）  
-6. 展示 insert/update/skip 统计  
+5. 可选：`POST /kb/ingest/jobs/{id}/commit`（**默认 Sync**；`sync=false` 仅落盘）  
+6. 展示 insert/update/skip 统计（来自 `syncResult`）
 7. **`commit.nextSteps`**：建议跳转 Wiki 治理 Lint、健康体检（`KbWorkflowHintVo`）
 
 **raw 覆盖门禁（2026-06）**：commit 时若 sources 中 raw 已被**其它** wiki 页引用 → 拒绝（本批 enrich 同一 slug 除外）。
@@ -212,7 +212,7 @@ POST .../express?useLlmPlan=false&useLlmGenerate=false
 
 ## 4. API 与数据（已实现 · T15）
 
-> **契约权威**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) **§9**（接口总览、请求/响应示例、DTO 字段）。  
+> **契约权威**：`docs/api/KNOWLEDGE_API.md` **§9**（接口总览、请求/响应示例、DTO 字段）。  
 > 下文为产品视角摘要；联调以 API 文档为准。
 
 ### 4.1 接口清单（20 个）
@@ -245,7 +245,7 @@ POST .../express?useLlmPlan=false&useLlmGenerate=false
 | `kb_ingest_commit` | 落盘时间、写入文件列表 |
 | `kb_ingest_template` | 批次模板（raw 范围 / 可选 Plan 快照） |
 
-DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_workbench.sql)、[`09_kb_ingest_t15e.sql`](../../../docs/sql/09_kb_ingest_t15e.sql)。
+DDL：`docs/sql/08_kb_ingest_workbench.sql`、`docs/sql/09_kb_ingest_t15e.sql`。
 
 草稿在 **commit 前只存 DB**，不写 wiki 文件。
 
@@ -339,11 +339,11 @@ DDL：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_wor
   - 功能流程 ⑥：`docs/diagrams/moli-kb-functional-flows.drawio`
 - 单篇 Web 编辑 + **Enrich 治理**：[[Wiki在线编辑与AI协助改稿]]（T14 / T14f）
 - 闭环手册：[[AI自我进化与MD审校流程]]
-- **HTTP API 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §9
-- **模板模式**：[`docs/test/knowledge-ingest-acceptance.md`](../../../docs/test/knowledge-ingest-acceptance.md) §1
-- **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)
+- **HTTP API 契约**：`docs/api/KNOWLEDGE_API.md` §9
+- **模板模式**：`docs/test/knowledge-ingest-acceptance.md` §1
+- **需求总览**：`docs/product/knowledge-workbench-requirements.md`
 - 单页 Enrich（T14，非治理页）：[[Wiki在线编辑与AI协助改稿]] §2.2
-- **DDL**：[`docs/sql/08_kb_ingest_workbench.sql`](../../../docs/sql/08_kb_ingest_workbench.sql)、[`09_kb_ingest_t15e.sql`](../../../docs/sql/09_kb_ingest_t15e.sql)
+- **DDL**：`docs/sql/08_kb_ingest_workbench.sql`、`docs/sql/09_kb_ingest_t15e.sql`
 
 ---
 

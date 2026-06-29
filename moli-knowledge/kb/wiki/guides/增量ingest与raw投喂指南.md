@@ -7,9 +7,9 @@ tags: [知识库, ingest, raw, P0]
 sources:
   - moli-knowledge/kb/AGENTS.md
   - moli-knowledge/kb/raw/README.md
-related: [知识库三操作, 知识库使用指南, wiki同步指南, 查询与体检指南, AI自我进化与MD审校流程]
+related: [知识库三操作, 系统操作手册入口, AI自我进化与MD审校流程]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-06-25
 ---
 
 # 增量 Ingest 与 raw 投喂指南
@@ -50,12 +50,13 @@ Agent 必读：`kb/AGENTS.md`、`wiki/index.md`。
 
 ## 4. 批次交付物（检查清单）
 
-- [ ] 新页带 YAML frontmatter（`title/slug/type/sources/related`）
-- [ ] 正文 `[[slug]]` 交叉链接
-- [ ] `wiki/index.md` 目录条目
-- [ ] `wiki/log.md` append 一行 `ingest | 批次#N ...`
-- [ ] `wiki/graph/edges.jsonl` append 关系边
-- [ ] 相关旧页 **enrich** 反向链接（避免孤儿）
+-  新页带 YAML frontmatter（`title/slug/type/sources/related`）
+-  正文 `[[slug]]` 交叉链接
+-  `wiki/index.md` 目录条目
+-  `wiki/log.md` append 一行 `ingest | 批次#N ...`
+-  `wiki/graph/edges.jsonl` append 关系边
+-  相关旧页 **enrich** 反向链接（避免孤儿）
+-  **同主题新版本** raw 再 ingest → 按 `AGENTS.md` **§4.1**（默认 enrich，conflicts 等人确认）
 
 ## 5. 批次规模建议
 
@@ -69,13 +70,13 @@ Agent 必读：`kb/AGENTS.md`、`wiki/index.md`。
 
 ```bash
 cd moli-knowledge
-python kb/tools/serve.py              # 浏览器 :8765 → 体检
-python kb/tools/sync_to_db.py --dry-run
-python kb/tools/sync_to_db.py
+python kb/tools/lint.py --strict
+bash kb/tools/ci/run_sync.sh dry-run-all
+bash kb/tools/ci/run_sync.sh sync-all
 ```
 
-- **Lint**：断链 / 孤儿 / 缺 sources（meta 示例 `[[slug]]` 可忽略）
-- **sync**：wiki → `kb_document` / `kb_relation` / `kb_tag` [[wiki同步指南]]
+- **Lint**：断链 / 孤儿 / 缺 sources（`lint.py --strict` 与 CI 同口径）
+- **sync**：`wiki/` → `enterprise-kb`；三空间映射见 [[系统操作手册入口]]；完整命令见 ops 空间 `guides/wiki同步指南`
 
 ## 7. 与 Git 协作
 
@@ -90,4 +91,4 @@ wiki 变更随代码 **commit**；可选 `kb/tools/install_git_hook.ps1` 在 com
 
 ## 相关
 
-[[知识库使用指南]] · [[查询与体检指南]] · [[茉莉新人上手checklist]]
+[[系统操作手册入口]] · [[系统操作手册入口]] · [[茉莉新人上手checklist]]

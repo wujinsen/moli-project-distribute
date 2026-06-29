@@ -26,7 +26,7 @@
 | [`moli-seckill-flow.drawio`](moli-seckill-flow.drawio) | **秒杀全链路**：Gateway → Lua → 队列 → MySQL |
 | [`moli-deploy-topology.drawio`](moli-deploy-topology.drawio) | **本地部署拓扑**：基础设施 + 启动顺序 |
 
-**三空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-ops/guides/wiki同步指南.md` §1）：
+**三空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-ops/ops/wiki同步指南.md` §1）：
 
 | wiki 目录 | space_code |
 |-----------|------------|

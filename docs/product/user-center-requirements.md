@@ -95,7 +95,7 @@
 |------|------|
 | ApiTest 清单 | [user-center.md](../test/user-center.md) |
 | 冒烟（含登录） | [release-smoke-checklist.md](../test/release-smoke-checklist.md) |
-| 运维要点 | [wiki-ops/user-center-运维要点](../../moli-knowledge/kb/wiki-ops/guides/user-center-运维要点.md) |
+| 运维要点 | [wiki-ops/user-center-运维要点](../../moli-knowledge/kb/wiki-ops/ops/user-center-运维要点.md) |
 | 模块 README | [moli-user-center/README.md](../../moli-user-center/README.md) |
 
 ---

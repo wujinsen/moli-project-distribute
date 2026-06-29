@@ -25,17 +25,25 @@ ON DUPLICATE KEY UPDATE
   `update_time` = NOW();
 
 -- 分类=目录（单一真相源）：绑定 kb/wiki-ops/ 子目录，default_type 用于移动时对齐 frontmatter type
+-- 2026-06-25：guides / product / develop / ops / test（废弃 services、concepts）
+UPDATE `kb_category` SET `is_delete` = 1, `update_time` = NOW()
+WHERE `space_id` = 900000000000000003 AND `dir_slug` IN ('services', 'concepts') AND `is_delete` = 0;
+
 INSERT INTO `kb_category`
   (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`default_type`,`sort`,`is_delete`)
 VALUES
-  (900000000000000131, 1, NOW(), 1, NOW(), 900000000000000003, 0, '操作指导', NULL, 'guides',   'guide',   1, 0),
-  (900000000000000132, 1, NOW(), 1, NOW(), 900000000000000003, 0, '微服务',   NULL, 'services', 'service', 2, 0),
-  (900000000000000133, 1, NOW(), 1, NOW(), 900000000000000003, 0, '概念',     NULL, 'concepts', 'concept', 3, 0)
+  (900000000000000131, 1, NOW(), 1, NOW(), 900000000000000003, 0, '操作指导', NULL, 'guides',  'guide', 1, 0),
+  (900000000000000134, 1, NOW(), 1, NOW(), 900000000000000003, 0, '产品',     NULL, 'product', 'guide', 2, 0),
+  (900000000000000135, 1, NOW(), 1, NOW(), 900000000000000003, 0, '技术',     NULL, 'develop', 'guide', 3, 0),
+  (900000000000000136, 1, NOW(), 1, NOW(), 900000000000000003, 0, '运维',     NULL, 'ops',     'guide', 4, 0),
+  (900000000000000137, 1, NOW(), 1, NOW(), 900000000000000003, 0, '测试',     NULL, 'test',    'guide', 5, 0)
 ON DUPLICATE KEY UPDATE
   `category_name` = VALUES(`category_name`),
+  `dir_slug`      = VALUES(`dir_slug`),
   `default_type`  = VALUES(`default_type`),
   `sort`          = VALUES(`sort`),
-  `is_delete`     = 0;
+  `is_delete`     = 0,
+  `update_time`   = NOW();
 
 -- 演示成员：admin 可管理；普通演示用户只读
 INSERT INTO `kb_space_member`

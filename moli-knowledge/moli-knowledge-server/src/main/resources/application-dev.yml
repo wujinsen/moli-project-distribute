@@ -122,3 +122,8 @@ kb:
     max-tree-nodes: 5000
     # Plan 生成时单个 raw 文件喂给 LLM 的最大字符数
     raw-snippet-chars: 4000
+    # Expert commit / Express publish 未传 sync 时自动 wiki→MySQL（ingest 完即入库）
+    commit-auto-sync: true
+  browse:
+    # 浏览侧栏默认按分类（= wiki 一级目录）；legacy 体裁分组传 groupBy=type
+    default-group-by: category

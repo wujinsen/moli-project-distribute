@@ -20,15 +20,15 @@ updated: 2026-06-27
 # Wiki 治理工作台（产品方案）
 
 > **状态：active（T16 · 2026-06 现行版）**  
-> **需求总览**：[`docs/product/knowledge-workbench-requirements.md`](../../../docs/product/knowledge-workbench-requirements.md)  
+> **操作手册**：`docs/ops/knowledge-workbench-operations.md` · **需求总览**：`docs/product/knowledge-workbench-requirements.md`  
 > 目标：**① 文件真值 Lint** → **② 脚本修 metadata** → **③ kb.llm AI 批量修复** → **④ 一键 auto-fix** → **⑤ 可选 Sync**  
-> **HTTP 契约**：[`docs/api/KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §4.6 + §8.6 · **前端**：[`wiki-govern-frontend.md`](../../../docs/api/wiki-govern-frontend.md)
+> **HTTP 契约**：`docs/api/KNOWLEDGE_API.md` §4.6 + §8.6 · **前端**：`docs/api/wiki-govern-frontend.md`
 
 ## 链路总览
 
-![Wiki 治理工作台链路](../../../../docs/diagrams/png/moli-kb-wiki-govern.png)
+> **Wiki 治理工作台链路**：`docs/diagrams/png/moli-kb-wiki-govern.png`（请在 IDE 中打开仓库文件查看）
 
-> 源文件：[`docs/diagrams/moli-kb-wiki-govern.drawio`](../../../../docs/diagrams/moli-kb-wiki-govern.drawio)
+> 源文件：`docs/diagrams/moli-kb-wiki-govern.drawio`
 
 ---
 
@@ -96,7 +96,7 @@ idle → linted → fixing → relinted → synced
 
 Lint 后 **默认勾选** 全部 script+AI 可修项；`dup_slug` 仅 merge-hint / 跳转编辑。
 
-完整 TypeScript / 验收：[`wiki-govern-frontend.md`](../../../docs/api/wiki-govern-frontend.md)
+完整 TypeScript / 验收：`docs/api/wiki-govern-frontend.md`
 
 ---
 
@@ -141,4 +141,4 @@ Lint 后 **默认勾选** 全部 script+AI 可修项；`dup_slug` 仅 merge-hint
 
 ## 相关
 
-[[Wiki在线编辑与AI协助改稿]] · [[Ingest工作台产品方案]] · [[AI自我进化与MD审校流程]] · [脚本 vs LLM 矩阵](../../../docs/test/knowledge-script-vs-llm-matrix.md)
+[[Wiki在线编辑与AI协助改稿]] · [[Ingest工作台产品方案]] · [[AI自我进化与MD审校流程]] · `docs/test/knowledge-script-vs-llm-matrix.md`

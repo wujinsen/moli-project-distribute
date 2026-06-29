@@ -115,8 +115,10 @@ public class KbIngestServiceImpl implements KbIngestService {
             + "3) 与已有页重复的 raw 放进 skip 并写原因。\n"
             + "4) 新旧结论矛盾放进 conflicts（只报告，不替用户决定）。\n"
             + "5) slug 用中文/英文/数字，词间连字符；create 的 sources 必须是给定的 raw 路径。\n"
+            + "6) create 项**必须**带 categoryId（从用户给出的「空间分类列表」选）；slug 为裸文件名（不含 /）。\n"
+            + "7) 无合适分类时在 reason 写明建议新建 dir_slug，不要臆造 categoryId。\n"
             + "JSON 结构：{\"batchNo\":string,\"topic\":string,"
-            + "\"create\":[{\"type\":\"article|guide|service|concept|interview\",\"slug\":string,\"title\":string,\"sources\":[string],\"reason\":string}],"
+            + "\"create\":[{\"categoryId\":number,\"type\":\"guide|service|concept|article|interview\",\"slug\":string,\"title\":string,\"sources\":[string],\"reason\":string}],"
             + "\"enrich\":[{\"slug\":string,\"action\":\"append_section|rewrite_section\",\"reason\":string}],"
             + "\"skip\":[{\"raw\":string,\"reason\":string}],"
             + "\"edges\":[{\"from\":string,\"to\":string,\"type\":\"depends_on|relates_to|derived_from|supersedes|part_of\",\"evidence\":string}],"
@@ -393,6 +395,7 @@ public class KbIngestServiceImpl implements KbIngestService {
             log.info("[ingest] LLM 未配置，生成可编辑骨架 plan job={}", id);
         }
 
+        planJson = enrichPlanWithCategories(space.getId(), planJson);
         savePlanVersion(job, planJson, source, provider, model);
         return toVo(loadJob(id), space, latestPlan(id));
     }
@@ -588,22 +591,51 @@ public class KbIngestServiceImpl implements KbIngestService {
 
     private String buildExpressPlanJson(KbIngestJob job, Long spaceId, List<String> rawPaths) {
         JSONObject obj = JSON.parseObject(skeletonPlan(job, rawPaths));
+        return enrichPlanWithCategories(spaceId, obj.toJSONString());
+    }
+
+    /**
+     * Plan create 项：按 raw 路径推断 categoryId；无匹配时在 reason 提示新建分类 dir_slug。
+     */
+    private String enrichPlanWithCategories(Long spaceId, String planJson) {
+        JSONObject obj;
+        try {
+            obj = JSON.parseObject(planJson);
+        } catch (Exception e) {
+            return planJson;
+        }
+        if (obj == null) {
+            return planJson;
+        }
         Map<String, KbCategory> byDir = loadCategoriesByDirSlug(spaceId);
         JSONArray create = obj.getJSONArray("create");
-        if (create != null) {
-            for (int i = 0; i < create.size(); i++) {
-                JSONObject item = create.getJSONObject(i);
-                JSONArray sources = item.getJSONArray("sources");
-                String rawSource = sources != null && !sources.isEmpty() ? sources.getString(0) : "";
-                KbCategory cat = IngestPlanPathResolver.inferCategoryFromRawSource(rawSource, byDir);
-                if (cat != null) {
-                    item.put("categoryId", cat.getId());
-                    if (StringUtils.isNotBlank(cat.getDefaultType())) {
-                        item.put("type", cat.getDefaultType());
-                    }
-                    item.put("reason", "Express：raw 路径匹配分类 " + cat.getDirSlug());
-                } else {
-                    item.put("reason", "Express：请确认分类或 type");
+        if (create == null) {
+            return obj.toJSONString();
+        }
+        for (int i = 0; i < create.size(); i++) {
+            JSONObject item = create.getJSONObject(i);
+            if (IngestPlanPathResolver.parseCategoryId(item) != null) {
+                continue;
+            }
+            JSONArray sources = item.getJSONArray("sources");
+            String rawSource = sources != null && !sources.isEmpty() ? sources.getString(0) : "";
+            KbCategory cat = IngestPlanPathResolver.inferCategoryFromRawSource(rawSource, byDir);
+            if (cat != null) {
+                item.put("categoryId", cat.getId());
+                if (StringUtils.isBlank(item.getString("type"))
+                        && StringUtils.isNotBlank(cat.getDefaultType())) {
+                    item.put("type", cat.getDefaultType());
+                }
+                item.put("reason", "raw→分类 " + cat.getDirSlug()
+                        + (StringUtils.isNotBlank(item.getString("reason"))
+                        ? "；" + item.getString("reason") : ""));
+            } else {
+                String suggested = IngestPlanPathResolver.suggestDirSlugFromRawSource(rawSource);
+                if (StringUtils.isNotBlank(suggested)) {
+                    item.put("reason", "无分类「" + suggested + "」→ 请在 Web 分类管理新建 dir_slug="
+                            + suggested + "（自动建目录）"
+                            + (StringUtils.isNotBlank(item.getString("reason"))
+                            ? "；" + item.getString("reason") : ""));
                 }
             }
         }
@@ -1364,7 +1396,24 @@ public class KbIngestServiceImpl implements KbIngestService {
         sb.append("批次#").append(job.getBatchNo()).append("\n");
         sb.append("主题：").append(job.getTopic()).append("\n");
         if (StringUtils.isNotBlank(job.getExpectTypes())) {
-            sb.append("期望类型：").append(job.getExpectTypes()).append("\n");
+            sb.append("期望体裁（内部字段 type，可选）：").append(job.getExpectTypes()).append("\n");
+        }
+
+        List<KbCategory> categories = kbCategoryMapper.selectList(new LambdaQueryWrapper<KbCategory>()
+                .eq(KbCategory::getSpaceId, space.getId())
+                .eq(KbCategory::getIsDelete, CommonConstant.UN_DELETE)
+                .orderByAsc(KbCategory::getSort));
+        sb.append("\n空间分类列表（create **必须**选 categoryId；slug 为裸文件名）：\n");
+        if (categories.isEmpty()) {
+            sb.append("（暂无分类，请先在 Web 分类管理创建）\n");
+        } else {
+            for (KbCategory c : categories) {
+                sb.append("- id=").append(c.getId())
+                        .append(" name=").append(c.getCategoryName())
+                        .append(" dir_slug=").append(c.getDirSlug())
+                        .append(" defaultType=").append(StringUtils.defaultString(c.getDefaultType(), ""))
+                        .append("\n");
+            }
         }
 
         List<String> candidates = candidateSlugs(space.getId(), job.getTopic());
@@ -1486,7 +1535,7 @@ public class KbIngestServiceImpl implements KbIngestService {
         for (String rp : rawPaths) {
             JSONObject item = new JSONObject(true);
             item.put("type", StringUtils.isNotBlank(job.getExpectTypes())
-                    ? job.getExpectTypes().split(",")[0].trim() : "article");
+                    ? job.getExpectTypes().split(",")[0].trim() : "guide");
             item.put("slug", IngestPlanPathResolver.stemFromRawPath(rp));
             item.put("title", "");
             JSONArray sources = new JSONArray();

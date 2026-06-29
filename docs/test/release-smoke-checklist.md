@@ -103,7 +103,7 @@ Ingest 深度验收：[knowledge-ingest-acceptance.md](knowledge-ingest-acceptan
 | 知识库 403 | 空间 ACL；账号是否 editor |
 | 秒杀 404 | 是否执行 `02_seckill_schema.sql`；Redis 是否初始化库存 |
 
-排障：[wiki-ops/故障排查指南](../../moli-knowledge/kb/wiki-ops/guides/故障排查指南.md)
+排障：[wiki-ops/故障排查指南](../../moli-knowledge/kb/wiki-ops/ops/故障排查指南.md)
 
 ---
 

@@ -8,7 +8,7 @@ sources:
   - raw/wujinsen_markdown/language/Java/Git/Git使用详细教程.note.md
   - raw/wujinsen_markdown/架构/Git/You have not concluded your merge (MERGE_HEAD exists) git拉取失败.note.md
   - raw/wujinsen_markdown/架构/Git/git拒绝push.note.md
-related: [jenkins-ci入门, docker部署指南, 本地启动指南]
+related: [jenkins-ci入门, 系统操作手册入口, 系统操作手册入口]
 created: 2026-06-22
 updated: 2026-06-22
 ---
@@ -54,7 +54,7 @@ git push -u origin feature/xxx
 
 ## 5. 知识库 wiki 维护
 
-Ingest 只改 `wiki/**`，`raw/` 只读；变更通过 Git 审查，见 [[wiki同步指南]]。
+Ingest 只改 `wiki/**`，`raw/` 只读；变更通过 Git 审查，见 [[系统操作手册入口]]。
 
 ## 相关
 

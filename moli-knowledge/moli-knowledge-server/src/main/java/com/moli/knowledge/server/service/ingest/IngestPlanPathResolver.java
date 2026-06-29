@@ -19,7 +19,21 @@ public final class IngestPlanPathResolver {
 
     private static final Map<String, String> TYPE_DIRS = buildTypeDirs();
 
+    /**
+     * raw 首段目录 → 空间分类 {@code dir_slug} 别名（ops 等业务分类与 raw 目录名不一致时使用）。
+     */
+    private static final Map<String, String> RAW_DIR_ALIASES = buildRawDirAliases();
+
     private IngestPlanPathResolver() {
+    }
+
+    private static Map<String, String> buildRawDirAliases() {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("prd", "product");
+        m.put("design", "develop");
+        m.put("api", "develop");
+        m.put("docs", "develop");
+        return m;
     }
 
     private static Map<String, String> buildTypeDirs() {
@@ -182,10 +196,21 @@ public final class IngestPlanPathResolver {
     }
 
     /**
-     * {@code raw/school/fe/foo.md}、{@code raw/fe/foo.md} 等 → 匹配 {@code dir_slug=fe} 的分类。
+     * {@code raw/school/fe/foo.md}、{@code raw/fe/foo.md}、{@code raw/prd/foo.md} 等 → 匹配 {@code dir_slug}。
      */
     public static KbCategory inferCategoryFromRawSource(String rawSource, Map<String, KbCategory> categoriesByDirSlug) {
-        if (categoriesByDirSlug == null || categoriesByDirSlug.isEmpty() || StringUtils.isBlank(rawSource)) {
+        String dirSlug = suggestDirSlugFromRawSource(rawSource);
+        if (dirSlug == null || categoriesByDirSlug == null || categoriesByDirSlug.isEmpty()) {
+            return null;
+        }
+        return categoriesByDirSlug.get(dirSlug);
+    }
+
+    /**
+     * 从 raw 路径推断目标分类 {@code dir_slug}（未匹配已存在分类时，可用于新建分类）。
+     */
+    public static String suggestDirSlugFromRawSource(String rawSource) {
+        if (StringUtils.isBlank(rawSource)) {
             return null;
         }
         String path = rawSource.trim().replace('\\', '/');
@@ -196,7 +221,7 @@ public final class IngestPlanPathResolver {
         if (seg == null) {
             return null;
         }
-        return categoriesByDirSlug.get(seg);
+        return RAW_DIR_ALIASES.getOrDefault(seg, seg);
     }
 
     public static Map<String, KbCategory> indexCategoriesByDirSlug(Iterable<KbCategory> categories) {

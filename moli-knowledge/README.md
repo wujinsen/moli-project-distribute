@@ -93,7 +93,7 @@ bash kb/tools/ci/run_sync.sh dry-run-all
 bash kb/tools/ci/run_sync.sh sync-all
 ```
 
-详表与单空间命令见 `kb/wiki-ops/guides/wiki同步指南.md`。
+详表与单空间命令见 `kb/wiki-ops/ops/wiki同步指南.md`。
 
 机制：
 - **slug** = wiki 相对路径去扩展名（如 `services/用户中心`），空间内唯一、与 `edges.jsonl` 节点命名一致。

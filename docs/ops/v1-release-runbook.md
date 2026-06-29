@@ -120,4 +120,4 @@ Web 端：知识库 → 同步触发 / 健康体检。
 - 监控日志：[monitoring-and-logs.md](monitoring-and-logs.md)
 - 回滚详情：[rollback-guide.md](rollback-guide.md)
 - 知识库操作：[knowledge-workbench-operations.md](knowledge-workbench-operations.md)
-- Docker/Nginx：[wiki-ops/docker部署指南](../../moli-knowledge/kb/wiki-ops/guides/docker部署指南.md)
+- Docker/Nginx：[wiki-ops/docker部署指南](../../moli-knowledge/kb/wiki-ops/ops/docker部署指南.md)

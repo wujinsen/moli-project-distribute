@@ -100,7 +100,7 @@ raw → Plan → 草稿 → lint → commit → Sync；Express / 模板模式。
 | 删除 | wiki 删页 → DB `is_delete=1` |
 | 审计 | `kb_sync_log` |
 
-命令见 [wiki同步指南](../../moli-knowledge/kb/wiki-ops/guides/wiki同步指南.md)。
+命令见 [wiki同步指南](../../moli-knowledge/kb/wiki-ops/ops/wiki同步指南.md)。
 
 ---
 

@@ -127,7 +127,7 @@ Agent/Cursor 仍是 **批量 Ingest / crystallize** 主力；本功能面向 **�
 | PUT | `/kb/wiki/page` | 写 wiki 文件；body：`slug, spaceId, content, changeLog?`；需 editor |
 | POST | `/kb/wiki/ai-revise` | AI 改稿建议；见下表 |
 | POST | `/kb/wiki/page/lint-preview` | 保存前轻量 lint 摘要 |
-| POST | `/kb/wiki/enrich` | **Enrich 治理**：追加 patch + 可选 log/index/edges；见 [`KNOWLEDGE_API.md`](../../../docs/api/KNOWLEDGE_API.md) §8.4 |
+| POST | `/kb/wiki/enrich` | **Enrich 治理**：追加 patch + 可选 log/index/edges；见 `docs/api/KNOWLEDGE_API.md` §8.4 |
 | GET | `/kb/wiki/page/history?slug=` | 🔜 P2：git 历史或版本表（可选） |
 
 ### 3.1 `POST /kb/wiki/ai-revise`

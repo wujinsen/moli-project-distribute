@@ -117,6 +117,26 @@ public class IngestPlanPathResolverTest {
     }
 
     @Test
+    public void inferCategoryFromRawSource_prdAliasToProduct() {
+        KbCategory product = new KbCategory();
+        product.setId(200L);
+        product.setDirSlug("product");
+        product.setDefaultType("guide");
+        Map<String, KbCategory> map = IngestPlanPathResolver.indexCategoriesByDirSlug(
+                java.util.Collections.singletonList(product));
+        KbCategory found = IngestPlanPathResolver.inferCategoryFromRawSource(
+                "raw/prd/gateway-requirements.md", map);
+        Assert.assertNotNull(found);
+        Assert.assertEquals("product", found.getDirSlug());
+    }
+
+    @Test
+    public void suggestDirSlugFromRawSource_returnsAlias() {
+        Assert.assertEquals("product", IngestPlanPathResolver.suggestDirSlugFromRawSource("raw/prd/foo.md"));
+        Assert.assertEquals("develop", IngestPlanPathResolver.suggestDirSlugFromRawSource("raw/design/foo.md"));
+    }
+
+    @Test
     public void inferCategoryFromRawSource_noMatchForRootFile() {
         Map<String, KbCategory> map = IngestPlanPathResolver.indexCategoriesByDirSlug(
                 java.util.Collections.singletonList(feCategory()));
