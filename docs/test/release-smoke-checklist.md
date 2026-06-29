@@ -68,7 +68,7 @@
 | K3 | `POST /KnowledgeServer/kb/ask` 简单问题 | 返回答案或检索式降级 | |
 | K4 | Ingest：Express 预览一条 raw | 批次创建、草稿生成 | |
 | K5 | Wiki 编辑：打开 slug 保存 | 磁盘文件更新 | |
-| K6 | `POST /kb/wiki/lint-space` | 返回 issues 列表 | |
+| K6 | `POST /kb/wiki-moli/lint-space` | 返回 issues 列表 | |
 
 Ingest 深度验收：[knowledge-ingest-acceptance.md](knowledge-ingest-acceptance.md)  
 知识库大改后：[knowledge-e2e-regression.md](knowledge-e2e-regression.md)
@@ -103,7 +103,7 @@ Ingest 深度验收：[knowledge-ingest-acceptance.md](knowledge-ingest-acceptan
 | 知识库 403 | 空间 ACL；账号是否 editor |
 | 秒杀 404 | 是否执行 `02_seckill_schema.sql`；Redis 是否初始化库存 |
 
-排障：[wiki-ops/故障排查指南](../../moli-knowledge/kb/wiki-ops/ops/故障排查指南.md)
+排障：[wiki-moli/故障排查指南](../../moli-knowledge/kb/wiki-moli/ops/故障排查指南.md)
 
 ---
 

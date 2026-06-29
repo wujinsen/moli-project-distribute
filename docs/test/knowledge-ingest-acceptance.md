@@ -110,7 +110,7 @@ curl -X POST "http://127.0.0.1:8090/kb/ingest/jobs/<JOB_ID>/publish?sync=true&ap
 
 ## 3. 分类 + slug 落盘（T17）
 
-产品：[`Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md) §3.1、§3.5。
+产品：[`Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md) §3.1、§3.5。
 
 ### 3.1 前置
 

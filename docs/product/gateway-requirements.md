@@ -72,8 +72,8 @@
 | 概要设计 | [gateway-design.md](../design/gateway-design.md) |
 | 架构 | [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md) |
 | 模块 README | [moli-gateway/README.md](../../moli-gateway/README.md) |
-| wiki 服务页 | [kb/wiki/services/网关.md](../../moli-knowledge/kb/wiki/services/网关.md) |
-| wiki 产品摘要 | [kb/wiki/guides/网关产品说明.md](../../moli-knowledge/kb/wiki/guides/网关产品说明.md) |
+| wiki 服务页 | [kb/wiki-moli/develop/网关.md](../../moli-knowledge/kb/wiki-moli/develop/网关.md) |
+| wiki 产品摘要 | [kb/wiki-moli/product/网关产品说明.md](../../moli-knowledge/kb/wiki-moli/product/网关产品说明.md) |
 
 ---
 

@@ -72,7 +72,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all
 ## 6. 回滚后沟通
 
 - 记录：版本号、回滚时间、根因、是否动 DB
-- 更新 [wiki/guides/事故复盘-postmortem.md](../../moli-knowledge/kb/wiki/guides/事故复盘-postmortem.md)（若影响用户）
+- 更新 [wiki/guides/事故复盘-postmortem.md](../../moli-knowledge/kb/wiki-moli/guides/事故复盘-postmortem.md)（若影响用户）
 
 ---
 

@@ -1,6 +1,6 @@
 # 运维文档
 
-> **日常 SOP 正文**：`moli-knowledge/kb/wiki-ops/`（空间 `moli-ops-manual`）。本目录为 **发布 / 工程索引**。
+> **日常 SOP 正文**：`moli-knowledge/kb/wiki-moli/`（空间 `moli-ops-manual`）。本目录为 **发布 / 工程索引**。
 
 ## v1 发布（P0）
 
@@ -21,9 +21,9 @@
 | [knowledge-workbench-operations.md](knowledge-workbench-operations.md) | 入库 + Wiki 治理操作 |
 | [../product/moli-v1-release-scope.md](../product/moli-v1-release-scope.md) | v1 功能边界 |
 
-## 运维手册（wiki-ops）
+## 茉莉系统手册（wiki-moli）
 
-[`kb/wiki-ops/index.md`](../../moli-knowledge/kb/wiki-ops/index.md) · 空间 **茉莉系统操作手册**
+[`kb/wiki-moli/index.md`](../../moli-knowledge/kb/wiki-moli/index.md) · 空间 **茉莉系统手册**
 
 | 场景 | 页面 |
 |------|------|
@@ -45,5 +45,5 @@
 同步 ops 空间：
 
 ```bash
-python kb/tools/sync_to_db.py --wiki-dir wiki-ops --space moli-ops-manual
+python kb/tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
 ```

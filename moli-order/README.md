@@ -55,7 +55,7 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 | **压测** | [`load-test/README.md`](../load-test/README.md) |
 | **架构图** | [`docs/diagrams/moli-seckill-flow.drawio`](../docs/diagrams/moli-seckill-flow.drawio) |
 | **网关** | [`docs/api/gateway-routes.md`](../docs/api/gateway-routes.md) |
-| **启动** | [`kb/wiki-ops/guides/本地启动指南.md`](../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md) |
+| **启动** | [`kb/wiki-moli/guides/本地启动指南.md`](../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md) |
 
 ## 测试
 

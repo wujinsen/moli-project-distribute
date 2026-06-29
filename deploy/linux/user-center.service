@@ -1,0 +1,23 @@
+[Unit]
+Description=Moli User Center (user-center-server)
+After=network-online.target mysqld.service redis.service nacos.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=moli
+Group=moli
+WorkingDirectory=/opt/moli-project-distribute/moli-user-center
+EnvironmentFile=-/opt/moli-project-distribute/moli-user-center/conf/moli-user-center.env
+Environment=MOLI_SERVICE=user-center
+Environment=MOLI_ROOT=/opt/moli-project-distribute
+PIDFile=/opt/moli-project-distribute/moli-user-center/run/user-center.pid
+ExecStart=/opt/moli-project-distribute/deploy/linux/moli-service.sh user-center start
+ExecStop=/opt/moli-project-distribute/deploy/linux/moli-service.sh user-center stop
+ExecReload=/opt/moli-project-distribute/deploy/linux/moli-service.sh user-center restart
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

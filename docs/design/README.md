@@ -7,8 +7,8 @@
 | **官方薄层** | `docs/zh-CN/ARCHITECTURE.md`、`TECH_STACK.md`、`RBAC.md` | 多语言：`docs/en/`、`docs/ja/` |
 | **可视化** | `docs/diagrams/*.drawio` | C4、ER、RAW 全链路 |
 | **新稿投喂** | `kb/raw/design/` | 外部方案、评审稿 |
-| **详细知识** | `kb/wiki/concepts/`、`kb/wiki/articles/` | Ingest 后浏览 |
-| **综合汇总** | `kb/wiki/outputs/` | Query crystallize |
+| **详细知识** | `kb/wiki-moli/develop/concepts/`、`kb/wiki-moli/develop/articles/` | Ingest 后浏览 |
+| **综合汇总** | `kb/wiki-moli/develop/outputs/` | Query crystallize |
 
 ## 类型映射
 

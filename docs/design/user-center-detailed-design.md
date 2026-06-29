@@ -139,7 +139,7 @@ Dubbo：`dubbo.protocol.port: 20881`（server 模块）。
 - 多租户 `tenant_id` 隔离
 - 数据权限 SQL 拦截
 
-规划见 `kb/wiki/articles/用户中心-扩展能力规划.md`。
+规划见 `kb/wiki-moli/develop/articles/用户中心-扩展能力规划.md`。
 
 ## 9. 代码索引
 

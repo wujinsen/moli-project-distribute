@@ -95,7 +95,7 @@ Authorization: <sessionId>
 ## 7. CORS
 
 - 开发：meiling-ui dev server 跨域需 gateway 或前端 proxy 配置
-- 生产：Nginx 反代同一域名，见 [nginx反向代理与前端部署指南](../../moli-knowledge/kb/wiki-ops/ops/nginx反向代理与前端部署指南.md)
+- 生产：Nginx 反代同一域名，见 [nginx反向代理与前端部署指南](../../moli-knowledge/kb/wiki-moli/ops/nginx反向代理与前端部署指南.md)
 
 ---
 

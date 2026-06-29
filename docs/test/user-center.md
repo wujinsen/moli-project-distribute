@@ -50,7 +50,7 @@ mvn -Dtest=LoginControllerApiTest test
 | 带 `Authorization` 调 `/UserCenter/user/profile` | 200 |
 | 启动 order-server + 同一 Redis | 同一 token 访问 `/OrderServer/**` |
 
-操作细节：[`kb/wiki-ops/guides/登录与鉴权指南.md`](../../moli-knowledge/kb/wiki-ops/guides/登录与鉴权指南.md)。
+操作细节：[`kb/wiki-moli/guides/登录与鉴权指南.md`](../../moli-knowledge/kb/wiki-moli/guides/登录与鉴权指南.md)。
 
 ## 3. 压测（loadtest Profile）
 
@@ -66,7 +66,7 @@ mvn -Dtest=LoginControllerApiTest test
 经网关：`http://localhost:21000/UserCenter/swagger-ui.html`  
 直连：`http://localhost:8888/swagger-ui.html`
 
-见 [`kb/wiki-ops/guides/swagger接口调试指南.md`](../../moli-knowledge/kb/wiki-ops/guides/swagger接口调试指南.md)。
+见 [`kb/wiki-moli/guides/swagger接口调试指南.md`](../../moli-knowledge/kb/wiki-moli/guides/swagger接口调试指南.md)。
 
 ## 5. 回归策略（建议）
 

@@ -19,7 +19,7 @@
 
 | 步骤 | 能力 | 脚本 | LLM | 人工 |
 |------|------|:----:|:---:|:----:|
-| 文件体检 | `POST /kb/wiki/lint-space` | ✅ | | |
+| 文件体检 | `POST /kb/wiki-moli/lint-space` | ✅ | | |
 | 修 metadata | `missing_dates` / `slug_mismatch` / `missing_source` → `script-fix` | ✅ | | |
 | 修链接/结构 | `broken_link` / `orphan` / … → `ai-batch-fix` | | ✅ | |
 | 一键闭环 | `auto-fix`（脚本→AI→relint→可选 Sync） | 部分 | 部分 | |
@@ -27,7 +27,7 @@
 | 正文重复 | `dup_content` / `near_dup` | | 可选 | ✅ + `merge-hint` |
 | 写库 | `POST /kb/sync/trigger` | ✅ | | |
 
-**kind 列表**：`GET /kb/wiki/govern/options` → `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds`
+**kind 列表**：`GET /kb/wiki-moli/govern/options` → `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds`
 
 ---
 

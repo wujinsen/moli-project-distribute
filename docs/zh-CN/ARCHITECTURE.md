@@ -247,7 +247,7 @@ flowchart TB
 
 ![本地部署拓扑](../diagrams/png/moli-deploy-topology.png)
 
-> 可编辑源文件：[moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio) · 操作细节见 [`kb/wiki-ops/guides/本地启动指南`](../../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md)
+> 可编辑源文件：[moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio) · 操作细节见 [`kb/wiki-moli/guides/本地启动指南`](../../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md)
 
 1. **基础设施**：Nacos（`:8848`）、MySQL（`:3306`）、Redis（`:6379`，db=2）
 2. **user-center-server**（`:8888`，Dubbo `20881`）—— 权限中枢，须先于业务服务

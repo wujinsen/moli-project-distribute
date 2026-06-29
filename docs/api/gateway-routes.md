@@ -108,4 +108,4 @@ curl -X POST http://127.0.0.1:21000/UserCenter/login \
 
 - 部署拓扑：[moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio)
 - 模块 README：[moli-gateway/README.md](../../moli-gateway/README.md)
-- 本地启动：[wiki-ops/本地启动指南](../../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md)
+- 本地启动：[wiki-moli/本地启动指南](../../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md)

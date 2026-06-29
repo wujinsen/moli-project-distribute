@@ -51,8 +51,8 @@ raw/ + Cursor Agent          Web Ingest / Wiki 编辑
 
 | wiki 目录 | space_code | space_id | 用途 |
 |-----------|------------|----------|------|
-| `kb/wiki/` | `enterprise-kb` | 900000000000000001 | 技术文库、产品方案 |
-| `kb/wiki-ops/` | `moli-ops-manual` | 900000000000000003 | 运维手册 |
+| `kb/wiki-moli/` | `enterprise-kb` | 900000000000000001 | 技术文库、产品方案 |
+| `kb/wiki-moli/` | `moli-ops-manual` | 900000000000000003 | 茉莉系统手册 |
 | `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 900000000000000002 | 考试题库 |
 
 配置：`kb.wiki.space-dirs`（`application-dev.yml`）。
@@ -79,7 +79,7 @@ raw → Plan → 草稿 → lint → commit → Sync；Express / 模板模式。
 
 ### 4.4 单页编辑（T14）
 
-`GET/PUT /kb/wiki/page`、ai-revise、enrich（单页）。
+`GET/PUT /kb/wiki-moli/page`、ai-revise、enrich（单页）。
 
 ### 4.5 平台 LLM（T19）
 
@@ -100,7 +100,7 @@ raw → Plan → 草稿 → lint → commit → Sync；Express / 模板模式。
 | 删除 | wiki 删页 → DB `is_delete=1` |
 | 审计 | `kb_sync_log` |
 
-命令见 [wiki同步指南](../../moli-knowledge/kb/wiki-ops/ops/wiki同步指南.md)。
+命令见 [wiki同步指南](../../moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md)。
 
 ---
 

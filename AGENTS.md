@@ -34,7 +34,7 @@
 | 技术方案 | `docs/design/`、`docs/zh-CN/` | `kb/wiki/concepts/`、`articles/` |
 | API | **`docs/api/`** | `kb/wiki/services/` 摘要 + 链接 |
 | 测试 | `docs/test/`、`load-test/` | `kb/wiki/guides/` |
-| 运维 | `docs/ops/` 索引 | **`kb/wiki-ops/guides/`** |
+| 运维 | `docs/ops/` 索引 | **`kb/wiki-moli/guides/`** |
 | 单服务 | **`moli-xxx/README.md`** | `kb/wiki/services/{服务名}.md` |
 
 ---
@@ -54,7 +54,7 @@
 ### 3.2 适用路径（所有模块）
 
 - `docs/**/*.md`（含 `design/`、`zh-CN/`、`sql/`）
-- `moli-knowledge/kb/wiki/**/*.md`、`wiki-ops/**/*.md`
+- `moli-knowledge/kb/wiki/**/*.md`、`wiki-moli/**/*.md`
 - `moli-*/README.md`（user-center、order、bi、gateway、knowledge…）
 - 根目录 `README*.md`
 

@@ -39,7 +39,7 @@ Authorization: {token}  # 后续请求
 | 904 | 健康体检 | `knowledge/lint/index` | KnowledgeLint | `kb:lint:list` | `/kb/lint` |
 | 906 | Ingest 工作台 | `knowledge/ingest/index` | KnowledgeIngest | `kb:ingest:list` | `/kb/ingest/*` |
 | 909 | 空间管理 | `knowledge/spaces/index` | KnowledgeSpaces | `kb:space:admin` | `/kb/space` |
-| 910 | Wiki 治理 | `knowledge/wiki-govern/index` | KnowledgeWikiGovern | `kb:wiki:govern:list` | `/kb/wiki/lint-space` `/kb/wiki/govern/*` |
+| 910 | Wiki 治理 | `knowledge/wiki-govern/index` | KnowledgeWikiGovern | `kb:wiki:govern:list` | `/kb/wiki-moli/lint-space` `/kb/wiki-moli/govern/*` |
 
 **Wiki 单页编辑**：通常从浏览页跳入 `knowledge/wiki/edit`（perms `kb:wiki:edit`，见 KNOWLEDGE_API §8）。
 
@@ -74,4 +74,4 @@ Authorization: {token}  # 后续请求
 
 - [gateway-routes.md](gateway-routes.md)
 - [moli-v1-release-scope.md](../product/moli-v1-release-scope.md) §4
-- [wiki-ops/前端开发与联调指南](../../moli-knowledge/kb/wiki-ops/guides/前端开发与联调指南.md)
+- [wiki-moli/前端开发与联调指南](../../moli-knowledge/kb/wiki-moli/guides/前端开发与联调指南.md)

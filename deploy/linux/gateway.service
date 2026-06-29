@@ -1,0 +1,23 @@
+[Unit]
+Description=Moli API Gateway (moli-gateway)
+After=network-online.target nacos.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=moli
+Group=moli
+WorkingDirectory=/opt/moli-project-distribute/moli-gateway
+EnvironmentFile=-/opt/moli-project-distribute/moli-gateway/conf/moli-gateway.env
+Environment=MOLI_SERVICE=gateway
+Environment=MOLI_ROOT=/opt/moli-project-distribute
+PIDFile=/opt/moli-project-distribute/moli-gateway/run/gateway.pid
+ExecStart=/opt/moli-project-distribute/deploy/linux/moli-service.sh gateway start
+ExecStop=/opt/moli-project-distribute/deploy/linux/moli-service.sh gateway stop
+ExecReload=/opt/moli-project-distribute/deploy/linux/moli-service.sh gateway restart
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

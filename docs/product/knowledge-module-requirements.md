@@ -42,15 +42,15 @@
 
 | 需求 | 验收 |
 |------|------|
-| 单页读写 | `GET/PUT /kb/wiki/page` |
-| AI 改稿 | `POST /kb/wiki/ai-revise` |
-| Enrich | `POST /kb/wiki/enrich`（单页） |
+| 单页读写 | `GET/PUT /kb/wiki-moli/page` |
+| AI 改稿 | `POST /kb/wiki-moli/ai-revise` |
+| Enrich | `POST /kb/wiki-moli/enrich`（单页） |
 
 ### 2.4 Wiki 治理（P0 后端 / P1 前端）
 
 | 需求 | 验收 |
 |------|------|
-| 文件真值 Lint | `POST /kb/wiki/lint-space` |
+| 文件真值 Lint | `POST /kb/wiki-moli/lint-space` |
 | script / AI / auto-fix | 治理 API 全绿 |
 | merge-hint | dup 合并提示 |
 | **Web UI 全链路** | T16f 🔵 部分 |
@@ -68,7 +68,7 @@
 | 空间 | 用途 |
 |------|------|
 | enterprise-kb | 技术文库 |
-| moli-ops-manual | 运维手册 |
+| moli-ops-manual | 茉莉系统手册 |
 | jp-fe-ap-exam | 考试题库 |
 
 ---
@@ -97,6 +97,6 @@
 
 ## 5. /wiki 产品方案
 
-- [Ingest工作台产品方案](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md)
-- [Wiki治理工作台产品方案](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)
-- [Wiki在线编辑与AI协助改稿](../../moli-knowledge/kb/wiki/guides/Wiki在线编辑与AI协助改稿.md)
+- [Ingest工作台产品方案](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)
+- [Wiki治理工作台产品方案](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md)
+- [Wiki在线编辑与AI协助改稿](../../moli-knowledge/kb/wiki-moli/develop/Wiki在线编辑与AI协助改稿.md)

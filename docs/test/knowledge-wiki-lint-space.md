@@ -1,13 +1,13 @@
 # 知识库 · Wiki 空间 Lint（T16a）测试说明
 
-> 模块：`moli-knowledge-server` · API：`POST /kb/wiki/lint-space` · 契约：[`KNOWLEDGE_API.md` §4.6](../api/KNOWLEDGE_API.md#46-文件级空间-lintt16a--文件真值)
+> 模块：`moli-knowledge-server` · API：`POST /kb/wiki-moli/lint-space` · 契约：[`KNOWLEDGE_API.md` §4.6](../api/KNOWLEDGE_API.md#46-文件级空间-lintt16a--文件真值)
 
 ## 1. 测试范围
 
 | 层级 | 类 | 说明 |
 |------|-----|------|
 | Service 单元 / 集成 | `KbWikiLintServiceImplTest` | 参数校验、ACL、脚本路径、`lint.py` 进程与 JSON 解析 |
-| Controller 契约 | `KbWikiControllerLintApiTest` | `POST /kb/wiki/lint-space` 返回 `MoliResult<WikiSpaceLintVo>` |
+| Controller 契约 | `KbWikiControllerLintApiTest` | `POST /kb/wiki-moli/lint-space` 返回 `MoliResult<WikiSpaceLintVo>` |
 
 测试目录：
 
@@ -90,7 +90,7 @@ cd moli-knowledge/moli-knowledge-server && mvn test
 服务启动后（`:8090` 或经网关 `/KnowledgeServer`）：
 
 ```http
-POST /kb/wiki/lint-space
+POST /kb/wiki-moli/lint-space
 Authorization: <token>
 Content-Type: application/json
 
@@ -111,6 +111,6 @@ Content-Type: application/json
 ## 7. 相关
 
 - API 契约：[`KNOWLEDGE_API.md` §4.6、§8.6–8.7](../api/KNOWLEDGE_API.md)
-- 产品方案：`moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md`
+- 产品方案：`moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md`
 - Lint 脚本：`moli-knowledge/kb/tools/lint.py`
 - 任务跟踪：`moli-knowledge/TASKS.md` · T16a

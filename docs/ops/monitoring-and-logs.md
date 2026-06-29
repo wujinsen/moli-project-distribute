@@ -1,7 +1,7 @@
 # 监控与日志 · v1 运维要点
 
 > v1 **最低可运维**指南；完整 APM 见 [TECH_STACK.md](../zh-CN/TECH_STACK.md)（ELK / SkyWalking / Prometheus 为规划项）。  
-> 发布：[production-checklist.md](production-checklist.md) · 排障：[wiki-ops/故障排查指南](../../moli-knowledge/kb/wiki-ops/ops/故障排查指南.md)
+> 发布：[production-checklist.md](production-checklist.md) · 排障：[wiki-moli/故障排查指南](../../moli-knowledge/kb/wiki-moli/ops/故障排查指南.md)
 
 ---
 

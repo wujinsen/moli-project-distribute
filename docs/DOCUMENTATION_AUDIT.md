@@ -9,9 +9,9 @@
 | 维度 | 状态 | 说明 |
 |------|------|------|
 | 五类文档索引 | ✅ | `docs/{product,design,api,test,ops}/README.md` |
-| 五微服务 wiki 页 | ✅ | `kb/wiki/services/` |
-| 五服务 product wiki 摘要 | ✅ | `kb/wiki/guides/*产品说明.md` |
-| 运维手册 | ✅ | `kb/wiki-ops/` |
+| 五微服务 wiki 页 | ✅ | `kb/wiki-moli/develop/` |
+| 五服务 product wiki 摘要 | ✅ | `kb/wiki-moli/guides/*产品说明.md` |
+| 茉莉系统手册 | ✅ | `kb/wiki-moli/` |
 | 网关 / 用户中心 / 订单 / 知识库全链路 | ✅ | PRD·设计·API·测试 |
 | BI（moli-ai） | ✅ | 设计 + 产品摘要 + bi-smoke |
 | 公共模块 README | ✅ | `moli-distribute-common/README.md` |
@@ -35,7 +35,7 @@
 
 | 项 | 说明 |
 |----|------|
-| 运维 / 发布索引 | ✅ `wiki-ops/guides/项目文档总览.md` 及各分类索引 |
+| 运维 / 发布索引 | ✅ `wiki-moli/guides/项目文档总览.md` 及各分类索引 |
 | meiling-ui 工作台 §10 | 🔵 前端代码待落地 |
 | raw/design 外部稿 | 有评审 PDF 时再投喂 |
 | 向量检索 / Meilisearch | v2+ |

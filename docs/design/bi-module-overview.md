@@ -90,5 +90,5 @@ bi-server :1128
 | 模块 README | [moli-ai/README.md](../../moli-ai/README.md) |
 | API | [bi-api.md](../api/bi-api.md) |
 | 测试 | [bi-smoke.md](../test/bi-smoke.md) |
-| wiki 服务 | [kb/wiki/services/bi服务.md](../../moli-knowledge/kb/wiki/services/bi服务.md) |
-| wiki 产品 | [kb/wiki/guides/BI服务产品说明.md](../../moli-knowledge/kb/wiki/guides/BI服务产品说明.md) |
+| wiki 服务 | [kb/wiki-moli/develop/bi服务.md](../../moli-knowledge/kb/wiki-moli/develop/bi服务.md) |
+| wiki 产品 | [kb/wiki-moli/product/BI服务产品说明.md](../../moli-knowledge/kb/wiki-moli/product/BI服务产品说明.md) |

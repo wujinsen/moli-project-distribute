@@ -60,12 +60,12 @@ python moli-knowledge/kb/tools/lint.py --strict
 
 | # | 步骤 | 期望 |
 |---|------|------|
-| W1 | `GET/PUT /kb/wiki/page` | 保存成功 |
-| W2 | `POST /kb/wiki/lint-space` | issues 列表 |
-| W3 | `POST /kb/wiki/govern/script-fix` | metadata 修复 |
-| W4 | `POST /kb/wiki/govern/ai-batch-fix` | 需 LLM |
-| W5 | `POST /kb/wiki/govern/auto-fix` | 部分 LLM |
-| W6 | `POST /kb/wiki/govern/merge-hint` | dup 提示 |
+| W1 | `GET/PUT /kb/wiki-moli/page` | 保存成功 |
+| W2 | `POST /kb/wiki-moli/lint-space` | issues 列表 |
+| W3 | `POST /kb/wiki-moli/govern/script-fix` | metadata 修复 |
+| W4 | `POST /kb/wiki-moli/govern/ai-batch-fix` | 需 LLM |
+| W5 | `POST /kb/wiki-moli/govern/auto-fix` | 部分 LLM |
+| W6 | `POST /kb/wiki-moli/govern/merge-hint` | dup 提示 |
 
 Web UI：T16f 部分能力未全 — 以 API 手测为准。矩阵：[knowledge-script-vs-llm-matrix.md](knowledge-script-vs-llm-matrix.md)
 
@@ -82,7 +82,7 @@ bash tools/ci/run_sync.sh sync-all
 | 空间 | wiki 目录 | 抽检 |
 |------|-----------|------|
 | enterprise-kb | wiki/ | 浏览树有更新页 |
-| moli-ops-manual | wiki-ops/ | 本地启动指南可开 |
+| moli-ops-manual | wiki-moli/ | 本地启动指南可开 |
 | jp-fe-ap-exam | wiki-jp-exam/ | FE 分类下文档 |
 
 ---

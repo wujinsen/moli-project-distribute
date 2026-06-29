@@ -49,7 +49,7 @@ cd ../moli-user-center && mvn clean package -DskipTests
 java -jar moli-user-center-server/target/moli-user-center-server-*.jar
 ```
 
-启动顺序与全栈说明：[`kb/wiki-ops/guides/本地启动指南.md`](../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md)。
+启动顺序与全栈说明：[`kb/wiki-moli/guides/本地启动指南.md`](../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md)。
 
 ## 文档索引
 
@@ -64,7 +64,7 @@ java -jar moli-user-center-server/target/moli-user-center-server-*.jar
 | **HTTP API** | [`docs/api/user-center-api-map.md`](../docs/api/user-center-api-map.md) |
 | **Dubbo API** | [`docs/api/user-center-dubbo.md`](../docs/api/user-center-dubbo.md) |
 | **测试** | [`docs/test/user-center.md`](../docs/test/user-center.md) + [`load-test/README.md`](../load-test/README.md) |
-| **运维** | [`kb/wiki-ops/ops/user-center-运维要点.md`](../moli-knowledge/kb/wiki-ops/ops/user-center-运维要点.md) |
+| **运维** | [`kb/wiki-moli/ops/user-center-运维要点.md`](../moli-knowledge/kb/wiki-moli/ops/user-center-运维要点.md) |
 | **Wiki 浏览页** | [`kb/wiki/services/用户中心.md`](../moli-knowledge/kb/wiki/services/用户中心.md) |
 | **跨服务接入** | [`moli-user-center-shiro-starter/README.md`](moli-user-center-shiro-starter/README.md) |
 

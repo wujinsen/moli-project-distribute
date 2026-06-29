@@ -195,7 +195,7 @@ OpenAI 兼容 API（DeepSeek / Qwen / GLM …）
 | API | 变更 |
 |-----|------|
 | `GET /kb/ask/llm-config` | **保留**；改为读 `KbLlmRuntime`（DB 优先），供 Ask/Ingest 页探测 |
-| `GET /kb/wiki/govern/options` | `models` 来自 DB `extra_models` 或默认 `model` |
+| `GET /kb/wiki-moli/govern/options` | `models` 来自 DB `extra_models` 或默认 `model` |
 
 ---
 
@@ -314,5 +314,5 @@ kbAclService.assertPlatformLlmManage();
 ## 11. 相关
 
 - [`docs/nacos/knowledge-server-kb-llm-dev.yaml`](../nacos/knowledge-server-kb-llm-dev.yaml)（bootstrap 模板，一期降级为兜底）
-- [`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md) §3.3 Express（依赖平台 LLM）
+- [`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md) §3.3 Express（依赖平台 LLM）
 - [`user-center-detailed-design.md`](user-center-detailed-design.md)（系统管理菜单 / RBAC 模式）

@@ -63,7 +63,7 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 | **部署拓扑** | [`docs/diagrams/moli-deploy-topology.drawio`](../docs/diagrams/moli-deploy-topology.drawio) |
 | **冒烟** | [`docs/test/release-smoke-checklist.md`](../docs/test/release-smoke-checklist.md) §1 |
 | **v1 范围** | [`docs/product/moli-v1-release-scope.md`](../docs/product/moli-v1-release-scope.md) |
-| **启动** | [`kb/wiki-ops/guides/本地启动指南.md`](../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md) |
+| **启动** | [`kb/wiki-moli/guides/本地启动指南.md`](../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md) |
 
 ## 探测
 

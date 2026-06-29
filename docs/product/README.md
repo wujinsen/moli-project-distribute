@@ -7,7 +7,7 @@
 | **v1 发布范围** | **[`moli-v1-release-scope.md`](moli-v1-release-scope.md)** — 首版交付边界 |
 | **需求总览（知识库）** | [`knowledge-workbench-requirements.md`](knowledge-workbench-requirements.md) |
 | **新稿投喂** | `moli-knowledge/kb/raw/prd/` |
-| **维护 / 浏览** | `moli-knowledge/kb/wiki/guides/` |
+| **维护 / 浏览** | `moli-knowledge/kb/wiki-moli/guides/` |
 | **Web 浏览** | 空间 `enterprise-kb` |
 
 ## 已有页面
@@ -23,9 +23,9 @@
 | **网关 PRD 原文** | [`kb/raw/prd/gateway-prd-v1.md`](../../moli-knowledge/kb/raw/prd/gateway-prd-v1.md) | raw |
 | **订单秒杀 PRD 原文** | [`kb/raw/prd/order-seckill-prd-v1.md`](../../moli-knowledge/kb/raw/prd/order-seckill-prd-v1.md) | raw |
 | **用户中心 PRD 原文** | [`kb/raw/prd/user-center-prd-v1.md`](../../moli-knowledge/kb/raw/prd/user-center-prd-v1.md) | raw |
-| **Ingest 工作台产品方案** | [`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md) | wiki |
-| **Wiki 治理产品方案** | [`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md) | wiki |
-| **各服务产品摘要（wiki）** | 网关 / 用户中心 / 订单秒杀 / BI / 知识库 → `kb/wiki/guides/*产品说明.md` | wiki |
+| **Ingest 工作台产品方案** | [`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md) | wiki |
+| **Wiki 治理产品方案** | [`kb/wiki-moli/develop/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md) | wiki |
+| **各服务产品摘要（wiki）** | 网关 / 用户中心 / 订单秒杀 / BI / 知识库 → `kb/wiki-moli/guides/*产品说明.md` | wiki |
 | 路线图 | `kb/ROADMAP.md` | 模块级 |
 
 ## 工作流

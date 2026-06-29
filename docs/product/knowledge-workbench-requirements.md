@@ -13,7 +13,7 @@
 | **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) | T15+T18+T19 ✅ |
 | **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [knowledge-workbench-frontend.md](../api/knowledge-workbench-frontend.md) · [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g ✅；**T16f 前端 🔵** |
 | **单页编辑** | Wiki 编辑 | [[Wiki在线编辑与AI协助改稿]] | KNOWLEDGE_API §8.2–8.4 | T14 ✅ |
-| **健康体检** | 健康体检 | wiki-ops / 查询与体检指南 | KNOWLEDGE_API §4 | DB 快照，与治理分工 |
+| **健康体检** | 健康体检 | wiki-moli / 查询与体检指南 | KNOWLEDGE_API §4 | DB 快照，与治理分工 |
 
 **脚本 vs LLM 怎么选**：[`docs/test/knowledge-script-vs-llm-matrix.md`](../test/knowledge-script-vs-llm-matrix.md)
 
@@ -29,7 +29,7 @@
 | Ingest 正文生成 | 永远 LLM | 默认 LLM；**`useLlmGenerate=false`** 模板模式（raw 直贴） |
 | Ingest commit | 可重复 ingest 已 covered raw | **raw 覆盖门禁**（已被其它 wiki 引用则拒绝） |
 | 入库 / Sync 后 | 无引导 | **`nextSteps`** → Wiki 治理 Lint、健康体检 |
-| enrich 一词 | 治理页 enrich | **仅**：T14 单页 `POST /kb/wiki/enrich`、Ingest Plan `enrich[]` |
+| enrich 一词 | 治理页 enrich | **仅**：T14 单页 `POST /kb/wiki-moli/enrich`、Ingest Plan `enrich[]` |
 
 ---
 
@@ -39,11 +39,11 @@
 
 | 能力 | API | LLM |
 |------|-----|-----|
-| Lint | `POST /kb/wiki/lint-space` | 否 |
-| 脚本修 metadata | `POST /kb/wiki/govern/script-fix` | 否 |
-| AI 批量修 | `POST /kb/wiki/govern/ai-batch-fix` | 是 |
-| 一键 | `POST /kb/wiki/govern/auto-fix` | 部分 |
-| dup 合并提示 | `POST /kb/wiki/govern/merge-hint` | 否 |
+| Lint | `POST /kb/wiki-moli/lint-space` | 否 |
+| 脚本修 metadata | `POST /kb/wiki-moli/govern/script-fix` | 否 |
+| AI 批量修 | `POST /kb/wiki-moli/govern/ai-batch-fix` | 是 |
+| 一键 | `POST /kb/wiki-moli/govern/auto-fix` | 部分 |
+| dup 合并提示 | `POST /kb/wiki-moli/govern/merge-hint` | 否 |
 | Sync | `syncAfter` 或 `POST /kb/sync/trigger` | 否 |
 
 **不做**：治理页批量 enrich；ingest 新 raw（走 Ingest 旁路）。
@@ -69,7 +69,7 @@
 | 类型 | 路径 |
 |------|------|
 | **操作手册（入库+治理）** | **[`docs/ops/knowledge-workbench-operations.md`](../ops/knowledge-workbench-operations.md)** |
-| 产品方案（wiki） | `moli-knowledge/kb/wiki/guides/*产品方案.md` |
+| 产品方案（wiki） | `moli-knowledge/kb/wiki-moli/guides/*产品方案.md` |
 | HTTP 契约 | `docs/api/KNOWLEDGE_API.md` |
 | **前端总览 + B1–B10** | `docs/api/knowledge-workbench-frontend.md` |
 | 治理前端（W1–W8） | `docs/api/wiki-govern-frontend.md` |

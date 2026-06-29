@@ -2,7 +2,7 @@
 
 > **读者**：meiling-ui 前端。后端 **T15a–e + T18 + T19 ✅**；本文是联调权威说明（含增量需求）。  
 > **总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
-> **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §9 · **产品方案**：[Ingest工作台产品方案.md](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md)
+> **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §9 · **产品方案**：[Ingest工作台产品方案.md](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)
 
 ---
 

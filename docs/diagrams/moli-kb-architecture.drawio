@@ -34,7 +34,7 @@
         <mxCell id="wiki_jp" value="&lt;b&gt;kb/wiki-jp-exam/&lt;/b&gt;&lt;br&gt;jp-fe-ap-exam&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;私有 · 日本語試験&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write_lane">
           <mxGeometry x="190" y="160" width="140" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="wiki_ops" value="&lt;b&gt;kb/wiki-ops/&lt;/b&gt;&lt;br&gt;moli-ops-manual&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;内部 · 操作手册&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write_lane">
+        <mxCell id="wiki_ops" value="&lt;b&gt;kb/wiki-moli/&lt;/b&gt;&lt;br&gt;moli-ops-manual&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;茉莉系统手册&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write_lane">
           <mxGeometry x="350" y="160" width="140" height="80" as="geometry" />
         </mxCell>
         <mxCell id="agents_md" value="&lt;b&gt;AGENTS.md&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Schema 契约&lt;br&gt;Ingest / Query / Lint 规则&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;dashed=1;" vertex="1" parent="write_lane">

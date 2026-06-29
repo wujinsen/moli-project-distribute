@@ -29,7 +29,7 @@
 
 | 项 | 说明 |
 |----|------|
-| 启动顺序 | 见 [`kb/wiki-ops/guides/本地启动指南.md`](../../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md) |
+| 启动顺序 | 见 [`kb/wiki-moli/guides/本地启动指南.md`](../../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md) |
 | 必起服务 | MySQL、Redis、Nacos、用户中心、**网关 `:21000`**、`moli-knowledge-server` **`:8090`** |
 | 网关 Base | `http://127.0.0.1:21000/KnowledgeServer` |
 | Swagger | `http://127.0.0.1:8090/swagger-ui.html`（Wiki 治理现期推荐） |
@@ -46,7 +46,7 @@
 |------|-----|
 | spaceId | `900000000000000001` |
 | spaceCode | `enterprise-kb` |
-| wiki 磁盘 | `moli-knowledge/kb/wiki/` |
+| wiki 磁盘 | `moli-knowledge/kb/wiki-moli/` |
 | raw 磁盘 | `moli-knowledge/kb/raw/`（只读投喂） |
 
 ### 1.4 依赖对照（按能力）
@@ -92,7 +92,7 @@ mkdir -p moli-knowledge/kb/raw/test-walkthrough
 
 ### 2.1 做什么
 
-把 `kb/raw/` 里的材料变成 `kb/wiki/` 下的 markdown 页，并更新 `index.md`、`log.md`、`edges.jsonl`。
+把 `kb/raw/` 里的材料变成 `kb/wiki-moli/` 下的 markdown 页，并更新 `index.md`、`log.md`、`edges.jsonl`。
 
 ```
 raw 勾选 → Plan → 生成草稿 → diff 审阅 → lint → commit 落盘 → (Sync)
@@ -167,7 +167,7 @@ curl -X POST "$BASE/kb/ingest/jobs/{jobId}/publish?sync=true&approveAll=true" \
 ```bash
 # 仓库根
 dir moli-knowledge\kb\wiki\guides\demo-note.md
-git diff --stat moli-knowledge/kb/wiki/
+git diff --stat moli-knowledge/kb/wiki-moli/
 ```
 
 成功标志：`data.commit.files[]` 有路径；`data.nextSteps[]` 含 `wiki_govern_lint`。
@@ -226,11 +226,11 @@ Ingest 列表里 raw 可能显示：
 
 | 产品步骤 | 后端 API | 现 Web 页 | 缺口补法 |
 |----------|----------|-----------|----------|
-| ① 文件 Lint | `POST /kb/wiki/lint-space` | ✅ 一般有「开始 Lint」 | — |
-| ②a **脚本修复**（metadata） | `POST /kb/wiki/govern/script-fix` | ❌ **无按钮** | Swagger / §3.4 curl **③** |
-| ②b AI 批量修复 | `POST /kb/wiki/govern/ai-batch-fix` | ✅「开始批量 AI 修复」 | — |
-| ②c **一键修复**（脚本→AI→再 Lint） | `POST /kb/wiki/govern/auto-fix` | ❌ **无按钮** | Swagger / §3.4 curl **④** |
-| ③ dup 合并提示 | `POST /kb/wiki/govern/merge-hint` | ❌ 多仅「编辑」链接 | Swagger；或单页编辑 |
+| ① 文件 Lint | `POST /kb/wiki-moli/lint-space` | ✅ 一般有「开始 Lint」 | — |
+| ②a **脚本修复**（metadata） | `POST /kb/wiki-moli/govern/script-fix` | ❌ **无按钮** | Swagger / §3.4 curl **③** |
+| ②b AI 批量修复 | `POST /kb/wiki-moli/govern/ai-batch-fix` | ✅「开始批量 AI 修复」 | — |
+| ②c **一键修复**（脚本→AI→再 Lint） | `POST /kb/wiki-moli/govern/auto-fix` | ❌ **无按钮** | Swagger / §3.4 curl **④** |
+| ③ dup 合并提示 | `POST /kb/wiki-moli/govern/merge-hint` | ❌ 多仅「编辑」链接 | Swagger；或单页编辑 |
 | ④ **再 Lint / before→after** | auto-fix 内 `relintAfter` 或再调 lint-space | ❌ 无独立复检区 | auto-fix 或手动再 Lint |
 | ⑤ **Sync** | `syncAfter` 或 `POST /kb/sync/trigger` | ❌ 常无勾选 | 健康体检 · Wiki 同步 Tab 或 §3.4 **⑥** |
 
@@ -244,7 +244,7 @@ Ingest 列表里 raw 可能显示：
 
 #### issue.kind 归类（前端易错）
 
-以 `GET /kb/wiki/govern/options` 为准：
+以 `GET /kb/wiki-moli/govern/options` 为准：
 
 | kind | 后端分类 | 现 UI 常见误标 | 正确操作 |
 |------|----------|----------------|----------|
@@ -295,7 +295,7 @@ Swagger → `知识库 Wiki` / `Wiki 治理` 相关接口。
 **① Lint（文件真值）**
 
 ```bash
-curl -X POST "$BASE/kb/wiki/lint-space" \
+curl -X POST "$BASE/kb/wiki-moli/lint-space" \
   -H "Authorization: $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"spaceId": 900000000000000001, "strict": false}'
@@ -307,7 +307,7 @@ curl -X POST "$BASE/kb/wiki/lint-space" \
 **② 查 kind 分类（可选）**
 
 ```bash
-curl "$BASE/kb/wiki/govern/options" -H "Authorization: $TOKEN"
+curl "$BASE/kb/wiki-moli/govern/options" -H "Authorization: $TOKEN"
 ```
 
 | kind 类型 | 示例 | 修复 API |
@@ -319,7 +319,7 @@ curl "$BASE/kb/wiki/govern/options" -H "Authorization: $TOKEN"
 **③ 脚本修复**
 
 ```bash
-curl -X POST "$BASE/kb/wiki/govern/script-fix" \
+curl -X POST "$BASE/kb/wiki-moli/govern/script-fix" \
   -H "Authorization: $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -334,7 +334,7 @@ curl -X POST "$BASE/kb/wiki/govern/script-fix" \
 **④ 一键修复（推荐）**
 
 ```bash
-curl -X POST "$BASE/kb/wiki/govern/auto-fix" \
+curl -X POST "$BASE/kb/wiki-moli/govern/auto-fix" \
   -H "Authorization: $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -416,7 +416,7 @@ POST /kb/sync/trigger
 **模块一 · 入库**
 - [ ] 准备 raw 或使用已有 raw
 - [ ] Express 模板预览 → 确认入库
-- [ ] 磁盘存在 `kb/wiki/.../xxx.md`
+- [ ] 磁盘存在 `kb/wiki-moli/.../xxx.md`
 - [ ] 响应含 `nextSteps`
 
 **模块二 · 治理**
@@ -449,12 +449,12 @@ POST /kb/sync/trigger
 |------|------|
 | **操作（本文）** | 本文件 |
 | 产品 / 决策 | [`docs/product/knowledge-workbench-requirements.md`](../product/knowledge-workbench-requirements.md) |
-| Ingest 产品方案 | [`kb/wiki/guides/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md) |
-| Wiki 治理产品方案 | [`kb/wiki/guides/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md) |
-| Agent 投喂 raw | [`kb/wiki/guides/增量ingest与raw投喂指南.md`](../../moli-knowledge/kb/wiki/guides/增量ingest与raw投喂指南.md) |
+| Ingest 产品方案 | [`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md) |
+| Wiki 治理产品方案 | [`kb/wiki-moli/develop/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md) |
+| Agent 投喂 raw | [`kb/wiki-moli/develop/增量ingest与raw投喂指南.md`](../../moli-knowledge/kb/wiki-moli/develop/增量ingest与raw投喂指南.md) |
 | HTTP 契约 | [`docs/api/KNOWLEDGE_API.md`](../api/KNOWLEDGE_API.md) §8–9 |
 | 前端对接 | [`docs/api/knowledge-workbench-frontend.md`](../api/knowledge-workbench-frontend.md) |
-| Lint / Sync / 体检 | [`kb/wiki-ops/guides/查询与体检指南.md`](../../moli-knowledge/kb/wiki-ops/guides/查询与体检指南.md) |
+| Lint / Sync / 体检 | [`kb/wiki-moli/guides/查询与体检指南.md`](../../moli-knowledge/kb/wiki-moli/guides/查询与体检指南.md) |
 | Ingest 验收 | [`docs/test/knowledge-ingest-acceptance.md`](../test/knowledge-ingest-acceptance.md) |
 | 治理 API 测试 | [`docs/test/knowledge-wiki-lint-space.md`](../test/knowledge-wiki-lint-space.md) |
 | 治理前端对接 | [`docs/api/wiki-govern-frontend.md`](../api/wiki-govern-frontend.md) |

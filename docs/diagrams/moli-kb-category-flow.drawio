@@ -13,7 +13,7 @@
         <mxCell id="m_cat" value="&lt;b&gt;kb_category&lt;/b&gt;&#xa;─────────────&#xa;space_id&#xa;category_name&#xa;dir_slug (唯一)&#xa;default_type&#xa;sort / icon" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=0;" vertex="1" parent="model">
           <mxGeometry x="30" y="40" width="160" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="m_dir" value="&lt;b&gt;wiki 子目录&lt;/b&gt;&#xa;─────────────&#xa;kb/wiki/guides/&#xa;kb/wiki-ops/services/&#xa;…&#xa;*.md 文件" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=0;" vertex="1" parent="model">
+        <mxCell id="m_dir" value="&lt;b&gt;wiki 子目录&lt;/b&gt;&#xa;─────────────&#xa;kb/wiki/guides/&#xa;kb/wiki-moli/develop/&#xa;…&#xa;*.md 文件" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=0;" vertex="1" parent="model">
           <mxGeometry x="240" y="40" width="160" height="80" as="geometry" />
         </mxCell>
         <mxCell id="m_doc" value="&lt;b&gt;kb_document&lt;/b&gt;&#xa;─────────────&#xa;slug = dir/stem&#xa;category_id&#xa;kb_type (体裁)&#xa;source='kb'" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=0;" vertex="1" parent="model">

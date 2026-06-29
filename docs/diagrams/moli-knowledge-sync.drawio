@@ -13,7 +13,7 @@
         <mxCell id="wiki" value="&lt;b&gt;kb/wiki/&lt;/b&gt;&lt;br&gt;enterprise-kb&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;技术文章 / 面试题 / 概念&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write">
           <mxGeometry x="30" y="50" width="150" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="wikiops" value="&lt;b&gt;kb/wiki-ops/&lt;/b&gt;&lt;br&gt;moli-ops-manual&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;系统操作手册&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write">
+        <mxCell id="wikiops" value="&lt;b&gt;kb/wiki-moli/&lt;/b&gt;&lt;br&gt;moli-ops-manual&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;茉莉系统手册&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write">
           <mxGeometry x="210" y="50" width="160" height="80" as="geometry" />
         </mxCell>
         <mxCell id="wiki-jp" value="&lt;b&gt;kb/wiki-jp-exam/&lt;/b&gt;&lt;br&gt;jp-fe-ap-exam&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;私有空间&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write">

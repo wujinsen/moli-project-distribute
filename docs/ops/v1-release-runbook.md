@@ -59,7 +59,7 @@ cd D:\work\moli_project\moli-project-distribute
 7. meiling-ui 静态 / Nginx 反代      # 若有
 ```
 
-本地详情：[wiki-ops/本地启动指南](../../moli-knowledge/kb/wiki-ops/guides/本地启动指南.md)
+本地详情：[wiki-moli/本地启动指南](../../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md)
 
 ---
 
@@ -77,7 +77,7 @@ bash tools/ci/run_sync.sh sync-all
 
 ```bash
 python tools/sync_to_db.py --wiki-dir wiki --space enterprise-kb
-python tools/sync_to_db.py --wiki-dir wiki-ops --space moli-ops-manual
+python tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
 python tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam
 ```
 
@@ -120,4 +120,4 @@ Web 端：知识库 → 同步触发 / 健康体检。
 - 监控日志：[monitoring-and-logs.md](monitoring-and-logs.md)
 - 回滚详情：[rollback-guide.md](rollback-guide.md)
 - 知识库操作：[knowledge-workbench-operations.md](knowledge-workbench-operations.md)
-- Docker/Nginx：[wiki-ops/docker部署指南](../../moli-knowledge/kb/wiki-ops/ops/docker部署指南.md)
+- Docker/Nginx：[wiki-moli/docker部署指南](../../moli-knowledge/kb/wiki-moli/ops/docker部署指南.md)

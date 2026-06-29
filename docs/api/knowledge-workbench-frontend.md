@@ -15,7 +15,7 @@
 | P1 | Wiki 编辑 | `knowledge/wiki/edit` | ✅ T14 | ✅ 已有 | KNOWLEDGE_API §8 |
 | P1 | 健康体检 | `knowledge/lint/index` | ✅ | ✅ 已有 | KNOWLEDGE_API §4 |
 
-**网关前缀**：`{VITE_API_BASE_URL}/KnowledgeServer` + 下表路径（如 `/kb/wiki/lint-space`）。
+**网关前缀**：`{VITE_API_BASE_URL}/KnowledgeServer` + 下表路径（如 `/kb/wiki-moli/lint-space`）。
 
 ---
 
@@ -37,7 +37,7 @@
 选空间 → lint-space（文件真值）→ script-fix / ai-batch-fix / auto-fix → (Sync)
 ```
 
-- **不要**在治理页做批量 `POST /kb/wiki/enrich`（会 append 章节，不能修 metadata/断链）  
+- **不要**在治理页做批量 `POST /kb/wiki-moli/enrich`（会 append 章节，不能修 metadata/断链）  
 - `dup_slug` → `merge-hint` 复制 Cursor 指令 + 跳转单页编辑
 
 ---
@@ -96,7 +96,7 @@ export interface KbWorkflowHintVo {
 1. 启动 `moli-knowledge-server` + 网关  
 2. 配置 `kb.llm`（AI 修复 / Ingest LLM 需要）  
 3. 部署机可执行 `kb/tools/lint.py`（治理 Lint 依赖）  
-4. 测试空间：`enterprise-kb` / `wiki-jp-exam` / `wiki-ops`
+4. 测试空间：`enterprise-kb` / `wiki-jp-exam` / `wiki-moli`
 
 ---
 
@@ -128,12 +128,12 @@ export interface KbWorkflowHintVo {
 
 | ID | 能力 | API / 字段 | 后端 | 前端待接 | 备注 |
 |----|------|------------|------|----------|------|
-| **B1** | 空间 Lint（文件真值） | `POST /kb/wiki/lint-space` | ✅ | ⚠️ 已接 | `exitCode≠0` 仍 HTTP 200 |
-| **B2** | 治理 options | `GET /kb/wiki/govern/options` | ✅ | ⚠️ 部分 | 含 `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds` |
-| **B3** | 脚本修复 | `POST /kb/wiki/govern/script-fix` | ✅ | ❌ | `missing_dates` / `slug_mismatch` / `missing_source` |
-| **B4** | AI 批量修复 | `POST /kb/wiki/govern/ai-batch-fix` | ✅ | ⚠️ 已接 | 需 `kb.llm` |
-| **B5** | 一键 auto-fix | `POST /kb/wiki/govern/auto-fix` | ✅ | ❌ | 含 `relintAfter` / `syncAfter` |
-| **B6** | 合并提示 | `POST /kb/wiki/govern/merge-hint` | ✅ | ❌ | `dup_slug` / `dup_content` / `near_dup` |
+| **B1** | 空间 Lint（文件真值） | `POST /kb/wiki-moli/lint-space` | ✅ | ⚠️ 已接 | `exitCode≠0` 仍 HTTP 200 |
+| **B2** | 治理 options | `GET /kb/wiki-moli/govern/options` | ✅ | ⚠️ 部分 | 含 `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds` |
+| **B3** | 脚本修复 | `POST /kb/wiki-moli/govern/script-fix` | ✅ | ❌ | `missing_dates` / `slug_mismatch` / `missing_source` |
+| **B4** | AI 批量修复 | `POST /kb/wiki-moli/govern/ai-batch-fix` | ✅ | ⚠️ 已接 | 需 `kb.llm` |
+| **B5** | 一键 auto-fix | `POST /kb/wiki-moli/govern/auto-fix` | ✅ | ❌ | 含 `relintAfter` / `syncAfter` |
+| **B6** | 合并提示 | `POST /kb/wiki-moli/govern/merge-hint` | ✅ | ❌ | `dup_slug` / `dup_content` / `near_dup` |
 | **B7** | Sync | `POST /kb/sync/trigger` | ✅ | ⚠️ 它页 | 治理页建议 `syncAfter` 或链健康体检 |
 | **B8** | Ingest 模板模式 | `useLlmGenerate=false` on express/generate/prepare/regenerate | ✅ | ⚠️ 已接 | 响应 `templateMode=true` |
 | **B9** | 入库后引导 | `commit.nextSteps` / `publish.nextSteps` / `SyncTriggerVo.nextSteps` | ✅ | 🔵 Spec §10.1 | keys: `wiki_govern_lint`, `kb_health_scan` |
@@ -285,12 +285,12 @@ export interface KbWorkflowHintVo {
 
 | 步骤 | API | UI 要点 |
 |------|-----|---------|
-| W3 script-fix | `POST /kb/wiki/govern/script-fix` | 勾选 kinds：`missing_dates` / `slug_mismatch` / `missing_source`；展示 `fixed/skipped` |
-| W4 merge-hint | `POST /kb/wiki/govern/merge-hint` | `dup_slug` 仅复制 Cursor 指令 + 跳转单页编辑（无自动合并） |
-| W5 auto-fix | `POST /kb/wiki/govern/auto-fix` | 默认 `relintAfter=true`；展示 `issuesBefore` → `issuesAfter` |
+| W3 script-fix | `POST /kb/wiki-moli/govern/script-fix` | 勾选 kinds：`missing_dates` / `slug_mismatch` / `missing_source`；展示 `fixed/skipped` |
+| W4 merge-hint | `POST /kb/wiki-moli/govern/merge-hint` | `dup_slug` 仅复制 Cursor 指令 + 跳转单页编辑（无自动合并） |
+| W5 auto-fix | `POST /kb/wiki-moli/govern/auto-fix` | 默认 `relintAfter=true`；展示 `issuesBefore` → `issuesAfter` |
 | W6 Sync | `POST /kb/sync/trigger` 或 auto-fix 的 `syncAfter` | 成功后 nextSteps 同 §10.1 |
 
-**options 下拉**：`GET /kb/wiki/govern/options` 的 `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds` 用于禁用不可点的 kind。
+**options 下拉**：`GET /kb/wiki-moli/govern/options` 的 `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds` 用于禁用不可点的 kind。
 
 ### 10.3 完成定义（前端 DoD）
 

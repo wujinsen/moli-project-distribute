@@ -4,7 +4,7 @@
 > **现 UI 与完整方案差距**（仅 Lint + AI 两步时）：[`docs/ops/knowledge-workbench-operations.md` §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距)  
 > **总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
 > **HTTP 契约总表**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §4.6 + §8.6  
-> **产品方案**：[Wiki治理工作台产品方案.md](../../moli-knowledge/kb/wiki/guides/Wiki治理工作台产品方案.md)
+> **产品方案**：[Wiki治理工作台产品方案.md](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md)
 
 ---
 
@@ -53,7 +53,7 @@ idle → linted → fixing → (relinted) → (synced)
 | 状态 | 触发 |
 |------|------|
 | `idle` | 进入页，已选空间，未 Lint |
-| `linted` | `POST /kb/wiki/lint-space` 成功 |
+| `linted` | `POST /kb/wiki-moli/lint-space` 成功 |
 | `fixing` | 调用 script-fix / ai-batch-fix / auto-fix |
 | `relinted` | auto-fix 内 `relintAfter` 或用户手动再 Lint |
 | `synced` | `syncAfter=true` 或 `POST /kb/sync/trigger` |
@@ -62,25 +62,25 @@ idle → linted → fixing → (relinted) → (synced)
 
 ## 4. 接口一览
 
-经网关完整 URL 示例：`POST /KnowledgeServer/kb/wiki/lint-space`
+经网关完整 URL 示例：`POST /KnowledgeServer/kb/wiki-moli/lint-space`
 
 | # | 方法 | 路径 | 写盘 | LLM | 权限 |
 |---|------|------|------|-----|------|
-| 1 | POST | `/kb/wiki/lint-space` | 否 | 否 | 空间 **editor** |
-| 2 | GET | `/kb/wiki/govern/options` | 否 | 否 | 登录即可 |
-| 3 | POST | `/kb/wiki/govern/script-fix` | **是** | 否 | editor |
-| 4 | POST | `/kb/wiki/govern/ai-batch-fix` | **是** | 是 | editor + `kb.llm` |
-| 5 | POST | `/kb/wiki/govern/auto-fix` | 是 | 部分 | editor |
-| 6 | POST | `/kb/wiki/govern/merge-hint` | 否 | 否 | editor |
+| 1 | POST | `/kb/wiki-moli/lint-space` | 否 | 否 | 空间 **editor** |
+| 2 | GET | `/kb/wiki-moli/govern/options` | 否 | 否 | 登录即可 |
+| 3 | POST | `/kb/wiki-moli/govern/script-fix` | **是** | 否 | editor |
+| 4 | POST | `/kb/wiki-moli/govern/ai-batch-fix` | **是** | 是 | editor + `kb.llm` |
+| 5 | POST | `/kb/wiki-moli/govern/auto-fix` | 是 | 部分 | editor |
+| 6 | POST | `/kb/wiki-moli/govern/merge-hint` | 否 | 否 | editor |
 | 7 | POST | `/kb/sync/trigger?spaceId=` | DB | 否 | `kb:sync:trigger` 或空间 admin |
 
-单页 diff 预览（可选）：`POST /kb/wiki/ai-revise`（不写盘）→ `PUT /kb/wiki/page`。
+单页 diff 预览（可选）：`POST /kb/wiki-moli/ai-revise`（不写盘）→ `PUT /kb/wiki-moli/page`。
 
 ---
 
 ## 5. issue.kind 分类（前端勾选逻辑）
 
-优先读 **`GET /kb/wiki/govern/options`** 的 `scriptFixableKinds` / `aiFixableKinds`；离线兜底用下表。
+优先读 **`GET /kb/wiki-moli/govern/options`** 的 `scriptFixableKinds` / `aiFixableKinds`；离线兜底用下表。
 
 | 分类 | kind 列表 | 修复方式 |
 |------|-----------|----------|
@@ -219,27 +219,27 @@ export interface KbWikiGovernAutoFixResult {
 import request from '@/utils/request'
 
 export function lintWikiSpaceApi(data: { spaceId: number; strict?: boolean }) {
-  return request.post<MoliResult<KbWikiSpaceLintResult>>('/kb/wiki/lint-space', data)
+  return request.post<MoliResult<KbWikiSpaceLintResult>>('/kb/wiki-moli/lint-space', data)
 }
 
 export function getWikiGovernOptionsApi() {
-  return request.get<MoliResult<KbWikiGovernOptions>>('/kb/wiki/govern/options')
+  return request.get<MoliResult<KbWikiGovernOptions>>('/kb/wiki-moli/govern/options')
 }
 
 export function wikiGovernScriptFixApi(data: KbWikiGovernFixRequest) {
-  return request.post<MoliResult<KbWikiGovernScriptFixResult>>('/kb/wiki/govern/script-fix', data)
+  return request.post<MoliResult<KbWikiGovernScriptFixResult>>('/kb/wiki-moli/govern/script-fix', data)
 }
 
 export function wikiGovernAiBatchFixApi(data: KbWikiGovernFixRequest & { model?: string }) {
-  return request.post<MoliResult<KbWikiGovernAiBatchFixResult>>('/kb/wiki/govern/ai-batch-fix', data)
+  return request.post<MoliResult<KbWikiGovernAiBatchFixResult>>('/kb/wiki-moli/govern/ai-batch-fix', data)
 }
 
 export function wikiGovernAutoFixApi(data: KbWikiGovernAutoFixRequest) {
-  return request.post<MoliResult<KbWikiGovernAutoFixResult>>('/kb/wiki/govern/auto-fix', data)
+  return request.post<MoliResult<KbWikiGovernAutoFixResult>>('/kb/wiki-moli/govern/auto-fix', data)
 }
 
 export function wikiGovernMergeHintApi(data: { spaceId: number; issues: KbWikiLintIssue[] }) {
-  return request.post<MoliResult<{ items: WikiGovernMergeHintItem[] }>>('/kb/wiki/govern/merge-hint', data)
+  return request.post<MoliResult<{ items: WikiGovernMergeHintItem[] }>>('/kb/wiki-moli/govern/merge-hint', data)
 }
 ```
 
@@ -299,7 +299,7 @@ export function wikiGovernMergeHintApi(data: { spaceId: number; issues: KbWikiLi
 
 | 按钮 | API |
 |------|-----|
-| **复制合并指令** | `POST /kb/wiki/govern/merge-hint` |
+| **复制合并指令** | `POST /kb/wiki-moli/govern/merge-hint` |
 
 请求：`{ spaceId, issues: [ /* dup_slug | dup_content | near_dup */ ] }`
 
