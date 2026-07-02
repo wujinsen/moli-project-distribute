@@ -147,6 +147,8 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
+| `spaceIds` | query | 否 | 多空间（重复参数）；与 `spaceId` 同时传时以 `spaceIds` 为准 |
+| `kbType` | query | 否 | **v2 联动**：叠加体裁过滤后再统计各分类计数；非法值 **400** |
 | `groupBy` | query | 否 | **仅支持 `category`**；传 `type` 等其它值 **400 拒绝**（体裁分组已废弃） |
 
 响应 `data.groups[]` 含 `type/label/count`；`items` 为空。展开分组调 **2.2**。
@@ -170,7 +172,8 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
-| `categoryId` | query | 否 | **可选**：叠加分类过滤后再统计体裁（v2 联动计数用）；**v1 平行筛选进页不传** |
+| `spaceIds` | query | 否 | 多空间（重复参数） |
+| `categoryId` | query | 否 | **v2 联动**：叠加分类过滤后再统计体裁；进页未选分类时不传 |
 | `uncategorizedOnly` | query | 否 | `true` 时仅统计未分类页（与 `categoryId` 互斥） |
 
 响应 `data`：`items[]`（按体裁白名单顺序，仅 `count>0`）+ `total`。
@@ -276,10 +279,13 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 > **返回行含体裁**：search 每条 `KbDocument` 带 `kbType`，可直接渲染右侧标签。  
 > **传参约束**：`kbType` 非法 → **400**；`categoryId` 与 `uncategorizedOnly` 不可同传 → **400**。
 
-#### v2 可选：facet 计数联动（未实现，按需加）
+#### v2 facet 计数联动（已实现）
 
-选中分类后，体裁行计数可改为 `GET /kb/index/types?spaceId=&categoryId=`（**后端已支持** `categoryId` 参数）。  
-选中体裁后，分类行计数需 `GET /kb/index` 叠加 `kbType` 过滤（**待后端扩展**）。v1 可先用全空间静态计数，不影响列表 AND 查询正确性。
+选中**分类**后，体裁行计数改为 `GET /kb/index/types?…&categoryId=`（或 `uncategorizedOnly=true`）。  
+选中**体裁**后，分类行计数改为 `GET /kb/index?…&kbType=`。  
+列表仍为 `search` 的 **AND**；chip 数字与当前另一维筛选一致，避免「上面 183、下面 6」的误解。
+
+前端 `useKbDocFilter`：`categoryFilter` 变化 → 重拉体裁 facet；`kbTypeFilter` 变化 → 重拉分类 facet。
 
 #### enterprise-kb 空间说明（避免误以为 bug）
 

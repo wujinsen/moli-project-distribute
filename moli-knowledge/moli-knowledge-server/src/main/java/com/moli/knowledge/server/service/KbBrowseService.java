@@ -10,8 +10,11 @@ import java.util.List;
 
 public interface KbBrowseService {
 
-    /** 目录 meta：按分类（=目录）分组计数，不含 items。spaceIds 优先于 spaceId；均省略=全部可读空间。 */
-    IndexTreeVo index(Long spaceId, List<Long> spaceIds);
+    /**
+     * 目录 meta：按分类（=目录）分组计数，不含 items。
+     * {@code kbType} 可选：叠加体裁过滤后再统计（v2 facet 联动）。
+     */
+    IndexTreeVo index(Long spaceId, List<Long> spaceIds, String kbType);
 
     /**
      * 体裁 facet：当前作用域（空间 + 可选分类）下各 kb_type 已发布计数。

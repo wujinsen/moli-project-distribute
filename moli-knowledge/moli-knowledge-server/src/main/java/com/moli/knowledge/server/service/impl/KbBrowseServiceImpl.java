@@ -57,16 +57,16 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     private KbAclService kbAclService;
 
     @Override
-    public IndexTreeVo index(Long spaceId, List<Long> spaceIds) {
+    public IndexTreeVo index(Long spaceId, List<Long> spaceIds, String kbType) {
         SpaceScope scope = resolveScope(spaceId, spaceIds);
         if (scope.isEmpty()) {
             return new IndexTreeVo();
         }
-        return indexByCategory(scope);
+        return indexByCategory(scope, kbType);
     }
 
     /** 按分类（=目录）分组计数。category_id 为空归「未分类」。 */
-    private IndexTreeVo indexByCategory(SpaceScope scope) {
+    private IndexTreeVo indexByCategory(SpaceScope scope, String kbType) {
         List<KbCategory> cats = loadScopeCategories(scope);
         Map<String, IndexTreeVo.Group> groups = new LinkedHashMap<>();
         for (KbCategory c : cats) {
@@ -76,7 +76,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
                 KbCategoryConstants.UNCATEGORIZED_KEY, KbCategoryConstants.UNCATEGORIZED_LABEL);
 
         int total = 0;
-        for (Map.Entry<String, Integer> e : countPublishedByCategory(scope).entrySet()) {
+        for (Map.Entry<String, Integer> e : countPublishedByCategory(scope, kbType).entrySet()) {
             int cnt = e.getValue() == null ? 0 : e.getValue();
             if (cnt <= 0) {
                 continue;
@@ -192,7 +192,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     public IndexTreeVo indexSearch(Long spaceId, List<Long> spaceIds, String q, int limit) {
         String keyword = StringUtils.trimToEmpty(q);
         if (StringUtils.isBlank(keyword)) {
-            return index(spaceId, spaceIds);
+            return index(spaceId, spaceIds, null);
         }
         if (limit < 1) {
             limit = SEARCH_DEFAULT_LIMIT;
@@ -312,10 +312,13 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     /** 统计已发布(source=kb)文档按 category_id 分组数；null 归 uncategorized。 */
-    private Map<String, Integer> countPublishedByCategory(SpaceScope scope) {
+    private Map<String, Integer> countPublishedByCategory(SpaceScope scope, String kbType) {
         QueryWrapper<KbDocument> qw = KbPublishedWikiFilter.publishedKbQuery(scope.singleSpaceId);
         if (scope.multiSpaceIds != null) {
             qw.in("space_id", scope.multiSpaceIds);
+        }
+        if (StringUtils.isNotBlank(kbType)) {
+            qw.eq("kb_type", kbType);
         }
         qw.select("category_id AS category_id", "count(*) AS cnt");
         qw.groupBy("category_id");
