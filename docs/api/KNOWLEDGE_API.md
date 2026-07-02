@@ -149,6 +149,7 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
 | `spaceIds` | query | 否 | 多空间（重复参数）；与 `spaceId` 同时传时以 `spaceIds` 为准 |
 | `kbType` | query | 否 | **v2 联动**：叠加体裁过滤后再统计各分类计数；非法值 **400** |
+| `kbTypes` | query | 否 | **v3 多选**：体裁 OR 过滤后再统计；重复参数；非空时优先于 `kbType` |
 | `groupBy` | query | 否 | **仅支持 `category`**；传 `type` 等其它值 **400 拒绝**（体裁分组已废弃） |
 
 响应 `data.groups[]` 含 `type/label/count`；`items` 为空。展开分组调 **2.2**。
@@ -174,7 +175,8 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 | `spaceId` | query | 否 | 省略=可读的全部空间 |
 | `spaceIds` | query | 否 | 多空间（重复参数） |
 | `categoryId` | query | 否 | **v2 联动**：叠加分类过滤后再统计体裁；进页未选分类时不传 |
-| `uncategorizedOnly` | query | 否 | `true` 时仅统计未分类页（与 `categoryId` 互斥） |
+| `categoryIds` | query | 否 | **v3 多选**：分类 OR 过滤后再统计；重复参数；非空时优先于 `categoryId`；可与 `uncategorizedOnly` 组合 |
+| `uncategorizedOnly` | query | 否 | `true` 时统计未分类页；与 `categoryId` 互斥；与 `categoryIds` 组合时为 OR 含未分类 |
 
 响应 `data`：`items[]`（按体裁白名单顺序，仅 `count>0`）+ `total`。
 
@@ -212,10 +214,10 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 
 #### 两个维度（勿混淆）
 
-| 维度 | 含义 | 数据从哪来 | 查询参数 |
-|------|------|------------|----------|
-| **体裁** | frontmatter `type:` → `kb_document.kb_type` | `GET /kb/index/types` | `kbType` |
-| **分类** | wiki 一级目录 → `kb_document.category_id` | `GET /kb/index` → `groups[]` | `categoryId` 或 `uncategorizedOnly=true` |
+| 维度 | 含义 | 数据从哪来 | 查询参数（单选 v2） | 查询参数（多选 v3） |
+|------|------|------------|---------------------|---------------------|
+| **体裁** | frontmatter `type:` → `kb_document.kb_type` | `GET /kb/index/types` | `kbType` | `kbTypes`（重复参数，OR） |
+| **分类** | wiki 一级目录 → `kb_document.category_id` | `GET /kb/index` → `groups[]` | `categoryId` / `uncategorizedOnly` | `categoryIds`（OR）+ 可选 `uncategorizedOnly` |
 
 **查询关系**：两个维度 **平级、独立可选**，列表取 **AND**（同时选中则两个条件都满足）。  
 **禁止**再做成「必须先选分类，体裁 chip 才出现」的嵌套交互（旧版易与 enterprise-kb 分类名撞车，用户看不懂「全部体裁 + 概念」）。
@@ -246,8 +248,8 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 |------|------|------|
 | 进页 · 体裁行 | `GET /kb/index/types?spaceId=` | **不带** `categoryId`；渲染体裁 chip + 计数 |
 | 进页 · 分类行 | `GET /kb/index?spaceId=` | 渲染分类 chip + 计数；`groups[].type` 即 `categoryId`（`uncategorized` 特殊） |
-| 列表（核心） | `GET /kb/document/search?source=kb&spaceId=&kbType=&categoryId=` | 两个参数**独立**；只选体裁只传 `kbType`，只选分类只传 `categoryId` |
-| 未分类 | `search?…&uncategorizedOnly=true` | 与 `categoryId` 互斥；分类行「未分类」chip 对应此参数 |
+| 列表（核心） | `GET /kb/document/search?source=kb&…` | 两维 **AND**；单选用 `kbType`/`categoryId`，多选用 `kbTypes`/`categoryIds` |
+| 未分类 | `search?…&uncategorizedOnly=true` | 与单值 `categoryId` 互斥；可与 `categoryIds` 组合（OR 含未分类） |
 | 编辑页体裁下拉 | `GET /kb/meta/kb-types` | `value/label` 下拉 |
 | 编辑页改体裁 | wiki 保存写 frontmatter `type:` → Sync | **不直写 DB** |
 
@@ -277,15 +279,54 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 ```
 
 > **返回行含体裁**：search 每条 `KbDocument` 带 `kbType`，可直接渲染右侧标签。  
-> **传参约束**：`kbType` 非法 → **400**；`categoryId` 与 `uncategorizedOnly` 不可同传 → **400**。
+> **传参约束**：任一 `kbType`/`kbTypes` 元素非法 → **400**；单值 `categoryId` 与 `uncategorizedOnly` 不可同传 → **400**（`categoryIds` 可与 `uncategorizedOnly` 组合）。
 
 #### v2 facet 计数联动（已实现）
 
 选中**分类**后，体裁行计数改为 `GET /kb/index/types?…&categoryId=`（或 `uncategorizedOnly=true`）。  
-选中**体裁**后，分类行计数改为 `GET /kb/index?…&kbType=`。  
+选中**体裁**后，分类行计数改为 `GET /kb/index?…&kbType=`（或多选 `kbTypes`）。  
 列表仍为 `search` 的 **AND**；chip 数字与当前另一维筛选一致，避免「上面 183、下面 6」的误解。
 
-前端 `useKbDocFilter`：`categoryFilter` 变化 → 重拉体裁 facet；`kbTypeFilter` 变化 → 重拉分类 facet。
+#### v3 多选筛选（已实现 · 后端）
+
+**筛选模型**
+
+| 规则 | 语义 |
+|------|------|
+| 维度内 | `kbTypes` 或 `categoryIds` 为非空列表 → 该维 **OR**（`IN (...)`） |
+| 维度间 | 体裁维与分类维同时有筛选 → **AND** |
+| 空 | 某维未传列表且未传单值 → 该维不过滤 |
+| 优先级 | `kbTypes` 非空忽略 `kbType`；`categoryIds` 非空忽略 `categoryId` |
+| 未分类 | 仅 `uncategorizedOnly=true` → 仅 `category_id IS NULL`；与 `categoryIds` 同传 → `(category_id IN (...) OR category_id IS NULL)` |
+
+**列表示例**（单空间、文章+面试题、两个分类含未分类）：
+
+```http
+GET /KnowledgeServer/kb/document/search?source=kb&status=1&spaceId=900000000000000001
+    &kbTypes=article&kbTypes=interview
+    &categoryIds=900000000000000114&categoryIds=900000000000000115
+    &uncategorizedOnly=true
+    &pageNum=1&pageSize=20
+```
+
+**facet 联动示例**（体裁已多选 → 拉分类计数）：
+
+```http
+GET /KnowledgeServer/kb/index?groupBy=category&spaceId=900000000000000001
+    &kbTypes=article&kbTypes=interview
+```
+
+**facet 联动示例**（分类已多选 → 拉体裁计数）：
+
+```http
+GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
+    &categoryIds=900000000000000114&categoryIds=900000000000000115
+    &uncategorizedOnly=true
+```
+
+**实现要点**（`KbDocumentFilterSupport`）：`searchFullText` 与 LIKE fallback 共用 `IN`/OR 逻辑；Spring 重复 query 绑定 `List`（同 `spaceIds`）。facet 仍只返回 `count>0` 的分组。
+
+**向后兼容**：旧单值 `kbType` / `categoryId` 无需改动；多选前端改传 `kbTypes` / `categoryIds` 即可。列表 `total` 以 search 为准，勿对 facet 计数求和。
 
 #### enterprise-kb 空间说明（避免误以为 bug）
 
@@ -808,9 +849,11 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 |------|------|------|------|------|
 | `spaceId` | query | 否 | — | 单空间；与 `spaceIds` 同时传时 **`spaceIds` 优先** |
 | `spaceIds` | query | 否 | — | 多空间数组，如 `spaceIds=1&spaceIds=2` |
-| `categoryId` | query | 否 | — | 分类 ID（与 `uncategorizedOnly` 互斥） |
-| `uncategorizedOnly` | query | 否 | — | `true` 时仅查 `category_id IS NULL`（治理未分类页） |
-| `kbType` | query | 否 | — | 体裁过滤：`guide/service/concept/article/interview/output`；非法值 **400**；与 `categoryId` **平行 AND**（见 §2.1.3） |
+| `categoryId` | query | 否 | — | 单分类（与 `uncategorizedOnly` 互斥；`categoryIds` 非空时被忽略） |
+| `categoryIds` | query | 否 | — | 多分类 OR；重复参数；可与 `uncategorizedOnly` 组合（OR 含未分类） |
+| `uncategorizedOnly` | query | 否 | — | `true` 时含未分类（`category_id IS NULL`）；与单值 `categoryId` 互斥 |
+| `kbType` | query | 否 | — | 单体裁；非法值 **400**；`kbTypes` 非空时被忽略 |
+| `kbTypes` | query | 否 | — | 多体裁 OR；重复参数；与分类维 **AND**（见 §2.1.3） |
 | `keyword` | query | 否 | — | 关键词 |
 | `status` | query | 否 | — | `0` 草稿 / `1` 已发布 / `2` 已归档 |
 | `tagId` | query | 否 | — | 按标签过滤 |

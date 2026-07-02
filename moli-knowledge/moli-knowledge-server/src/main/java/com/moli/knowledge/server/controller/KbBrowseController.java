@@ -40,31 +40,21 @@ public class KbBrowseController {
     @ApiOperation("目录 meta（按分类=目录分组计数；展开分组调 /index/items）")
     public MoliResult<IndexTreeVo> index(@RequestParam(required = false) Long spaceId,
                                          @RequestParam(required = false) List<Long> spaceIds,
+                                         @RequestParam(required = false) List<String> kbTypes,
                                          @RequestParam(required = false) String kbType,
                                          @RequestParam(required = false) String groupBy) {
         assertCategoryGroupBy(groupBy);
-        return MoliResult.success(kbBrowseService.index(spaceId, spaceIds, normalizeKbTypeOrNull(kbType)));
-    }
-
-    private String normalizeKbTypeOrNull(String kbType) {
-        if (StringUtils.isBlank(kbType)) {
-            return null;
-        }
-        String normalized = KbTypeConstants.normalize(kbType.trim());
-        if (normalized == null) {
-            throw new BaseException("非法体裁 kbType=" + kbType
-                    + "，可选：" + String.join("|", KbTypeConstants.ALL));
-        }
-        return normalized;
+        return MoliResult.success(kbBrowseService.index(spaceId, spaceIds, kbTypes, kbType));
     }
 
     @GetMapping("/index/types")
     @ApiOperation("体裁 facet：当前空间(可叠加分类)下各 kb_type 已发布计数，供体裁 chip")
     public MoliResult<KbTypeFacetVo> indexTypes(@RequestParam(required = false) Long spaceId,
                                                 @RequestParam(required = false) List<Long> spaceIds,
+                                                @RequestParam(required = false) List<Long> categoryIds,
                                                 @RequestParam(required = false) Long categoryId,
                                                 @RequestParam(required = false) Boolean uncategorizedOnly) {
-        return MoliResult.success(kbBrowseService.types(spaceId, spaceIds, categoryId, uncategorizedOnly));
+        return MoliResult.success(kbBrowseService.types(spaceId, spaceIds, categoryIds, categoryId, uncategorizedOnly));
     }
 
     @GetMapping("/meta/kb-types")

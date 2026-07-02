@@ -17,11 +17,27 @@
                 #{sid}
             </foreach>
         </if>
-        <if test="uncategorizedOnly != null and uncategorizedOnly">
-            AND category_id IS NULL
-        </if>
-        <if test="categoryId != null and (uncategorizedOnly == null or !uncategorizedOnly)">
-            AND category_id = #{categoryId}
+        <if test="(categoryIds != null and categoryIds.size() &gt; 0) or (uncategorizedOnly != null and uncategorizedOnly)">
+            AND (
+            <choose>
+                <when test="categoryIds != null and categoryIds.size() &gt; 0 and uncategorizedOnly != null and uncategorizedOnly">
+                    category_id IN
+                    <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">
+                        #{cid}
+                    </foreach>
+                    OR category_id IS NULL
+                </when>
+                <when test="uncategorizedOnly != null and uncategorizedOnly">
+                    category_id IS NULL
+                </when>
+                <otherwise>
+                    category_id IN
+                    <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">
+                        #{cid}
+                    </foreach>
+                </otherwise>
+            </choose>
+            )
         </if>
         <if test="status != null">
             AND status = #{status}
@@ -38,8 +54,11 @@
         <if test="source != null and source != ''">
             AND source = #{source}
         </if>
-        <if test="kbType != null and kbType != ''">
-            AND kb_type = #{kbType}
+        <if test="kbTypes != null and kbTypes.size() &gt; 0">
+            AND kb_type IN
+            <foreach collection="kbTypes" item="t" open="(" separator="," close=")">
+                #{t}
+            </foreach>
         </if>
         ORDER BY
         <if test="keyword != null and keyword != ''">
@@ -53,35 +72,32 @@
         SELECT *
         FROM kb_document
         WHERE is_delete = 0
-        <if test="status != null">
-            AND status = #{status}
-        </if>
         <if test="spaceIds != null and spaceIds.size() &gt; 0">
             AND space_id IN
             <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
                 #{sid}
             </foreach>
         </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
         <if test="includeTypes != null and includeTypes.size() &gt; 0">
             AND kb_type IN
-            <foreach collection="includeTypes" item="it" open="(" separator="," close=")">
-                #{it}
+            <foreach collection="includeTypes" item="t" open="(" separator="," close=")">
+                #{t}
             </foreach>
         </if>
         <if test="excludeTypes != null and excludeTypes.size() &gt; 0">
             AND kb_type NOT IN
-            <foreach collection="excludeTypes" item="et" open="(" separator="," close=")">
-                #{et}
+            <foreach collection="excludeTypes" item="t" open="(" separator="," close=")">
+                #{t}
             </foreach>
         </if>
         <if test="keyword != null and keyword != ''">
             AND MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
         </if>
         ORDER BY
-        <if test="keyword != null and keyword != ''">
-            MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) DESC,
-        </if>
-        update_time DESC
+        MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) DESC
         LIMIT #{limit}
     </select>
 
@@ -102,11 +118,27 @@
                 #{sid}
             </foreach>
         </if>
-        <if test="uncategorizedOnly != null and uncategorizedOnly">
-            AND category_id IS NULL
-        </if>
-        <if test="categoryId != null and (uncategorizedOnly == null or !uncategorizedOnly)">
-            AND category_id = #{categoryId}
+        <if test="(categoryIds != null and categoryIds.size() &gt; 0) or (uncategorizedOnly != null and uncategorizedOnly)">
+            AND (
+            <choose>
+                <when test="categoryIds != null and categoryIds.size() &gt; 0 and uncategorizedOnly != null and uncategorizedOnly">
+                    category_id IN
+                    <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">
+                        #{cid}
+                    </foreach>
+                    OR category_id IS NULL
+                </when>
+                <when test="uncategorizedOnly != null and uncategorizedOnly">
+                    category_id IS NULL
+                </when>
+                <otherwise>
+                    category_id IN
+                    <foreach collection="categoryIds" item="cid" open="(" separator="," close=")">
+                        #{cid}
+                    </foreach>
+                </otherwise>
+            </choose>
+            )
         </if>
         GROUP BY kb_type
     </select>

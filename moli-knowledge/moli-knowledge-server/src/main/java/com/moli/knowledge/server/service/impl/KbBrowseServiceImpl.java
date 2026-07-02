@@ -25,6 +25,8 @@ import com.moli.knowledge.server.mapper.KbTagMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbBrowseService;
 import com.moli.knowledge.server.support.KbCategoryConstants;
+import com.moli.knowledge.server.support.KbDocumentFilterSupport;
+import com.moli.knowledge.server.support.KbDocumentFilterSupport.CategoryFilterScope;
 import com.moli.knowledge.server.support.KbPublishedWikiFilter;
 import com.moli.knowledge.server.support.KbTypeConstants;
 import org.apache.commons.collections.CollectionUtils;
@@ -57,16 +59,17 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     private KbAclService kbAclService;
 
     @Override
-    public IndexTreeVo index(Long spaceId, List<Long> spaceIds, String kbType) {
+    public IndexTreeVo index(Long spaceId, List<Long> spaceIds, List<String> kbTypes, String kbType) {
         SpaceScope scope = resolveScope(spaceId, spaceIds);
         if (scope.isEmpty()) {
             return new IndexTreeVo();
         }
-        return indexByCategory(scope, kbType);
+        List<String> resolvedKbTypes = KbDocumentFilterSupport.resolveKbTypes(kbTypes, kbType);
+        return indexByCategory(scope, resolvedKbTypes);
     }
 
     /** 按分类（=目录）分组计数。category_id 为空归「未分类」。 */
-    private IndexTreeVo indexByCategory(SpaceScope scope, String kbType) {
+    private IndexTreeVo indexByCategory(SpaceScope scope, List<String> kbTypes) {
         List<KbCategory> cats = loadScopeCategories(scope);
         Map<String, IndexTreeVo.Group> groups = new LinkedHashMap<>();
         for (KbCategory c : cats) {
@@ -76,7 +79,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
                 KbCategoryConstants.UNCATEGORIZED_KEY, KbCategoryConstants.UNCATEGORIZED_LABEL);
 
         int total = 0;
-        for (Map.Entry<String, Integer> e : countPublishedByCategory(scope, kbType).entrySet()) {
+        for (Map.Entry<String, Integer> e : countPublishedByCategory(scope, kbTypes).entrySet()) {
             int cnt = e.getValue() == null ? 0 : e.getValue();
             if (cnt <= 0) {
                 continue;
@@ -104,11 +107,10 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     @Override
-    public KbTypeFacetVo types(Long spaceId, List<Long> spaceIds, Long categoryId, Boolean uncategorizedOnly) {
-        boolean uncat = Boolean.TRUE.equals(uncategorizedOnly);
-        if (categoryId != null && uncat) {
-            throw new BaseException("categoryId 与 uncategorizedOnly 不能同时传");
-        }
+    public KbTypeFacetVo types(Long spaceId, List<Long> spaceIds, List<Long> categoryIds, Long categoryId,
+                               Boolean uncategorizedOnly) {
+        CategoryFilterScope categoryScope = KbDocumentFilterSupport.resolveCategoryScope(
+                categoryIds, categoryId, uncategorizedOnly);
         KbTypeFacetVo vo = new KbTypeFacetVo();
         SpaceScope scope = resolveScope(spaceId, spaceIds);
         if (scope.isEmpty()) {
@@ -118,8 +120,8 @@ public class KbBrowseServiceImpl implements KbBrowseService {
                 scope.singleSpaceId,
                 scope.multiSpaceIds,
                 DocumentStatus.PUBLISHED.getCode(),
-                uncat ? null : categoryId,
-                uncat);
+                categoryScope.getCategoryIds(),
+                categoryScope.isIncludeUncategorized());
         Map<String, Long> byType = new LinkedHashMap<>();
         for (KbTypeCountRow r : rows) {
             if (r == null || r.getCnt() == null) {
@@ -192,7 +194,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     public IndexTreeVo indexSearch(Long spaceId, List<Long> spaceIds, String q, int limit) {
         String keyword = StringUtils.trimToEmpty(q);
         if (StringUtils.isBlank(keyword)) {
-            return index(spaceId, spaceIds, null);
+            return index(spaceId, spaceIds, null, null);
         }
         if (limit < 1) {
             limit = SEARCH_DEFAULT_LIMIT;
@@ -312,14 +314,12 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     /** 统计已发布(source=kb)文档按 category_id 分组数；null 归 uncategorized。 */
-    private Map<String, Integer> countPublishedByCategory(SpaceScope scope, String kbType) {
+    private Map<String, Integer> countPublishedByCategory(SpaceScope scope, List<String> kbTypes) {
         QueryWrapper<KbDocument> qw = KbPublishedWikiFilter.publishedKbQuery(scope.singleSpaceId);
         if (scope.multiSpaceIds != null) {
             qw.in("space_id", scope.multiSpaceIds);
         }
-        if (StringUtils.isNotBlank(kbType)) {
-            qw.eq("kb_type", kbType);
-        }
+        KbDocumentFilterSupport.applyKbTypes(qw, kbTypes);
         qw.select("category_id AS category_id", "count(*) AS cnt");
         qw.groupBy("category_id");
         Map<String, Integer> map = new LinkedHashMap<>();

@@ -17,28 +17,32 @@
 
 **网关前缀**：`{VITE_API_BASE_URL}/KnowledgeServer` + 下表路径（如 `/kb/wiki-moli/lint-space`）。
 
-### 1.1 文档浏览 / 文档管理 · 体裁 × 分类筛选（P0 改版）
+### 1.1 文档浏览 / 文档管理 · 体裁 × 分类筛选（P0 · v3 多选后端已就绪）
 
-> **权威契约**：[KNOWLEDGE_API.md §2.1.3](KNOWLEDGE_API.md#213-浏览管理页筛选-ui-规范体裁--分类--平行双-facet)  
-> **背景**：旧 UI「先选分类 → 再出全部体裁 chip」在 enterprise-kb 易与分类名撞车，用户看不懂。
+> **权威契约**：[KNOWLEDGE_API.md §2.1.3](KNOWLEDGE_API.md#213-浏览管理页筛选-ui-规范体裁--分类--平行双-facet)（含 v2 联动 + **v3 多选**）  
+> **产品/交互稿**（meiling-ui 仓）：`docs/kb-browse-multi-select-filter.md`
 
-**目标**：两行平行 chip，**文档浏览**与**文档管理**共用同一套逻辑。
+**筛选模型**：维度内 **OR**（`kbTypes` / `categoryIds` 重复 query）；维度间 **AND**；空=不过滤。
 
-| 行 | 数据源 | 选中后 query |
-|----|--------|--------------|
-| 体裁 | `GET /kb/index/types?spaceId=` | `kbType`（「全部」不传） |
-| 分类 | `GET /kb/index?spaceId=` → `groups[]` | `categoryId` 或 `uncategorizedOnly=true` |
-| 列表 | `GET /kb/document/search?source=kb&…` | 上行参数 **AND** |
+| 行 | 数据源 | 单选 (v2) | 多选 (v3) |
+|----|--------|-----------|-----------|
+| 体裁 | `GET /kb/index/types?spaceId=` | `kbType` | `kbTypes=…&kbTypes=…` |
+| 分类 | `GET /kb/index?spaceId=` | `categoryId` / `uncategorizedOnly` | `categoryIds=…` + 可选 `uncategorizedOnly` |
+| 列表 | `GET /kb/document/search?source=kb&…` | 同上 | 同上；**total 以 search 为准** |
 
-**废弃**：左侧分类树 +「请先选分类再按体裁筛选」+ 分类选中后才渲染体裁 chip。
+**facet 联动**：分类已选 → `/kb/index/types?categoryIds=…`；体裁已选 → `/kb/index?kbTypes=…`。
 
-**TypeScript 状态建议**：
+**TypeScript 请求参数建议**（前端自行落地，勿与后端 DTO 混用单值/列表）：
 
 ```typescript
 interface KbBrowseFilters {
   spaceId?: string
-  kbType?: string      // undefined = 体裁「全部」
-  categoryId?: string  // undefined = 分类「全部」；'uncategorized' → uncategorizedOnly
+  spaceIds?: string[]
+  /** 多选优先；长度 0 或不传 = 体裁「全部」 */
+  kbTypes?: string[]
+  /** 多选优先；与 uncategorizedOnly 可组合 */
+  categoryIds?: string[]
+  uncategorizedOnly?: boolean
   keyword?: string
 }
 ```

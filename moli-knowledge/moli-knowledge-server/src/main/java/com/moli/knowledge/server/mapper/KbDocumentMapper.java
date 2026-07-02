@@ -16,13 +16,13 @@ public interface KbDocumentMapper extends BaseMapper<KbDocument> {
     Page<KbDocument> searchFullText(Page<KbDocument> page,
                                     @Param("spaceId") Long spaceId,
                                     @Param("spaceIds") List<Long> spaceIds,
-                                    @Param("categoryId") Long categoryId,
+                                    @Param("categoryIds") List<Long> categoryIds,
                                     @Param("uncategorizedOnly") Boolean uncategorizedOnly,
                                     @Param("status") Integer status,
                                     @Param("documentIds") List<Long> documentIds,
                                     @Param("keyword") String keyword,
                                     @Param("source") String source,
-                                    @Param("kbType") String kbType);
+                                    @Param("kbTypes") List<String> kbTypes);
 
     /**
      * Query(/kb/ask) 候选召回：ngram 全文按相关度召回 top-N，叠加空间/状态/类型作用域过滤。
@@ -39,6 +39,6 @@ public interface KbDocumentMapper extends BaseMapper<KbDocument> {
     List<KbTypeCountRow> countPublishedByKbType(@Param("spaceId") Long spaceId,
                                                 @Param("spaceIds") List<Long> spaceIds,
                                                 @Param("status") Integer status,
-                                                @Param("categoryId") Long categoryId,
+                                                @Param("categoryIds") List<Long> categoryIds,
                                                 @Param("uncategorizedOnly") Boolean uncategorizedOnly);
 }

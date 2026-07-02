@@ -19,11 +19,17 @@ public class DocumentSearchRequest {
     @ApiModelProperty("分类ID")
     private Long categoryId;
 
-    @ApiModelProperty("仅未分类（category_id IS NULL）；与 categoryId 互斥")
+    @ApiModelProperty("多分类 OR 过滤；非空时优先于 categoryId")
+    private List<Long> categoryIds;
+
+    @ApiModelProperty("仅未分类（category_id IS NULL）；可与 categoryIds 组合表示 OR 含未分类")
     private Boolean uncategorizedOnly;
 
     @ApiModelProperty("体裁过滤：guide/service/concept/article/interview/output；空=不过滤")
     private String kbType;
+
+    @ApiModelProperty("多体裁 OR 过滤；非空时优先于 kbType")
+    private List<String> kbTypes;
 
     @ApiModelProperty("关键词")
     private String keyword;

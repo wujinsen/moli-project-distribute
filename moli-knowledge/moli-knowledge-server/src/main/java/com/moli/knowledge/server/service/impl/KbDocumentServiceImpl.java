@@ -24,7 +24,8 @@ import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbDocumentService;
 import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiFileService;
-import com.moli.knowledge.server.support.KbTypeConstants;
+import com.moli.knowledge.server.support.KbDocumentFilterSupport;
+import com.moli.knowledge.server.support.KbDocumentFilterSupport.CategoryFilterScope;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -81,18 +82,9 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             documentIds = relations.stream().map(KbDocumentTag::getDocumentId).collect(Collectors.toList());
         }
 
-        if (request.getCategoryId() != null && Boolean.TRUE.equals(request.getUncategorizedOnly())) {
-            throw new BaseException("categoryId 与 uncategorizedOnly 不能同时传");
-        }
-
-        String kbType = null;
-        if (StringUtils.isNotBlank(request.getKbType())) {
-            kbType = KbTypeConstants.normalize(request.getKbType());
-            if (kbType == null) {
-                throw new BaseException("非法体裁 kbType=" + request.getKbType()
-                        + "，可选：" + String.join("|", KbTypeConstants.ALL));
-            }
-        }
+        CategoryFilterScope categoryScope = KbDocumentFilterSupport.resolveCategoryScope(
+                request.getCategoryIds(), request.getCategoryId(), request.getUncategorizedOnly());
+        List<String> kbTypes = KbDocumentFilterSupport.resolveKbTypes(request.getKbTypes(), request.getKbType());
 
         if (StringUtils.isNotBlank(request.getKeyword()) && kbSearchProperties.fullTextEnabled()) {
             try {
@@ -100,13 +92,13 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                         new Page<>(request.getPageNum(), request.getPageSize()),
                         singleSpaceId,
                         multiSpaceIds,
-                        request.getCategoryId(),
-                        Boolean.TRUE.equals(request.getUncategorizedOnly()),
+                        categoryScope.getCategoryIds(),
+                        categoryScope.isIncludeUncategorized(),
                         request.getStatus(),
                         documentIds,
                         request.getKeyword().trim(),
                         StringUtils.trimToNull(request.getSource()),
-                        kbType);
+                        kbTypes);
             } catch (Exception e) {
                 log.warn("Fulltext search failed, fallback to LIKE: {}", e.getMessage());
             }
@@ -119,17 +111,11 @@ public class KbDocumentServiceImpl implements KbDocumentService {
         } else {
             wrapper.in(KbDocument::getSpaceId, scopeSpaces);
         }
-        if (Boolean.TRUE.equals(request.getUncategorizedOnly())) {
-            wrapper.isNull(KbDocument::getCategoryId);
-        } else if (request.getCategoryId() != null) {
-            wrapper.eq(KbDocument::getCategoryId, request.getCategoryId());
-        }
+        KbDocumentFilterSupport.applyCategoryScope(wrapper, categoryScope);
         if (request.getStatus() != null) {
             wrapper.eq(KbDocument::getStatus, request.getStatus());
         }
-        if (kbType != null) {
-            wrapper.eq(KbDocument::getKbType, kbType);
-        }
+        KbDocumentFilterSupport.applyKbTypes(wrapper, kbTypes);
         if (StringUtils.isNotBlank(request.getKeyword())) {
             wrapper.and(w -> w.like(KbDocument::getTitle, request.getKeyword())
                     .or().like(KbDocument::getSummary, request.getKeyword())
