@@ -17,6 +17,32 @@
 
 **网关前缀**：`{VITE_API_BASE_URL}/KnowledgeServer` + 下表路径（如 `/kb/wiki-moli/lint-space`）。
 
+### 1.1 文档浏览 / 文档管理 · 体裁 × 分类筛选（P0 改版）
+
+> **权威契约**：[KNOWLEDGE_API.md §2.1.3](KNOWLEDGE_API.md#213-浏览管理页筛选-ui-规范体裁--分类--平行双-facet)  
+> **背景**：旧 UI「先选分类 → 再出全部体裁 chip」在 enterprise-kb 易与分类名撞车，用户看不懂。
+
+**目标**：两行平行 chip，**文档浏览**与**文档管理**共用同一套逻辑。
+
+| 行 | 数据源 | 选中后 query |
+|----|--------|--------------|
+| 体裁 | `GET /kb/index/types?spaceId=` | `kbType`（「全部」不传） |
+| 分类 | `GET /kb/index?spaceId=` → `groups[]` | `categoryId` 或 `uncategorizedOnly=true` |
+| 列表 | `GET /kb/document/search?source=kb&…` | 上行参数 **AND** |
+
+**废弃**：左侧分类树 +「请先选分类再按体裁筛选」+ 分类选中后才渲染体裁 chip。
+
+**TypeScript 状态建议**：
+
+```typescript
+interface KbBrowseFilters {
+  spaceId?: string
+  kbType?: string      // undefined = 体裁「全部」
+  categoryId?: string  // undefined = 分类「全部」；'uncategorized' → uncategorizedOnly
+  keyword?: string
+}
+```
+
 ---
 
 ## 2. 两条主链路（勿混淆）

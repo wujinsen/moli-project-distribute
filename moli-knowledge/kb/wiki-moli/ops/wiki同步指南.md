@@ -8,9 +8,9 @@ sources:
   - moli-knowledge/kb/tools/sync_to_db.py
   - moli-knowledge/kb/tools/ci/run_sync.sh
   - moli-knowledge/kb/AGENTS.md
-related: [知识库使用指南, 知识库服务, 数据库初始化指南, 知识库三操作, 项目文档总览]
+related: [知识库设计哲学-docs-as-code, 知识库使用指南, 知识库服务, 数据库初始化指南, 知识库三操作, 项目文档总览]
 created: 2026-06-22
-updated: 2026-06-25
+updated: 2026-07-01
 ---
 
 # wiki 同步指南

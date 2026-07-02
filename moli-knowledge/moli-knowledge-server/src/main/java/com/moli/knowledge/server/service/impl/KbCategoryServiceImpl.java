@@ -149,7 +149,6 @@ public class KbCategoryServiceImpl implements KbCategoryService {
 
         category.setId(IdGenerator.getId());
         category.setDirSlug(dirSlug);
-        category.setDefaultType(StringUtils.trimToNull(category.getDefaultType()));
         if (category.getParentId() == null) {
             category.setParentId(0L);
         }
@@ -170,13 +169,12 @@ public class KbCategoryServiceImpl implements KbCategoryService {
             throw new BaseException("分类不存在");
         }
         kbAclService.assertCanEdit(existing.getSpaceId());
-        // 仅允许改显示名/图标/排序/默认体裁；dir_slug、space_id、parent_id 不可经此变更
+        // 仅允许改显示名/图标/排序；dir_slug、space_id、parent_id 不可经此变更
         KbCategory patch = new KbCategory();
         patch.setId(existing.getId());
         patch.setCategoryName(StringUtils.trimToNull(category.getCategoryName()));
         patch.setIcon(category.getIcon());
         patch.setSort(category.getSort());
-        patch.setDefaultType(StringUtils.trimToNull(category.getDefaultType()));
         kbCategoryMapper.updateById(patch);
     }
 

@@ -622,10 +622,6 @@ public class KbIngestServiceImpl implements KbIngestService {
             KbCategory cat = IngestPlanPathResolver.inferCategoryFromRawSource(rawSource, byDir);
             if (cat != null) {
                 item.put("categoryId", cat.getId());
-                if (StringUtils.isBlank(item.getString("type"))
-                        && StringUtils.isNotBlank(cat.getDefaultType())) {
-                    item.put("type", cat.getDefaultType());
-                }
                 item.put("reason", "raw→分类 " + cat.getDirSlug()
                         + (StringUtils.isNotBlank(item.getString("reason"))
                         ? "；" + item.getString("reason") : ""));
@@ -823,9 +819,7 @@ public class KbIngestServiceImpl implements KbIngestService {
                                          String today, boolean useLlmGenerate) {
         Long categoryId = IngestPlanPathResolver.parseCategoryId(item);
         KbCategory category = categoryId != null ? loadCategoryForPlan(categoryId, space.getId()) : null;
-        String type = category != null && StringUtils.isNotBlank(category.getDefaultType())
-                ? category.getDefaultType()
-                : StringUtils.defaultIfBlank(item.getString("type"), "article");
+        String type = StringUtils.defaultIfBlank(item.getString("type"), "article");
         String relPath = resolveCreateRelPath(space.getId(), item);
         String bare = bareSlug(relPath);
         List<String> sources = jsonStrList(item.getJSONArray("sources"));
@@ -1411,7 +1405,6 @@ public class KbIngestServiceImpl implements KbIngestService {
                 sb.append("- id=").append(c.getId())
                         .append(" name=").append(c.getCategoryName())
                         .append(" dir_slug=").append(c.getDirSlug())
-                        .append(" defaultType=").append(StringUtils.defaultString(c.getDefaultType(), ""))
                         .append("\n");
             }
         }

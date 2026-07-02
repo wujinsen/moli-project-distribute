@@ -21,4 +21,10 @@
 
 ## [2026-06-29] governance | 空间分离 + enterprise-kb 去茉莉 branding
 
-## [2026-06-29] governance | 空间分离 + enterprise-kb 去茉莉 branding
+## [2026-07-01] crystallize | Docs as Code 设计哲学 → create develop/知识库设计哲学-docs-as-code (+5 enrich: 知识库三操作, 知识库服务, 知识库使用指南, wiki同步指南, 技术方案与架构索引)
+
+## [2026-07-01] ingest | Meilisearch 接入规划 → create develop/知识库-meilisearch接入规划 (+draw.io moli-kb-meilisearch; enrich: kb-wiki到es同步流水线, 知识库服务, 知识库设计哲学-docs-as-code, index)
+
+## [2026-07-01] maintenance | 体裁过滤后端落地（search kbType + /kb/index/types facet + /kb/meta/kb-types）→ enrich 知识库服务；API 文档 §2.1.1/§2.1.2 + 前端对接表
+
+## [2026-07-01] maintenance | 浏览筛选 UX 改版：体裁×分类平行双 facet（废弃嵌套「先分类后体裁」）→ enrich API §2.1.3、知识库服务、知识库设计哲学 §4.1

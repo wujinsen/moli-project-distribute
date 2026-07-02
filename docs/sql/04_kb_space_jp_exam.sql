@@ -22,17 +22,16 @@ ON DUPLICATE KEY UPDATE
   `owner_id` = VALUES(`owner_id`),
   `update_time` = NOW();
 
--- 分类=目录（单一真相源）：绑定 kb/wiki-jp-exam/ 子目录，default_type 用于移动时对齐 frontmatter type
+-- 分类=目录（单一真相源）：绑定 kb/wiki-jp-exam/ 子目录
 INSERT INTO `kb_category`
-  (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`default_type`,`sort`,`is_delete`)
+  (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`sort`,`is_delete`)
 VALUES
-  (900000000000000121, 1, NOW(), 1, NOW(), 900000000000000002, 0, '操作指导', NULL, 'guides',    'guide',     1, 0),
-  (900000000000000123, 1, NOW(), 1, NOW(), 900000000000000002, 0, '技术文章', NULL, 'articles',  'article',   2, 0),
-  (900000000000000124, 1, NOW(), 1, NOW(), 900000000000000002, 0, 'FE 科目',  NULL, 'fe',        'article',   3, 0),
-  (900000000000000122, 1, NOW(), 1, NOW(), 900000000000000002, 0, '面试题',   NULL, 'interview', 'interview', 4, 0)
+  (900000000000000121, 1, NOW(), 1, NOW(), 900000000000000002, 0, '操作指导', NULL, 'guides',    1, 0),
+  (900000000000000123, 1, NOW(), 1, NOW(), 900000000000000002, 0, '技术文章', NULL, 'articles',  2, 0),
+  (900000000000000124, 1, NOW(), 1, NOW(), 900000000000000002, 0, 'FE 科目',  NULL, 'fe',        3, 0),
+  (900000000000000122, 1, NOW(), 1, NOW(), 900000000000000002, 0, '面试题',   NULL, 'interview', 4, 0)
 ON DUPLICATE KEY UPDATE
   `category_name` = VALUES(`category_name`),
-  `default_type`  = VALUES(`default_type`),
   `sort`          = VALUES(`sort`),
   `is_delete`     = 0;
 

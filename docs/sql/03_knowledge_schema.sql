@@ -51,7 +51,6 @@ CREATE TABLE IF NOT EXISTS `kb_category` (
   `category_name` varchar(128) NOT NULL COMMENT '分类名称',
   `icon` varchar(64) DEFAULT NULL COMMENT '图标',
   `dir_slug` varchar(64) DEFAULT NULL COMMENT '绑定的 wiki 子目录名（分类=目录，单一真相源）；空=不绑定目录',
-  `default_type` varchar(16) DEFAULT NULL COMMENT '该分类默认体裁 kb_type；文档移入时按此改 frontmatter type，空=不改',
   `sort` int DEFAULT 0 COMMENT '排序',
   `is_delete` int DEFAULT 0 COMMENT '0未删除 1已删除',
   PRIMARY KEY (`id`),
@@ -321,14 +320,13 @@ INSERT INTO `kb_space` VALUES (900000000000000001, 1, NOW(), 1, NOW(), 'enterpri
 
 -- 分类=目录（单一真相源）：enterprise-kb 仅 3 类，与 wiki/ 一级目录一致
 INSERT INTO `kb_category`
-  (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`default_type`,`sort`,`is_delete`)
+  (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`sort`,`is_delete`)
 VALUES
-  (900000000000000113, 1, NOW(), 1, NOW(), 900000000000000001, 0, '概念',     NULL, 'concepts',  'concept',   1, 0),
-  (900000000000000114, 1, NOW(), 1, NOW(), 900000000000000001, 0, '技术文章', NULL, 'articles',  'article',   2, 0),
-  (900000000000000115, 1, NOW(), 1, NOW(), 900000000000000001, 0, '面试题',   NULL, 'interview', 'interview', 3, 0)
+  (900000000000000113, 1, NOW(), 1, NOW(), 900000000000000001, 0, '概念',     NULL, 'concepts',  1, 0),
+  (900000000000000114, 1, NOW(), 1, NOW(), 900000000000000001, 0, '技术文章', NULL, 'articles',  2, 0),
+  (900000000000000115, 1, NOW(), 1, NOW(), 900000000000000001, 0, '面试题',   NULL, 'interview', 3, 0)
 ON DUPLICATE KEY UPDATE
   `category_name` = VALUES(`category_name`),
-  `default_type`  = VALUES(`default_type`),
   `sort`          = VALUES(`sort`),
   `is_delete`     = 0;
 

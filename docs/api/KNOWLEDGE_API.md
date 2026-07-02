@@ -163,6 +163,143 @@ mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉
 }
 ```
 
+### 2.1.1 体裁 facet `GET /kb/index/types`
+
+当前作用域下各 **体裁(kb_type)** 的**已发布 + `source='kb'`** 计数，供浏览/管理页 **「体裁」筛选行** 的 chip（带数字）。
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `spaceId` | query | 否 | 省略=可读的全部空间 |
+| `categoryId` | query | 否 | **可选**：叠加分类过滤后再统计体裁（v2 联动计数用）；**v1 平行筛选进页不传** |
+| `uncategorizedOnly` | query | 否 | `true` 时仅统计未分类页（与 `categoryId` 互斥） |
+
+响应 `data`：`items[]`（按体裁白名单顺序，仅 `count>0`）+ `total`。
+
+```json
+{
+  "items": [
+    { "kbType": "concept", "label": "概念", "count": 41 },
+    { "kbType": "article", "label": "文章", "count": 92 },
+    { "kbType": "interview", "label": "面试题", "count": 22 }
+  ],
+  "total": 155
+}
+```
+
+> 迁移 Meilisearch 后，本计数可由 `facetDistribution` 直出（见 wiki `知识库-meilisearch接入规划`），接口契约不变。
+
+### 2.1.2 体裁白名单 `GET /kb/meta/kb-types`
+
+体裁下拉/筛选数据源（**单一来源** `KbTypeConstants`，与 `sync_to_db.py` 的 `KB_TYPES` 一致）。无需 ACL。
+
+```json
+[
+  { "value": "guide", "label": "操作指南" },
+  { "value": "service", "label": "服务实体" },
+  { "value": "concept", "label": "概念" },
+  { "value": "article", "label": "文章" },
+  { "value": "interview", "label": "面试题" },
+  { "value": "output", "label": "汇总" }
+]
+```
+
+> 体裁的**维护**仍是改 wiki frontmatter `type:` → Sync（DB 只读镜像）；新增第 7 种须同时改 `KbTypeConstants` 与 `sync_to_db.py`。
+
+### 2.1.3 浏览/管理页筛选 UI 规范（体裁 × 分类 · 平行双 facet）
+
+#### 两个维度（勿混淆）
+
+| 维度 | 含义 | 数据从哪来 | 查询参数 |
+|------|------|------------|----------|
+| **体裁** | frontmatter `type:` → `kb_document.kb_type` | `GET /kb/index/types` | `kbType` |
+| **分类** | wiki 一级目录 → `kb_document.category_id` | `GET /kb/index` → `groups[]` | `categoryId` 或 `uncategorizedOnly=true` |
+
+**查询关系**：两个维度 **平级、独立可选**，列表取 **AND**（同时选中则两个条件都满足）。  
+**禁止**再做成「必须先选分类，体裁 chip 才出现」的嵌套交互（旧版易与 enterprise-kb 分类名撞车，用户看不懂「全部体裁 + 概念」）。
+
+#### 目标线框（文档浏览 · 文档管理共用）
+
+```text
+┌─ 企业知识库 ▼ ─────────────────────────────────────────────┐
+│ [ 搜索标题或摘要________________________ ]                    │
+│ 共 155 篇                                                     │
+├──────────────────────────────────────────────────────────────┤
+│ 体裁  (全部)  操作指南  概念(41)  文章(92)  面试题(22)  汇总   │  ← 行1：/kb/index/types
+│ 分类  (全部)  概念(41)  技术文章(92)  面试题(22)  未分类(0)   │  ← 行2：/kb/index groups
+├──────────────────────────────────────────────────────────────┤
+│ □ B+Tree 与 InnoDB 索引结构                        [概念]    │
+│ □ Dubbo 与 Nacos                                   [概念]    │
+│ ...                                                           │
+└──────────────────────────────────────────────────────────────┘
+```
+
+- **(全部)**：该行不传对应 query 参数（`kbType` / `categoryId` 均省略）。
+- 行内 `(41)`：facet 计数，来自对应 meta 接口。
+- 列表右侧 `[概念]`：该行文档的 `kbType` 中文标签（search 返回字段 + `/kb/meta/kb-types` 映射）。
+
+#### 前端对接表
+
+| 场景 | 调用 | 说明 |
+|------|------|------|
+| 进页 · 体裁行 | `GET /kb/index/types?spaceId=` | **不带** `categoryId`；渲染体裁 chip + 计数 |
+| 进页 · 分类行 | `GET /kb/index?spaceId=` | 渲染分类 chip + 计数；`groups[].type` 即 `categoryId`（`uncategorized` 特殊） |
+| 列表（核心） | `GET /kb/document/search?source=kb&spaceId=&kbType=&categoryId=` | 两个参数**独立**；只选体裁只传 `kbType`，只选分类只传 `categoryId` |
+| 未分类 | `search?…&uncategorizedOnly=true` | 与 `categoryId` 互斥；分类行「未分类」chip 对应此参数 |
+| 编辑页体裁下拉 | `GET /kb/meta/kb-types` | `value/label` 下拉 |
+| 编辑页改体裁 | wiki 保存写 frontmatter `type:` → Sync | **不直写 DB** |
+
+#### 调用时序（平行双 facet · v1）
+
+```text
+1. 进页（并行）
+   GET /kb/index/types?spaceId=1
+   GET /kb/index?spaceId=1
+   GET /kb/document/search?source=kb&spaceId=1&pageNum=1&pageSize=20
+   → 两行 chip 默认均为「全部」，列表=空间内全部已发布 wiki 文档
+
+2. 只选体裁「概念」
+   search 加 kbType=concept（categoryId 仍不传）
+   → 全空间内 type=concept 的文档（不限目录）
+
+3. 只选分类「技术文章」
+   search 加 categoryId={groups[].type}（kbType 仍不传）
+   → 该目录下全部体裁
+
+4. 体裁 + 分类同时选
+   search 同时带 kbType=concept & categoryId=…
+   → AND：该分类下且该体裁的文档
+
+5. 取消某行筛选
+   该行点「全部」→ 去掉对应 query 参数，重新 search
+```
+
+> **返回行含体裁**：search 每条 `KbDocument` 带 `kbType`，可直接渲染右侧标签。  
+> **传参约束**：`kbType` 非法 → **400**；`categoryId` 与 `uncategorizedOnly` 不可同传 → **400**。
+
+#### v2 可选：facet 计数联动（未实现，按需加）
+
+选中分类后，体裁行计数可改为 `GET /kb/index/types?spaceId=&categoryId=`（**后端已支持** `categoryId` 参数）。  
+选中体裁后，分类行计数需 `GET /kb/index` 叠加 `kbType` 过滤（**待后端扩展**）。v1 可先用全空间静态计数，不影响列表 AND 查询正确性。
+
+#### enterprise-kb 空间说明（避免误以为 bug）
+
+该空间历史目录按体裁划分（`concepts/` / `articles/` / `interview/`），**分类中文名与体裁中文名高度重合**：
+
+| 分类（目录） | 常见 kb_type |
+|--------------|--------------|
+| 概念 | concept |
+| 技术文章 | article |
+| 面试题 | interview |
+
+因此用户可能同时选中「体裁=概念」+「分类=概念」，结果与只选其一接近——**是数据布局现状，不是接口错误**。  
+在 **wiki-moli**（`develop/` 下混有 service/concept/article/output）两维差异更明显。
+
+#### 旧交互（已废弃，前端勿再实现）
+
+- ❌ 左侧分类树选中后，下方才出现「全部体裁 + 当前分类名」chip  
+- ❌ 提示「请先选分类，再按体裁筛选」  
+- ✅ 改为上方 **两行平行 chip**：体裁一行、分类一行，默认均可「全部」
+
 ### 2.2 分组条目 `GET /kb/index/items`
 
 | 参数 | 位置 | 必填 | 说明 |
@@ -667,6 +804,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 | `spaceIds` | query | 否 | — | 多空间数组，如 `spaceIds=1&spaceIds=2` |
 | `categoryId` | query | 否 | — | 分类 ID（与 `uncategorizedOnly` 互斥） |
 | `uncategorizedOnly` | query | 否 | — | `true` 时仅查 `category_id IS NULL`（治理未分类页） |
+| `kbType` | query | 否 | — | 体裁过滤：`guide/service/concept/article/interview/output`；非法值 **400**；与 `categoryId` **平行 AND**（见 §2.1.3） |
 | `keyword` | query | 否 | — | 关键词 |
 | `status` | query | 否 | — | `0` 草稿 / `1` 已发布 / `2` 已归档 |
 | `tagId` | query | 否 | — | 按标签过滤 |
@@ -681,7 +819,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 | `fulltext`（默认） | MySQL ngram 全文索引 `MATCH AGAINST`；索引异常时**自动降级**三字段 `LIKE` |
 | `like` | 始终用 `title`/`summary`/`content` 的 `LIKE` |
 
-> 前端「知识库浏览」侧栏用 `/kb/index` + …（**仅 `source=kb`**）；文档管理列表 **`/kb/document/search?source=kb`**，编辑走 **`/kb/wiki-moli/page`**。
+> 前端「知识库浏览 / 文档管理」筛选见 **§2.1.3**（体裁 × 分类平行双 facet）；侧栏树形展开仍可用 `/kb/index` + `/kb/index/items`；列表统一 **`/kb/document/search?source=kb`**。
 
 #### `GET /kb/document/{id}` 响应示例（`DocumentDetailVo`）
 
@@ -751,7 +889,7 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 |------|------|------|
 | GET | `/kb/category/tree?spaceId=&withCount=` | 分类树；`withCount=true` 时 `docCount` 与浏览一致（已发布 source=kb）；末尾可附虚拟节点「未分类」`virtualNode=true` |
 | POST | `/kb/category` | 创建（body `KbCategory`）：**同时 `mkdir` 对应 `dir_slug` 目录**（+`.gitkeep`） |
-| PUT | `/kb/category` | 更新：**仅改** `categoryName/icon/sort/defaultType`；`dirSlug` 不可变 |
+| PUT | `/kb/category` | 更新：**仅改** `categoryName/icon/sort`；`dirSlug` 不可变 |
 | DELETE | `/kb/category/{id}` | 删除：要求**目录为空**（无 `.md`）且**无文档归属**，否则拒绝；通过则删目录 + 软删 |
 
 **`KbCategory` 关键字段**
@@ -761,14 +899,13 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 | `spaceId` | 创建必填 | 所属空间 |
 | `categoryName` | 是 | 显示名（可改） |
 | `dirSlug` | 创建必填 | 绑定 wiki 子目录，单段 `[A-Za-z0-9_-]`，空间内唯一，**创建后不可改** |
-| `defaultType` | 否 | 默认体裁 `guide/service/concept/article/interview/output` |
 | `icon` / `sort` | 否 | 图标 / 排序 |
 
 > ⚠️ 已接入空间 ACL：`tree` 需空间读权限；增删改需空间编辑权限。`spaceId` 不可读时直接报错。
 
 ### 5.2.1 移动文档分类 `PUT /kb/document/{id}/move`
 
-把一篇 **wiki 来源**文档移到另一分类(=目录)：移动 `.md` 文件 → 自动改其它页/`edges.jsonl` 中的**全路径引用**（裸名引用因 stem 不变无需改）→ 按目标分类 `defaultType` 改本页 frontmatter `type` → **触发 Sync** 刷新 `category_id`/关系。
+把一篇 **wiki 来源**文档移到另一分类(=目录)：移动 `.md` 文件 → 自动改其它页/`edges.jsonl` 中的**全路径引用**（裸名引用因 stem 不变无需改）→ **不改** frontmatter `type` → **触发 Sync** 刷新 `category_id`/关系。
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
@@ -1671,7 +1808,7 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 | `slug` | 是 | **裸文件名**（无 `.md`、无 `/`）；有 `categoryId` 时禁止含 `/` |
 | `title` | 否 | 页标题；PageWriter 写 frontmatter |
 | `sources` | 是 | raw 路径数组，如 `["raw/school/fe/fe_kamoku_b_set_sample_qs.md"]` |
-| `type` | 否 | **legacy 兜底**：无 `categoryId` 时用 `typeDir(type)` 映射目录；有 `categoryId` 时默认取 `category.defaultType` 写 frontmatter |
+| `type` | 否 | **legacy 兜底**：无 `categoryId` 时用 `typeDir(type)` 映射目录；有 `categoryId` 时 frontmatter `type` 由 Plan 项 `type` 或 job `expectTypes` 指定 |
 | `reason` | 否 | 规划说明 |
 
 **落盘相对路径（权威）**：

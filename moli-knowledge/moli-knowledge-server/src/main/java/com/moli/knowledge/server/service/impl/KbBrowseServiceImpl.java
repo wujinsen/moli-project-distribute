@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.enums.DocumentStatus;
 import com.moli.knowledge.server.dto.IndexItemsPageVo;
 import com.moli.knowledge.server.dto.IndexLocateVo;
 import com.moli.knowledge.server.dto.IndexTreeVo;
+import com.moli.knowledge.server.dto.KbTypeCountRow;
+import com.moli.knowledge.server.dto.KbTypeFacetVo;
 import com.moli.knowledge.server.dto.PageDetailVo;
 import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.entity.KbDocument;
@@ -23,6 +26,7 @@ import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbBrowseService;
 import com.moli.knowledge.server.support.KbCategoryConstants;
 import com.moli.knowledge.server.support.KbPublishedWikiFilter;
+import com.moli.knowledge.server.support.KbTypeConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -53,8 +57,8 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     private KbAclService kbAclService;
 
     @Override
-    public IndexTreeVo index(Long spaceId) {
-        SpaceScope scope = resolveScope(spaceId);
+    public IndexTreeVo index(Long spaceId, List<Long> spaceIds) {
+        SpaceScope scope = resolveScope(spaceId, spaceIds);
         if (scope.isEmpty()) {
             return new IndexTreeVo();
         }
@@ -100,7 +104,51 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     @Override
-    public IndexItemsPageVo indexItems(Long spaceId, String key, int pageNum, int pageSize) {
+    public KbTypeFacetVo types(Long spaceId, List<Long> spaceIds, Long categoryId, Boolean uncategorizedOnly) {
+        boolean uncat = Boolean.TRUE.equals(uncategorizedOnly);
+        if (categoryId != null && uncat) {
+            throw new BaseException("categoryId 与 uncategorizedOnly 不能同时传");
+        }
+        KbTypeFacetVo vo = new KbTypeFacetVo();
+        SpaceScope scope = resolveScope(spaceId, spaceIds);
+        if (scope.isEmpty()) {
+            return vo;
+        }
+        List<KbTypeCountRow> rows = kbDocumentMapper.countPublishedByKbType(
+                scope.singleSpaceId,
+                scope.multiSpaceIds,
+                DocumentStatus.PUBLISHED.getCode(),
+                uncat ? null : categoryId,
+                uncat);
+        Map<String, Long> byType = new LinkedHashMap<>();
+        for (KbTypeCountRow r : rows) {
+            if (r == null || r.getCnt() == null) {
+                continue;
+            }
+            String t = r.getKbType() == null ? "" : r.getKbType();
+            byType.merge(t, r.getCnt(), Long::sum);
+        }
+        long total = 0;
+        // 先按白名单顺序输出，未知/空体裁追加在后
+        for (String t : KbTypeConstants.ALL) {
+            Long c = byType.remove(t);
+            if (c != null && c > 0) {
+                vo.getItems().add(new KbTypeFacetVo.Item(t, KbTypeConstants.label(t), c));
+                total += c;
+            }
+        }
+        for (Map.Entry<String, Long> e : byType.entrySet()) {
+            if (e.getValue() != null && e.getValue() > 0 && StringUtils.isNotBlank(e.getKey())) {
+                vo.getItems().add(new KbTypeFacetVo.Item(e.getKey(), KbTypeConstants.label(e.getKey()), e.getValue()));
+                total += e.getValue();
+            }
+        }
+        vo.setTotal(total);
+        return vo;
+    }
+
+    @Override
+    public IndexItemsPageVo indexItems(Long spaceId, List<Long> spaceIds, String key, int pageNum, int pageSize) {
         if (StringUtils.isBlank(key)) {
             throw new BaseException("分组 key 不能为空");
         }
@@ -115,7 +163,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         }
         String k = key.trim();
 
-        SpaceScope scope = resolveScope(spaceId);
+        SpaceScope scope = resolveScope(spaceId, spaceIds);
         if (scope.isEmpty()) {
             return emptyItemsPage(k, pageNum, pageSize);
         }
@@ -141,10 +189,10 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     @Override
-    public IndexTreeVo indexSearch(Long spaceId, String q, int limit) {
+    public IndexTreeVo indexSearch(Long spaceId, List<Long> spaceIds, String q, int limit) {
         String keyword = StringUtils.trimToEmpty(q);
         if (StringUtils.isBlank(keyword)) {
-            return index(spaceId);
+            return index(spaceId, spaceIds);
         }
         if (limit < 1) {
             limit = SEARCH_DEFAULT_LIMIT;
@@ -153,7 +201,7 @@ public class KbBrowseServiceImpl implements KbBrowseService {
             limit = 500;
         }
 
-        SpaceScope scope = resolveScope(spaceId);
+        SpaceScope scope = resolveScope(spaceId, spaceIds);
         if (scope.isEmpty()) {
             return new IndexTreeVo();
         }
@@ -173,11 +221,11 @@ public class KbBrowseServiceImpl implements KbBrowseService {
     }
 
     @Override
-    public IndexLocateVo locate(Long spaceId, String slug) {
+    public IndexLocateVo locate(Long spaceId, List<Long> spaceIds, String slug) {
         if (StringUtils.isBlank(slug)) {
             throw new BaseException("slug 不能为空");
         }
-        SpaceScope scope = resolveScope(spaceId);
+        SpaceScope scope = resolveScope(spaceId, spaceIds);
         if (scope.isEmpty()) {
             throw new BaseException("页面不存在: " + slug);
         }
@@ -344,19 +392,15 @@ public class KbBrowseServiceImpl implements KbBrowseService {
         return wrapper;
     }
 
-    private SpaceScope resolveScope(Long spaceId) {
-        if (spaceId != null) {
-            kbAclService.assertCanRead(spaceId);
-            return SpaceScope.single(spaceId);
-        }
-        List<Long> accessible = kbAclService.accessibleSpaceIds();
-        if (accessible.isEmpty()) {
+    private SpaceScope resolveScope(Long spaceId, List<Long> spaceIds) {
+        List<Long> scopeSpaces = kbAclService.resolveReadableSpaceIds(spaceId, spaceIds);
+        if (scopeSpaces.isEmpty()) {
             return SpaceScope.empty();
         }
-        if (accessible.size() == 1) {
-            return SpaceScope.single(accessible.get(0));
+        if (scopeSpaces.size() == 1) {
+            return SpaceScope.single(scopeSpaces.get(0));
         }
-        return SpaceScope.multi(accessible);
+        return SpaceScope.multi(scopeSpaces);
     }
 
     private List<String> tagNames(Long docId) {

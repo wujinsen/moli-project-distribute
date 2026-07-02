@@ -369,7 +369,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | `slug` | 是 | **裸文件名**（无 `.md`、无 `/`），如 `fe_kamoku_b_set_sample_qs` |
 | `title` | 否 | 页标题；LLM 写 frontmatter |
 | `sources` | 是 | raw 路径数组 |
-| `type` | 否 | **deprecated 兜底**：无 `categoryId` 时用 `typeDir(type)`；有 `categoryId` 时默认取 `category.defaultType` 写 frontmatter |
+| `type` | 否 | **legacy 兜底**：无 `categoryId` 时用 `typeDir(type)`；有 `categoryId` 时 frontmatter `type` 由 Plan 项 `type` 或 job `expectTypes` 指定 |
 | `reason` | 否 | 规划说明 |
 
 落盘相对路径（权威）：
@@ -584,6 +584,29 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 ```
 
 > 设计 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md)
+
+---
+
+## KBOPS · 知识库运维子域（规划 2026-07-02）
+
+**目标**：保障 wiki→DB 同步的正确性/并发安全/告警、体检工单闭环、运维界面补齐。与「服务器运维」(user-center `operation_*`) 是**两条独立线**，互不重叠。
+
+> 完整设计：[`docs/design/kb-ops-roadmap.md`](../docs/design/kb-ops-roadmap.md)
+
+| 子任务 | 内容 | 优先级 | 状态 |
+|--------|------|--------|------|
+| **KBOPS-1** | Sync 失败可观测：`sync_to_db.py` 区分 success/fail 写 `kb_sync_log.status`；`failCount` 生效 | P0 | 📋 |
+| **KBOPS-2** | Sync 并发锁（按 space_code 的 Redis 锁） | P0 | 📋 |
+| **KBOPS-3** | 权限码对齐：enforce `kb:sync:trigger` / `kb:lint:scan` | P0 | 📋 |
+| **KBOPS-4** | 定时同步改 sync-all 三空间（或配置化多空间） | P1 | 📋 |
+| **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | 📋 |
+| **KBOPS-6** | 前端 T16f Wiki 治理全按钮（同 T16f） | P1 | 📋 |
+| **KBOPS-7** | 前端 T19d 平台 LLM 设置页（同 T19d） | P1 | 📋 |
+| **KBOPS-8** | 体检工单增强：issue_type 扩展 + assignee/优先级 + 批量 + 可选定时 scan | P2 | 📋 |
+| **KBOPS-9** | 知识库运维 Dashboard（Sync 趋势/Lint 工单/LLM 调用率/断链汇总；可选 `kb_llm_call_log`） | P2 | 📋 |
+| **KBOPS-10** | Web 体检检查项对齐 `lint.py`（或明确分工文档） | P2 | 📋 |
+
+**建议起手**：KBOPS-1 + KBOPS-2（改动可控、修"运维看不见失败"的硬伤）。
 
 ---
 

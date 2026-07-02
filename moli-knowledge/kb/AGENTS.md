@@ -61,7 +61,7 @@ kb/
 ```
 
 > **分类 = 目录（单一真相）**：Web 浏览、Ingest 落盘、Sync 回填 `category_id` 均以 **wiki 一级子目录** 为准。  
-> **体裁 `type`**（frontmatter → `kb_type`）为内部字段，用于 Query/图谱/Lint；由分类 `default_type` 或正文 frontmatter 带出，**不对用户展示分组**。  
+> **体裁 `type`**（frontmatter → `kb_type`）为内部字段，用于 Query/图谱/Lint/筛选；**仅**由正文 frontmatter `type:` 维护，**不对用户展示分组**。  
 > `develop/outputs/` 等为 develop 下二级目录；Sync 仍按 slug **首段**回填分类。  
 > **通用技术语料**（Dubbo/MySQL/Redis 等 articles、concepts、interview）在 **`wiki/`（enterprise-kb）**，**禁止**写入 wiki-moli 或在其正文加「茉莉触点」模板节。
 
@@ -157,7 +157,7 @@ HTTP 契约给前端/测试？       → 只链 docs/api/
 3. **无合适分类时**（新主题 raw）：
    - **Web**：空间 → 分类管理 → 新建（填 `categoryName` + `dir_slug`，系统自动 `mkdir` wiki 子目录）。
    - **Cursor Agent**：与用户确认 `dir_slug`（单段 `[A-Za-z0-9_-]`）→ 告知用户在 Web 建分类，或自行在 `wiki*/{dir_slug}/` 建目录并让用户补分类 → 再落盘 → `sync`。
-4. `frontmatter.type` 取分类 `default_type`（缺省 `guide`）；Sync 后 Web 侧栏 **只按分类** 展示（`groupBy=category`）。
+4. `frontmatter.type` 由正文或 Ingest Plan 显式指定；Sync 后 Web 侧栏 **只按分类** 展示（`groupBy=category`）。
 
 ---
 
@@ -176,7 +176,7 @@ HTTP 契约给前端/测试？       → 只链 docs/api/
 ---
 title: 用户中心
 slug: 用户中心
-type: service            # 内部体裁；新建页优先用分类 default_type，勿手选目录
+type: service            # 内部体裁；新建页在 frontmatter 或 Ingest Plan 中指定
 status: active           # draft | active | archived
 tags: [微服务, 权限]
 sources:                 # 该页知识来源(raw 路径或 URL), 保证可追溯

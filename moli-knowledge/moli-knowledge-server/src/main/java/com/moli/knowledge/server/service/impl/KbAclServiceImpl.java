@@ -8,6 +8,7 @@ import com.moli.user.center.common.domain.entity.SysUser;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.entity.KbSpaceMember;
+import com.moli.knowledge.server.enums.SpaceVisibility;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMemberMapper;
@@ -39,12 +40,20 @@ public class KbAclServiceImpl implements KbAclService {
     @Override
     public boolean isAdmin() {
         try {
+            if (SecurityUtils.getSubject().isPermitted(PermissionConstants.SUPER_ADMIN)) {
+                return true;
+            }
             SysUser user = ShiroUtils.getUserInfo();
-            if (user != null && StringUtils.isNotBlank(user.getUserName())
+            if (user == null) {
+                return false;
+            }
+            if (StringUtils.isNotBlank(user.getUserName())
                     && CommonConstant.hasFullPermission(user.getUserName())) {
                 return true;
             }
-            return SecurityUtils.getSubject().isPermitted(PermissionConstants.SUPER_ADMIN);
+            // Redis Session 里 SysUser 可能缺 userName，仍按种子 superadmin/admin 识别
+            Long uid = user.getId();
+            return Long.valueOf(1L).equals(uid) || Long.valueOf(2L).equals(uid);
         } catch (Exception e) {                            // 未登录/无 Subject
             return false;
         }
@@ -310,11 +319,19 @@ public class KbAclServiceImpl implements KbAclService {
         if (userId == null) {
             return false;
         }
+        // 公开空间：任意已登录用户可读（enterprise-kb 默认 visibility=公开）
+        if (SpaceVisibility.PUBLIC.getCode() == nullSafeInt(space.getVisibility())) {
+            return true;
+        }
         // 未在 kb_space_member 分配的用户不可见；负责人默认可读
         if (userId.equals(space.getOwnerId())) {
             return true;
         }
         return memberRole(space.getId(), userId) != null;
+    }
+
+    private static int nullSafeInt(Integer value) {
+        return value == null ? SpaceVisibility.INTERNAL.getCode() : value;
     }
 
     private KbSpace loadSpace(Long spaceId) {

@@ -6,7 +6,7 @@ status: active
 tags: [知识库, Elasticsearch, ingest, 同步]
 sources:
   - wiki/guides/wiki同步指南.md
-related: [wiki同步指南, mysql-binlog与canal同步, 知识库-全文检索规划, elasticsearch-ik分词与分析器, ci-知识库同步门禁]
+related: [wiki同步指南, 知识库-meilisearch接入规划, 知识库设计哲学-docs-as-code, 知识库服务]
 created: 2026-06-21
 updated: 2026-06-21
 ---
@@ -15,7 +15,7 @@ updated: 2026-06-21
 
 > MySQL 同步 [[wiki同步指南]]；Binlog [[mysql-binlog与canal同步]]；检索规划 [[知识库-全文检索规划]]。
 
-当前 **双轨**：markdown wiki → MySQL（`sync_to_db.py`）；ES 全文为 **规划/增量** 能力。
+当前 **双轨**：markdown wiki → MySQL（`sync_to_db.py`）；ES 全文为 **规划/增量** 能力。轻量优先方案见 [[知识库-meilisearch接入规划]]（体裁/分类 facet + ACL filter）。
 
 ## 1. 目标架构
 

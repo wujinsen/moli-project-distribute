@@ -20,6 +20,7 @@
 | [`moli-kb-ingest-workbench.drawio`](moli-kb-ingest-workbench.drawio) | **M6 Ingest 工作台**（T15 六步状态机 + 架构页） |
 | [`moli-kb-wiki-govern.drawio`](moli-kb-wiki-govern.drawio) | **M7 Wiki 治理工作台**（T16：Lint→script-fix/ai-batch-fix/auto-fix→merge-hint→复检→Sync） |
 | [`moli-kb-llm-settings-flow.drawio`](moli-kb-llm-settings-flow.drawio) | **T19 平台 LLM 设置**：系统管理 UI → knowledge-server → DB/yaml → 厂商 API |
+| [`moli-kb-meilisearch.drawio`](moli-kb-meilisearch.drawio) | **Meilisearch 接入规划**：索引轨（sync→reindex）+ 查询轨（ACL filter + 体裁/分类 facet） |
 | [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：四路由 + StripPrefix + 端口 |
 | [`moli-rbac-model.drawio`](moli-rbac-model.drawio) | **RBAC 模型**：用户→角色→菜单/动作 + Shiro 运行时 |
 | [`moli-user-center-position.drawio`](moli-user-center-position.drawio) | **用户中心定位**：网关 HTTP + Dubbo + 共享 Redis |
@@ -94,6 +95,7 @@ docs/diagrams/png/moli-kb-raw-pipeline.png
 docs/diagrams/png/moli-kb-functional-flows.png
 docs/diagrams/png/moli-kb-ingest-workbench.png
 docs/diagrams/png/moli-kb-wiki-govern.png
+docs/diagrams/png/moli-kb-meilisearch.png
 docs/diagrams/png/moli-gateway-routes.png
 docs/diagrams/png/moli-rbac-model.png
 docs/diagrams/png/moli-user-center-position.png

@@ -28,9 +28,6 @@ public class CategoryTreeVo {
     @ApiModelProperty("绑定的 wiki 子目录名")
     private String dirSlug;
 
-    @ApiModelProperty("默认体裁 kb_type")
-    private String defaultType;
-
     @ApiModelProperty("该分类下文档数（withCount=true；与浏览一致：已发布 source=kb）")
     private Integer docCount;
 

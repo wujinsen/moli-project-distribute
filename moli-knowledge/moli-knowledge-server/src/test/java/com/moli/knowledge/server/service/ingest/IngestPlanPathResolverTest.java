@@ -16,7 +16,6 @@ public class IngestPlanPathResolverTest {
         cat.setSpaceId(1L);
         cat.setCategoryName("FE 题库");
         cat.setDirSlug("fe");
-        cat.setDefaultType("interview");
         return cat;
     }
 
@@ -121,7 +120,6 @@ public class IngestPlanPathResolverTest {
         KbCategory product = new KbCategory();
         product.setId(200L);
         product.setDirSlug("product");
-        product.setDefaultType("guide");
         Map<String, KbCategory> map = IngestPlanPathResolver.indexCategoriesByDirSlug(
                 java.util.Collections.singletonList(product));
         KbCategory found = IngestPlanPathResolver.inferCategoryFromRawSource(

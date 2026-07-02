@@ -1,0 +1,21 @@
+[Unit]
+Description=Moli User Center (user-center-server)
+After=network-online.target mysqld.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/opt/moli-project-distribute/moli-user-center
+EnvironmentFile=-/opt/moli-project-distribute/moli-user-center/conf/moli-user-center.env
+PIDFile=/opt/moli-project-distribute/moli-user-center/run/user-center.pid
+ExecStart=/opt/moli-project-distribute/deploy/linux/moli-service.sh user-center start
+ExecStop=/opt/moli-project-distribute/deploy/linux/moli-service.sh user-center stop
+ExecReload=/opt/moli-project-distribute/deploy/linux/moli-service.sh user-center restart
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

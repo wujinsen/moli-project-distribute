@@ -128,7 +128,7 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
     }
 
     @Override
-    public WikiSaveResultVo movePage(Long spaceId, String fromSlug, String toSlug, String newType) {
+    public WikiSaveResultVo movePage(Long spaceId, String fromSlug, String toSlug) {
         assertEnabled();
         KbSpace space = resolveSpace(spaceId);
         kbAclService.assertCanEdit(space.getId());
@@ -149,25 +149,17 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
         }
 
         try {
-            // 1) 可选：改本页 frontmatter 的 type（移动到新分类的默认体裁）
-            String content = new String(Files.readAllBytes(fromFile), StandardCharsets.UTF_8);
-            if (StringUtils.isNotBlank(newType)) {
-                content = rewriteFrontmatterType(content, newType.trim());
-            }
-            // 2) 移动文件（先写新内容到目标，再删源，避免半路失败丢内容）
             if (toFile.getParent() != null) {
                 Files.createDirectories(toFile.getParent());
             }
-            Files.write(toFile, content.getBytes(StandardCharsets.UTF_8));
-            Files.delete(fromFile);
-            // 3) 自动改其它页/edges 中的全路径引用（裸名引用因 stem 不变无需改）
+            Files.move(fromFile, toFile);
             rewriteReferences(wikiDir, from, to);
         } catch (IOException e) {
             log.error("移动 wiki 文件失败: {} -> {}", fromFile, toFile, e);
             throw new BaseException("移动 wiki 文件失败：" + e.getMessage());
         }
 
-        log.info("[wiki-move] space={} {} -> {} newType={}", space.getSpaceCode(), from, to, newType);
+        log.info("[wiki-move] space={} {} -> {}", space.getSpaceCode(), from, to);
         WikiSaveResultVo vo = new WikiSaveResultVo();
         vo.setSlug(to);
         vo.setSpaceId(space.getId());
@@ -175,21 +167,6 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
         vo.setCreated(false);
         vo.setSavedAt(new Date());
         return vo;
-    }
-
-    /** 替换 frontmatter（首个 --- ... --- 块）内的 type: 行。 */
-    private String rewriteFrontmatterType(String content, String newType) {
-        if (!content.startsWith("---")) {
-            return content;
-        }
-        int end = content.indexOf("\n---", 3);
-        if (end < 0) {
-            return content;
-        }
-        String head = content.substring(0, end);
-        String rest = content.substring(end);
-        String newHead = head.replaceFirst("(?m)^type:\\s*.*$", "type: " + newType);
-        return newHead + rest;
     }
 
     /** 扫描该空间所有 .md + graph/edges.jsonl，把全路径引用 from -> to 改写。 */

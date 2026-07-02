@@ -38,6 +38,9 @@
         <if test="source != null and source != ''">
             AND source = #{source}
         </if>
+        <if test="kbType != null and kbType != ''">
+            AND kb_type = #{kbType}
+        </if>
         ORDER BY
         <if test="keyword != null and keyword != ''">
             MATCH(title, summary, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) DESC,
@@ -98,6 +101,12 @@
             <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
                 #{sid}
             </foreach>
+        </if>
+        <if test="uncategorizedOnly != null and uncategorizedOnly">
+            AND category_id IS NULL
+        </if>
+        <if test="categoryId != null and (uncategorizedOnly == null or !uncategorizedOnly)">
+            AND category_id = #{categoryId}
         </if>
         GROUP BY kb_type
     </select>

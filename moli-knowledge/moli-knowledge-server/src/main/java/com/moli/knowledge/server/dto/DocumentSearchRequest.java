@@ -22,6 +22,9 @@ public class DocumentSearchRequest {
     @ApiModelProperty("仅未分类（category_id IS NULL）；与 categoryId 互斥")
     private Boolean uncategorizedOnly;
 
+    @ApiModelProperty("体裁过滤：guide/service/concept/article/interview/output；空=不过滤")
+    private String kbType;
+
     @ApiModelProperty("关键词")
     private String keyword;
 

@@ -1,0 +1,21 @@
+[Unit]
+Description=Moli Knowledge Server (knowledge-server)
+After=network-online.target mysqld.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/opt/moli-project-distribute/moli-knowledge
+EnvironmentFile=-/opt/moli-project-distribute/moli-knowledge/conf/moli-knowledge.env
+PIDFile=/opt/moli-project-distribute/moli-knowledge/run/knowledge.pid
+ExecStart=/opt/moli-project-distribute/deploy/linux/moli-service.sh knowledge start
+ExecStop=/opt/moli-project-distribute/deploy/linux/moli-service.sh knowledge stop
+ExecReload=/opt/moli-project-distribute/deploy/linux/moli-service.sh knowledge restart
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

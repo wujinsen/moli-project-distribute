@@ -1,76 +1,84 @@
 #!/usr/bin/env bash
 #
-# Moli 微服务启停脚本（Linux，通用）
+# Moli 微服务启停脚本（Linux）
+# 基于 deploy/linux/moli-server.sh，适配 moli-project-distribute 三服务目录
+#
+# 部署根: /opt/moli-project-distribute
+#   moli-user-center/  jar + application-pro.yml + conf/moli-user-center.env
+#   moli-gateway/
+#   moli-knowledge/
+#   deploy/linux/moli-service.sh
 #
 # 用法:
-#   ./moli-service.sh user-center start
-#   ./moli-service.sh gateway status
-#   MOLI_SERVICE=knowledge ./moli-service.sh start
-#
-# 配置:
-#   deploy/linux/{service}.env.example → 复制到 APP_HOME/conf/moli-{service}.env
-#   或通过 MOLI_ENV_FILE 指定 env 文件
-#
-# 推荐目录（monorepo 检出到 /opt/moli-project-distribute）:
-#   /opt/moli-project-distribute/moli-user-center/   jar + conf/ + application-pro.yml
-#   /opt/moli-project-distribute/moli-gateway/
-#   /opt/moli-project-distribute/moli-knowledge/     kb/ 在同仓库 moli-knowledge/kb
+#   ./deploy/linux/moli-service.sh user-center start
+#   ./deploy/linux/moli-service.sh gateway status
+#   ./deploy/linux/moli-service.sh knowledge logs 200
 
 set -u
 
-MOLI_ROOT="${MOLI_ROOT:-/opt/moli-project-distribute}"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MOLI_DEPLOY_ROOT="${MOLI_DEPLOY_ROOT:-/opt/moli-project-distribute}"
 
-declare -A SERVICE_APP_NAME=(
-  [user-center]="user-center-server"
-  [gateway]="moli-gateway"
-  [knowledge]="knowledge-server"
-)
-declare -A SERVICE_JAR_PREFIX=(
-  [user-center]="moli-user-center-server"
-  [gateway]="moli-gateway"
-  [knowledge]="moli-knowledge-server"
-)
-declare -A SERVICE_MODULE_DIR=(
+# ---------- 服务参数（勿与单服 moli-server 的 /opt/moli/backend 混淆）----------
+SERVICE_KEY="${1:-}"
+ACTION="${2:-}"
+
+declare -A SVC_MODULE=(
   [user-center]="moli-user-center"
   [gateway]="moli-gateway"
   [knowledge]="moli-knowledge"
 )
+declare -A SVC_APP_NAME=(
+  [user-center]="user-center-server"
+  [gateway]="moli-gateway"
+  [knowledge]="knowledge-server"
+)
+declare -A SVC_JAR_PREFIX=(
+  [user-center]="moli-user-center-server"
+  [gateway]="moli-gateway"
+  [knowledge]="moli-knowledge-server"
+)
+declare -A SVC_PID_NAME=(
+  [user-center]="user-center"
+  [gateway]="gateway"
+  [knowledge]="knowledge"
+)
 
-MOLI_SERVICE="${MOLI_SERVICE:-}"
-ACTION="${1:-}"
-if [[ -n "$MOLI_SERVICE" ]]; then
-  :
-elif [[ "$ACTION" =~ ^(user-center|gateway|knowledge)$ ]]; then
-  MOLI_SERVICE="$ACTION"
-  ACTION="${2:-}"
-else
-  MOLI_SERVICE="${MOLI_SERVICE:-user-center}"
+if [[ -z "$SERVICE_KEY" || -z "${SVC_MODULE[$SERVICE_KEY]:-}" ]]; then
+  cat <<EOF
+Usage: $0 {user-center|gateway|knowledge} {start|stop|restart|status|logs [lines]}
+
+Deploy root: ${MOLI_DEPLOY_ROOT}
+Env:  \${APP_HOME}/conf/moli-<service>.env  (see deploy/linux/moli-*.env.example)
+Java: JAVA_HOME in env, e.g. /usr/lib/jvm/java-11-amazon-corretto
+EOF
+  exit 1
 fi
 
-APP_NAME="${SERVICE_APP_NAME[$MOLI_SERVICE]:-moli-service}"
-JAR_PREFIX="${SERVICE_JAR_PREFIX[$MOLI_SERVICE]:-moli}"
-APP_HOME="${APP_HOME:-${MOLI_ROOT}/${SERVICE_MODULE_DIR[$MOLI_SERVICE]:-moli-${MOLI_SERVICE}}}"
+MODULE_DIR="${SVC_MODULE[$SERVICE_KEY]}"
+APP_HOME="${MOLI_DEPLOY_ROOT}/${MODULE_DIR}"
+APP_NAME="${SVC_APP_NAME[$SERVICE_KEY]}"
+JAR_PREFIX="${SVC_JAR_PREFIX[$SERVICE_KEY]}"
+PID_BASENAME="${SVC_PID_NAME[$SERVICE_KEY]}"
+
 JAR_FILE="${JAR_FILE:-}"
 JAVA_CMD="${JAVA_CMD:-java}"
 JAVA_OPTS="${JAVA_OPTS:--Xms512m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai}"
 SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-pro}"
 SPRING_ARGS="${SPRING_ARGS:-}"
 STOP_TIMEOUT="${STOP_TIMEOUT:-30}"
-PID_FILE="${PID_FILE:-}"
-LOG_DIR="${LOG_DIR:-}"
-LOG_FILE="${LOG_FILE:-}"
+PID_FILE=""
+LOG_DIR=""
+LOG_FILE=""
 
 load_env() {
   local env_file="${MOLI_ENV_FILE:-}"
   if [[ -z "$env_file" ]]; then
     for candidate in \
-      "${APP_HOME}/conf/moli-${MOLI_SERVICE}.env" \
-      "${APP_HOME}/conf/moli-server.env" \
-      "${MOLI_ROOT}/conf/moli-${MOLI_SERVICE}.env" \
-      "${SCRIPT_DIR}/moli-${MOLI_SERVICE}.env" \
-      "${SCRIPT_DIR}/moli-${MOLI_SERVICE}.env.local"; do
+      "${APP_HOME}/conf/moli-${SERVICE_KEY}.env" \
+      "${MOLI_DEPLOY_ROOT}/conf/moli-${SERVICE_KEY}.env" \
+      "${SCRIPT_DIR}/moli-${SERVICE_KEY}.env" \
+      "${SCRIPT_DIR}/moli-${SERVICE_KEY}.env.local"; do
       if [[ -f "$candidate" ]]; then
         env_file="$candidate"
         break
@@ -80,42 +88,67 @@ load_env() {
 
   if [[ -n "$env_file" && -f "$env_file" ]]; then
     set -a
+    # Windows 上传的 .env 可能带 CRLF
     # shellcheck disable=SC1090
-    source "$env_file"
+    source <(sed 's/\r$//' "$env_file")
     set +a
     echo "[INFO] loaded env: $env_file"
   else
-    echo "[INFO] env file not found for ${MOLI_SERVICE}, using defaults (APP_HOME=$APP_HOME)"
-    echo "       tip: copy deploy/linux/${MOLI_SERVICE}.env.example to ${APP_HOME}/conf/moli-${MOLI_SERVICE}.env"
+    echo "[INFO] env file not found, using defaults (APP_HOME=$APP_HOME)"
+    echo "       tip: copy deploy/linux/moli-${SERVICE_KEY}.env.example to ${APP_HOME}/conf/moli-${SERVICE_KEY}.env"
   fi
 
-  MOLI_ROOT="${MOLI_ROOT:-/opt/moli-project-distribute}"
-  APP_HOME="${APP_HOME:-${MOLI_ROOT}/${SERVICE_MODULE_DIR[$MOLI_SERVICE]:-moli-${MOLI_SERVICE}}}"
-  APP_NAME="${APP_NAME:-${SERVICE_APP_NAME[$MOLI_SERVICE]}}"
-  JAR_PREFIX="${JAR_PREFIX:-${SERVICE_JAR_PREFIX[$MOLI_SERVICE]}}"
+  # MOLI_ROOT 为旧键名，与 MOLI_DEPLOY_ROOT 等价
+  MOLI_DEPLOY_ROOT="${MOLI_DEPLOY_ROOT:-${MOLI_ROOT:-/opt/moli-project-distribute}}"
+  local canonical_home="${MOLI_DEPLOY_ROOT}/${MODULE_DIR}"
+  if [[ -n "${APP_HOME:-}" && "$APP_HOME" != "$canonical_home" ]]; then
+    echo "[WARN] APP_HOME in env is stale ($APP_HOME), using $canonical_home"
+  fi
+  APP_HOME="$canonical_home"
+  APP_NAME="${APP_NAME:-${SVC_APP_NAME[$SERVICE_KEY]}}"
+  JAR_PREFIX="${JAR_PREFIX:-${SVC_JAR_PREFIX[$SERVICE_KEY]}}"
   JAVA_CMD="${JAVA_CMD:-java}"
   JAVA_OPTS="${JAVA_OPTS:--Xms512m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.timezone=Asia/Shanghai}"
   SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-pro}"
   SPRING_ARGS="${SPRING_ARGS:-}"
   STOP_TIMEOUT="${STOP_TIMEOUT:-30}"
-  PID_FILE="${PID_FILE:-${APP_HOME}/run/${MOLI_SERVICE}.pid}"
-  LOG_DIR="${LOG_DIR:-${APP_HOME}/logs}"
-  LOG_FILE="${LOG_FILE:-${LOG_DIR}/${MOLI_SERVICE}.log}"
+  # 路径固定随 APP_HOME，避免 env 里残留 /opt/moli/* 旧目录
+  PID_FILE="${APP_HOME}/run/${PID_BASENAME}.pid"
+  LOG_DIR="${APP_HOME}/logs"
+  LOG_FILE="${LOG_DIR}/${PID_BASENAME}.log"
 
   if [[ -n "${JAVA_HOME:-}" && -x "${JAVA_HOME}/bin/java" ]]; then
     JAVA_CMD="${JAVA_HOME}/bin/java"
+  elif [[ "$JAVA_CMD" == "java" ]] && ! command -v java >/dev/null 2>&1; then
+    local j
+    for j in \
+      /usr/lib/jvm/java-11-amazon-corretto \
+      /usr/lib/jvm/java-*-amazon-corretto \
+      /usr/lib/jvm/java-*; do
+      if [[ -x "${j}/bin/java" ]]; then
+        JAVA_HOME="$j"
+        JAVA_CMD="${j}/bin/java"
+        echo "[INFO] auto-detected JAVA_HOME=$JAVA_HOME"
+        break
+      fi
+    done
   fi
 }
 
 resolve_jar() {
-  if [[ -n "$JAR_FILE" && -f "$JAR_FILE" ]]; then
-    return 0
+  if [[ -n "$JAR_FILE" ]]; then
+    if [[ -f "$JAR_FILE" ]]; then
+      return 0
+    fi
+    echo "[ERROR] JAR_FILE not found: $JAR_FILE"
+    return 1
   fi
 
   local candidates=(
     "${APP_HOME}/${JAR_PREFIX}.jar"
     "${APP_HOME}/${APP_NAME}.jar"
   )
+
   local jar
   for jar in "${candidates[@]}"; do
     if [[ -f "$jar" ]]; then
@@ -128,12 +161,14 @@ resolve_jar() {
   shopt -s nullglob
   matched=("${APP_HOME}/${JAR_PREFIX}-"*.jar)
   shopt -u nullglob
+
   if ((${#matched[@]} > 0)); then
     JAR_FILE="$(ls -1t "${matched[@]}" | head -n 1)"
     return 0
   fi
 
-  echo "[ERROR] cannot find jar under $APP_HOME (prefix=${JAR_PREFIX})"
+  echo "[ERROR] cannot find jar under $APP_HOME"
+  echo "        set JAR_FILE in conf/moli-${SERVICE_KEY}.env or place ${JAR_PREFIX}-*.jar there"
   return 1
 }
 
@@ -141,6 +176,7 @@ is_running() {
   local pid="$1"
   [[ -n "$pid" ]] || return 1
   kill -0 "$pid" 2>/dev/null || return 1
+
   if [[ -r "/proc/${pid}/cmdline" ]]; then
     local cmdline
     cmdline="$(tr '\0' ' ' < "/proc/${pid}/cmdline")"
@@ -150,7 +186,9 @@ is_running() {
 }
 
 read_pid() {
-  [[ -f "$PID_FILE" ]] || return 1
+  if [[ ! -f "$PID_FILE" ]]; then
+    return 1
+  fi
   local pid
   pid="$(tr -d '[:space:]' < "$PID_FILE")"
   [[ "$pid" =~ ^[0-9]+$ ]] || return 1
@@ -158,14 +196,31 @@ read_pid() {
 }
 
 find_running_pids() {
-  resolve_jar 2>/dev/null || true
-  local jar_name
-  jar_name="$(basename "${JAR_FILE:-${JAR_PREFIX}.jar}")"
-  if command -v pgrep >/dev/null 2>&1; then
-    pgrep -f "[j]ava.*${jar_name}" 2>/dev/null || true
-  else
-    ps -ef 2>/dev/null | grep -E "[j]ava.*${jar_name}" | awk '{print $2}' || true
+  local jar_name="${JAR_FILE:-}"
+  if [[ -z "$jar_name" ]]; then
+    resolve_jar 2>/dev/null || true
   fi
+  jar_name="$(basename "${JAR_FILE:-${JAR_PREFIX}.jar}")"
+
+  local pids=()
+  if command -v pgrep >/dev/null 2>&1; then
+    local pid
+    while IFS= read -r pid; do
+      [[ -n "$pid" ]] && pids+=("$pid")
+    done < <(pgrep -f "[j]ava.*${jar_name}" 2>/dev/null || true)
+  else
+    local line pid
+    while IFS= read -r line; do
+      pid="$(echo "$line" | awk '{print $2}')"
+      [[ "$pid" =~ ^[0-9]+$ ]] && pids+=("$pid")
+    done < <(ps -ef 2>/dev/null | grep -E "[j]ava.*${jar_name}" || true)
+  fi
+
+  if ((${#pids[@]} == 0)); then
+    return 1
+  fi
+
+  printf '%s\n' "${pids[@]}" | sort -u
 }
 
 kill_pid_gracefully() {
@@ -174,17 +229,27 @@ kill_pid_gracefully() {
   if ! is_running "$pid"; then
     return 0
   fi
-  echo "[INFO] stopping ${MOLI_SERVICE} (pid=$pid)"
+
+  echo "[INFO] stopping ${SERVICE_KEY} (pid=$pid)"
   kill -15 "$pid" 2>/dev/null || true
+
   local waited=0
   while ((waited < STOP_TIMEOUT)); do
-    is_running "$pid" || { echo "[OK] stopped (pid=$pid)"; return 0; }
+    if ! is_running "$pid"; then
+      echo "[OK] ${SERVICE_KEY} stopped (pid=$pid)"
+      return 0
+    fi
     sleep 1
     waited=$((waited + 1))
   done
-  echo "[WARN] SIGKILL pid=$pid"
+
+  echo "[WARN] graceful stop timeout for pid=$pid, sending SIGKILL"
   kill -9 "$pid" 2>/dev/null || true
-  ! is_running "$pid"
+  if ! is_running "$pid"; then
+    echo "[OK] ${SERVICE_KEY} force stopped (pid=$pid)"
+    return 0
+  fi
+  return 1
 }
 
 ensure_dirs() {
@@ -192,33 +257,42 @@ ensure_dirs() {
 }
 
 check_java() {
-  command -v "$JAVA_CMD" >/dev/null 2>&1 || {
+  if [[ -x "$JAVA_CMD" ]]; then
+    :
+  elif ! command -v "$JAVA_CMD" >/dev/null 2>&1; then
     echo "[ERROR] java not found: $JAVA_CMD"
+    echo "        set JAVA_HOME or JAVA_CMD in ${APP_HOME}/conf/moli-${SERVICE_KEY}.env"
+    echo "        example: JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto"
     return 1
-  }
+  fi
   echo "[INFO] java: $($JAVA_CMD -version 2>&1 | head -n 1)"
+  return 0
 }
 
 preflight_checks() {
   if [[ "$SPRING_PROFILES_ACTIVE" == "pro" ]]; then
-    if [[ ! -f "${APP_HOME}/application-pro.yml" ]]; then
-      echo "[ERROR] missing ${APP_HOME}/application-pro.yml"
-      echo "        copy deploy/application-pro/${MOLI_SERVICE}.yml.example -> application-pro.yml"
-      return 1
-    fi
-    if [[ -z "${SPRING_DATASOURCE_PASSWORD:-}" || "${SPRING_DATASOURCE_PASSWORD}" == *"请替换"* ]]; then
-      if [[ "$MOLI_SERVICE" != "gateway" ]]; then
-        echo "[ERROR] SPRING_DATASOURCE_PASSWORD not set in conf/moli-${MOLI_SERVICE}.env"
+    if [[ "$SERVICE_KEY" != "gateway" ]]; then
+      if [[ -z "${SPRING_DATASOURCE_PASSWORD:-}" || "${SPRING_DATASOURCE_PASSWORD}" == *"请替换"* ]]; then
+        echo "[ERROR] SPRING_DATASOURCE_PASSWORD is not set in conf/moli-${SERVICE_KEY}.env"
         return 1
       fi
     fi
-    if [[ "$MOLI_SERVICE" == "user-center" ]]; then
+    if [[ "$SERVICE_KEY" == "user-center" ]]; then
       if [[ -z "${SSO_SHARED_SECRET:-}" || "${SSO_SHARED_SECRET}" == *"请替换"* ]]; then
-        echo "[WARN] SSO_SHARED_SECRET looks like placeholder"
+        echo "[WARN] SSO_SHARED_SECRET looks like placeholder, please change for production"
       fi
     fi
+  fi
+
+  if [[ ! -f "${APP_HOME}/application-${SPRING_PROFILES_ACTIVE}.yml" && ! -f "${APP_HOME}/application-pro.yml" ]]; then
+    echo "[WARN] no external application-${SPRING_PROFILES_ACTIVE}.yml under $APP_HOME"
+    echo "       using classpath config + environment variables only"
+  fi
+
+  if [[ -f "${APP_HOME}/application-pro.yml" ]]; then
     SPRING_ARGS="${SPRING_ARGS} --spring.config.additional-location=file:./application-pro.yml"
   fi
+
   return 0
 }
 
@@ -230,18 +304,23 @@ start_server() {
 
   local pid
   if pid="$(read_pid 2>/dev/null || true)" && is_running "$pid"; then
-    echo "[INFO] ${MOLI_SERVICE} already running (pid=$pid)"
+    echo "[INFO] ${SERVICE_KEY} already running (pid=$pid)"
     return 0
   fi
 
-  [[ -d "$APP_HOME" ]] || { echo "[ERROR] APP_HOME not found: $APP_HOME"; return 1; }
+  if [[ ! -d "$APP_HOME" ]]; then
+    echo "[ERROR] APP_HOME not found: $APP_HOME"
+    return 1
+  fi
 
-  echo "[INFO] starting ${MOLI_SERVICE} (${APP_NAME})"
+  echo "[INFO] starting ${SERVICE_KEY} (${APP_NAME})"
+  echo "[INFO] APP_HOME=$APP_HOME"
   echo "[INFO] jar: $JAR_FILE"
   echo "[INFO] profile: $SPRING_PROFILES_ACTIVE"
   echo "[INFO] log: $LOG_FILE"
 
   cd "$APP_HOME" || return 1
+
   # shellcheck disable=SC2086
   nohup "$JAVA_CMD" $JAVA_OPTS -jar "$JAR_FILE" \
     --spring.profiles.active="$SPRING_PROFILES_ACTIVE" \
@@ -250,57 +329,91 @@ start_server() {
   local new_pid=$!
   echo "$new_pid" >"$PID_FILE"
   sleep 2
+
   if is_running "$new_pid"; then
-    echo "[OK] ${MOLI_SERVICE} started (pid=$new_pid)"
+    echo "[OK] ${SERVICE_KEY} started (pid=$new_pid)"
     return 0
   fi
-  echo "[ERROR] start failed, see $LOG_FILE"
+
+  echo "[ERROR] failed to start ${SERVICE_KEY}, see log: $LOG_FILE"
   rm -f "$PID_FILE"
   return 1
 }
 
 stop_server() {
   resolve_jar || true
-  local stopped=0 pid scan_pid
-  if pid="$(read_pid 2>/dev/null || true)" && is_running "$pid"; then
-    kill_pid_gracefully "$pid" && stopped=1
+
+  local stopped=0
+  local pid
+
+  if pid="$(read_pid 2>/dev/null || true)"; then
+    if is_running "$pid"; then
+      kill_pid_gracefully "$pid" && stopped=1
+    else
+      echo "[WARN] stale pid file (pid=$pid), will scan java process"
+    fi
+  elif [[ -f "$PID_FILE" ]]; then
+    echo "[WARN] invalid pid file: $PID_FILE (empty or malformed), will scan java process"
   fi
   rm -f "$PID_FILE"
+
+  local scan_pid
   while IFS= read -r scan_pid; do
     [[ -z "$scan_pid" ]] && continue
-    is_running "$scan_pid" && kill_pid_gracefully "$scan_pid" && stopped=1
+    if is_running "$scan_pid"; then
+      kill_pid_gracefully "$scan_pid" && stopped=1
+    fi
   done < <(find_running_pids 2>/dev/null || true)
-  ((stopped == 1)) && return 0
-  echo "[INFO] ${MOLI_SERVICE} is not running"
+
+  if ((stopped == 1)); then
+    rm -f "$PID_FILE"
+    return 0
+  fi
+
+  echo "[INFO] ${SERVICE_KEY} is not running"
+  return 0
 }
 
 status_server() {
   resolve_jar || return 1
-  local pid found=0 scan_pid
+
+  local pid found=0
   if pid="$(read_pid 2>/dev/null || true)" && is_running "$pid"; then
-    echo "[OK] ${MOLI_SERVICE} running (pid=$pid)"
+    echo "[OK] ${SERVICE_KEY} is running (pid=$pid, source=pid file)"
     found=1
   fi
+
+  local scan_pid
   while IFS= read -r scan_pid; do
     [[ -z "$scan_pid" ]] && continue
     if is_running "$scan_pid"; then
-      echo "[OK] ${MOLI_SERVICE} running (pid=$scan_pid)"
+      echo "[OK] ${SERVICE_KEY} is running (pid=$scan_pid, source=process scan)"
       found=1
     fi
   done < <(find_running_pids 2>/dev/null || true)
+
   if ((found == 1)); then
+    echo "     APP_HOME=$APP_HOME"
     echo "     jar: $JAR_FILE"
+    echo "     profile: $SPRING_PROFILES_ACTIVE"
     echo "     log: $LOG_FILE"
     return 0
   fi
-  echo "[STOPPED] ${MOLI_SERVICE}"
+
+  echo "[STOPPED] ${SERVICE_KEY} is not running"
+  if [[ -f "$PID_FILE" ]]; then
+    echo "[WARN] stale pid file: $PID_FILE"
+  fi
   return 1
 }
 
 logs_server() {
   ensure_dirs
   local lines="${1:-}"
-  [[ -f "$LOG_FILE" ]] || { echo "[WARN] no log: $LOG_FILE"; return 1; }
+  if [[ ! -f "$LOG_FILE" ]]; then
+    echo "[WARN] log file not found: $LOG_FILE"
+    return 1
+  fi
   if [[ -n "$lines" && "$lines" =~ ^[0-9]+$ ]]; then
     tail -n "$lines" "$LOG_FILE"
   else
@@ -308,25 +421,16 @@ logs_server() {
   fi
 }
 
-usage() {
-  cat <<EOF
-Usage: $0 {user-center|gateway|knowledge} {start|stop|restart|status|logs [lines]}
-   or: MOLI_SERVICE=gateway $0 start
+load_env
 
-Env: MOLI_ENV_FILE, APP_HOME, SPRING_PROFILES_ACTIVE=pro
-EOF
-}
-
-main() {
-  load_env
-  case "${ACTION:-}" in
-    start) start_server ;;
-    stop) stop_server ;;
-    restart) stop_server; start_server ;;
-    status) status_server ;;
-    logs) logs_server "${3:-${2:-}}" ;;
-    *) usage; exit 1 ;;
-  esac
-}
-
-main "$@"
+case "${ACTION:-}" in
+  start) start_server ;;
+  stop) stop_server ;;
+  restart) stop_server; start_server ;;
+  status) status_server ;;
+  logs) logs_server "${3:-}" ;;
+  *)
+    echo "[ERROR] unknown action: ${ACTION:-}"
+    exit 1
+    ;;
+esac

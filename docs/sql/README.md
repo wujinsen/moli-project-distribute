@@ -41,8 +41,13 @@
 | `07_kb_space_ops_manual_fix_charset.sql` | 修复乱码或刷新 `moli-ops-manual` 空间名为「茉莉系统手册」 |
 | `08_kb_ingest_workbench.sql` | Ingest 工作台表（job/plan/draft 等） |
 | `09_kb_ingest_t15e.sql` | Ingest T15e 增量字段 |
-| `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug`/`default_type` + 三空间目录种子（已有库必跑） |
+| `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug` + 三空间目录种子（已有库必跑） |
+| `15_kb_category_drop_default_type.sql` | 删除已废弃列 `kb_category.default_type`（体裁仅 frontmatter `type:`） |
 | `11_kb_category_enterprise_trim.sql` | **enterprise-kb 精简为 3 类**（软删 guides/services/outputs） |
+| `13_kb_category_enterprise_topic.sql` | **enterprise-kb 方案 B**：新建 10 个主题分类（id 141–150）；§2 软删旧类见下 |
+| `13_kb_category_enterprise_topic_retire_old.sql` | Sync 后**物理删除** enterprise-kb 旧三类 concepts/articles/interview |
+| （脚本）`moli-knowledge/kb/tools/seed_enterprise_kb_topic_categories.py` | 与 `13_…sql` §1 等价；`--execute` 写库，`--retire-old` 软删旧类 |
+| `14_kb_space_member_enterprise.sql` | enterprise-kb 成员：superadmin/admin/editor 演示账号 |
 | `11_kb_wiki_govern_menu.sql` | Wiki 治理菜单 + `kb:wiki:govern` 动作 |
 | `11_kb_platform_llm_config.sql` | **T19** 平台 LLM 配置表 `kb_platform_llm_config` |
 | `12_kb_platform_llm_menu.sql` | **T19** 系统管理菜单「知识库 LLM」+ `kb:platform:llm` |

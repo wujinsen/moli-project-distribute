@@ -13,7 +13,7 @@ import java.util.List;
  *       写(canEdit)=成员 editor/admin、负责人、平台超管。未分配空间的登录用户不可见。</li>
  *   <li><b>管理侧（空间增删改、成员授权）</b>：由 RBAC 动作权限控制（{@code kb:space:add/edit/remove/member}）+
  *       平台超管；菜单 {@code kb:space:admin} 决定能否进入管理页并查看空间数据。<b>不</b>再叠加 per-space canAdmin。</li>
- *   <li>visibility（公开/内部/私有）仅作空间元数据展示，<b>不</b>再自动授予读权限。</li>
+ *   <li>visibility：{@code 公开(2)} 对任意已登录用户可读；{@code 私有/内部} 仍须负责人或 kb_space_member。</li>
  *   <li>成员 kb_space_member：member_type=0 用户 / 1 角色；role = viewer/editor/admin。</li>
  *   <li>负责人 owner_id：等同空间 admin（内容侧）。</li>
  *   <li>平台超管：{@link CommonConstant#hasFullPermission(String)} 或 Shiro {@code *:*:*}。</li>

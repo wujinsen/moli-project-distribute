@@ -118,7 +118,7 @@ curl -X POST "http://127.0.0.1:8090/kb/ingest/jobs/<JOB_ID>/publish?sync=true&ap
 |----|-----|
 | 空间 | `jp-fe-ap-exam`（`space_id=900000000000000002`） |
 | wiki 目录 | `moli-knowledge/kb/wiki-jp-exam/` |
-| 分类 | **FE 题库**，`dir_slug=fe`，`default_type=interview` |
+| 分类 | **FE 题库**，`dir_slug=fe` |
 | raw 源 | `raw/school/fe/fe_kamoku_b_set_sample_qs.md` |
 | 权限 | 空间 editor + LLM 可用（或 skeleton Plan） |
 

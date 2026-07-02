@@ -24,6 +24,7 @@ import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbDocumentService;
 import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiFileService;
+import com.moli.knowledge.server.support.KbTypeConstants;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -84,6 +85,15 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             throw new BaseException("categoryId 与 uncategorizedOnly 不能同时传");
         }
 
+        String kbType = null;
+        if (StringUtils.isNotBlank(request.getKbType())) {
+            kbType = KbTypeConstants.normalize(request.getKbType());
+            if (kbType == null) {
+                throw new BaseException("非法体裁 kbType=" + request.getKbType()
+                        + "，可选：" + String.join("|", KbTypeConstants.ALL));
+            }
+        }
+
         if (StringUtils.isNotBlank(request.getKeyword()) && kbSearchProperties.fullTextEnabled()) {
             try {
                 return kbDocumentMapper.searchFullText(
@@ -95,7 +105,8 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                         request.getStatus(),
                         documentIds,
                         request.getKeyword().trim(),
-                        StringUtils.trimToNull(request.getSource()));
+                        StringUtils.trimToNull(request.getSource()),
+                        kbType);
             } catch (Exception e) {
                 log.warn("Fulltext search failed, fallback to LIKE: {}", e.getMessage());
             }
@@ -115,6 +126,9 @@ public class KbDocumentServiceImpl implements KbDocumentService {
         }
         if (request.getStatus() != null) {
             wrapper.eq(KbDocument::getStatus, request.getStatus());
+        }
+        if (kbType != null) {
+            wrapper.eq(KbDocument::getKbType, kbType);
         }
         if (StringUtils.isNotBlank(request.getKeyword())) {
             wrapper.and(w -> w.like(KbDocument::getTitle, request.getKeyword())
@@ -203,7 +217,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             throw new BaseException("文档已在该分类下");
         }
 
-        kbWikiFileService.movePage(doc.getSpaceId(), fromSlug, toSlug, category.getDefaultType());
+        kbWikiFileService.movePage(doc.getSpaceId(), fromSlug, toSlug);
         SyncTriggerVo sync = kbSyncService.triggerAfterEdit(doc.getSpaceId());
 
         DocumentMoveResultVo vo = new DocumentMoveResultVo();

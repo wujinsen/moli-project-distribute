@@ -1,0 +1,5 @@
+# Shell scripts must use LF so Linux/macOS shebang works (avoid bash\r error)
+*.sh text eol=lf
+
+# SQL seeds often edited on Windows; keep UTF-8 LF for mysql source
+docs/sql/*.sql text eol=lf
