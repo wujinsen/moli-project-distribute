@@ -23,6 +23,7 @@
 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | 前端总览 B1–B10 |
 | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | Ingest I1–I5 |
 | [wiki-govern-frontend.md](wiki-govern-frontend.md) | Wiki 治理 W1–W8 |
+| [kb-markdown-image-frontend.md](kb-markdown-image-frontend.md) | T22 F1 · `KbMarkdownImage` 插图鉴权 |
 | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | LLM 平台 T19 |
 
 ## 测试配套

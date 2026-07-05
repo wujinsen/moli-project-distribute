@@ -195,7 +195,7 @@ wiki/{dir_slug}/{annex-slug}.assets/{imageFileN.png}
 
 | 任务 | 说明 |
 |------|------|
-| F1 | markdown 渲染：`img` 请求带 token |
+| F1 | markdown 渲染：`img` 请求带 token | **[kb-markdown-image-frontend.md](../../docs/api/kb-markdown-image-frontend.md)** |
 | F2 | Wiki 编辑：插入图片 → 上传至 `.assets/` + 插入 markdown（T22 后续） |
 
 ---

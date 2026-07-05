@@ -1362,6 +1362,13 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 前端按当前页 `slug` 解析为：`GET /KnowledgeServer/kb/wiki/asset?spaceId=...&slug=...&rel=assets/gc.png`
 
+**前端（meiling-ui · T22 F1）**：
+
+- markdown **禁止**裸 `<img src="/KnowledgeServer/kb/.../asset?...">`（无 token → 401）。
+- 实现 **`KbMarkdownImage`**：axios/fetch 带 `Authorization` → `blob:` URL → `<img>`。
+- 相对路径 `assets/xxx.png` 解析为 `/kb/wiki/asset?slug={当前页}&rel=assets/xxx.png`。
+- 对接说明：**[kb-markdown-image-frontend.md](kb-markdown-image-frontend.md)**（含 Vue 骨架、验收清单）。
+
 **配置**（`kb.wiki.*`）
 
 | 键 | 默认 | 说明 |

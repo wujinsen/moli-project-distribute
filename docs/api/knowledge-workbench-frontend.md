@@ -53,6 +53,18 @@
 | MinIO 页附件（pdf/zip） | `kb_attachment` + MinIO | Wiki **编辑**页 |
 | 正文 inline 图（T22） | wiki `.assets/` 或 raw + Asset API | markdown + `/kb/wiki/asset` |
 
+### 1.3 Markdown 插图鉴权（T22 F1 · P0）
+
+> **完整对接** → **[kb-markdown-image-frontend.md](kb-markdown-image-frontend.md)**（`KbMarkdownImage`、URL 解析、blob 拉图、验收清单）。  
+> **后端**：[KNOWLEDGE_API.md §8.0](KNOWLEDGE_API.md#80-inline-图片-assett22-r0) ✅  
+> **现状**：回迁正文已入库（D/A 档）；浏览页插图空白 = **前端未带 token 请求 asset**。
+
+| 任务 | 优先级 | 说明 |
+|------|--------|------|
+| `KbMarkdownImage` + 接入 browse/preview | **P0** | `/kb/raw/asset`、`/kb/wiki/asset` |
+| 浏览页附件只读 + 跳转编辑页 | **P1** | 见 §1.2 |
+| 编辑页 Vditor 插图上传（F2） | P2 | 写 `.assets/` + markdown |
+
 | 行 | 数据源 | 单选 (v2) | 多选 (v3) |
 |----|--------|-----------|-----------|
 | 体裁 | `GET /kb/index/types?spaceId=` | `kbType` | `kbTypes=…&kbTypes=…` |
@@ -372,3 +384,4 @@ export interface KbWorkflowHintVo {
 | 2026-06-28 | §7 进度摘要 + §8 B1–B10 后端确认清单 |
 | 2026-06-28 | 新增前端总览；拆分 Ingest / Wiki 治理对接文档 |
 | 2026-06-27 | Wiki 治理 T16e 后端 + wiki-govern-frontend 初版 |
+| 2026-07-05 | §1.2 页附件 UI 定案；§1.3 + [kb-markdown-image-frontend.md](kb-markdown-image-frontend.md) T22 F1 |
