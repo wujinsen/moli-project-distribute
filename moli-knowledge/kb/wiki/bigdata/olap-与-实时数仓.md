@@ -72,3 +72,5 @@ MergeTree 引擎；分区 + 排序键；物化视图预聚合。源码阅读见 
 ### 来自：clickhouse精确去重
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/OLAP/ClickHouse/%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/clickhouse%E7%B2%BE%E7%A1%AE%E5%8E%BB%E9%87%8D.note_images/imageFile1.png)
+
+原文插图 annex：[[bigdata/annex-老司机教你如何调教Presto和ClickHouse，应对业务难题！]]

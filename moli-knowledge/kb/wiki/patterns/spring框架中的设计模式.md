@@ -114,3 +114,5 @@ Dubbo **LoadBalance**（random、roundrobin…）也是策略族。
 | 7 | 观察者 | ApplicationEvent |
 | 8 | 策略 | Resource / LoadBalance |
 | 9 | 模板方法 | JdbcTemplate 等 |
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

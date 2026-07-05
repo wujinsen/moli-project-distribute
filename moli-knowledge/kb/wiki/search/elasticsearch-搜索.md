@@ -90,3 +90,5 @@ flowchart LR
 ## 批次#1321 增补（wujinsen Phase2 P1 BigData）
 
 合并 `BigData/ElasticSearch/` 教程 raw。
+
+原文插图 annex：[[search/annex-Linux-Elasticsearch初步使用(安装、Head配置、分词器配置)]]

@@ -114,3 +114,7 @@ flowchart TB
 ## 批次#1313 增补（wujinsen P2）
 
 补充 Sentinel 动态规则源 raw。
+
+原文插图 annex：[[middleware/annex-聊聊高并发系统之HTTP缓存]]
+
+原文插图 annex：[[middleware/annex-Hystrix使用入门手册（中文）]]

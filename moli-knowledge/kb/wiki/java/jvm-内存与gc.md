@@ -126,3 +126,9 @@ updated: 2026-07-05
 ```
 
 详细排查见 [[java/jvm-oom与排查入门]]、。
+
+原文插图 annex：[[java/annex-小白都能看得懂的java虚拟机内存模型]]
+
+原文插图 annex：[[java/annex-JDK的命令行工具]]
+
+原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]

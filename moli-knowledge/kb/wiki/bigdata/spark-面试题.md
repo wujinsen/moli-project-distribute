@@ -56,3 +56,9 @@ updated: 2026-07-05
 ## 批次#1323 增补（wujinsen Phase2 P2 数仓调度）
 
 本页 Phase 2 #1323 创建；sources **85** 篇。
+
+原文插图 annex：[[bigdata/annex-GC调优在Spark应用中的实践(1)]]
+
+原文插图 annex：[[bigdata/annex-GC调优在Spark应用中的实践]]
+
+原文插图 annex：[[bigdata/annex-Spark技术内幕：Stage划分及提交源码分析]]

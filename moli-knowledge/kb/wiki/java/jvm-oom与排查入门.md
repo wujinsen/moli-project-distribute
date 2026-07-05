@@ -92,3 +92,9 @@ jstack <pid> | grep <hex> -A 30
 - 设 `-Xms=-Xmx`、Metaspace 上限
 - 线程池有界队列 + 拒绝策略（见 [[java/java-并发]]）
 - 定期看 GC 日志，Full GC 频率异常即告警
+
+原文插图 annex：[[java/annex-小白都能看得懂的java虚拟机内存模型]]
+
+原文插图 annex：[[java/annex-JDK的命令行工具]]
+
+原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]

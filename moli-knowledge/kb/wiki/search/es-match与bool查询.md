@@ -130,3 +130,5 @@ MySQL `=` 类似 term；`LIKE` 无分词相关性。
 | space_id | keyword | filter |
 
 当前 MySQL `LIKE '%question%'` 无 `_score` 排序，可迁 ES 后 `/kb/ask` 检索式分支质量提升。
+
+原文插图 annex：[[search/annex-Linux-Elasticsearch初步使用(安装、Head配置、分词器配置)]]

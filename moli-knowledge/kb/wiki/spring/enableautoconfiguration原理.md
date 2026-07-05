@@ -93,3 +93,5 @@ com.example.MyAutoConfiguration
 ## 面试一句话
 
 > EnableAutoConfiguration → ImportSelector 读 spring.factories → Conditional 过滤 → 注册自动 Bean。
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

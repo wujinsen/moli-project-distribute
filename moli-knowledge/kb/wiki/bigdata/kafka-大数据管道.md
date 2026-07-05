@@ -102,3 +102,7 @@ Topic 分区 + 副本；Producer → Broker → Consumer Group。Zookeeper/KRaft
 ### 来自：kafka集群资源评估
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Kafka/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/kafka%E9%9B%86%E7%BE%A4%E8%B5%84%E6%BA%90%E8%AF%84%E4%BC%B0.note_images/imageFile1.png)
+
+原文插图 annex：[[bigdata/annex-Kafka深度解析(1)]]
+
+原文插图 annex：[[bigdata/annex-Kafka部署与代码实例]]

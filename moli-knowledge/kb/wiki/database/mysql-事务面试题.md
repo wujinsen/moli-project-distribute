@@ -64,3 +64,7 @@ InnoDB 通过 **undo log 版本链** + **Read View** 实现可重复读；快照
 ## 批次#1313 增补（wujinsen P2）
 
 补充 MVCC 原理 raw（`DataBase/mysql/` 根目录）。
+
+原文插图 annex：[[database/annex-正确的理解MySQL的MVCC及实现原理]]
+
+原文插图 annex：[[database/annex-事务隔离级别中的可重复读能防幻读吗]]

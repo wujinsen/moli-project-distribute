@@ -80,3 +80,7 @@ B+Tree 插入需保持有序。向已满页中间插入 → **页分裂**，空�
 ## 批次#1312 增补（wujinsen P1）
 
 合并 B/B+ 树面试 raw。
+
+原文插图 annex：[[database/annex-MySQL索引背后的数据结构及算法原理]]
+
+原文插图 annex：[[database/annex-B+树介绍]]

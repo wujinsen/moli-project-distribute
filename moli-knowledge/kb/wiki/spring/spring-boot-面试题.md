@@ -84,3 +84,5 @@ refresh 过程中 `onRefresh` → 创建 WebServer → 发布 Started 事件后�
 ## Q10. 与 Spring 事务关系？
 
 Boot 自动 DataSourceTransactionManager；声明式事务见 [[spring/spring-声明式事务]]、[[spring/spring-事务]]。
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

@@ -101,3 +101,7 @@ http://localhost:21000/UserCenter/login
 ## 批次#1312 增补（wujinsen P1）
 
 合并 Gateway 原理/跨域 raw。
+
+原文插图 annex：[[middleware/annex-聊聊高并发系统之HTTP缓存]]
+
+原文插图 annex：[[middleware/annex-Hystrix使用入门手册（中文）]]

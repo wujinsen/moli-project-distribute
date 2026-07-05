@@ -147,3 +147,13 @@ COMPACT/DYNAMIC 影响溢出列存储与索引记录大小；大 VARCHAR 可能 
 ## 批次#1322 增补（wujinsen Phase2 王树挂接）
 
 合并 `大数据资料-王/mysql/` 安装与调优 raw。
+
+原文插图 annex：[[database/annex-mysql-覆盖索引]]
+
+原文插图 annex：[[database/annex-正确的理解MySQL的MVCC及实现原理]]
+
+原文插图 annex：[[database/annex-事务隔离级别中的可重复读能防幻读吗]]
+
+原文插图 annex：[[database/annex-MySQL索引背后的数据结构及算法原理]]
+
+原文插图 annex：[[database/annex-mysql规范]]

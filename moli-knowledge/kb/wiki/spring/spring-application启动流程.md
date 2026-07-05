@@ -74,3 +74,5 @@ SpringApplication.run(UserCenterApplication.class, args);
 - **端口占用** — 改 `server.port` 或杀占用进程
 - **Bean 循环依赖** — 构造器注入循环在 Boot 2.6+ 更严格；改 `@Lazy` 或 setter 注入
 - **AutoConfiguration 未生效** — 查 `@ConditionalOnClass`、exclude 配置
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

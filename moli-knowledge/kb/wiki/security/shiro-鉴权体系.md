@@ -86,3 +86,4 @@ moli-user-center-shiro-starter → AutoConfiguration + Realm + Filter
 
 合并 `架构/安全框架/` Shiro/Spring Security 配置类 raw（通用概念，非茉莉手册）。
 
+原文插图 annex：[[security/annex-OAuth2实现单点登录SSO]]

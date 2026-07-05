@@ -151,3 +151,7 @@ nohup java -jar user-center-server.jar --spring.profiles.active=pro > logs/uc.lo
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 合并 `Linux/` 运维与 Shell 教程 raw。
+
+原文插图 annex：[[ops/annex-堡垒机]]
+
+原文插图 annex：[[ops/annex-“网络中的跳板是什么意思]]

@@ -139,3 +139,9 @@ JVM 实现内存布局；JMM 是并发可见性规范，见 [[java/jmm与happens
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 合并 `jvm/` 全树及 GC/调优 raw sources。
+
+原文插图 annex：[[java/annex-小白都能看得懂的java虚拟机内存模型]]
+
+原文插图 annex：[[java/annex-JDK的命令行工具]]
+
+原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]

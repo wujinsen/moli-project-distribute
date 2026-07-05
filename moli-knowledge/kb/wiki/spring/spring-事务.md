@@ -147,3 +147,5 @@ updated: 2026-07-05
 ## 批次#1313 增补（wujinsen P2）
 
 确认 `面试笔试/Spring/` 五篇 raw 已挂接。
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

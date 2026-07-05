@@ -46,3 +46,5 @@ try {
 ## 相关
 
 [[cache/分布式锁]] · [[cache/redis-集群与哨兵实践]]
+
+原文插图 annex：[[cache/annex-Redisson基本用法]]

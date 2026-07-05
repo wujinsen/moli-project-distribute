@@ -84,3 +84,7 @@ MySQL B+Tree 适合范围/精确（[[database/mysql-索引]]）；ES 倒排适�
 ## 批次#1321 增补（wujinsen Phase2 P1 BigData）
 
 合并 BigData ES 面试向 raw。
+
+原文插图 annex：[[search/annex-Linux-Elasticsearch初步使用(安装、Head配置、分词器配置)]]
+
+原文插图 annex：[[search/annex-面试小结之JVM篇]]

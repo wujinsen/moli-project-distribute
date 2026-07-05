@@ -74,3 +74,5 @@ Spring 声明式事务 = **AOP + PlatformTransactionManager**，底层是数据�
 ## 与 Boot 自动配置
 
 `DataSourceTransactionManagerAutoConfiguration` 在存在 DataSource 时注册 TM；Boot 自动 `@EnableTransactionManagement`。
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

@@ -126,3 +126,6 @@ Redis 多结构、持久化、主从；Memcached 简单 KV、多线程。
 
 本批合并 `DataBase/Redis/` 下 **Redis 夺命16问**、16 场景、线程模型、Codis 架构等 raw。新增 Q8（过期策略）、Q11（主从/哨兵）、Q12（Cluster 槽位）见上节；细节链 [[cache/redis-持久化与高可用]]、[[cache/redis-集群与哨兵实践]]。
 
+原文插图 annex：[[cache/annex-redis源码分析]]
+
+原文插图 annex：[[cache/annex-Redis夺命16问]]

@@ -49,3 +49,5 @@ Flink 原生流；Spark SS 微批；低延迟选 Flink。
 ## 批次#1323 增补（wujinsen Phase2 P2 数仓调度）
 
 本页 Phase 2 #1323 创建；sources **12** 篇。
+
+原文插图 annex：[[bigdata/annex-Flink从入门到入土（详细教程）]]

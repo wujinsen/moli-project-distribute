@@ -113,3 +113,5 @@ pipeline {
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 补挂 `架构/DevOps/jenkins/` Maven 构建 raw。
+
+原文插图 annex：[[ops/annex-nexus私服搭建]]

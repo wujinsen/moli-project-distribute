@@ -53,3 +53,7 @@ MVCC 主要优化**快照读**的读-写并发。
 ## 面试一句话
 
 > MVCC = 多版本 + Read View 无锁快照读；当前读走锁；InnoDB RR 快照读可防幻读，写/锁读靠 Next-Key。
+
+原文插图 annex：[[database/annex-正确的理解MySQL的MVCC及实现原理]]
+
+原文插图 annex：[[database/annex-事务隔离级别中的可重复读能防幻读吗]]

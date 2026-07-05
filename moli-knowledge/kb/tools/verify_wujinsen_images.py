@@ -61,7 +61,7 @@ def main() -> int:
         if md.name in ("index.md", "log.md"):
             continue
         text = md.read_text(encoding="utf-8", errors="ignore")
-        if "<!-- t22-wujinsen-images:" not in text and "/kb/raw/asset" not in text:
+        if "<!-- t22-wujinsen-images:" not in text and "/kb/raw/asset" not in text and "](assets/" not in text:
             continue
         for m in IMG_MD.finditer(text):
             ref = m.group(1)

@@ -169,3 +169,15 @@ Phase3：BigData 零散 Ambari/Cloudera 等。
 ### 来自：在大厂的数据工程师工作日常工作分享
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/%E5%9C%A8%E5%A4%A7%E5%8E%82%E7%9A%84%E6%95%B0%E6%8D%AE%E5%B7%A5%E7%A8%8B%E5%B8%88%E5%B7%A5%E4%BD%9C%E6%97%A5%E5%B8%B8%E5%B7%A5%E4%BD%9C%E5%88%86%E4%BA%AB.note_images/imageFile1.png)
+
+原文插图 annex：[[bigdata/annex-mac搭建hadoop集群]]
+
+原文插图 annex：[[bigdata/annex-HDFS体系结构(NameNode、DataNode详解)]]
+
+原文插图 annex：[[bigdata/annex-捐助：hadoop大全（增加yarn、flume_storm、hadoop一套视频））]]
+
+原文插图 annex：[[bigdata/annex-hadoop2安装手顺]]
+
+原文插图 annex：[[bigdata/annex-MapReduce源码分析总结(转)]]
+
+原文插图 annex：[[bigdata/annex-hadoop入门之设置datanode的心跳时间的方法]]

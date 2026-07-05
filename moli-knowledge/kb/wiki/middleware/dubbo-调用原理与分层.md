@@ -120,3 +120,7 @@ Dubbo **自研 SPI**（非 JDK SPI）：`META-INF/dubbo/` 扩展点，支持 Ada
 ## 批次#1330 增补（wujinsen Phase3 收口）
 
 Phase3：RPC/webservice raw。
+
+原文插图 annex：[[middleware/annex-聊聊高并发系统之HTTP缓存]]
+
+原文插图 annex：[[middleware/annex-Hystrix使用入门手册（中文）]]

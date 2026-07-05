@@ -57,3 +57,4 @@ updated: 2026-07-05
 
 合并 K8s 学习笔记、故障锦囊、Kuboard raw。
 
+原文插图 annex：[[ops/annex-K8s运维锦囊，19个常见故障解决方法]]

@@ -87,3 +87,5 @@ updated: 2026-07-05
 ## 批次#1322 增补（wujinsen Phase2 王树挂接）
 
 合并 `大数据资料-王/redis/` 与 a安装文档 Redis 集群 raw。
+
+原文插图 annex：[[cache/annex-redis源码分析]]

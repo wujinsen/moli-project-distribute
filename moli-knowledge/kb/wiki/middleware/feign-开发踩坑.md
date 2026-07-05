@@ -95,3 +95,7 @@ Gateway 跨域见 [[spring/spring-cloud-gateway]]。
 ## 批次#1312 增补（wujinsen P1）
 
 合并 Feign 采坑记录 + 项目版本兼容 raw。
+
+原文插图 annex：[[middleware/annex-聊聊高并发系统之HTTP缓存]]
+
+原文插图 annex：[[middleware/annex-Hystrix使用入门手册（中文）]]

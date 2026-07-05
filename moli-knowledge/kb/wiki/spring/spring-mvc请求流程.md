@@ -78,3 +78,5 @@ Shiro `Filter` 链在 DispatcherServlet **之前**拦截，未认证请求到不
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 合并 `Spring/SpringMVC/` 原理与设计模式 raw。
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

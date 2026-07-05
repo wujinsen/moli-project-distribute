@@ -96,3 +96,7 @@ InnoDB 默认用 **B+Tree** 实现索引；Memory 引擎可用 Hash。日常 OLT
 ## 批次#1324 增补（wujinsen Phase2 长尾）
 
 合并性能优化 DATABASE raw。
+
+原文插图 annex：[[database/annex-mysql-覆盖索引]]
+
+原文插图 annex：[[database/annex-MySQL索引背后的数据结构及算法原理]]

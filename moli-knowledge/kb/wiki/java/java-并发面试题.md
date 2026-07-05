@@ -107,3 +107,5 @@ JMM 可见性规则：程序顺序、锁、volatile、传递性等。见 [[java/
 ## 批次#1330 增补（wujinsen Phase3 收口）
 
 Phase3：王树 x线程 簇 sources。
+
+原文插图 annex：[[java/annex-volatile]]

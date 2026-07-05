@@ -77,3 +77,5 @@ updated: 2026-07-05
 - 优先构造器注入（不可变、易测）；字段注入简洁但难测
 - 避免 prototype 注入 singleton 的反向依赖等复杂 scope 组合
 - 循环依赖应 **从设计上消除**；三级缓存是兜底而非最佳实践
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

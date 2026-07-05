@@ -79,3 +79,5 @@ Gateway WebFlux 网关路由；MVC Servlet 业务处理。见 [[spring/spring-cl
 ## Q10. Boot 和 Spring 容器关系？
 
 Boot 启动 SpringApplication，自动配置向容器注册大量 AutoConfiguration Bean。
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

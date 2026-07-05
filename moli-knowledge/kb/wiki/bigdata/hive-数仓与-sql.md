@@ -78,3 +78,7 @@ updated: 2026-07-05
 ### 来自：hive常用命令
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Hive/Hive%E5%91%BD%E4%BB%A4/hive%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4.note_images/imageFile1.png)
+
+原文插图 annex：[[bigdata/annex-Hive安装与配置详解]]
+
+原文插图 annex：[[bigdata/annex-hive2.3.2安装使用]]

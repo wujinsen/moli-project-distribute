@@ -82,3 +82,5 @@ debug: true # 启动日志打印 Positive/Negative matches
 
 - 装配源码链：[[spring/enableautoconfiguration原理]]
 - Bean 创建与循环依赖：Spring 容器启动时处理，Boot 2.3 支持构造器循环依赖（有限）
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

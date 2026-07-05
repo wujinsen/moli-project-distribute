@@ -76,3 +76,7 @@ Apache Storm 为 **纯流** 早期方案（Spout/Bolt、acker 机制）。维护
 ## 批次#1323 增补（wujinsen Phase2 P2 数仓调度）
 
 合并 Storm raw 作历史对照；Storm 不单独建页。
+
+原文插图 annex：[[bigdata/annex-Flink从入门到入土（详细教程）]]
+
+原文插图 annex：[[bigdata/annex-Storm安装启动]]

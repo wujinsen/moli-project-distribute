@@ -114,3 +114,5 @@ Netty 封装 NIO：
 - 少量连接、逻辑简单 → BIO 够用
 - 高并发 RPC/网关/MQ → **NIO + Netty**
 - 文件异步读写 → AIO 或线程池 + NIO
+
+原文插图 annex：[[java/annex-volatile]]

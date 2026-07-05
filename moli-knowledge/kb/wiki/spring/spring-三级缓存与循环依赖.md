@@ -86,3 +86,5 @@ Boot 2.6+ 默认禁止部分循环依赖（可配置 `spring.main.allow-circular
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 合并 Spring 循环依赖与 IOC 解析 raw。
+
+原文插图 annex：[[patterns/annex-SpringMVC接收复杂集合参数]]

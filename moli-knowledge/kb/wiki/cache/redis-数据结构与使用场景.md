@@ -81,3 +81,5 @@ updated: 2026-07-05
 ## 批次#1313 增补（wujinsen P2）
 
 合并 Jedis/Redisson 选型 raw。
+
+原文插图 annex：[[cache/annex-redis源码分析]]

@@ -96,7 +96,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "search/annex-Linux-Elasticsearch初步使用(安装、Head配置、分词器配置)"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/ElasticSearch/安装/Windows环境搭建ElasticSearch 5.6并配置head.note.md",
@@ -168,7 +170,9 @@
     ],
     "cited_count": 2,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Flink从入门到入土（详细教程）"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Hadoop/Amabri/Hive/hive入门学习线路指导.note.md",
@@ -190,7 +194,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-HDFS体系结构(NameNode、DataNode详解)"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Hadoop/MAPREDUCE详解.note.md",
@@ -221,7 +227,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-mac搭建hadoop集群"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Hadoop/本地YUM源制作.note.md",
@@ -276,7 +284,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Hive安装与配置详解"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Hive/MongoDBToHive/Hortonwork Ambari配置Hive集成Hbase的java开发maven配置.note.md",
@@ -307,7 +317,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-hive2.3.2安装使用"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Hudi/方案/百信银行基于ApacheHudi实时数据湖演进方案.note.md",
@@ -369,7 +381,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Kafka深度解析(1)"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Kafka/Kafka部署与代码实例.note.md",
@@ -380,7 +394,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Kafka部署与代码实例"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Kafka/为什么要在Kubernetes上运行Kafka，有哪些问题？.note.md",
@@ -487,7 +503,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-老司机教你如何调教Presto和ClickHouse，应对业务难题！"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Spark/Preview of Apache Spark 2.0 now on Databricks Community Edition Easier, Faster,.note.md",
@@ -527,7 +545,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Spark性能优化指南——高级篇"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Spark/Spark计算过程分析.note.md",
@@ -594,7 +614,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Spark常用算子详解"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/spark(1)/GC调优在Spark应用中的实践(1).note.md",
@@ -606,7 +628,9 @@
     ],
     "cited_count": 2,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-GC调优在Spark应用中的实践(1)"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/spark(1)/GC调优在Spark应用中的实践.note.md",
@@ -618,7 +642,9 @@
     ],
     "cited_count": 2,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-GC调优在Spark应用中的实践"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/spark(1)/Parquet格式详解.note.md",
@@ -753,7 +779,9 @@
     ],
     "cited_count": 2,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Spark技术内幕：Stage划分及提交源码分析"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/spark(1)/Spark技术内幕：Storage 模块整体架构.note.md",
@@ -832,7 +860,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-Storm安装启动"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/Storm/Storm概念讲解和工作原理介绍.note.md",
@@ -967,7 +997,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-关于OLAP数仓，这大概是史上最全面的总结！（万字干货）"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/架构设计/Daas/数仓建设/指标管理.note.md",
@@ -1000,7 +1032,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-网易传媒数据指标体系建设实践"
   },
   {
     "raw_path": "raw/wujinsen_markdown/BigData/架构设计/Daas/数仓案例/如何优雅的设计DWS层.note.md",
@@ -1097,7 +1131,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "database/annex-MySQL索引背后的数据结构及算法原理"
   },
   {
     "raw_path": "raw/wujinsen_markdown/DataBase/mysql/mysql规范.note.md",
@@ -1108,7 +1144,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "database/annex-mysql规范"
   },
   {
     "raw_path": "raw/wujinsen_markdown/DataBase/mysql/事务隔离级别中的可重复读能防幻读吗.note.md",
@@ -1121,7 +1159,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "database/annex-事务隔离级别中的可重复读能防幻读吗"
   },
   {
     "raw_path": "raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md",
@@ -1182,7 +1222,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "database/annex-正确的理解MySQL的MVCC及实现原理"
   },
   {
     "raw_path": "raw/wujinsen_markdown/DataBase/mysql/索引/mysql-覆盖索引.note.md",
@@ -1195,7 +1237,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "database/annex-mysql-覆盖索引"
   },
   {
     "raw_path": "raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md",
@@ -1303,7 +1347,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "cache/annex-Redis夺命16问"
   },
   {
     "raw_path": "raw/wujinsen_markdown/DataBase/Redis/Redis如何通过Spring Session实现分布式Session共享.note.md",
@@ -1505,7 +1551,9 @@
     ],
     "cited_count": 5,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "java/annex-JDK的命令行工具"
   },
   {
     "raw_path": "raw/wujinsen_markdown/jvm/JVM内存划分.note.md",
@@ -1658,7 +1706,9 @@
     ],
     "cited_count": 5,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "java/annex-小白都能看得懂的java虚拟机内存模型"
   },
   {
     "raw_path": "raw/wujinsen_markdown/jvm/新生代Eden与两个Survivor区的解释.note.md",
@@ -1713,7 +1763,9 @@
     ],
     "cited_count": 6,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "java/annex-九大工具助你玩转Java性能优化"
   },
   {
     "raw_path": "raw/wujinsen_markdown/jvm/调优/假笨说-警惕大量类加载器的创建导致诡异的Full GC.note.md",
@@ -1876,7 +1928,9 @@
     ],
     "cited_count": 11,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "patterns/annex-SpringMVC接收复杂集合参数"
   },
   {
     "raw_path": "raw/wujinsen_markdown/Spring/Spring、SpringMVC和SpringBoot看这一篇就够了！.note.md",
@@ -1940,7 +1994,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "frontend/annex-JS组件Bootstrap实现弹出框和提示框效果代码"
   },
   {
     "raw_path": "raw/wujinsen_markdown/前端/JavaScript/js表单提交和submit提交的区别.note.md",
@@ -1997,7 +2053,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "frontend/annex-前端解决跨域问题的8种方案"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/a安装文档/Hadoop Ambari 安装.note.md",
@@ -2017,7 +2075,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-hadoop2安装手顺"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/a安装文档/hbase多master.note.md",
@@ -2125,7 +2185,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-让你快速认识flume及安装和使用flume1.5传输数据(日志)到hadoop2.2"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/hadoop/DataNode工作和服务原理.note.md",
@@ -2203,7 +2265,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-hadoop入门之设置datanode的心跳时间的方法"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/hadoop/Hadoop大数据面试--Hadoop篇 [复制链接].note.md",
@@ -2283,7 +2347,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-MapReduce源码分析总结(转)"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/hadoop/wordcount学习--------------1遍.note.md",
@@ -2347,7 +2413,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-捐助：hadoop大全（增加yarn、flume_storm、hadoop一套视频））"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/hadoop/架构师阅读--------------------1遍.note.attach/architect-201312.md",
@@ -2677,7 +2745,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "ops/annex-“网络中的跳板是什么意思"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/linux/堡垒机.note.md",
@@ -2688,7 +2758,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "ops/annex-堡垒机"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/mysql/c3p0源码分析.note.md",
@@ -2908,7 +2980,9 @@
     ],
     "cited_count": 3,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "cache/annex-redis源码分析"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/redis/一致性哈希算法与Java实现.note.md",
@@ -2952,7 +3026,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "bigdata/annex-spark基础"
   },
   {
     "raw_path": "raw/wujinsen_markdown/大数据资料-王/spark/spark源码分析/executor启动和任务处理流程.note.md",
@@ -3072,7 +3148,9 @@
     ],
     "cited_count": 2,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "java/annex-volatile"
   },
   {
     "raw_path": "raw/wujinsen_markdown/并发编程/java/深入理解并发之CompareAndSet(CAS).note.md",
@@ -3162,7 +3240,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "patterns/annex-B树"
   },
   {
     "raw_path": "raw/wujinsen_markdown/数据结构与算法/五分钟理解一致性哈希算法(consistent hashing).note.md",
@@ -3244,7 +3324,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "ops/annex-nexus私服搭建"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/DevOps/nginx/Nginx proxy_set_header Host $host 和 proxy_set_header Host $http_host 的作用对比.note.md",
@@ -3358,7 +3440,9 @@
     ],
     "cited_count": 5,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "middleware/annex-Hystrix使用入门手册（中文）"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/MicroServer/SpringCloud/Hystrix/it隐/Hystrix的简单介绍.note.md",
@@ -3469,7 +3553,9 @@
     ],
     "cited_count": 5,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "middleware/annex-聊聊高并发系统之HTTP缓存"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/MicroServer/SpringCloud/Hystrix/聊聊高并发系统/聊聊高并发系统之队列术.note.md",
@@ -3632,7 +3718,9 @@
     ],
     "cited_count": 2,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "cache/annex-Redisson基本用法"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/分布式事务/redis/Redis分布式锁的正确实现方式.note.md",
@@ -3643,7 +3731,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "middleware/annex-Redis分布式锁的正确实现方式"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/分布式事务/分布式事务.note.md",
@@ -3705,7 +3795,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "security/annex-OAuth2实现单点登录SSO"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/容器/Docker/docker 部署 java 项目.note.md",
@@ -3736,7 +3828,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "ops/annex-K8s运维锦囊，19个常见故障解决方法"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/容器/k8s/最新、最全、最详细的 K8S 学习笔记总结（2021最新版）（一）.note.md",
@@ -3787,7 +3881,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "middleware/annex-RabbitMQ安装教程"
   },
   {
     "raw_path": "raw/wujinsen_markdown/架构/消息队列/RabbitMQ/RabbitMQ系列(一)：Windows下RabbitMQ安装及入门.note.md",
@@ -4037,7 +4133,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "search/annex-面试小结之JVM篇"
   },
   {
     "raw_path": "raw/wujinsen_markdown/面试笔试/Java/Java常见的异常类之间的继承关系.note.md",
@@ -4201,7 +4299,9 @@
     ],
     "cited_count": 1,
     "strategy": "A",
-    "status": "pending"
+    "status": "done",
+    "applied_strategy": "A",
+    "annex_slug": "database/annex-B+树介绍"
   },
   {
     "raw_path": "raw/wujinsen_markdown/面试笔试/树/B树和B+树的总结.note.md",

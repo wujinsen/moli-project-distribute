@@ -56,3 +56,5 @@ Producer → Exchange → (Binding) → Queue → Consumer
 ## 批次#1312 增补（wujinsen P1）
 
 合并 RabbitMQ 安装/私信队列 raw。
+
+原文插图 annex：[[middleware/annex-RabbitMQ安装教程]]

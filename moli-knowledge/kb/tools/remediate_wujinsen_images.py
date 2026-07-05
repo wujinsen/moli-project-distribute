@@ -27,6 +27,7 @@ MANIFEST_JSON = HERE / "WUJINSEN_IMAGE_REMEDIATION.json"
 MANIFEST_MD = HERE / "WUJINSEN_IMAGE_REMEDIATION.md"
 
 DEFAULT_SPACE_ID = "900000000000000001"
+MAX_ANNEX_BYTES = 2 * 1024 * 1024 - 8192
 IMG_EXT = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 IMG_MD = re.compile(r"!\[[^\]]*\]\(\s*<?([^>)]+)>?\s*\)", re.I)
 MARKER_PREFIX = "<!-- t22-wujinsen-images:"
@@ -246,13 +247,14 @@ def apply_strategy_a(
         for api_path, _ in images:
             src = RAW_ROOT / api_path
             dst = assets_dir / Path(api_path).name
-            if src.is_file() and not dst.exists():
-                dst.write_bytes(src.read_bytes())
-                copied += 1
+            if src.is_file():
+                if not dst.exists():
+                    dst.write_bytes(src.read_bytes())
+                    copied += 1
 
-    if not annex_md.exists():
+    annex_existed = annex_md.exists()
+    if not annex_existed:
         body = md_path.read_text(encoding="utf-8", errors="ignore")
-        # rewrite local image refs to assets/
         for api_path, _ in images:
             fname = Path(api_path).name
             body = re.sub(
@@ -274,20 +276,39 @@ def apply_strategy_a(
             f"updated: {date.today().isoformat()}\n"
             "---\n\n"
         )
+        full = fm + body.strip() + "\n"
+        if len(full.encode("utf-8")) > MAX_ANNEX_BYTES:
+            # 超大 raw：annex 仅保留插图 + 来源说明
+            img_lines = []
+            for api_path, label in images:
+                fname = Path(api_path).name
+                img_lines.append(f"![{label}]({wiki_asset_rel(fname)})")
+            body = (
+                f"# {Path(raw_rel).stem}\n\n"
+                f"> 原文过长，未全文迁入 annex。来源：`{row['raw_path']}`\n\n"
+                + "\n\n".join(img_lines)
+                + "\n"
+            )
+            full = fm + body
         if not dry_run:
-            annex_md.write_text(fm + body.strip() + "\n", encoding="utf-8")
+            annex_md.write_text(full, encoding="utf-8")
 
     link_line = f"\n\n原文插图 annex：[[{full_annex_slug}]]\n"
-    hub_path = resolve_wiki_file(hub)
-    hub_linked = False
-    if hub_path and f"[[{full_annex_slug}]]" not in hub_path.read_text(encoding="utf-8", errors="ignore"):
+    hub_linked: list[str] = []
+    for hub in cited:
+        hub_path = resolve_wiki_file(hub)
+        if not hub_path:
+            continue
+        if f"[[{full_annex_slug}]]" in hub_path.read_text(encoding="utf-8", errors="ignore"):
+            continue
         if dry_run:
-            hub_linked = True
+            hub_linked.append(hub)
         else:
             txt = hub_path.read_text(encoding="utf-8")
             hub_path.write_text(txt.rstrip() + link_line, encoding="utf-8")
-            hub_linked = True
+            hub_linked.append(hub)
 
+    annex_created = annex_existed or not dry_run
     return {
         "ok": True,
         "strategy": "A",
@@ -295,8 +316,7 @@ def apply_strategy_a(
         "annex_slug": full_annex_slug,
         "images": len(images),
         "copied": copied,
-        "hub_link": hub,
-        "hub_linked": hub_linked,
+        "hub_links": hub_linked,
         "dry_run": dry_run,
     }
 
@@ -363,6 +383,8 @@ def select_rows(
     max_png: int | None,
     min_png: int,
     status: str,
+    top_by_png: bool,
+    strategy_filter: str | None,
 ) -> list[dict]:
     out = []
     for r in rows:
@@ -385,11 +407,14 @@ def select_rows(
             continue
         if png < min_png:
             continue
+        if strategy_filter == "A":
+            if r.get("strategy") not in ("A", "C-or-A"):
+                continue
         out.append(r)
-    if strategy:
-        # D can override manifest suggestion
-        pass
-    out.sort(key=lambda x: (x.get("png_files", 0), x["raw_path"]))
+    if top_by_png:
+        out.sort(key=lambda x: (-x.get("png_files", 0), x["raw_path"]))
+    else:
+        out.sort(key=lambda x: (x.get("png_files", 0), x["raw_path"]))
     if limit:
         out = out[:limit]
     return out
@@ -410,6 +435,11 @@ def main() -> int:
         "--gateway-prefix",
         default="/KnowledgeServer",
         help="URL prefix before /kb/raw/asset",
+    )
+    parser.add_argument(
+        "--top-by-png",
+        action="store_true",
+        help="sort by png_files descending (R2b Top N)",
     )
     parser.add_argument("--refresh-manifest", action="store_true", help="regenerate JSON via audit first")
     args = parser.parse_args()
@@ -433,6 +463,8 @@ def main() -> int:
         args.max_png,
         args.min_png,
         status="pending",
+        top_by_png=args.top_by_png or args.strategy == "A",
+        strategy_filter="A" if args.strategy == "A" else None,
     )
 
     if not selected:

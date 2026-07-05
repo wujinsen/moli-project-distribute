@@ -1354,3 +1354,4 @@
 ## [2026-07-05] maintenance | 批次#1333 enterprise-kb lint 收口 → repair fm 179 页 + concept 链接 + sources 解析修复 + index orphan 18；strict 0 问题
 ## [2026-07-05] maintenance | 批次#1334 prune orphan wujinsen sources + 去 scaffold + 重建 frontmatter 179 页 + 补 nexus raw（uncited→0）
 ## [2026-07-05] remediate | T22 R2 D档 10/10 raw
+## [2026-07-05] remediate | T22 R2 A档 50/50 raw
