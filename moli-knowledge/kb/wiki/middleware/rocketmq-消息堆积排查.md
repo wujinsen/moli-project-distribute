@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [RocketMQ, MQ, 排查]
 sources:
- - raw/wujinsen_markdown/
-related: [rocketmq-架构与实战, 延迟消息与队列, 故障排查指南]
+- raw/wujinsen_markdown/ (enterprise-kb/middleware 专题页)
+related: [rocketmq-架构与实战, 延迟消息与队列]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # RocketMQ 消息堆积排查

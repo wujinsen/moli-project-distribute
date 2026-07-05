@@ -5,12 +5,13 @@ type: article
 status: active
 tags: [RocketMQ, 分布式事务, 最终一致]
 sources:
- - raw/wujinsen_markdown/架构/分布式事务/基于RocketMQ实现分布式事务 - 完整示例.note.md
- - raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
- - raw/wujinsen_markdown/源码分析/RocketMQ/RocketMQ 源码分析 —— 事务消息.note.md
+- raw/wujinsen_markdown/架构/分布式事务/基于RocketMQ实现分布式事务 - 完整示例.note.md
+- raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
+- raw/wujinsen_markdown/源码分析/RocketMQ/RocketMQ 源码分析 —— 事务消息.note.md
+- raw/wujinsen_markdown/源码分析/RocketMQ/事务消息.note.md
 related: [分布式事务, 消息队列, rocketmq-架构与实战, 接口幂等性实践]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # RocketMQ 事务消息实践
@@ -40,3 +41,7 @@ updated: 2026-06-22
 ## 相关
 
 [[middleware/kafka-与-mq选型]] ·
+
+## 批次#1320 增补（wujinsen Phase2 P0）
+
+合并 RocketMQ 事务消息源码 raw。

@@ -5,11 +5,12 @@ type: article
 status: active
 tags: [nacos, 注册发现, 配置中心]
 sources:
- - raw/wujinsen_markdown/moli项目/使用Nacos作为配置中心和服务注册发现.note.md
- - raw/wujinsen_markdown/moli项目/运维/moli项目配置.note.md
-related: [dubbo-与-nacos, 本地启动指南, 服务调用与架构, 故障排查指南, nacos-config动态配置实践]
+- raw/wujinsen_markdown/架构/服务注册发现/nacos/War包部署无法注册到Nacos.note.md
+- raw/wujinsen_markdown/架构/服务注册发现/nacos/nacos架构与原理.note.md
+- raw/wujinsen_markdown/源码分析/nacos/Nacos 架构.note.md
+related: [dubbo-与-nacos, nacos-config动态配置实践]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Nacos 注册与配置
@@ -59,3 +60,14 @@ spring:
 ## 与 Gateway
 
 Gateway 通过 Nacos Discovery + `lb://service-name` 转发，StripPrefix 后打到各服务 context-path。
+## Nacos 备忘（raw）
+
+- **注册**：服务名 + group + namespace 与 Consumer 一致
+- **配置**：`shared-configs` / `extension-configs`；动态刷新 `@RefreshScope`
+- **War 部署未注册**：检查 `spring.cloud.nacos.discovery` 与网络
+
+见 [[middleware/nacos-config动态配置实践]]、[[middleware/dubbo-与-nacos]]。
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 Nacos 架构与踩坑 raw。

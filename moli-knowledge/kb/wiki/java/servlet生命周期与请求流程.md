@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [servlet, tomcat, Filter, 生命周期]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
+- raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
 related: [tomcat与-servlet容器, spring-mvc请求流程, shiro-鉴权体系, http与-servlet面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Servlet 生命周期与请求流程

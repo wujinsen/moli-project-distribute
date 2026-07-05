@@ -5,11 +5,11 @@ type: interview
 status: active
 tags: [sentinel, 面试, 限流, 熔断]
 sources:
- - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
- - raw/wujinsen_markdown/面试笔试/高级java/2018年一线互联网公司Java高级面试题总结.note.md
+- raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/2018年一线互联网公司Java高级面试题总结.note.md
 related: [sentinel-限流与熔断, 限流算法与令牌桶, sentinel-接入与规则配置, dubbo-面试题, redis-面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Sentinel 面试题

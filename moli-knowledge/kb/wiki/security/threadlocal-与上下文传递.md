@@ -5,10 +5,10 @@ type: concept
 status: active
 tags: [Java, 并发, 鉴权]
 sources:
- - raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md
+- raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md
 related: [mdc-日志链路上下文, transmittable-thread-local跨线程, shiro-鉴权体系, java-并发]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # ThreadLocal 与上下文传递

@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [elasticsearch, 写入, refresh, translog]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
+- raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
 related: [elasticsearch-搜索, es-搜索与分片路由, mysql-事务与锁]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # ES 索引与写入流程

@@ -5,11 +5,11 @@ type: article
 status: active
 tags: [Redisson, Redis, 分布式锁]
 sources:
- - raw/wujinsen_markdown/架构/分布式事务/redis/Redisson基本用法.note.md
- - raw/wujinsen_markdown/DataBase/Redis/Jedis/Jedis与Redisson选型对比.note.md
+- raw/wujinsen_markdown/DataBase/Redis/Jedis/Jedis与Redisson选型对比.note.md
+- raw/wujinsen_markdown/架构/分布式事务/redis/Redisson基本用法.note.md
 related: [redis分布式锁实现, 分布式锁, 分布式锁面试题, redis-缓存]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Redisson 看门狗与分布式锁

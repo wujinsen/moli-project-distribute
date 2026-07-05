@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [缓存, Java, 性能]
 sources:
- - raw/wujinsen_markdown/
-related: [多级缓存架构, spring-cache-注解缓存, redis-缓存, 缓存双写与一致性策略]
+- raw/wujinsen_markdown/ (enterprise-kb/cache 专题页)
+related: [spring-cache-注解缓存, redis-缓存, 缓存双写与一致性策略]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Caffeine 本地缓存实践
 
-> 架构 [[多级缓存架构]]；Spring 集成 [[spring/spring-cache-注解缓存]]；Redis L2 [[cache/redis-缓存]]。
+> 架构 `moli-knowledge/kb/wiki-moli/develop/茉莉-缓存-多级.md`；Spring 集成 [[spring/spring-cache-注解缓存]]；Redis L2 [[cache/redis-缓存]]。
 
 **Caffeine** 高性能 JVM 本地缓存（W-TinyLFU 淘汰），适合读多写少、可容忍短时不一致的数据。
 
@@ -38,7 +38,7 @@ SeckillActivityVo get(Long id) {
 }
 ```
 
-`recordStats()` → 命中率对接 [[micrometer-与指标暴露]]。
+`recordStats()` → 命中率对接 [[middleware/压测监控与prometheus]]。
 
 ## 3. 参数建议
 
@@ -55,4 +55,4 @@ SeckillActivityVo get(Long id) {
 
 ## 相关
 
-[[cache/cache-aside与缓存更新模式]] · [[sentinel-热点参数限流]]
+[[cache/cache-aside与缓存更新模式]] · [[middleware/sentinel-限流与熔断]]

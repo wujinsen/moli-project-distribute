@@ -5,11 +5,11 @@ type: concept
 status: active
 tags: [tomcat, servlet, Spring Boot, HTTP]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
- - docs/zh-CN/ARCHITECTURE.md
+- docs/zh-CN/ARCHITECTURE.md
+- raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
 related: [servlet生命周期与请求流程, http与-servlet面试题, spring-mvc请求流程, spring-cloud-gateway, io模型与-netty]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Tomcat 与 Servlet 容器

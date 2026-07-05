@@ -5,11 +5,11 @@ type: article
 status: active
 tags: [mysql, 索引, 优化, EXPLAIN, 踩坑]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/索引/MySQL索引索引不生效的情况.note.md
- - raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md
+- raw/wujinsen_markdown/DataBase/mysql/索引/MySQL索引索引不生效的情况.note.md
+- raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md
 related: [mysql-索引, mysql-复合索引与最左前缀, mysql-索引面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL 索引失效场景

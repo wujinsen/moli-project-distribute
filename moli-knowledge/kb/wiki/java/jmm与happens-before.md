@@ -5,10 +5,10 @@ type: concept
 status: active
 tags: [java, JMM, 内存模型, happens-before, 重排序]
 sources:
- - raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
+- raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
 related: [java-并发, volatile与可见性, synchronized与锁原理, java-并发面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # JMM 与 happens-before

@@ -5,11 +5,41 @@ type: article
 status: active
 tags: [redis, 集群, 哨兵, 高可用]
 sources:
- - raw/wujinsen_markdown/大数据资料-王/a安装文档/Redis 3.0 集群安装.note.md
- - raw/wujinsen_markdown/大数据资料-王/redis/redis主从切换的集群管理.note.md
-related: [redis-缓存, redis-持久化与高可用, 认证与会话机制, 秒杀设计, redis-面试题]
+- raw/wujinsen_markdown/大数据资料-王/a安装文档/Redis 3.0 集群安装.note.md
+- raw/wujinsen_markdown/大数据资料-王/a安装文档/redis安装.note.md
+- raw/wujinsen_markdown/大数据资料-王/a安装文档/共享redis安装文档（ok）.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/10 个 Redis 建议/技巧 .note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/DataCenter功能简述.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/Java Memcache基本应用  .note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/Jedis类图及方法说明.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/MongoDB—readme-王森丰.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/MongoDB——linux.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/MongoDB——windows2.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/Redis-------------------------1遍.note.attach/Redis新手入门详解.md
+- raw/wujinsen_markdown/大数据资料-王/redis/Redis-------------------------1遍.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/Redis.note.attach/Redis新手入门详解.md
+- raw/wujinsen_markdown/大数据资料-王/redis/Redis.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/Redis主从自动failover.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/jedis源码----------------------1遍.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/jedis源码理解-------王森丰.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/new DMS.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis session共享.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis 学习笔记(4)-HA高可用方案Sentinel配置.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis 开机启动.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis 添加访问密码.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis-JedisPoolConfig配置.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis.conf 配置事例.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis.conf 配置详解.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis3.0.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis主从切换的集群管理.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis之如何配置jedisPool参数.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis协议.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis命令.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/redis源码分析.note.md
+- raw/wujinsen_markdown/大数据资料-王/redis/一致性哈希算法与Java实现.note.md
+related: [redis-缓存, redis-持久化与高可用, 认证与会话机制, redis-面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Redis 集群与哨兵实践
@@ -53,3 +83,7 @@ updated: 2026-06-22
 ## 相关
 
 [[cache/redis-缓存]] ·
+
+## 批次#1322 增补（wujinsen Phase2 王树挂接）
+
+合并 `大数据资料-王/redis/` 与 a安装文档 Redis 集群 raw。

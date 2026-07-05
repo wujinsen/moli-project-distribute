@@ -5,12 +5,12 @@ type: article
 status: active
 tags: [druid, 连接池, 监控, prometheus]
 sources:
- - moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
- - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/DruidPoolMetricsConfiguration.java
- - moli-knowledge/kb/wiki/middleware/压测监控与prometheus.md
-related: [mybatis-与-druid持久层, 故障排查指南, 压测监控与prometheus, mysql-深分页与慢sql优化, 限流算法与令牌桶, sentinel-限流与熔断]
+- moli-knowledge/kb/wiki/middleware/压测监控与prometheus.md
+- moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/DruidPoolMetricsConfiguration.java
+- moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
+related: [mybatis-与-druid持久层, 压测监控与prometheus, mysql-深分页与慢sql优化, 限流算法与令牌桶, sentinel-限流与熔断]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Druid 连接池与监控

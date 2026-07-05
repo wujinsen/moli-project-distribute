@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [Dubbo, RPC, 超时, 重试]
 sources:
- - raw/wujinsen_markdown/面试笔试/Dubbo/精尽 Dubbo 面试题.note.md
-related: [dubbo-负载均衡与集群容错, dubbo-调用原理与分层, 接口幂等性实践, 故障排查指南]
+- raw/wujinsen_markdown/面试笔试/Dubbo/精尽 Dubbo 面试题.note.md
+related: [dubbo-面试题, dubbo-调用原理与分层, 接口幂等性实践]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # RPC 超时重试与链路
 
-> Dubbo 容错 [[dubbo-负载均衡与集群容错]]；幂等 [[middleware/接口幂等性实践]]。
+> Dubbo 容错 [[middleware/dubbo-面试题]]；幂等 [[middleware/接口幂等性实践]]。
 
 ## 1. 超时层级
 
@@ -44,4 +44,4 @@ A→B→C 每层 3s 超时，用户感知 9s+。治理：
 
 ## 相关
 
-[[skywalking-链路追踪]] ·
+[[ops/skywalking-安装与链路追踪]] ·

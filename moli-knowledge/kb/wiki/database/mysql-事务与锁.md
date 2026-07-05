@@ -5,12 +5,12 @@ type: concept
 status: active
 tags: [mysql, 事务, 锁, InnoDB, MVCC]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
- - raw/wujinsen_markdown/DataBase/mysql/全局锁和表锁 ：给表加个字段怎么有这么多阻碍？.note.md
- - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+- raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+- raw/wujinsen_markdown/DataBase/mysql/全局锁和表锁 ：给表加个字段怎么有这么多阻碍？.note.md
+- raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
 related: [mysql-隔离级别与mvcc, mysql-innodb锁机制, mysql-死锁与排查, mysql-深分页与慢sql优化, mysql-事务面试题, mysql-索引, spring-声明式事务]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL 事务与锁（概念枢纽）

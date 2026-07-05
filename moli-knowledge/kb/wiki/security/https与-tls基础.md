@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [HTTPS, TLS, 安全, 网络]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试题整理/Java面试通关要点汇总集之微服务篇参考答案.note.md
-related: [http与-servlet面试题, 认证与会话机制, spring-cloud-gateway, 服务调用与架构]
+- raw/wujinsen_markdown/面试笔试/面试题整理/Java面试通关要点汇总集之微服务篇参考答案.note.md
+related: [http与-servlet面试题, 认证与会话机制, spring-cloud-gateway]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # HTTPS 与 TLS 基础

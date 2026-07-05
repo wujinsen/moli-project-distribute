@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [日志, 可观测性, 并发]
 sources:
- - raw/wujinsen_markdown/
-related: [logback-日志配置, threadlocal-与上下文传递, skywalking-链路追踪, 故障排查指南]
+- raw/wujinsen_markdown/ (enterprise-kb/java 专题页)
+related: [mdc-日志链路上下文, threadlocal-与上下文传递, skywalking-安装与链路追踪]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # MDC 日志链路上下文
 
-> Logback 配置 [[logback-日志配置]]；ThreadLocal [[security/threadlocal-与上下文传递]]；APM [[skywalking-链路追踪]]。
+> Logback 配置 [[java/mdc-日志链路上下文]]；ThreadLocal [[security/threadlocal-与上下文传递]]；APM [[ops/skywalking-安装与链路追踪]]。
 
 **MDC**（Mapped Diagnostic Context）在日志 pattern 中注入 `traceId` / `userId`，grep 全链路日志。
 
@@ -62,4 +62,4 @@ executor.execute(() -> {
 
 ## 相关
 
-[[micrometer-与指标暴露]] · [[spring/spring-async与线程池]]
+[[middleware/压测监控与prometheus]] · [[spring/spring-async与线程池]]

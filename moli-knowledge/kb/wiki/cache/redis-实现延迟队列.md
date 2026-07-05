@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Redis, 延迟队列, ZSet]
 sources:
- - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
-related: [延迟消息与队列, redis-数据结构与使用场景, 订单-状态机设计, 秒杀设计]
+- raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
+related: [延迟消息与队列, redis-数据结构与使用场景]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Redis 实现延迟队列
@@ -46,4 +46,4 @@ ZRANGEBYSCORE delay_queue 0 now LIMIT 0 1
 
 ## 相关
 
-[[spring-scheduled-定时任务]] · [[middleware/消息队列]]
+[[spring/spring-async与线程池]] · [[middleware/消息队列]]

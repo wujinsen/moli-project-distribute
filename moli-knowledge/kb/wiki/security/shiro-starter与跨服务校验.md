@@ -5,12 +5,12 @@ type: article
 status: active
 tags: [Shiro, Starter, Dubbo, 微服务, 循环依赖, SpringBoot]
 sources:
- - moli-user-center/moli-user-center-shiro-starter/README.md
- - moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/
- - moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/autoconfigure/UserCenterShiroAutoConfiguration.java
-related: [shiro-鉴权体系, 认证与会话机制, 用户中心, 订单服务, dubbo-与-nacos, spring-aop与代理, 登录与鉴权故障根因汇总]
+- moli-user-center/moli-user-center-shiro-starter/README.md
+- moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/
+- moli-user-center/moli-user-center-shiro-starter/src/main/java/com/moli/user/center/starter/autoconfigure/UserCenterShiroAutoConfiguration.java
+related: [shiro-鉴权体系, 认证与会话机制, dubbo-与-nacos, spring-aop与代理]
 created: 2026-06-22
-updated: 2026-06-23
+updated: 2026-07-05
 ---
 
 # Shiro Starter 与跨服务校验

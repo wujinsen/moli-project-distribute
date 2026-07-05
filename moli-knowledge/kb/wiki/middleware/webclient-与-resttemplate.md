@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [Spring, HTTP, WebFlux]
 sources:
- - raw/wujinsen_markdown/
-related: [webflux-响应式入门, okhttp-与-http客户端, openfeign-与-http客户端, reactor-mono与-flux]
+- raw/wujinsen_markdown/ (enterprise-kb/middleware 专题页)
+related: [webclient-与-resttemplate, okhttp-与-http客户端, openfeign-与-http客户端, completablefuture-异步编排]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # WebClient 与 RestTemplate 对比
 
-> 响应式 [[webflux-响应式入门]]；OkHttp [[middleware/okhttp-与-http客户端]]；Reactor [[reactor-mono与-flux]]。
+> 响应式 [[middleware/webclient-与-resttemplate]]；OkHttp [[middleware/okhttp-与-http客户端]]；Reactor [[java/completablefuture-异步编排]]。
 
 ## 1. 定位
 

@@ -5,11 +5,10 @@ type: concept
 status: active
 tags: [Java, 集合, HashMap, ArrayList]
 sources:
- - raw/wujinsen_markdown/language/Java/HashMap的工作原理.note.md
- - raw/wujinsen_markdown/language/Java/java基础类源码分析/HashMap源码分析.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/面试：HashMap 夺命二十一问！.note.md
 related: [hashmap-面试题, java-并发, java-并发面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Java 集合框架

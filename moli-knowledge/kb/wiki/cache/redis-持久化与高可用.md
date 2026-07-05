@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [redis, RDB, AOF, 高可用]
 sources:
- - raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
 related: [redis-缓存, redis-集群与哨兵实践, redis-面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Redis 持久化与高可用

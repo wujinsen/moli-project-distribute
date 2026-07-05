@@ -5,11 +5,11 @@ type: article
 status: active
 tags: [gateway, 路由, Filter, Sentinel]
 sources:
- - moli-gateway/src/main/resources/application-dev.yml
- - moli-gateway/src/main/resources/application-loadtest.yml
-related: [spring-cloud-gateway, 网关, 服务调用与架构, 秒杀设计, 故障排查指南, sentinel-限流与熔断, sentinel-接入与规则配置]
+- moli-gateway/src/main/resources/application-dev.yml
+- moli-gateway/src/main/resources/application-loadtest.yml
+related: [spring-cloud-gateway, sentinel-限流与熔断, sentinel-接入与规则配置]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Gateway 路由与过滤器

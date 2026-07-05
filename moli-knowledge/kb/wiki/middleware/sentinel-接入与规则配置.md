@@ -5,12 +5,12 @@ type: article
 status: active
 tags: [sentinel, gateway, dubbo, 配置]
 sources:
- - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/Sentinel滑动窗口介绍.note.md
- - raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/sentinel动态规则源.note.md
- - moli-knowledge/kb/wiki/middleware/gateway-路由与过滤器.md
-related: [sentinel-限流与熔断, spring-cloud-gateway, gateway-路由与过滤器, dubbo-与-nacos, 限流算法与令牌桶, 网关]
+- moli-knowledge/kb/wiki/middleware/gateway-路由与过滤器.md
+- raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/Sentinel滑动窗口介绍.note.md
+- raw/wujinsen_markdown/架构/MicroServer/SpringCloud/sentinel/sentinel动态规则源.note.md
+related: [sentinel-限流与熔断, spring-cloud-gateway, gateway-路由与过滤器, dubbo-与-nacos, 限流算法与令牌桶]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Sentinel 接入与规则配置

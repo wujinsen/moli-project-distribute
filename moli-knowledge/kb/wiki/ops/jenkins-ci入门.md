@@ -5,12 +5,53 @@ type: concept
 status: active
 tags: [Jenkins, CI, DevOps]
 sources:
- - raw/wujinsen_markdown/架构/DevOps/jenkins/Jenkins安装.note.md
- - raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins自动部署jar包（maven.note.md
- - raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins pipeline 脚本.note.md
-related: [git协作指南, docker部署指南, linux-运维基础, k8s入门与容器编排]
+- raw/wujinsen_markdown/架构/DevOps/conflunce文档/Confluence7.4安装并破解汉化教程.note.md
+- raw/wujinsen_markdown/架构/DevOps/conflunce文档/confluence破解版安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/conflunce文档/conflunce文档安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/gitlab/GitLab端口冲突 解决办法.note.md
+- raw/wujinsen_markdown/架构/DevOps/gitlab/gitlab docker 安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/gitlab/gitlab external_url采坑记.note.md
+- raw/wujinsen_markdown/架构/DevOps/gitlab/gitlab常用命令.note.md
+- raw/wujinsen_markdown/架构/DevOps/gitlab/linux gitlab安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/gitlab/使用 GitLab + Jenkins 实现自动化构建.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/Jenkins安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins linux安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins pipeline 脚本.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins使用docker安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins各种配置.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins目录讲解.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins自动部署jar包（maven.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/jenkins集成sonarqube.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/pipeline 流水线脚本.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/系列教程/(一) Jenkins从0-1搭建--jenkins部署.note.md
+- raw/wujinsen_markdown/架构/DevOps/jenkins/系列教程/jenkins各种问题总结.note.md
+- raw/wujinsen_markdown/架构/DevOps/jira/JIRA 7.8 版本的安装与破解.note.md
+- raw/wujinsen_markdown/架构/DevOps/jira/JIRA支持mysql版本问题.note.md
+- raw/wujinsen_markdown/架构/DevOps/jira/atlassian-agent.jar 打印信息.note.md
+- raw/wujinsen_markdown/架构/DevOps/jira/jira mac安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/jira/jira8.19安装教程, 支持mysql8.note.md
+- raw/wujinsen_markdown/架构/DevOps/nexus/maven---nexus私服配置setting和pom.note.md
+- raw/wujinsen_markdown/架构/DevOps/nexus/nexus私服搭建.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/Linux 普通用户启动nginx.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/Nginx proxy_set_header Host $host 和 proxy_set_header Host $http_host 的作用对比.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/Nginx 安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/Redis+Nginx实现高并发缓存架构.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/moli nginxpei.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/moli nginx配置文件.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/nginx安装2.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/nginx配置二级目录，反向代理不同ip+端口.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/nginx配置信息.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/nginx配置文件.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/使用nginx部署多个前端项目.note.md
+- raw/wujinsen_markdown/架构/DevOps/nginx/配置文件/nginx gateway路由信息.note.md
+- raw/wujinsen_markdown/架构/DevOps/sonar/sonar-sonarscanner.note.md
+- raw/wujinsen_markdown/架构/DevOps/sonar/sonarqube7.1 linux安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/sonar/sonarqube7.6 linux安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/sonar/sonarqube安装.note.md
+- raw/wujinsen_markdown/架构/DevOps/组件配置文档/组件配置文档.note.md
+related: [linux-运维基础, k8s入门与容器编排]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Jenkins CI 入门
@@ -64,4 +105,11 @@ pipeline {
 
 ## 相关
 
- · [[nginx反向代理与前端部署指南]]
+ · `moli-knowledge/kb/wiki-moli/ops/nginx反向代理与前端部署指南.md`
+## 批次#1310 增补（wujinsen P0）
+
+合并 `架构/DevOps/` Jenkins 安装、Pipeline、自动部署 jar 等 raw。
+
+## 批次#1320 增补（wujinsen Phase2 P0）
+
+补挂 `架构/DevOps/jenkins/` Maven 构建 raw。

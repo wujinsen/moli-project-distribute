@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [K8s, 运维, 监控]
 sources:
- - raw/wujinsen_markdown/
-related: [k8s入门与容器编排, spring-boot-actuator监控, docker部署指南]
+- raw/wujinsen_markdown/ (enterprise-kb/ops 专题页)
+related: [k8s入门与容器编排, prometheus-告警规则设计]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # K8s 健康检查探针
 
-> K8s 入门 [[ops/k8s入门与容器编排]]；Actuator [[spring-boot-actuator监控]]；Docker。
+> K8s 入门 [[ops/k8s入门与容器编排]]；Actuator [[ops/prometheus-告警规则设计]]；Docker。
 
 ## 1. 三类探针
 

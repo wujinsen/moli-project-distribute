@@ -5,12 +5,12 @@ type: article
 status: active
 tags: [压测, loadtest, user-center, Shiro]
 sources:
- - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/loadtest/LoadtestLoginController.java
- - load-test/README.md
- - moli-user-center/moli-user-center-server/src/main/resources/application-loadtest.yml
-related: [秒杀压测指南, 认证与会话机制, 登录与鉴权指南, 用户中心]
+- load-test/README.md
+- moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/loadtest/LoadtestLoginController.java
+- moli-user-center/moli-user-center-server/src/main/resources/application-loadtest.yml
+related: [认证与会话机制]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # loadtest Profile 与压测登录

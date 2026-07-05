@@ -5,12 +5,19 @@ type: concept
 status: active
 tags: [Shiro, 鉴权, SSO, 微服务]
 sources:
- - moli-user-center/moli-user-center-shiro-starter/
- - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/shiro/
- - docs/zh-CN/RBAC.md
-related: [认证与会话机制, shiro-starter与跨服务校验, sso与系统门户, rbac-权限模型, 用户中心, shiro-面试题]
+- docs/zh-CN/RBAC.md
+- moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/config/shiro/
+- moli-user-center/moli-user-center-shiro-starter/
+- raw/wujinsen_markdown/架构/安全框架/cas/OAuth2实现单点登录SSO.note.md
+- raw/wujinsen_markdown/架构/安全框架/cas/cas5.3.2单点登录-骨架搭建(一).note.md
+- raw/wujinsen_markdown/架构/安全框架/cas/无标题笔记.note.md
+- raw/wujinsen_markdown/架构/安全框架/shiro/Shiro的 rememberMe 功能使用指导(为什么rememberMe设置了没作用？).note.md
+- raw/wujinsen_markdown/架构/安全框架/shiro/SpringBoot 整合Shiro实现动态权限加载更新+Session共享+单点登录.note.md
+- raw/wujinsen_markdown/架构/安全框架/shiro/shiro认证授权.note.md
+- raw/wujinsen_markdown/架构/安全框架/开源项目/OAuth2实现单点登录SSO.note.md
+related: [认证与会话机制, shiro-starter与跨服务校验, sso与系统门户, rbac-权限模型, shiro-面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Shiro 鉴权体系（概念枢纽）
@@ -75,3 +82,7 @@ moli-user-center-shiro-starter → AutoConfiguration + Realm + Filter
 ```
 
 新微服务接入：引 starter + 配 Redis + Dubbo 订阅 user-center。
+## 批次#1310 增补（wujinsen P0）
+
+合并 `架构/安全框架/` Shiro/Spring Security 配置类 raw（通用概念，非茉莉手册）。
+

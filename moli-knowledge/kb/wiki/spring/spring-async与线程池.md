@@ -5,15 +5,15 @@ type: concept
 status: active
 tags: [Spring, 并发, 异步]
 sources:
- - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
-related: [spring-事件机制, 线程池-实战调优, completablefuture-异步编排, java-并发]
+- raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
+related: [spring-application启动流程, spring-async与线程池, completablefuture-异步编排, java-并发]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Spring @Async 与线程池
 
-> 事件解耦 [[spring-事件机制]]；线程池参数 [[线程池-实战调优]]；编排 [[java/completablefuture-异步编排]]。
+> 事件解耦 [[spring/spring-application启动流程]]；线程池参数 [[spring/spring-async与线程池]]；编排 [[java/completablefuture-异步编排]]。
 
 **@Async** 让方法在独立线程执行，适合邮件、审计、非关键 IO，**不能**替代 MQ 做可靠异步。
 
@@ -58,4 +58,4 @@ class NotifyService {
 
 ## 相关
 
-[[java-虚拟线程]] · [[java/异步编程面试题]]
+[[java/异步编程面试题]] · [[java/异步编程面试题]]

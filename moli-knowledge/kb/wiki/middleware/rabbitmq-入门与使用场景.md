@@ -5,11 +5,13 @@ type: article
 status: active
 tags: [RabbitMQ, MQ, AMQP]
 sources:
- - raw/wujinsen_markdown/架构/消息队列/RabbitMQ/RabbitMQ安装教程.note.md
- - raw/wujinsen_markdown/架构/消息队列/RabbitMQ/rabbitmq私信队列.note.md
+- raw/wujinsen_markdown/架构/消息队列/RabbitMQ/RabbitMQ安装教程.note.md
+- raw/wujinsen_markdown/架构/消息队列/RabbitMQ/RabbitMQ系列(一)：Windows下RabbitMQ安装及入门.note.md
+- raw/wujinsen_markdown/架构/消息队列/RabbitMQ/rabbitmq mac安装.note.md
+- raw/wujinsen_markdown/架构/消息队列/RabbitMQ/rabbitmq私信队列.note.md
 related: [消息队列, kafka-与-mq选型, rocketmq-架构与实战]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # RabbitMQ 入门与使用场景
@@ -50,3 +52,7 @@ Producer → Exchange → (Binding) → Queue → Consumer
 ## 相关
 
 [[middleware/消息队列]] · [[middleware/rocketmq-架构与实战]]
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 RabbitMQ 安装/私信队列 raw。

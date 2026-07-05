@@ -5,10 +5,12 @@ type: article
 status: active
 tags: [redis, 缓存, Cache-Aside, 一致性]
 sources:
- - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
-related: [redis-缓存, 秒杀设计, redis-面试题]
+- raw/wujinsen_markdown/架构/缓存/REDIS缓存穿透，缓存击穿，缓存雪崩原因+解决方案.note.md
+- raw/wujinsen_markdown/架构/缓存/缓存穿透、缓存击穿、缓存雪崩区别和解决方案.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
+related: [redis-缓存, redis-面试题, 缓存双写与一致性策略]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Cache-Aside 与缓存更新模式
@@ -49,3 +51,16 @@ Cache + DB 非单事务 → 要么 2PC/XA（慢），要么接受最终一致 + 
 ## 面试一句话
 
 > Cache-Aside 写路径：**先 DB 后删缓存**；别先删缓存；高并发脏读概率低但非零，靠 TTL 兜底。
+## 穿透 / 击穿 / 雪崩（raw 架构/缓存）
+
+| 问题 | 现象 | 常见方案 |
+|------|------|----------|
+| **穿透** | 查不存在的数据，缓存与 DB 都没有 | 布隆过滤器；缓存空值短 TTL |
+| **击穿** | 热点 key 过期，并发打穿 DB | 互斥锁重建；热点永不过期 |
+| **雪崩** | 大量 key 同时过期 | TTL 加随机；多级缓存；限流 |
+
+与 [[cache/redis-面试题]] Q3 一致。
+
+## 批次#1312 增补（wujinsen P1）
+
+合并缓存穿透/击穿/雪崩 raw。

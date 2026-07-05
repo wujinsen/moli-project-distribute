@@ -5,11 +5,10 @@ type: concept
 status: active
 tags: [dubbo, nacos, 微服务, 注册发现]
 sources:
- - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
- - raw/wujinsen_markdown/moli项目/使用Nacos作为配置中心和服务注册发现.note.md
-related: [dubbo-调用原理与分层, nacos-注册与配置, 服务调用与架构, dubbo-面试题]
+- raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
+related: [dubbo-调用原理与分层, nacos-注册与配置, dubbo-面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Dubbo 与 Nacos（概念枢纽）

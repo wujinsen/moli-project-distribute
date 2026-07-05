@@ -5,11 +5,10 @@ type: article
 status: active
 tags: [nacos, 配置中心, RefreshScope]
 sources:
- - raw/wujinsen_markdown/moli项目/使用Nacos作为配置中心和服务注册发现.note.md
- - moli-user-center/moli-user-center-server/src/main/resources/bootstrap.yml
-related: [nacos-注册与配置, dubbo-与-nacos, 本地启动指南, 技术栈与版本]
+- moli-user-center/moli-user-center-server/src/main/resources/bootstrap.yml
+related: [nacos-注册与配置, dubbo-与-nacos]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Nacos Config 动态配置实践

@@ -5,15 +5,41 @@ type: interview
 status: active
 tags: [Spring, 事务, Transaction, 面试题, Java]
 sources:
- - raw/wujinsen_markdown/面试笔试/Spring/关于Spring事务的面试题.note.md
- - raw/wujinsen_markdown/面试笔试/Spring/一文带你深入理解 Spring 事务原理.note.md
- - raw/wujinsen_markdown/面试笔试/Spring/介绍一下Spring的事务管理.note.md
- - raw/wujinsen_markdown/面试笔试/Spring/@transactional注解在什么情况下会失效，为什么。.note.md
- - raw/wujinsen_markdown/Spring/事务/@Transactional失效的几种场景.note.md
- - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
+- raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
+- raw/wujinsen_markdown/Spring/@Autowired注解实现原理（Spring Bean的自动装配）.note.md
+- raw/wujinsen_markdown/Spring/Spring 事务管理探究.note.md
+- raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguration自动装配.note.md
+- raw/wujinsen_markdown/Spring/SpringBoot源码解析/@EnableAutoConfiguraton自动装配原理.note.md
+- raw/wujinsen_markdown/Spring/SpringBoot源码解析/SpringApplication初始化阶段.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/@RequestParam @RequestBody @PathVariable 等参数绑定注解详解(转).note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/Java 必须掌握的 12 种 Spring 常用注解！.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/ModelMap、ModelAndView和@Modelattribute的区别.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/Spring 中经典的 9 种设计模式，打死也要记住啊！.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/Spring 事务管理探究.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/Spring 最常用的 7 个注解，你用哪几个？.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/SpringMVC工作原理.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/SpringMVC接收复杂集合参数.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/defaultServlet.note.md
+- raw/wujinsen_markdown/Spring/SpringMVC/spring service事务传播.note.md
+- raw/wujinsen_markdown/Spring/Spring、SpringMVC和SpringBoot看这一篇就够了！.note.md
+- raw/wujinsen_markdown/Spring/Spring循环依赖原理解析.note.md
+- raw/wujinsen_markdown/Spring/Spring源码分析：@Autowired注解原理分析.note.md
+- raw/wujinsen_markdown/Spring/Spring解析，加载及实例化Bean的顺序（零配置）.note.md
+- raw/wujinsen_markdown/Spring/事务/@Transactional失效的几种场景.note.md
+- raw/wujinsen_markdown/Spring/事务/深入理解 Spring 事务原理.note.md
+- raw/wujinsen_markdown/Spring/什么是循环依赖.note.md
+- raw/wujinsen_markdown/Spring/深入理解 Spring 事务原理 传播属性.note.md
+- raw/wujinsen_markdown/Spring/真实项目中 ThreadLocal 的妙用.note.md
+- raw/wujinsen_markdown/Spring/采坑记录.note.md
+- raw/wujinsen_markdown/Spring/采坑记录/springboot与web前端的下划线与驼峰的json转换配置.note.md
+- raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
+- raw/wujinsen_markdown/面试笔试/Spring/@transactional注解在什么情况下会失效，为什么。.note.md
+- raw/wujinsen_markdown/面试笔试/Spring/一文带你深入理解 Spring 事务原理.note.md
+- raw/wujinsen_markdown/面试笔试/Spring/介绍一下Spring的事务管理.note.md
+- raw/wujinsen_markdown/面试笔试/Spring/关于Spring事务的面试题.note.md
 related: [spring-声明式事务, spring-boot-自动配置]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Spring 事务（面试题系列）
@@ -108,3 +134,16 @@ updated: 2026-06-22
 ## 延伸（知识库待补）
 
 - 同主题若再 ingest 偏「源码/原理」的文章（如 `Spring 事务管理探究`、`深入理解 Spring 事务原理` 传播属性篇），建议另建 `articles/spring-事务原理`，并加 `concepts/spring-事务` 枢纽页用 `[[]]` 串联本面试页与文章页（见 `AGENTS.md` §5 同主题跨类型约定）。
+## @Transactional 失效场景速查（raw 汇总）
+
+1. **非 public** 方法
+2. **同类自调用**（绕过代理）
+3. **异常被吞**或未配置 `rollbackFor=Exception.class`
+4. **传播行为**误用（如 `NOT_SUPPORTED`）
+5. **数据库引擎**非 InnoDB
+
+原理页 [[spring/spring-声明式事务]]。
+
+## 批次#1313 增补（wujinsen P2）
+
+确认 `面试笔试/Spring/` 五篇 raw 已挂接。

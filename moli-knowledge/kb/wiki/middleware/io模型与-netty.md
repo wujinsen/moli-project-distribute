@@ -5,11 +5,36 @@ type: concept
 status: active
 tags: [netty, NIO, IO, 高并发]
 sources:
- - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
- - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之IO篇.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO  transfer 通道之间的数据传输.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Buffer.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Channel.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO FileChannel.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Java NIO DatagramChannel.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Pipe.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Scatter Gather.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Selector.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO ServerSocketChannel.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO SocketChannel.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO 按行读写大文件.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO 概述.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO 系列教程.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO与IO 区别.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Java NIO写大文件比较.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/RandomAccessFile.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/RandomAccessFile案例.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Socket NIO原理和实现.note.md
+- raw/wujinsen_markdown/大数据资料-王/nio/Socket NIO演示代码.note.md
+- raw/wujinsen_markdown/并发编程/Netty/1. 下载netty源码，.note.md
+- raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
+- raw/wujinsen_markdown/并发编程/Netty/netty源码分析之服务端启动全解析.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/Java Netty 4.x 用户指南.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/Netty首页.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/Preface.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/User guide for 4.x--4.x用户指南.note.md
+- raw/wujinsen_markdown/面试笔试/面试小结/面试小结之IO篇.note.md
 related: [bio-nio-aio对比, netty-reactor与线程模型, netty-pipeline与编解码, netty-与-io面试题, dubbo-与-nacos, spring-cloud-gateway, kafka-与-mq选型]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # IO 模型与 Netty

@@ -5,10 +5,10 @@ type: concept
 status: active
 tags: [分布式, ID, 雪花算法]
 sources:
- - raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
-related: [雪花算法与时钟回拨, 接口幂等性实践, 订单-状态机设计, 分布式id面试题]
+- raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
+related: [雪花算法与时钟回拨, 接口幂等性实践, 分布式id面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # 分布式 ID 生成
@@ -35,4 +35,4 @@ updated: 2026-06-22
 
 ## 相关
 
-[[分库分表入门]] ·
+[[database/sharding-分库分表入门]] ·

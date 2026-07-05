@@ -5,7 +5,6 @@ type: guide
 status: active
 tags: [Git, 协作, DevOps]
 sources:
-  - raw/wujinsen_markdown/language/Java/Git/Git使用详细教程.note.md
   - raw/wujinsen_markdown/架构/Git/You have not concluded your merge (MERGE_HEAD exists) git拉取失败.note.md
   - raw/wujinsen_markdown/架构/Git/git拒绝push.note.md
 related: [jenkins-ci入门, 项目文档总览, 项目文档总览]

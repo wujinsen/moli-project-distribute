@@ -5,12 +5,13 @@ type: article
 status: active
 tags: [SSO, 门户, sys_system, 多系统]
 sources:
- - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/LoginController.java
- - moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/SsoController.java
- - docs/sql/03_knowledge_schema.sql
-related: [shiro-鉴权体系, 用户中心, 知识库服务, 登录与鉴权指南, rbac-权限模型]
+- docs/sql/03_knowledge_schema.sql
+- moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/LoginController.java
+- moli-user-center/moli-user-center-server/src/main/java/com/moli/user/center/server/controller/SsoController.java
+- raw/wujinsen_markdown/架构/微服务认证/Spring Cloud(四) Spring Cloud Security集成CAS （单点登录）对微服务认证.note.md
+related: [shiro-鉴权体系, rbac-权限模型]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # SSO 与系统门户
@@ -60,3 +61,7 @@ updated: 2026-06-22
 ## 与网关的关系
 
 门户 `base_url` 通常指向 **Gateway 前缀**（如 `/KnowledgeServer`），不是裸服务端口，保证 Session 头透传。
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 Spring Cloud Security + CAS raw。

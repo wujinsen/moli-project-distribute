@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Spring, 缓存, Redis]
 sources:
- - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
+- raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
 related: [redis-缓存, cache-aside与缓存更新模式, caffeine-本地缓存实践, 缓存双写与一致性策略]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Spring Cache 注解缓存
@@ -47,7 +47,7 @@ public void update(SysUser user) { mapper.updateById(user); }
 | 自调用不缓存 | AOP 代理，拆 Service 或注入 self [[spring/spring-aop与代理]] |
 | 缓存穿透 null | `unless="#result==null"` 或布隆 |
 | 更新顺序 | 先 DB 后 evict [[cache/缓存双写与一致性策略]] |
-| 热点 key | 本地 Caffeine 一级 [[多级缓存架构]] |
+| 热点 key | 本地 Caffeine 一级 `moli-knowledge/kb/wiki-moli/develop/茉莉-缓存-多级.md` |
 
 ## 相关
 

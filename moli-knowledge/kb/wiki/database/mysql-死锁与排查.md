@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [mysql, 死锁, InnoDB, 排查]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
-related: [mysql-事务与锁, mysql-innodb锁机制, 故障排查指南, mysql-事务面试题]
+- raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+related: [mysql-事务与锁, mysql-innodb锁机制, mysql-事务面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL 死锁与排查

@@ -5,11 +5,10 @@ type: article
 status: active
 tags: [jvm, 运维, 生产, GC]
 sources:
- - raw/wujinsen_markdown/moli项目/运维/启动脚本.note.md
- - raw/wujinsen_markdown/moli项目/运维/JVM参数.note.md
-related: [jvm-内存与gc, jvm-oom与排查入门, jvm-垃圾收集算法与收集器, 故障排查指南, 生产环境服务启停脚本]
+- raw/wujinsen_markdown/ (enterprise-kb/java 专题页)
+related: [jvm-内存与gc, jvm-oom与排查入门, jvm-垃圾收集算法与收集器, 生产环境服务启停脚本]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # 生产环境 JVM 启动参数

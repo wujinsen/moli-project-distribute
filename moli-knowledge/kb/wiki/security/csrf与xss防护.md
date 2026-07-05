@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [安全, Web, 前端]
 sources:
- - raw/wujinsen_markdown/
-related: [api-接口安全设计, https与-tls基础, 日志脱敏规范]
+- raw/wujinsen_markdown/ (enterprise-kb/security 专题页)
+related: [api-接口安全设计, https与-tls基础]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # CSRF 与 XSS 防护
 
-> API 安全 [[security/api-接口安全设计]]；TLS [[security/https与-tls基础]]；日志 [[日志脱敏规范]]。
+> API 安全 [[security/api-接口安全设计]]；TLS [[security/https与-tls基础]]；日志 [[security/api-接口安全设计]]。
 
 ## 1. XSS
 
@@ -36,4 +36,4 @@ updated: 2026-06-21
 
 ## 相关
 
-[[shiro-rememberme-安全]] · [[oauth2-与开放接口]]
+[[security/认证与会话机制]] · [[security/api-接口安全设计]]

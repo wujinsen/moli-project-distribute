@@ -5,10 +5,14 @@ type: concept
 status: active
 tags: [MongoDB, NoSQL, 选型]
 sources:
- - raw/wujinsen_markdown/DataBase/mongodb/Elasticsearch和MongoDB简要对比.note.md
-related: [elasticsearch-搜索, mysql-索引, 技术栈与版本, 知识库服务]
+- raw/wujinsen_markdown/BigData/MongoDB/MongoDB数据同步工具之 MongoShake.note.md
+- raw/wujinsen_markdown/BigData/MongoDB/mongodb数据导入hive.note.md
+- raw/wujinsen_markdown/DataBase/mongodb/Elasticsearch和MongoDB简要对比.note.md
+- raw/wujinsen_markdown/DataBase/mongodb/Mac OSX 平台安装 MongoDB.note.md
+- raw/wujinsen_markdown/DataBase/mongodb/MongoDB 分片集群技术.note.md
+related: [elasticsearch-搜索, mysql-索引]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MongoDB 与文档库选型
@@ -38,3 +42,7 @@ updated: 2026-06-22
 ## 相关
 
  · [[search/elasticsearch-搜索]]
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 `DataBase/mongodb/` 选型 raw。

@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [HTTP, 实时, 前端]
 sources:
- - raw/wujinsen_markdown/
-related: [websocket-实时通信, webflux-响应式入门, 跨域与前后端分离, 前端开发与联调指南]
+- raw/wujinsen_markdown/ (enterprise-kb/middleware 专题页)
+related: [sse-服务端推送, webclient-与-resttemplate, 跨域与前后端分离]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # SSE 服务端推送
 
-> WebSocket [[websocket-实时通信]]；WebFlux [[webflux-响应式入门]]；联调。
+> WebSocket [[middleware/sse-服务端推送]]；WebFlux [[middleware/webclient-与-resttemplate]]；联调。
 
 **Server-Sent Events**：HTTP 长连接，**服务端 → 客户端**单向文本流，`Content-Type: text/event-stream`。
 
@@ -50,4 +50,4 @@ public SseEmitter stream() {
 
 ## 相关
 
-[[nginx反向代理与前端部署指南]] · [[security/api-接口安全设计]]
+`moli-knowledge/kb/wiki-moli/ops/nginx反向代理与前端部署指南.md` · [[security/api-接口安全设计]]

@@ -44,7 +44,8 @@
 | `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug` + 三空间目录种子（已有库必跑） |
 | `15_kb_category_drop_default_type.sql` | 删除已废弃列 `kb_category.default_type`（体裁仅 frontmatter `type:`） |
 | `11_kb_category_enterprise_trim.sql` | **enterprise-kb 精简为 3 类**（软删 guides/services/outputs） |
-| `13_kb_category_enterprise_topic.sql` | **enterprise-kb 方案 B**：新建 10 个主题分类（id 141–150）；§2 软删旧类见下 |
+| `13_kb_category_enterprise_topic.sql` | **enterprise-kb 方案 B**：新建 **11** 个主题分类（id 141–**151**，含 `bigdata`）；§2 软删旧类见下 |
+| `14_kb_category_bigdata.sql` | **增量**：仅补 `bigdata` 分类（已跑旧 §1 且无 151 时用） |
 | `13_kb_category_enterprise_topic_retire_old.sql` | Sync 后**物理删除** enterprise-kb 旧三类 concepts/articles/interview |
 | （脚本）`moli-knowledge/kb/tools/seed_enterprise_kb_topic_categories.py` | 与 `13_…sql` §1 等价；`--execute` 写库，`--retire-old` 软删旧类 |
 | `14_kb_space_member_enterprise.sql` | enterprise-kb 成员：superadmin/admin/editor 演示账号 |

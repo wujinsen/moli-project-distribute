@@ -5,11 +5,13 @@ type: article
 status: active
 tags: [mybatis, mybatis-plus, SQL注入, 持久层]
 sources:
- - raw/wujinsen_markdown/javaweb/Mybatis/mybatis的#{}和${}的区别以及order by注入问题.note.md
- - raw/wujinsen_markdown/架构/编码规范/程序编码/如何更规范化编写Java 代码.note.md
-related: [mybatis-与-druid持久层, mysql-索引, spring-声明式事务, 字段级数据权限设计]
+- raw/wujinsen_markdown/javaweb/Mybatis/#{} ${} 区别.note.md
+- raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md
+- raw/wujinsen_markdown/javaweb/Mybatis/mybatis的#{}和${}的区别以及order by注入问题.note.md
+- raw/wujinsen_markdown/架构/编码规范/程序编码/如何更规范化编写Java 代码.note.md
+related: [mybatis-与-druid持久层, mysql-索引, spring-声明式事务, 字段级数据权限设计, java-编码规范与CodeReview要点]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MyBatis-Plus 用法与注入防护
@@ -81,7 +83,7 @@ Plus 生成的 CRUD 均用 `#{}`；自定义 `@Select` 字符串拼接需注意�
 | 避免 `WHERE 1=1` 手拼 | 用 Wrapper / `<where>` |
 | 禁止 `${}` 拼用户输入的 WHERE 值 | 经典注入面 |
 
-编码规范笔记：**不要为多条件查询写 `1=1` 开头**，用 MyBatis 动态标签或 Plus Wrapper。
+编码规范笔记：**不要为多条件查询写 `1=1` 开头**，用 MyBatis 动态标签或 Plus Wrapper。详见 [[java/java-编码规范与CodeReview要点]]。
 
 ## 4. 与事务
 
@@ -99,3 +101,10 @@ Mapper 方法本身无事务；**Service 类** `@Transactional` 包住多次 Map
 - `${}` 场景：列名、表名、ORDER BY、部分 GROUP BY
 - Plus `apply()` 写片段时警惕注入
 - JDBC `PreparedStatement` 不能预编译标识符（列名）
+## #{} 与 ${}（raw MyBatis）
+
+- **`#{}`**：预编译占位，**防 SQL 注入**（推荐）
+- **`${}`**：字符串替换，仅用于**表名/列名/order by** 等白名单场景
+
+`${}` 拼接用户输入会导致注入；动态排序需枚举校验。
+

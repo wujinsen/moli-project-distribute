@@ -1,2 +1,0 @@
-通常如果master服务死掉后backup会变成master 但是当master服务⼜好了的时候， master此时会抢占成为backup 这样就会发⽣两次切换对业务繁忙的⽹站来说是不好的。 所以我们要在配置⽂件加⼊ nopreempt ⾮抢占 但是这个参数只能⽤于state 为backup之间的两台机器不抢主故我们在⽤HA的时候最好master 和 backup的state都设置成backup 让其通过priority来竞争 假设在这⾥master和backup都设置成backup，并且都加⼊了nopreempt 则此时我们要注意启动 keepalived服务的顺序 假设我想让A成为master，那么就先启动A的keepalived服务。
-

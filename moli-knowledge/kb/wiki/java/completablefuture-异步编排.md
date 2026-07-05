@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Java, 并发, 异步]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
-related: [spring-async与线程池, java-并发, rpc-超时重试与链路, 线程池-实战调优]
+- raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+related: [spring-async与线程池, java-并发, rpc-超时重试与链路]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # CompletableFuture 异步编排
@@ -46,11 +46,11 @@ return userF.thenCombine(permF, (u, perms) -> {
 ## 3. 线程池选择
 
 - **禁止** `supplyAsync` 无参（共用 `ForkJoinPool.commonPool()`）做 IO 密集
-- 独立 `Executor` 与 Tomcat/Dubbo 线程隔离 [[线程池-实战调优]]
+- 独立 `Executor` 与 Tomcat/Dubbo 线程隔离 [[spring/spring-async与线程池]]
 
 ## 5. 与响应式对比
 
-阻塞式 + CF 在现有 Spring MVC 栈改动小；全链路非阻塞见 [[webflux-响应式入门]] [[reactor-mono与-flux]]。
+阻塞式 + CF 在现有 Spring MVC 栈改动小；全链路非阻塞见 [[middleware/webclient-与-resttemplate]] [[java/completablefuture-异步编排]]。
 
 ## 相关
 

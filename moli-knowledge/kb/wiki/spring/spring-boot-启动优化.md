@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [Spring Boot, 性能, JVM]
 sources:
- - raw/wujinsen_markdown/
-related: [spring-boot-自动配置, java-类加载与双亲委派, production-jvm启动参数]
+- raw/wujinsen_markdown/ (enterprise-kb/spring 专题页)
+related: [spring-boot-自动配置, jvm-内存与gc, production-jvm启动参数]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Spring Boot 启动优化
 
-> 自动配置 [[spring/spring-boot-自动配置]]；类加载 [[java-类加载与双亲委派]]；JVM 参数 [[java/production-jvm启动参数]]。
+> 自动配置 [[spring/spring-boot-自动配置]]；类加载 [[java/jvm-内存与gc]]；JVM 参数 [[java/production-jvm启动参数]]。
 
 ## 1. 耗时构成
 
@@ -31,8 +31,8 @@ updated: 2026-06-21
 
 ## 4. 测量
 
-`SpringApplicationRunListeners` / Actuator `startup` endpoint [[spring-boot-actuator监控]]。
+`SpringApplicationRunListeners` / Actuator `startup` endpoint [[ops/prometheus-告警规则设计]]。
 
 ## 相关
 
-[[java/jvm-gc调优实战]] · [[idea-远程调试与断点]]
+[[java/jvm-gc调优实战]] · [[java/arthas-在线诊断]]

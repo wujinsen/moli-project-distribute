@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [elasticsearch, 搜索, 分片, Query-Then-Fetch]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
+- raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
 related: [elasticsearch-搜索, es-索引与写入流程, es-match与bool查询]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # ES 搜索与分片路由

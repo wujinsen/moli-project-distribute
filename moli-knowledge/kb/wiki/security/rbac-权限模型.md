@@ -5,12 +5,12 @@ type: concept
 status: active
 tags: [权限, RBAC, Shiro, 安全]
 sources:
- - docs/zh-CN/RBAC.md
- - docs/api-iteration-map.md
- - moli-user-center/moli-user-center-server/
-related: [用户中心, 认证与会话机制, 权限管理操作指南, 字段级数据权限设计]
+- docs/api-iteration-map.md
+- docs/zh-CN/RBAC.md
+- moli-user-center/moli-user-center-server/
+related: [认证与会话机制, 字段级数据权限设计]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # RBAC 权限模型

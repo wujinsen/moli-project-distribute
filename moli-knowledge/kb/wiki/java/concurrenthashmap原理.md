@@ -5,11 +5,11 @@ type: article
 status: active
 tags: [java, ConcurrentHashMap, 并发集合, CAS, 分段锁]
 sources:
- - raw/wujinsen_markdown/面试笔试/Java面试题精选/【67期】谈谈ConcurrentHashMap是如何保证线程安全的？.note.md
- - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+- raw/wujinsen_markdown/面试笔试/Java面试题精选/【67期】谈谈ConcurrentHashMap是如何保证线程安全的？.note.md
+- raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
 related: [java-并发, volatile与可见性, synchronized与锁原理, java-并发面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # ConcurrentHashMap 原理

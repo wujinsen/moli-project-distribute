@@ -5,11 +5,11 @@ type: interview
 status: active
 tags: [HTTP, Servlet, Tomcat, 面试]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试题整理/Java面试通关要点汇总集基础篇之参考答案.note.md
- - raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
+- raw/wujinsen_markdown/面试笔试/面试题整理/Java后台面试 常见问题.note.md
+- raw/wujinsen_markdown/面试笔试/面试题整理/Java面试通关要点汇总集基础篇之参考答案.note.md
 related: [tomcat与-servlet容器, servlet生命周期与请求流程, spring-mvc请求流程, 认证与会话机制]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # HTTP 与 Servlet 面试题

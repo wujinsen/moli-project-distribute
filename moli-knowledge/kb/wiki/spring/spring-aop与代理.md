@@ -5,11 +5,10 @@ type: concept
 status: active
 tags: [Spring, AOP, 代理]
 sources:
- - raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
- - raw/wujinsen_markdown/面试笔试/spring框架中的设计模式.note.md
+- raw/wujinsen_markdown/面试笔试/Spring/69道Spring面试题和答案.note.md
 related: [spring-aop执行流程, spring框架中的设计模式, spring-声明式事务, spring-ioc与bean生命周期]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Spring AOP 与代理
@@ -41,4 +40,4 @@ updated: 2026-06-22
 
 ## 相关
 
-[[spring-事务面试题]] · [[security/shiro-鉴权体系]]
+[[database/mysql-事务面试题]] · [[security/shiro-鉴权体系]]

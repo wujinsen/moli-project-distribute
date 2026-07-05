@@ -5,11 +5,11 @@ type: concept
 status: active
 tags: [java, 并发, 多线程, JMM, 线程安全]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
- - raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
-related: [jmm与happens-before, synchronized与锁原理, volatile与可见性, concurrenthashmap原理, java-并发面试题, 认证与会话机制, 秒杀设计]
+- raw/wujinsen_markdown/jvm/《深入理解 Java 内存模型》读书笔记.note.md
+- raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+related: [jmm与happens-before, synchronized与锁原理, volatile与可见性, concurrenthashmap原理, java-并发面试题, 认证与会话机制]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Java 并发（概念枢纽）

@@ -5,10 +5,10 @@ type: interview
 status: active
 tags: [面试, 分布式, ID]
 sources:
- - raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
 related: [分布式id生成, 雪花算法与时钟回拨, 接口幂等性实践]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # 分布式 ID 面试题

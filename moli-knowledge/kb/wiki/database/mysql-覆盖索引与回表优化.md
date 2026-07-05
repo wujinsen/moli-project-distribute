@@ -5,11 +5,11 @@ type: article
 status: active
 tags: [mysql, 索引, 覆盖索引, 回表, EXPLAIN]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/索引/mysql-覆盖索引.note.md
- - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
+- raw/wujinsen_markdown/DataBase/mysql/索引/mysql-覆盖索引.note.md
+- raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
 related: [mysql-索引, b-plus树与-innodb索引结构, mysql-复合索引与最左前缀, mysql-索引面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL 覆盖索引与回表优化

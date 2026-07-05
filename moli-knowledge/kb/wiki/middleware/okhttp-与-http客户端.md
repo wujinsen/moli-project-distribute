@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [HTTP, Java, 网络]
 sources:
- - raw/wujinsen_markdown/
+- raw/wujinsen_markdown/ (enterprise-kb/middleware 专题页)
 related: [openfeign-与-http客户端, webclient-与-resttemplate, https与-tls基础, feign-开发踩坑]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # OkHttp 与 HTTP 客户端选型

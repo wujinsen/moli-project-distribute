@@ -1,0 +1,129 @@
+﻿Phase2 top-level dirs: 24
+Phase2 total md: 1063
+
+AI: 29
+  2026: 5
+  AutoGPT: 1
+  OPENAI: 7
+  opensource: 1
+  大模型语言: 1
+  绘画: 11
+BigData: 288
+  2023: 1
+  Ambari: 2
+  Apache Griffin: 1
+  Cloudera: 3
+  DolphinScheduler: 8
+  ElasticSearch: 20
+  ELK: 4
+  FileBeat: 1
+  Flink: 11
+  Flume: 2
+  Hadoop: 15
+  Hive: 23
+  Hudi: 1
+  Kafka: 27
+  Kylin: 1
+  MongoDB: 2
+  OLAP: 20
+  Pulsar: 1
+  Spark: 17
+  spark(1): 52
+  Sqoop: 4
+  Storm: 10
+  Zookeeper: 8
+  大数据技术文章: 1
+  技术选型: 4
+  ... +7 subdirs
+EnglishDoc: 2
+Full Stack: 2
+IM通讯: 2
+javaweb: 13
+  jwt: 4
+  Maven: 1
+  Mybatis: 3
+jvm: 41
+  GC: 6
+  个人笔记: 1
+  周志明的书.note.attach: 1
+  调优: 4
+Linux: 40
+  linux教程: 1
+  Shell教程: 7
+  常见问题: 1
+  系统监控信息: 4
+  软件安装: 1
+Spring: 26
+  SpringBoot源码解析: 3
+  SpringMVC: 10
+  事务: 2
+  采坑记录: 1
+产品: 6
+  用户画像: 5
+写作: 2
+前端: 39
+  Bootstrap: 1
+  echarts: 1
+  JavaScript: 4
+  JQuery: 11
+  Nodejs: 2
+  Vue: 11
+  协议: 2
+大数据资料-王: 522
+  a安装文档: 54
+  concurent并发包: 1
+  flume: 5
+  hadoop: 74
+  hbase: 18
+  hive: 7
+  jvm: 20
+  kafka: 17
+  linux: 39
+  loadrunner: 7
+  log4j: 2
+  lucene&solr: 6
+  mahout: 6
+  mysql: 19
+  netty: 5
+  nginx+ka+lvs: 7
+  nio: 19
+  nutch: 5
+  QA: 115
+  redis: 29
+  rpc: 3
+  scala: 8
+  selecnium: 5
+  spark: 16
+  sqoop: 2
+  ... +4 subdirs
+学习资料: 2
+并发编程: 13
+  java: 6
+  Netty: 7
+开源博客: 1
+性能优化: 3
+  DATABASE: 2
+  问题排查: 1
+技术文章翻译: 2
+  Java: 1
+  大数据: 1
+插件: 5
+  maven: 3
+  PageHelper: 1
+  swagger: 1
+操作系统: 1
+  MAC: 1
+数据结构与算法: 8
+机器学习: 1
+源码分析: 14
+  clickhouse: 1
+  dubbo: 1
+  Kafka: 1
+  MyCat: 3
+  nacos: 1
+  OpenFeign: 2
+  OpenJDK: 1
+  RocketMQ: 2
+  spring: 1
+  芋道源码: 1
+硬件: 1

@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [MySQL, 性能, 排查]
 sources:
- - raw/wujinsen_markdown/
-related: [mysql-索引, mysql-explain-执行计划进阶, mysql-深分页与慢sql优化]
+- raw/wujinsen_markdown/ (enterprise-kb/database 专题页)
+related: [mysql-索引, mysql-索引面试题, mysql-深分页与慢sql优化]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # MySQL Slow Log 慢查询分析
 
-> 索引 [[database/mysql-索引]]；EXPLAIN [[mysql-explain-执行计划进阶]]；优化案例 [[database/mysql-深分页与慢sql优化]]。
+> 索引 [[database/mysql-索引]]；EXPLAIN [[database/mysql-索引面试题]]；优化案例 [[database/mysql-深分页与慢sql优化]]。
 
 ## 1. 开启 slow log
 

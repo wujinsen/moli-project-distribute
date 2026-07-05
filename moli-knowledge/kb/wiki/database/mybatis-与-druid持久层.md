@@ -5,11 +5,20 @@ type: concept
 status: active
 tags: [mybatis, druid, 持久层, 数据库]
 sources:
- - docs/zh-CN/TECH_STACK.md
- - moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
-related: [mybatis-plus-用法与注入防护, druid连接池与监控, mysql-索引, mysql-事务与锁, spring-声明式事务, 技术栈与版本, 故障排查指南]
+- docs/zh-CN/TECH_STACK.md
+- moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
+- raw/wujinsen_markdown/javaweb/Mybatis/#{} ${} 区别.note.md
+- raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md
+- raw/wujinsen_markdown/javaweb/Mybatis/mybatis的#{}和${}的区别以及order by注入问题.note.md
+- raw/wujinsen_markdown/javaweb/Servlet生命周期与工作原理.note.md
+- raw/wujinsen_markdown/javaweb/jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。.note.md
+- raw/wujinsen_markdown/javaweb/spring监听器.note.md
+- raw/wujinsen_markdown/javaweb/为什么我再也不使用MVC框架了？.note.md
+- raw/wujinsen_markdown/javaweb/客户端跳转与服务器端跳转的区别.note.md
+- raw/wujinsen_markdown/插件/PageHelper/PageHelper采坑问题记录.note.md
+related: [mybatis-plus-用法与注入防护, druid连接池与监控, mysql-索引, mysql-事务与锁, spring-声明式事务]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MyBatis 与 Druid 持久层
@@ -72,3 +81,11 @@ loadtest 已暴露 **Prometheus Druid 指标**（`druid.pool.*`），见 [[datab
 - 动态 SQL 值用 `#{}`，禁止随意 `${}`（[[database/mybatis-plus-用法与注入防护]]）
 - 避免 `WHERE 1=1` 堆砌，用 `<where>` / Wrapper
 - 写操作放在 Service 事务边界内
+
+## 批次#1320 增补（wujinsen Phase2 P0）
+
+合并 MyBatis #{} ${} 与 order by 注入防护 raw。
+
+## 批次#1324 增补（wujinsen Phase2 长尾）
+
+合并 PageHelper 插件 raw。

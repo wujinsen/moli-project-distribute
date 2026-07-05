@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""enterprise-kb 方案 B：写入 10 个主题分类（kb_category）。
+"""enterprise-kb 方案 B：写入 11 个主题分类（kb_category）。
 
 与 docs/sql/13_kb_category_enterprise_topic.sql 等价，便于在服务器上直接跑：
     python kb/tools/seed_enterprise_kb_topic_categories.py --dry-run
@@ -9,7 +9,7 @@
 Sync 完成后再物理删旧三类：
     python kb/tools/seed_enterprise_kb_topic_categories.py --execute --delete-old
 
-ID 段 900000000000000141–150，避免与 jp-fe-ap-exam(121–124)、outputs(116) 冲突。
+ID 段 900000000000000141–151，避免与 jp-fe-ap-exam(121–124)、outputs(116) 冲突。
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ TOPIC_CATEGORIES = [
     (8, 900000000000000148, "ops", "运维与 Linux"),
     (9, 900000000000000149, "patterns", "设计模式"),
     (10, 900000000000000150, "frontend", "前端"),
+    (11, 900000000000000151, "bigdata", "大数据"),
 ]
 
 OLD_DIR_SLUGS = ("concepts", "articles", "interview")

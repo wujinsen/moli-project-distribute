@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [Linux, 运维, 排查]
 sources:
- - raw/wujinsen_markdown/
-related: [linux-运维基础, nginx-限流与缓冲调优, 故障排查指南, tomcat-连接器调优]
+- raw/wujinsen_markdown/ (enterprise-kb/ops 专题页)
+related: [linux-运维基础, nginx-限流与缓冲调优, tomcat与-servlet容器]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Linux ulimit 与文件句柄
 
-> Linux 基础 [[ops/linux-运维基础]]；Nginx [[middleware/nginx-限流与缓冲调优]]；Tomcat [[tomcat-连接器调优]]。
+> Linux 基础 [[ops/linux-运维基础]]；Nginx [[middleware/nginx-限流与缓冲调优]]；Tomcat [[java/tomcat与-servlet容器]]。
 
 每个进程可打开的 **fd（文件/ socket）** 受 `ulimit -n` 限制；高并发下耗尽表现为 `Too many open files`。
 

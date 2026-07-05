@@ -5,11 +5,14 @@ type: interview
 status: active
 tags: [面试, HashMap, Java]
 sources:
- - raw/wujinsen_markdown/面试笔试/高级java/面试：HashMap 夺命二十一问！.note.md
- - raw/wujinsen_markdown/language/Java/Java8系列之重新认识HashMap.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/2018年一线互联网公司Java高级面试题总结.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/Java高级程序员面试大纲——备战金三银四跳槽季.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/面试：HashMap 夺命二十一问！.note.md
+- raw/wujinsen_markdown/面试笔试/高级java/高级java面试.note.md
 related: [java-集合框架, java-并发面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # HashMap 面试题
@@ -57,3 +60,7 @@ Hashtable 全表 synchronized，已过时。
 ## Q11. 用 Stream 遍历 Map 注意？
 
 `ConcurrentHashMap` 弱一致迭代；普通 Map 勿并发改。
+
+## 批次#1312 增补（wujinsen P1）
+
+合并高级 Java/HashMap raw。

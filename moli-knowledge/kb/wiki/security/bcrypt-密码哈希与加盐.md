@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [安全, 鉴权]
 sources:
- - raw/wujinsen_markdown/
-related: [认证与会话机制, 字段级加密存储, 配置-敏感信息与加密]
+- raw/wujinsen_markdown/ (enterprise-kb/security 专题页)
+related: [认证与会话机制, bcrypt-密码哈希与加盐, nacos-config动态配置实践]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # BCrypt 密码哈希与加盐
 
-> 认证 [[security/认证与会话机制]]；字段加密 [[字段级加密存储]]；配置加密 [[配置-敏感信息与加密]]。
+> 认证 [[security/认证与会话机制]]；字段加密 [[security/bcrypt-密码哈希与加盐]]；配置加密 [[middleware/nacos-config动态配置实践]]。
 
 ## 1. 为何不用 MD5/SHA1
 
@@ -31,4 +31,4 @@ boolean ok = encoder.matches(raw, hash);
 
 ## 相关
 
-[[ldap-与企业账号]] ·
+[[security/认证与会话机制]] ·

@@ -5,11 +5,11 @@ type: interview
 status: active
 tags: [Shiro, SSO, 面试题, 鉴权]
 sources:
- - moli-user-center/moli-user-center-shiro-starter/
- - docs/zh-CN/RBAC.md
+- docs/zh-CN/RBAC.md
+- moli-user-center/moli-user-center-shiro-starter/
 related: [shiro-鉴权体系, shiro-starter与跨服务校验, sso与系统门户, 认证与会话机制, rbac-权限模型]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Shiro 与 SSO（面试题系列）

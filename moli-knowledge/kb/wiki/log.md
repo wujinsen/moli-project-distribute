@@ -1339,3 +1339,17 @@
 ## [2026-06-28] docs | P2 工程文档 + enterprise-kb services 补全（订单/网关/知识库/bi）+ ROADMAP M5–M7 同步 + index 修复
 
 ## [2026-06-29] reset | purge batch skeletons deleted=1082 kept=156
+## [2026-07-05] ingest | 批次#1310 wujinsen P0 → enrich 20 页 (cache/redis-面试题, cache/分布式锁, cache/分布式锁面试题, database/mysql-复合索引与最左前缀, database/mysql-索引面试题…)
+## [2026-07-05] ingest | 批次#1311 wujinsen create → 6 页 (middleware/minio-对象存储实践, ops/skywalking-安装与链路追踪, middleware/高并发券系统实战, database/sharding-分库分表入门, patterns/算法面试题精选, java/java-编码规范与CodeReview要点)
+## [2026-07-05] ingest | 批次#1312 wujinsen P1 → enrich 21 页 (cache/cache-aside与缓存更新模式, cache/分布式锁面试题, database/b-plus树与-innodb索引结构, database/mongodb与文档库选型…)
+## [2026-07-05] ingest | 批次#1313 wujinsen P2 → enrich 9 页 (cache/redis-数据结构与使用场景, cache/redis分布式锁实现, database/mysql-innodb锁机制, database/mysql-事务面试题, java/jvm-面试题…)
+## [2026-07-05] ingest | 批次#1321 wujinsen Phase2 P1 → create 7 页 (bigdata/hadoop-生态入门, bigdata/spark-核心概念与实践, bigdata/flink-流批一体入门, bigdata/hive-数仓与-sql…) + enrich 5 页
+## [2026-07-05] ingest | 批次#1322 wujinsen Phase2 → enrich 14 页（王树挂接）
+## [2026-07-05] ingest | 批次#1320 wujinsen Phase2 P0 → enrich 45 页 + create ops/shell-脚本入门 (database/mybatis-plus-用法与注入防护, database/mybatis-与-druid持久层, database/mysql-索引面试题, database/sharding-分库分表入门, frontend/前端基础面试题, frontend/前端技术栈…)
+## [2026-07-05] ingest | 批次#1323 wujinsen Phase2 P2 → create 9 页 (bigdata/数仓分层与建模, bigdata/olap-与-实时数仓, bigdata/elk-日志分析栈, bigdata/dolphinscheduler-任务调度, bigdata/数据采集与-etl-工具选型…) + enrich 1 页
+## [2026-07-05] ingest | 批次#1324 wujinsen Phase2 长尾 → create ops/maven-多模块与依赖管理 + enrich 19 页（含 a安装文档关键词挂接）
+## [2026-07-05] ingest | 批次#1330 wujinsen Phase3 → delete 15 + enrich 16 页 + skip manifest 307 + prune sources 0
+## [2026-07-05] ingest | 批次#1331 wujinsen skip raw 物理删 → md 307 + assets 74 + prune dirs 104
+## [2026-07-05] maintenance | 批次#1332 enterprise-kb 断链修复 → wiki-moli 改路径引用 + 已删页映射已有 slug；lint errors 62→0
+## [2026-07-05] maintenance | 批次#1333 enterprise-kb lint 收口 → repair fm 179 页 + concept 链接 + sources 解析修复 + index orphan 18；strict 0 问题
+## [2026-07-05] maintenance | 批次#1334 prune orphan wujinsen sources + 去 scaffold + 重建 frontmatter 179 页 + 补 nexus raw（uncited→0）

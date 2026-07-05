@@ -5,12 +5,12 @@ type: article
 status: active
 tags: [压测, Prometheus, Grafana, 监控]
 sources:
- - load-test/README.md
- - load-test/docker/prometheus/prometheus.yml
- - load-test/docker/grafana/dashboards/moli-loadtest.json
-related: [秒杀压测指南, 故障排查指南, jvm-oom与排查入门]
+- load-test/README.md
+- load-test/docker/grafana/dashboards/moli-loadtest.json
+- load-test/docker/prometheus/prometheus.yml
+related: [jvm-oom与排查入门]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # 压测监控与 Prometheus

@@ -5,15 +5,16 @@ type: article
 status: active
 tags: [MySQL, Binlog, Canal, 同步]
 sources:
- - raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
-related: [mysql-主从读写分离, elasticsearch-搜索, 知识库-全文检索规划, 缓存双写与一致性策略]
+- raw/wujinsen_markdown/DataBase/canal/无标题笔记.note.md
+- raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
+related: [mysql-binlog与canal同步, elasticsearch-搜索, 缓存双写与一致性策略]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL Binlog 与 Canal 同步
 
-> 主从复制 [[mysql-主从读写分离]]；ES 检索 [[知识库-全文检索规划]]。
+> 主从复制 [[database/mysql-binlog与canal同步]]；ES 检索 `moli-knowledge/kb/wiki-moli/develop/知识库-meilisearch接入规划.md`。
 
 ## 1. Binlog 格式
 
@@ -41,4 +42,8 @@ MySQL binlog → Canal Server → MQ/直接写 ES/Redis
 
 ## 相关
 
-[[elasticsearch-写入调优]] · [[middleware/消息队列]]
+[[search/elasticsearch-搜索]] · [[middleware/消息队列]]
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 `DataBase/canal/` Canal 同步 raw。

@@ -5,15 +5,22 @@ type: concept
 status: active
 tags: [Docker, 容器, 部署, DevOps]
 sources:
- - raw/wujinsen_markdown/架构/容器/Docker/docker 部署 java 项目.note.md
-related: [docker部署指南, 本地启动指南, minio-附件存储指南, 生产环境服务启停脚本]
+- raw/wujinsen_markdown/架构/容器/Docker/Docker Compose.note.md
+- raw/wujinsen_markdown/架构/容器/Docker/docker 部署 java 项目.note.md
+- raw/wujinsen_markdown/架构/容器/Docker/docker可视化工具portainer.note.md
+- raw/wujinsen_markdown/架构/容器/Docker/docker基本命令.note.md
+- raw/wujinsen_markdown/架构/容器/Docker/docker安装.note.md
+- raw/wujinsen_markdown/架构/容器/Docker/docker挂载命令.note.md
+- raw/wujinsen_markdown/架构/容器/Docker/容器基本使用.note.md
+- raw/wujinsen_markdown/架构/容器/Docker/某小公司项目环境部署演变之路.note.md
+related: [生产环境服务启停脚本]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # 容器与 Docker
 
-> 操作 ；本地 Jar 启动 ；MinIO 容器 [[minio-附件存储指南]]。
+> 操作 ；本地 Jar 启动 ；MinIO 容器 `moli-knowledge/kb/wiki-moli/ops/minio-附件存储指南.md`。
 
 **Docker** 是容器引擎：把应用 + 依赖打成**镜像**，在隔离的**容器**里运行。目标系统 **dev 以本机 Maven/Jar 为主**；Docker 用于中间件（MySQL/Redis/Nacos/MinIO）与生产部署。
 
@@ -48,3 +55,7 @@ Docker 单机容器；**Kubernetes** 编排多节点。ROADMAP 可观测/生产�
 ## 6. 学习路径
 
 安装与命令 → 再考虑 Java 镜像与 compose。
+## 批次#1310 增补（wujinsen P0）
+
+合并 Docker 安装/命令/挂载/Java 部署 raw。
+

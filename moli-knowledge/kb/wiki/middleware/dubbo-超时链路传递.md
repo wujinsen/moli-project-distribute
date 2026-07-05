@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Dubbo, RPC, 超时]
 sources:
- - raw/wujinsen_markdown/
+- raw/wujinsen_markdown/ (enterprise-kb/middleware 专题页)
 related: [dubbo-调用原理与分层, rpc-超时重试与链路, feign-超时重试配置]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Dubbo 超时与链路传递
@@ -36,4 +36,4 @@ dubbo.provider.timeout: 10000
 
 ## 相关
 
-[[dubbo-分组版本与环境]] · [[middleware/sentinel-限流与熔断]]
+`moli-knowledge/kb/wiki-moli/develop/茉莉-dubbo-group版本.md` · [[middleware/sentinel-限流与熔断]]

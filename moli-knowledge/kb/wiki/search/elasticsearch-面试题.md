@@ -5,10 +5,32 @@ type: interview
 status: active
 tags: [elasticsearch, 面试, Lucene]
 sources:
- - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/ES深度分页查询.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/ES源码解析与优化实战/Elasticsearch选主流程.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/ES源码解析与优化实战/Search流程.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/ES源码解析与优化实战/elasticsearch 选主流程.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/ElasticSearch同步MySql.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/ElasticSearch源码解析与优化实战/search流程.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/Elasticsearch 默认配置 IK 及 Java AnalyzeRequestBuilder 使用.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/Elasticsearch之elasticsearch5.x 新特性.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/Elasticsearch和mysql数据增量同步.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/spring-boot  elasticsearch版本匹配问题.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/同步mysql数据到ElasticSearch的最佳实践.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/安装/Linux--Elasticsearch初步使用(安装、Head配置、分词器配置).note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/安装/Mac安装elasticsearch-- head插件.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/安装/Windows环境搭建ElasticSearch 5.6并配置head.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/教程/ES7语法/Elasticsearch 7  关于 Index、Type、Document.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/教程/ES7语法/index document.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/教程/ES7语法/查询语句.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/教程/Elasticsearch6.x注意事项.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/教程/[Elasticsearch] 全文搜索 (三) - match查询和bool查询的关系，提升查询子句.note.md
+- raw/wujinsen_markdown/BigData/ElasticSearch/教程/elasticsearch java api 使用ik 分词器.note.md
+- raw/wujinsen_markdown/面试笔试/ElasticSearch/面试小结之Elasticsearch篇.note.md
+- raw/wujinsen_markdown/面试笔试/ElasticSearch/面试小结之JVM篇.note.md
+- raw/wujinsen_markdown/面试笔试/面试小结/面试小结之Elasticsearch篇.note.md
 related: [elasticsearch-搜索, es-索引与写入流程, es-搜索与分片路由, mysql-索引面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Elasticsearch 面试题
@@ -54,3 +76,11 @@ HyperLogLog++ 近似去重，内存与精度可配置，适合上亿 distinct。
 ## Q10. ES vs MySQL 索引？
 
 MySQL B+Tree 适合范围/精确（[[database/mysql-索引]]）；ES 倒排适合全文与相关性。知识库现用 MySQL LIKE，扩展见 [[search/elasticsearch-搜索]]。
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 ES 面试小结 raw。
+
+## 批次#1321 增补（wujinsen Phase2 P1 BigData）
+
+合并 BigData ES 面试向 raw。

@@ -5,10 +5,18 @@ type: interview
 status: active
 tags: [面试, Zookeeper, 分布式]
 sources:
- - raw/wujinsen_markdown/面试笔试/框架/zookeeper/精尽 Zookeeper 面试题（最新更新时间：2020-09-01.note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/Zookeeper介绍.note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/Zookeeper的Quorum机制-谈谈怎样解决脑裂(split-brain).note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/apache kafka系列之在zookeeper中存储结构.note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/zookeeper原理和实战/leader选举.note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/zookeeper原理和实战/zab协议.note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/zookeeper安装        .note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/改良版taokeeper.note.md
+- raw/wujinsen_markdown/BigData/Zookeeper/通过Java代码获取Zookeeper服务器状态.note.md
+- raw/wujinsen_markdown/面试笔试/框架/zookeeper/精尽 Zookeeper 面试题（最新更新时间：2020-09-01.note.md
 related: [zookeeper-与协调服务, dubbo-面试题, 分布式锁, 分布式理论面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Zookeeper 面试题
@@ -48,3 +56,15 @@ ZK 可靠、性能低；Redis 快、需 Redisson/Lua 防 bug [[cache/redis分布
 ## Q9. 脑裂如何避免？
 
 epoch 递增，旧 Leader 写入被拒绝。
+## ZK 面试速记补充
+
+- **ZAB** 协议：崩溃恢复 + 消息广播
+- **临时节点**：Session 断开自动删，做服务发现
+- **watch**：一次性触发，需重新注册
+- **脑裂**：过半写成功原则
+
+见 [[middleware/zookeeper-与协调服务]]。
+
+## 批次#1313 增补（wujinsen P2）
+
+合并精尽 ZK 面试题 raw。

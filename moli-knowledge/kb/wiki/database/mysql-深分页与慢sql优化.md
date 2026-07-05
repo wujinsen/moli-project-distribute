@@ -5,11 +5,11 @@ type: article
 status: active
 tags: [mysql, 慢sql, 分页, 优化]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md
- - raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md
-related: [mysql-索引, mysql-覆盖索引与回表优化, mysql-事务与锁, 故障排查指南]
+- raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md
+- raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md
+related: [mysql-索引, mysql-覆盖索引与回表优化, mysql-事务与锁]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL 深分页与慢 SQL 优化

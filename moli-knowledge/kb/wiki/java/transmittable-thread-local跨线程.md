@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Java, 并发, 可观测性]
 sources:
- - raw/wujinsen_markdown/
+- raw/wujinsen_markdown/ (enterprise-kb/java 专题页)
 related: [threadlocal-与上下文传递, mdc-日志链路上下文, spring-async与线程池, dubbo-调用原理与分层]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # TransmittableThreadLocal 跨线程传递
@@ -50,4 +50,4 @@ Spring：`TaskDecorator` 包装 `ThreadPoolTaskExecutor` 亦可手动拷贝 MDC�
 
 ## 相关
 
-[[logback-日志配置]] · [[java/异步编程面试题]]
+[[java/mdc-日志链路上下文]] · [[java/异步编程面试题]]

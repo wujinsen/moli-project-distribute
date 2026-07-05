@@ -5,12 +5,13 @@ type: interview
 status: active
 tags: [mysql, 事务, 锁, 面试题, MVCC]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
- - raw/wujinsen_markdown/DataBase/mysql/事务隔离级别中的可重复读能防幻读吗.note.md
- - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+- raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+- raw/wujinsen_markdown/DataBase/mysql/事务隔离级别中的可重复读能防幻读吗.note.md
+- raw/wujinsen_markdown/DataBase/mysql/数据库事务的四大特性以及事务的隔离级别.note.md
+- raw/wujinsen_markdown/DataBase/mysql/正确的理解MySQL的MVCC及实现原理.note.md
 related: [mysql-事务与锁, mysql-隔离级别与mvcc, mysql-innodb锁机制, mysql-死锁与排查, spring-事务]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL 事务与锁（面试题系列）
@@ -56,3 +57,10 @@ FOR UPDATE/UPDATE 是当前读；普通 SELECT 是快照读（非 Serializable�
 ## Q10. MySQL 与 Spring 事务关系？
 
 Spring 传播+回滚规则是应用层；底层仍是一条 JDBC 连接上的 DB 事务；隔离级别由 DB 决定。
+## Q8. MVCC 简述（raw）
+
+InnoDB 通过 **undo log 版本链** + **Read View** 实现可重复读；快照读不加锁，当前读用 next-key lock。见 [[database/mysql-隔离级别与mvcc]]。
+
+## 批次#1313 增补（wujinsen P2）
+
+补充 MVCC 原理 raw（`DataBase/mysql/` 根目录）。

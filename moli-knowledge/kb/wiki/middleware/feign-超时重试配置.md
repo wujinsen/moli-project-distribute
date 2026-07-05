@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Feign, Spring Cloud, 超时]
 sources:
- - raw/wujinsen_markdown/
+- raw/wujinsen_markdown/ (enterprise-kb/middleware 专题页)
 related: [feign-开发踩坑, openfeign-与-http客户端, rpc-超时重试与链路]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Feign 超时重试配置

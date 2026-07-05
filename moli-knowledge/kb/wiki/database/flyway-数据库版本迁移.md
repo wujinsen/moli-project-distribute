@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [MySQL, DevOps, 数据库]
 sources:
- - raw/wujinsen_markdown/
-related: [数据库初始化指南, api-向后兼容策略, git-分支与发布策略, 蓝绿与滚动发布]
+- raw/wujinsen_markdown/ (enterprise-kb/database 专题页)
+related: [api-向后兼容策略, 蓝绿与滚动发布]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Flyway 数据库版本迁移
@@ -54,4 +54,4 @@ Flyway 纯 SQL 直观；Liquibase XML/YAML 差分。 SQL 文化选 Flyway 即可
 
 ## 相关
 
-[[mysql-备份与恢复]] · [[mysql-主从读写分离]]
+[[database/flyway-数据库版本迁移]] · [[database/mysql-binlog与canal同步]]

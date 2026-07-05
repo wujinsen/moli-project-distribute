@@ -5,12 +5,12 @@ type: article
 status: active
 tags: [分布式锁, Redis, Redisson, Redlock, Lua]
 sources:
- - raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁进化史解读+缺陷分析.note.md
- - raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁没这么简单，网上大多数都有 bug.note.md
- - raw/wujinsen_markdown/面试笔试/redis/分布式锁之Redis实现.note.md
-related: [分布式锁, 分布式锁面试题, 秒杀设计]
+- raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁没这么简单，网上大多数都有 bug.note.md
+- raw/wujinsen_markdown/架构/分布式事务/redis/Redis 分布式锁进化史解读+缺陷分析.note.md
+- raw/wujinsen_markdown/面试笔试/redis/分布式锁之Redis实现.note.md
+related: [分布式锁, 分布式锁面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Redis 分布式锁实现（演进与正确姿势）
@@ -94,3 +94,7 @@ key=锁名，Hash 的 field=`uuid:线程ID`，value=重入次数。
 - 释放锁不放 `finally` → 异常后锁泄漏。
 - 固定超时不续期 → 长任务锁提前失效。
 - 集群主从切换 → 锁丢失（需 Redlock + 幂等）。
+
+## 批次#1313 增补（wujinsen P2）
+
+合并 `面试笔试/redis/` raw。

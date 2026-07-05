@@ -5,11 +5,11 @@ type: article
 status: active
 tags: [mysql, InnoDB, 行锁, MDL, 间隙锁]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/全局锁和表锁 ：给表加个字段怎么有这么多阻碍？.note.md
- - raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+- raw/wujinsen_markdown/DataBase/mysql/MySQL死锁案例，我一口气说了6个.note.md
+- raw/wujinsen_markdown/DataBase/mysql/全局锁和表锁 ：给表加个字段怎么有这么多阻碍？.note.md
 related: [mysql-事务与锁, mysql-隔离级别与mvcc, mysql-死锁与排查, mysql-索引]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MySQL InnoDB 锁机制
@@ -53,3 +53,7 @@ RR 下当前读常用 Next-Key 防幻读。无索引时可能**锁表/锁大量�
 | 场景 | 事务内数据一致性 | 秒杀、定时任务互斥 |
 
 见 [[cache/分布式锁]]、。
+
+## 批次#1313 增补（wujinsen P2）
+
+补充表锁/全局锁 raw。

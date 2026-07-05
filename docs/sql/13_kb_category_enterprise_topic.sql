@@ -5,7 +5,7 @@
 -- wiki：kb/wiki/  新一级目录 database/cache/java/...
 --
 -- 执行顺序（重要）：
---   1) 本脚本 §1 — 插入 10 个新分类（体裁走 frontmatter type:）
+--   1) 本脚本 §1 — 插入 11 个新分类（体裁走 frontmatter type:）
 --   2) wiki 已 git mv 后：python kb/tools/sync_to_db.py --wiki-dir wiki --space enterprise-kb
 --   3) 本脚本 §2 或 13_kb_category_enterprise_topic_retire_old.sql — 物理删旧三类
 --
@@ -18,7 +18,7 @@ SET NAMES utf8mb4;
 -- ------------------------------------------------------------- §1 新分类（主题域）
 INSERT INTO `kb_category`
   (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`sort`,`is_delete`)
--- ID 141–150：避开 116(outputs)、121–124(jp-fe-ap-exam)
+-- ID 141–151：避开 116(outputs)、121–124(jp-fe-ap-exam)
 VALUES
   (900000000000000141, 1, NOW(), 1, NOW(), 900000000000000001, 0, '数据库',       NULL, 'database',   1, 0),
   (900000000000000142, 1, NOW(), 1, NOW(), 900000000000000001, 0, '缓存与 Redis', NULL, 'cache',      2, 0),
@@ -29,7 +29,8 @@ VALUES
   (900000000000000147, 1, NOW(), 1, NOW(), 900000000000000001, 0, '网络与安全',   NULL, 'security',   7, 0),
   (900000000000000148, 1, NOW(), 1, NOW(), 900000000000000001, 0, '运维与 Linux', NULL, 'ops',        8, 0),
   (900000000000000149, 1, NOW(), 1, NOW(), 900000000000000001, 0, '设计模式',     NULL, 'patterns',   9, 0),
-  (900000000000000150, 1, NOW(), 1, NOW(), 900000000000000001, 0, '前端',         NULL, 'frontend',  10, 0)
+  (900000000000000150, 1, NOW(), 1, NOW(), 900000000000000001, 0, '前端',         NULL, 'frontend',  10, 0),
+  (900000000000000151, 1, NOW(), 1, NOW(), 900000000000000001, 0, '大数据',       NULL, 'bigdata',   11, 0)
 ON DUPLICATE KEY UPDATE
   `category_name` = VALUES(`category_name`),
   `dir_slug`      = VALUES(`dir_slug`),
@@ -41,7 +42,7 @@ ON DUPLICATE KEY UPDATE
 SELECT `id`, `category_name`, `dir_slug`, `sort`, `is_delete`
 FROM `kb_category`
 WHERE `space_id` = 900000000000000001
-  AND `dir_slug` IN ('database','cache','java','middleware','spring','search','security','ops','patterns','frontend')
+  AND `dir_slug` IN ('database','cache','java','middleware','spring','search','security','ops','patterns','frontend','bigdata')
 ORDER BY `sort`;
 
 -- ------------------------------------------------------------- §2 物理删旧分类（Sync 完成后再执行）

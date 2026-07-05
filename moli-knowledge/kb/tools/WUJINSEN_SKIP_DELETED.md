@@ -1,0 +1,314 @@
+# wujinsen skip raw · 已物理删除
+
+> 2026-07-05 · 批次 #1331 · 按 `WUJINSEN_SKIP_MANIFEST.md` 定案
+> 删除 **307** 篇 `.md` · 附属目录/文件 **74** · 空目录 **104**
+
+## 删除清单
+
+- `AI/2026/1. 编程提效：从“插件”进化到“IDE”.note.md`
+- `AI/2026/AI工具合集.note.md`
+- `AI/2026/LaTeX Markdown 的区别  .note.md`
+- `AI/2026/如果你现在的核心目标是“产品原型设计 + AI 自动化开发”，那么 2026 年的工具格局已经发生了巨大变化。你不再需要盯着传统的原型工具，而是要选择具备“从图.note.md`
+- `AI/2026/源码分析/NotebookLM  .note.md`
+- `AI/AutoGPT/AutoGPT github.note.md`
+- `AI/OPENAI/20230306.note.md`
+- `AI/OPENAI/Linux下安装clash绕过地域限制.note.md`
+- `AI/OPENAI/chatgpt资料.note.md`
+- `AI/OPENAI/http代理.note.md`
+- `AI/OPENAI/openai注册.note.md`
+- `AI/OPENAI/付费教程.note.md`
+- `AI/OPENAI/服务器设置代理.note.md`
+- `AI/polymarket.note.md`
+- `AI/youtube.note.md`
+- `AI/大模型语言/开源项目/mlc-llm.note.md`
+- `AI/绘画/AI绘图.note.md`
+- `AI/绘画/StabeDiffusionWebUI/linux安装stable-diffusion-webui.note.md`
+- `AI/绘画/StabeDiffusionWebUI/mac安装stable-diffusion-webui.note.md`
+- `AI/绘画/StabeDiffusionWebUI/model/models.note.md`
+- `AI/绘画/StabeDiffusionWebUI/tag/tag.note.md`
+- `AI/绘画/国内竞品/海艺.note.md`
+- `AI/绘画/最近看了论坛里面有一些小伙伴搭建的AI绘图挺感兴趣的，但是搜索了一下基本对电脑性能都有点要求，本来也是只打算玩一玩的，所以找了一个云端搭建的教程，学会.note.md`
+- `AI/绘画/模型/C站.note.md`
+- `AI/绘画/踩坑记录/报错信息.note.md`
+- `BigData/版本问题/Hadoop3.x版本问题.note.md`
+- `BigData/用户画像/利用行为标签构建用户画像.note.md`
+- `BigData/用户画像/日处理数据量超10亿：友信金服基于Flink构建实时用户画像系统的实践.note.md`
+- `BigData/用户画像/用户画像技术及方法论.note.md`
+- `BigData/用户画像/用户画像的流程.note.md`
+- `BigData/知识图谱/美团商品知识图谱的构建及应用.note.md`
+- `DataBase/MySQL查询语句练习题，测试基本够用了.note.md`
+- `DataBase/Oracle/to_char和to_date.note.md`
+- `DataBase/mysql5.6修改编码 .note.md`
+- `DataBase/postgresql/用docker运行postgreSQL.note.md`
+- `EnglishDoc/Build and install Ambari 2.2.2 from Source.note.md`
+- `EnglishDoc/Install Ambari 2.2.2 from Public Repositories.note.md`
+- `Full Stack/brew安装.note.md`
+- `Full Stack/简单说就是 一个应用中，在我这个系统里有3个概念.note.md`
+- `IM通讯/IM通讯开源框架.note.md`
+- `IM通讯/cim.note.md`
+- `产品/从敏捷死了到Devops死了.note.md`
+- `产品/用户画像/伴随着大数据应用的讨论、创新，个性化技术成为了一个重要落地点。用户画像越来越被企业所重视。相比传统的线下会员管理、问卷调查、购物篮分析，大数据第一次使得企业能够.note.md`
+- `产品/用户画像/如何使用队列数据分析来留住你的用户.note.md`
+- `产品/用户画像/如何实现基于内容和用户画像的个性化推荐.note.md`
+- `产品/用户画像/用户画像全解析.note.md`
+- `产品/用户画像/用户画像系统的技术架构和整体实现.note.md`
+- `写作/Markdown 语法指南.note.md`
+- `写作/Markdown基本语法.note.md`
+- `大数据资料-王/QA/64位操作系统下重新编译hadoop-2.2.0 .note.md`
+- `大数据资料-王/QA/64位的linux装的hadoop是32位的，需要手工编译.note.md`
+- `大数据资料-王/QA/A configuration error occurred during startup.Please verify the preference filed.note.md`
+- `大数据资料-王/QA/Access denied for user 'root'@'hadoop1master' (using password_ YES）.note.md`
+- `大数据资料-王/QA/Apache Tomcat 6.0 is not defined.note.md`
+- `大数据资料-王/QA/Broken pipe._解决 .note.md`
+- `大数据资料-王/QA/ByteBuffer写入数组BufferUnderflowException异常.note.md`
+- `大数据资料-王/QA/Caused by_ java.lang.IllegalArgumentException_ java.net.UnknownHostException_ te.note.md`
+- `大数据资料-王/QA/CentOS Linux解决Device eth0 does not seem to be present.note.md`
+- `大数据资料-王/QA/Could not buffer record.note.md`
+- `大数据资料-王/QA/ERROR_ org.apache.hadoop.hbase.MasterNotRunningException .note.md`
+- `大数据资料-王/QA/Error getting 'State' for/org/freedesktop/NetworkManager/ActiveConnection/0(1).note.md`
+- `大数据资料-王/QA/Error getting 'State' for/org/freedesktop/NetworkManager/ActiveConnection/0_ (.note.md`
+- `大数据资料-王/QA/FAILED_ Error in metadata_ java.lang.RuntimeException_ Unable to in(2)(08-52-23).note.md`
+- `大数据资料-王/QA/FAILED_ Error in metadata_ java.lang.RuntimeException_ Unable to instantiate org.note.md`
+- `大数据资料-王/QA/Failed to list databases.note.md`
+- `大数据资料-王/QA/HMaster启动后自动关闭 .note.md`
+- `大数据资料-王/QA/Hadoop Failed to set permissions of path.note.md`
+- `大数据资料-王/QA/Hadoop name -format后Incompatible namespaceIDS 错误解决办法.note.md`
+- `大数据资料-王/QA/Hadoop 报错be replicated to 0 nodes, instead of 1.note.md`
+- `大数据资料-王/QA/Hadoop常见问题及解决办法.note.md`
+- `大数据资料-王/QA/Hive 问题汇总.note.md`
+- `大数据资料-王/QA/Hive出现异常 FAILED_ Error In Metadata_ Java.Lang.RuntimeException_ Unable To Instan.note.md`
+- `大数据资料-王/QA/Hive安装配置详解.note.md`
+- `大数据资料-王/QA/Hive的--auxpath使用相对路径遇到的一个奇怪的异常.note.md`
+- `大数据资料-王/QA/LoadRunner小技巧集锦.note.md`
+- `大数据资料-王/QA/LoadRunner时提示“安装程序已确定挂起重新启动”解决方案.note.md`
+- `大数据资料-王/QA/Loadrunner自带的网站WebTours打不开.note.md`
+- `大数据资料-王/QA/Mahout_DataModel doesn't have preference values.note.md`
+- `大数据资料-王/QA/Math.floor(x);.note.md`
+- `大数据资料-王/QA/MyEclipse Alt+/快捷键不可用设置.note.md`
+- `大数据资料-王/QA/No Java compiler available.note.md`
+- `大数据资料-王/QA/OpenSSL is not properly installed on your system..note.md`
+- `大数据资料-王/QA/Oracle VM VirtualBox 不显示64位系统 linux 64 redhat 64.note.md`
+- `大数据资料-王/QA/QA.note.md`
+- `大数据资料-王/QA/SQL 优化原则.note.md`
+- `大数据资料-王/QA/Specified key was too long; max key length is 767 bytes.note.md`
+- `大数据资料-王/QA/System times on machines may be out of sync. Check system time and time zones..note.md`
+- `大数据资料-王/QA/The ratio of reported blocks 0.0000 has not reached the threshold 0.9990. Safe m.note.md`
+- `大数据资料-王/QA/Tomcat7+Spring3使用时遇到的两个异常.note.md`
+- `大数据资料-王/QA/Too many open files .note.md`
+- `大数据资料-王/QA/Unrecognized VM option '+UseCompressedOops'  Could not create the Java virtual m.note.md`
+- `大数据资料-王/QA/Unrecognized VM option 'UseCompressedOops'.note.md`
+- `大数据资料-王/QA/Unsupported major.minor version 51.0解决办法.note.md`
+- `大数据资料-王/QA/WARN util.NativeCodeLoader_ Unable to load native-hadoop library for your platfo.note.md`
+- `大数据资料-王/QA/Warning_ $HADOOP_HOME is deprecated. hadoop1.0.4解决方法.note.md`
+- `大数据资料-王/QA/Win7 eclipse Hadoop Failed to set permissions of path.note.md`
+- `大数据资料-王/QA/Windows netstat 查看端口、进程占用.note.md`
+- `大数据资料-王/QA/Zookeeper：“Error contacting service. It is probably not running.”.note.md`
+- `大数据资料-王/QA/bin/bash^M_ bad interpreter_ 没有那个文件或目录.note.md`
+- `大数据资料-王/QA/centos nginx安装_conf/koi-win_ 与_/usr/local/nginx/conf/koi-win_ 为同一文件(1).note.md`
+- `大数据资料-王/QA/centos nginx安装_conf/koi-win_ 与_/usr/local/nginx/conf/koi-win_ 为同一文件.note.md`
+- `大数据资料-王/QA/centos：only for i686.note.md`
+- `大数据资料-王/QA/div相对定位和绝对定位  悬浮.note.md`
+- `大数据资料-王/QA/eclipse项目发布路径.note.md`
+- `大数据资料-王/QA/etc/resolv.conf 的更改在重启后丢失.note.md`
+- `大数据资料-王/QA/ext 重新加载panel.note.md`
+- `大数据资料-王/QA/flume error.note.md`
+- `大数据资料-王/QA/google地址.note.md`
+- `大数据资料-王/QA/hadoop HA  namenode 无法启动错误.note.md`
+- `大数据资料-王/QA/hadoop异常“could only be replicated to 0 nodes, instead of 1” 解决.note.md`
+- `大数据资料-王/QA/hadoop本地库与系统版本不一致引起的错误解决方法.note.md`
+- `大数据资料-王/QA/hadoop：RemoteException.note.md`
+- `大数据资料-王/QA/hive +hbase 得不到返回结果.note.md`
+- `大数据资料-王/QA/hive 报错FAILED_ Error in metadata_ java.lang.RuntimeException_ Unable to instanti.note.md`
+- `大数据资料-王/QA/hive错误 show tables 无法使用 _ Unable to instantiate rg.apache.hadoop.hive.metastore..note.md`
+- `大数据资料-王/QA/hosts文件不显示(1).note.md`
+- `大数据资料-王/QA/hosts文件不显示.note.md`
+- `大数据资料-王/QA/java.net.SocketException_ Address family not supported by protocol family_ conne.note.md`
+- `大数据资料-王/QA/java.util.random中nextFloat()取值问题.note.md`
+- `大数据资料-王/QA/java命令中-d32和-d64的含义.note.md`
+- `大数据资料-王/QA/js定时器timer.note.md`
+- `大数据资料-王/QA/keepalived不抢主.note.md`
+- `大数据资料-王/QA/kernel painic not syncing.note.md`
+- `大数据资料-王/QA/license security violation. operation is not allowed.note.md`
+- `大数据资料-王/QA/linux下启动和关闭网卡命令.note.md`
+- `大数据资料-王/QA/linux下改变文件/文件夹所属用户或群组.note.md`
+- `大数据资料-王/QA/loadrunner11安装出现Microsoft Visual c++2005 sp1安装失败.note.md`
+- `大数据资料-王/QA/loadrunner录入脚本有乱码解决方法.note.md`
+- `大数据资料-王/QA/loadrunner没有 demo_scenario.lrs.note.md`
+- `大数据资料-王/QA/namenode无法启动，不报错.note.md`
+- `大数据资料-王/QA/nginx_accept() failed (24_ Too many open files) .note.md`
+- `大数据资料-王/QA/org/apache/flume/tools/GetJavaProperty.note.md`
+- `大数据资料-王/QA/ppt如何去掉单词验证.note.md`
+- `大数据资料-王/QA/qa(1)(08-49-57).note.md`
+- `大数据资料-王/QA/rz_ command not found.note.md`
+- `大数据资料-王/QA/scp_command not found.note.md`
+- `大数据资料-王/QA/secureCRT下linux rz命令上传文件失败或变小（破损）的问题解决方法.note.md`
+- `大数据资料-王/QA/solr  Error initializing QueryElevationComponent..note.md`
+- `大数据资料-王/QA/solr报错.note.md`
+- `大数据资料-王/QA/sql行转列.note.md`
+- `大数据资料-王/QA/storm rebalance 命令调整topology并行数及问题分析.note.md`
+- `大数据资料-王/QA/tomcat配置https启动出现_No Certificate file specified or invalid file format_异常.note.md`
+- `大数据资料-王/QA/unknown host www.baidu.com network is unreachable.note.md`
+- `大数据资料-王/QA/win7发射wifi.note.md`
+- `大数据资料-王/QA/word怎样取消句首字母大写.note.md`
+- `大数据资料-王/QA/修改虚拟机磁盘大小.note.md`
+- `大数据资料-王/QA/启动hive hwi服务时出现 HWI WAR file not found错误.note.md`
+- `大数据资料-王/QA/启动thrift接口后，在这个服务上写一个test方法去测试，获取thrift中常量方法中的静态变量.note.md`
+- `大数据资料-王/QA/在vi按了ctrl+s后.note.md`
+- `大数据资料-王/QA/在通过JDBC访问Hive+HBase做统计查询时报错HBaseSplit not found.note.md`
+- `大数据资料-王/QA/多层title.note.md`
+- `大数据资料-王/QA/如何设置jvm内存.note.md`
+- `大数据资料-王/QA/安装插件的方法.note.md`
+- `大数据资料-王/QA/报错could only be replicated to 0 nodes, instead of 1.note.md`
+- `大数据资料-王/QA/本地连接不见了.note.md`
+- `大数据资料-王/QA/查看linux版本.note.md`
+- `大数据资料-王/QA/比较常见的Loadrunner报错日志.note.md`
+- `大数据资料-王/QA/注册表删除.note.md`
+- `大数据资料-王/QA/浏览器缓存.note.md`
+- `大数据资料-王/QA/用route add default gw xxxx后重启network进程路由消失.note.md`
+- `大数据资料-王/QA/计算机上缺少vc2005_sp1_whth_alt_fix_redist.note.md`
+- `大数据资料-王/QA/进程、线程.note.md`
+- `大数据资料-王/QA/错误 -27728_ 下载非资源时,步骤下载超时(120 秒)已过期.note.md`
+- `大数据资料-王/QA/项目红叉.note.md`
+- `大数据资料-王/a安装文档/CentOS系统下docker的安装配置及使用详解.note.md`
+- `大数据资料-王/a安装文档/LVS三种模式配置.note.md`
+- `大数据资料-王/a安装文档/LVS安装文档.note.attach/lvs之nat、dr、tun三种模式的应用配置案例.md`
+- `大数据资料-王/a安装文档/LVS安装文档.note.md`
+- `大数据资料-王/a安装文档/Linux下Nagios的安装与配置.note.md`
+- `大数据资料-王/a安装文档/Loadrunner11下载、安装与破解.note.md`
+- `大数据资料-王/a安装文档/VirtualBox安装CentOS.note.md`
+- `大数据资料-王/a安装文档/Win7系统中Telnet服务的安装和启动.note.md`
+- `大数据资料-王/a安装文档/amoeba安装.note.md`
+- `大数据资料-王/a安装文档/centos配置静态ip（ok）.note.md`
+- `大数据资料-王/a安装文档/fat jar安装方法.note.md`
+- `大数据资料-王/a安装文档/hama安装手顺.note.md`
+- `大数据资料-王/a安装文档/hosts.note.md`
+- `大数据资料-王/a安装文档/keepalive安装文档.note.md`
+- `大数据资料-王/a安装文档/mahout安装文档.note.md`
+- `大数据资料-王/a安装文档/nfs安装文档.note.md`
+- `大数据资料-王/a安装文档/profile.note.md`
+- `大数据资料-王/a安装文档/shark安装文档.note.md`
+- `大数据资料-王/a安装文档/sqoop使用.note.md`
+- `大数据资料-王/a安装文档/sqoop安装文档.note.md`
+- `大数据资料-王/a安装文档/共享session.note.md`
+- `大数据资料-王/a安装文档/启动命令.note.md`
+- `大数据资料-王/concurent并发包/ConcurrentHashMap.note.md`
+- `大数据资料-王/hadoop/HDFS的JavaAPI---------------1遍.note.md`
+- `大数据资料-王/hbase/HBase原理--------------------1遍.note.md`
+- `大数据资料-王/kafka/Kafka集群文档------------1遍.note.md`
+- `大数据资料-王/loadrunner/LoadRunner11-中文教程.note.attach/LoadRunner11-中文教程.md`
+- `大数据资料-王/loadrunner/LoadRunner11-中文教程.note.md`
+- `大数据资料-王/loadrunner/Loadrunner常用15种的分析点.note.md`
+- `大数据资料-王/loadrunner/loadrunner(1).note.md`
+- `大数据资料-王/loadrunner/loadrunner.note.md`
+- `大数据资料-王/loadrunner/loadrunner没有 demo_scenario.lrs.note.md`
+- `大数据资料-王/loadrunner/探讨LoadRunner的并发用户和集合点.note.md`
+- `大数据资料-王/log4j/log4j输出多个自定义日志文件.note.md`
+- `大数据资料-王/log4j/在类中设置logger.note.md`
+- `大数据资料-王/lucene&solr/Linux启动与进程：前台进程和后台进程.note.md`
+- `大数据资料-王/lucene&solr/SOLR使用手册之操作collection.note.md`
+- `大数据资料-王/lucene&solr/lucene filter.note.md`
+- `大数据资料-王/lucene&solr/关于Lucene3.5的学习.note.md`
+- `大数据资料-王/lucene&solr/关于Solr的各种DirectoryFactory.note.md`
+- `大数据资料-王/lucene&solr/虚拟机退出时执行的方法.note.md`
+- `大数据资料-王/mahout/Mahout 协同过滤 itemBase RecommenderJob源码分析.note.md`
+- `大数据资料-王/mahout/Mahout推荐算法基础.note.md`
+- `大数据资料-王/mahout/k均值聚类(K-means).note.md`
+- `大数据资料-王/mahout/mahout 返回主页 WEB系统架构与底层研发.note.md`
+- `大数据资料-王/mahout/mahout探索推荐引擎内部的秘密.note.md`
+- `大数据资料-王/mahout/深入浅出K-Means算法.note.md`
+- `大数据资料-王/nutch/Nutch 初体验 爬行企业内部网.note.md`
+- `大数据资料-王/nutch/Nutch 实战.note.md`
+- `大数据资料-王/nutch/Nutch 教程.note.md`
+- `大数据资料-王/nutch/Nutch.note.md`
+- `大数据资料-王/nutch/Nutch简介.note.md`
+- `大数据资料-王/scala/IDEA安装scala插件.note.md`
+- `大数据资料-王/scala/Scala 继承 App.note.md`
+- `大数据资料-王/scala/scala 打印集合.note.md`
+- `大数据资料-王/scala/scala书.note.attach/快学Scala(中文完整版).md`
+- `大数据资料-王/scala/scala书.note.md`
+- `大数据资料-王/scala/scala入门.note.md`
+- `大数据资料-王/scala/scala环境变量安装.note.md`
+- `大数据资料-王/scala/scala的List容器里++和：：：运算符有什么不同？.note.md`
+- `大数据资料-王/selecnium/Selecnium grid 参数配置，及chrome，ie，firefox设置参数.note.md`
+- `大数据资料-王/selecnium/Selecnium—readme-王森丰.note.md`
+- `大数据资料-王/selecnium/Selenium 本地测试IE、FireFox、Chrome .note.md`
+- `大数据资料-王/selecnium/Selenium2.0帮助文档.note.attach/selenium中文API.md`
+- `大数据资料-王/selecnium/Selenium2.0帮助文档.note.md`
+- `大数据资料-王/thrift/Thrift IDL.note.md`
+- `大数据资料-王/thrift/thrift.note.md`
+- `大数据资料-王/zookeeper/RDD、DataFrame和DataSet的区别是什么.note.md`
+- `大数据资料-王/zookeeper/Zookeeper Api(java)入门与应用.note.md`
+- `大数据资料-王/zookeeper/zookeeper源码分析.note.md`
+- `大数据资料-王/zookeeper/zookeeper的watcher示意图.note.md`
+- `大数据资料-王/zookeeper/zookeeper的领导者选举和原子广播.note.md`
+- `大数据资料-王/zookeeper/使用zookeeper管理多个hbase集群.note.md`
+- `大数据资料-王/详解MySQL Cluster管理结点的config.ini配置文件.note.md`
+- `学习资料/程序员练级攻略（2018) 与我的专栏.note.md`
+- `学习资料/资料下载.note.md`
+- `开源博客/开源博客.note.md`
+- `技术文章翻译/Java/Spring/16.自动配置.note.md`
+- `技术文章翻译/大数据/Kylin/Apache Kylin首页.note.md`
+- `操作系统/MAC/MAC ping ip 端口号命令.note.md`
+- `机器学习/机器学习在神策数据的应用.note.md`
+- `架构/Git/You have not concluded your merge (MERGE_HEAD exists) git拉取失败.note.md`
+- `架构/Git/[Git] 处理 github 不允许上传超过 100MB 文件的问题.note.md`
+- `架构/Git/git 清空本地缓存.note.md`
+- `架构/Git/git 获取最近一次提交的commit id.note.md`
+- `架构/Git/git之https或http方式设置记住用户名和密码的方法.note.md`
+- `架构/Git/git仓库删除所有提交历史记录，成为一个干净的新仓库.note.md`
+- `架构/Git/git拒绝push.note.md`
+- `架构/Git/idea 清空 idea下的文件.note.md`
+- `架构/Git/如何将idea项目上传到Git.note.md`
+- `架构/Lambda架构/The Clean Architecture.note.md`
+- `架构/NaiXue/naixue gitlab.note.md`
+- `架构/SAML/1.      CAS 简介.note.md`
+- `架构/SAML/CAS实现的单点登录系统.note.md`
+- `架构/SAML/Configuring AS Java as a Service Provider.note.md`
+- `架构/SAML/Configuring Single Sign-On (SSO).note.md`
+- `架构/SAML/SAML 2.0 Profiles--wiki.note.md`
+- `架构/SAML/SAML 2.0.note.md`
+- `架构/SAML/SAML--xml.note.md`
+- `架构/SAML/SAML.note.md`
+- `架构/SAML/Web 单点登录系统.note.md`
+- `架构/SAML/java实现简单的单点登录.note.md`
+- `架构/SAML/基于 SAML 2.0 的 WebSphere Application Server SSO 实现.note.md`
+- `架构/SAML/基于SAML的单点登录.NET代理端实现方案.note.md`
+- `架构/SAML/基于SAML的单点登录介绍.note.md`
+- `架构/云原生/quarkus/Quarkus.note.md`
+- `架构/区块链/九分钟了解区块链.note.md`
+- `架构/区块链/区块链相关内容.note.md`
+- `架构/区块链/开发/Remix/Remix 以太坊Solidity IDE搭建与初步使用.note.md`
+- `架构/区块链/开发/Remix/基础环境安装.note.md`
+- `架构/区块链/开发/Solidity/Installing the Solidity Compiler.note.md`
+- `架构/区块链/开发/Solidity/Remix安装教程.note.md`
+- `架构/区块链/开发/Solidity/Solidity番外篇（一）Solidity在线or插件使用.note.md`
+- `架构/区块链/开发/Solidity/智能合约语言 Solidity 教程系列1 - 类型介绍.note.md`
+- `架构/区块链/开发/区块链共识算法 PBFT（拜占庭容错）、PAXOS、RAFT简述.note.md`
+- `架构/区块链/开发/区块链编程一web3j介绍.note.md`
+- `架构/区块链/算法/Merkle Tree与区块链.note.md`
+- `架构/区块链/记账.note.md`
+- `架构/区块链/钱包生成机制.note.md`
+- `架构/区块链/面试笔试/工作地点：北京.note.md`
+- `架构/开发工具/Git/github如何贡献源代码.note.md`
+- `架构/开发工具/Idea/Idea--Tomcate配置中的On Upate Action 与 On Frame Deactivation.note.md`
+- `架构/开发工具/Idea/mac下idea 无法打开.note.md`
+- `架构/文件存储/fastdfs/非Root用户 普通用户权限下安装 运行FastDFS.note.md`
+- `架构/消息队列/ActiveMQ/深入浅出JMS(一)--JMS基本概念.note.md`
+- `架构/消息队列/ActiveMQ/深入浅出JMS(二)--ActiveMQ简单介绍以及安装.note.md`
+- `架构/通信协议/Thrift/Apache Thrift.note.md`
+- `架构/通信协议/Thrift/Thrift安装使用教程.note.md`
+- `架构/通信协议/Thrift/Thrift源码安装教程.note.md`
+- `架构/通信协议/Thrift/linxu服务器安装软件时提示说要Autoconf 2.64或更高的版本.note.md`
+- `硬件/Mac的移动硬盘不能装载该如何解决？.note.md`
+- `面试笔试/2020面试题整理/2020年面试题整理.note.md`
+- `面试笔试/2020面试题整理/闭关修炼21天，“啃完”283页pdf，我终于4面拿下字节跳动offer.note.md`
+- `面试笔试/mianshi.note.md`
+- `面试笔试/京东商城 - 大数据.note.md`
+- `面试笔试/大数据/美团优选大数据开发岗面试真题-附答案详细解析.note.md`
+- `面试笔试/简历内容.note.md`
+- `面试笔试/面试公司/2019年6月面试公司.note.md`
+- `面试笔试/面试公司/面试公司.note.md`
+- `面试笔试/面试小结/2018/20180423.note.md`
+- `面试笔试/面试小结/2018/2018年4月面试小结.note.md`
+- `面试笔试/面试小结/2018/如何判断是2的.note.md`
+- `面试笔试/面试要求/美团 工作职责：.note.md`

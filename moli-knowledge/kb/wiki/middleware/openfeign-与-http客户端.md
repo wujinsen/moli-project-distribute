@@ -5,10 +5,11 @@ type: concept
 status: active
 tags: [Feign, Spring Cloud, HTTP, REST]
 sources:
- - raw/wujinsen_markdown/源码分析/OpenFeign/什么是Feign.note.md
-related: [feign-开发踩坑, dubbo-与-nacos, 服务调用与架构, spring-cloud-gateway]
+- raw/wujinsen_markdown/源码分析/OpenFeign/什么是Feign.note.md
+- raw/wujinsen_markdown/源码分析/OpenFeign/源码解析.note.md
+related: [feign-开发踩坑, dubbo-与-nacos, spring-cloud-gateway]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # OpenFeign 与 HTTP 客户端
@@ -49,3 +50,7 @@ Browser → [[spring/spring-cloud-gateway]] → 各服务 HTTP；**服务间**�
 ## 相关
 
 [[middleware/feign-开发踩坑]] · [[middleware/跨域与前后端分离]]
+
+## 批次#1320 增补（wujinsen Phase2 P0）
+
+合并 OpenFeign 源码阅读 raw。

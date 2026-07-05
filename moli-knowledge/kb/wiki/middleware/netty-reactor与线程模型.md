@@ -5,11 +5,21 @@ type: article
 status: active
 tags: [netty, Reactor, EventLoop, 线程模型]
 sources:
- - raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
- - raw/wujinsen_markdown/大数据资料-王/netty/netty核心概念.note.md
+- raw/wujinsen_markdown/大数据资料-王/netty/Netty In Action.note.md
+- raw/wujinsen_markdown/大数据资料-王/netty/Netty介绍.note.md
+- raw/wujinsen_markdown/大数据资料-王/netty/netty hello world.note.md
+- raw/wujinsen_markdown/大数据资料-王/netty/netty学习url.note.md
+- raw/wujinsen_markdown/大数据资料-王/netty/netty核心概念.note.md
+- raw/wujinsen_markdown/并发编程/Netty/1. 下载netty源码，.note.md
+- raw/wujinsen_markdown/并发编程/Netty/Netty高性能之Reactor线程模型.note.md
+- raw/wujinsen_markdown/并发编程/Netty/netty源码分析之服务端启动全解析.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/Java Netty 4.x 用户指南.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/Netty首页.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/Preface.note.md
+- raw/wujinsen_markdown/并发编程/Netty/翻译文章/User guide for 4.x--4.x用户指南.note.md
 related: [io模型与-netty, bio-nio-aio对比, netty-pipeline与编解码, dubbo-调用原理与分层]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Netty Reactor 与线程模型
@@ -91,3 +101,7 @@ RPC 超时除业务慢外，可查 Netty 是否 EventLoop 被占满。
 - `EventLoopGroup` 线程数默认 `CPU×2`，IO 密集可略增
 - Boss 通常 1 线程够用
 - 业务异步：`executorGroup` 加到 Handler 上 offload
+
+## 批次#1320 增补（wujinsen Phase2 P0）
+
+合并 `并发编程/Netty/` Reactor raw。

@@ -5,11 +5,15 @@ type: article
 status: active
 tags: [kafka, rocketmq, rabbitmq, 选型]
 sources:
- - raw/wujinsen_markdown/面试笔试/高并发架构系列：Kafka、RocketMQ、RabbitMQ的优劣势比较.note.md
- - raw/wujinsen_markdown/面试笔试/kafka/精尽 Kafka 面试题（最新更新时间：2019-12-14）.note.md
-related: [消息队列, 秒杀设计, elasticsearch-搜索]
+- raw/wujinsen_markdown/源码分析/Kafka/kafka源码编译.note.md
+- raw/wujinsen_markdown/面试笔试/kafka/kafka丢消息处理(1).note.md
+- raw/wujinsen_markdown/面试笔试/kafka/kafka丢消息处理.note.md
+- raw/wujinsen_markdown/面试笔试/kafka/精尽 Kafka 面试题（最新更新时间：2019-12-14）.note.md
+- raw/wujinsen_markdown/面试笔试/kafka/面试问：Kafka 为什么速度那么快？.note.md
+- raw/wujinsen_markdown/面试笔试/高并发架构系列：Kafka、RocketMQ、RabbitMQ的优劣势比较.note.md
+related: [消息队列, elasticsearch-搜索]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Kafka 与 MQ 选型
@@ -94,3 +98,19 @@ updated: 2026-06-22
 服务端：副本同步、持久化
 
 Redis List 队列（典型现状）缺持久化与标准 ACK，宕机可能丢消息。
+## Kafka 丢消息怎么处理？（raw 面试笔试）
+
+1. **生产者**：`acks=all`、重试、`min.insync.replicas`
+2. **Broker**：副本同步、禁止 unclean leader 选举
+3. **消费者**：先处理再 commit offset；幂等消费
+4. **监控**：滞后 lag、ISR 收缩告警
+
+见 [[middleware/rocketmq-架构与实战]] 对比选型。
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 Kafka 面试与丢消息处理 raw。
+## 与大数据管道页
+
+日志/埋点管道架构见 [[bigdata/kafka-大数据管道]]（批次 #1321）。
+

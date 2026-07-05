@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [Gateway, Spring Cloud, 超时]
 sources:
- - raw/wujinsen_markdown/
+- raw/wujinsen_markdown/ (enterprise-kb/middleware 专题页)
 related: [spring-cloud-gateway, rpc-超时重试与链路, sentinel-限流与熔断]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Gateway 超时与重试配置
@@ -42,8 +42,8 @@ spring.cloud.gateway:
 
 ## 3. 与 Sentinel
 
-Gateway 集成 Sentinel 规则 [[gateway-接入-sentinel规划]]：慢调用比例、异常比例熔断。
+Gateway 集成 Sentinel 规则 `moli-knowledge/kb/wiki-moli/develop/茉莉-演进-sentinel网关.md`：慢调用比例、异常比例熔断。
 
 ## 相关
 
-[[gateway-断言与请求改写]] · [[middleware/feign-超时重试配置]]
+[[spring/spring-cloud-gateway]] · [[middleware/feign-超时重试配置]]

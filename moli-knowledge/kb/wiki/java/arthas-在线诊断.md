@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [JVM, 排查, 运维]
 sources:
- - raw/wujinsen_markdown/
-related: [java-cpu-100排查实战, 故障排查指南, jvm-oom与排查入门]
+- raw/wujinsen_markdown/架构/性能调优/Arthas/arthas.note.md
+related: [java-cpu-100排查实战, jvm-oom与排查入门]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Arthas 在线诊断入门
@@ -35,4 +35,8 @@ updated: 2026-06-21
 
 ## 相关
 
-[[skywalking-链路追踪]] · [[micrometer-与指标暴露]]
+[[ops/skywalking-安装与链路追踪]] · [[middleware/压测监控与prometheus]]
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 Arthas 安装使用 raw。

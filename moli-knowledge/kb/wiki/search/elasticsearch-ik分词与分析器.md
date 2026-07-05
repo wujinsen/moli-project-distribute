@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [Elasticsearch, 搜索, 知识库]
 sources:
- - raw/wujinsen_markdown/
-related: [elasticsearch-搜索, es-match与bool查询, 知识库-全文检索规划, es-索引与写入流程]
+- raw/wujinsen_markdown/ (enterprise-kb/search 专题页)
+related: [elasticsearch-搜索, es-match与bool查询, es-索引与写入流程]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Elasticsearch IK 分词与分析器
 
-> ES 总览 [[search/elasticsearch-搜索]]；查询 [[search/es-match与bool查询]]；规划 [[知识库-全文检索规划]]。
+> ES 总览 [[search/elasticsearch-搜索]]；查询 [[search/es-match与bool查询]]；规划 `moli-knowledge/kb/wiki-moli/develop/知识库-meilisearch接入规划.md`。
 
 中文检索依赖 **analysis** 链：`character filter → tokenizer → token filter`。
 
@@ -53,4 +53,4 @@ updated: 2026-06-21
 
 ## 相关
 
-[[search/elasticsearch-面试题]] · [[知识库-混合检索规划]]
+[[search/elasticsearch-面试题]] · `moli-knowledge/kb/wiki-moli/develop/知识库-meilisearch接入规划.md`

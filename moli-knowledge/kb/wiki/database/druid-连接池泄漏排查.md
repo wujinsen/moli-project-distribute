@@ -5,10 +5,10 @@ type: article
 status: active
 tags: [MySQL, Druid, 排查]
 sources:
- - raw/wujinsen_markdown/
-related: [druid连接池与监控, 故障排查指南, mybatis-与-druid持久层]
+- raw/wujinsen_markdown/ (enterprise-kb/database 专题页)
+related: [druid连接池与监控, mybatis-与-druid持久层]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Druid 连接池泄漏排查

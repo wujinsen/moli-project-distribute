@@ -5,15 +5,25 @@ type: article
 status: active
 tags: [Nginx, 限流, 运维]
 sources:
- - raw/wujinsen_markdown/
-related: [nginx反向代理与前端部署指南, 限流算法与令牌桶, sse-服务端推送, gateway-超时与重试配置]
+- raw/wujinsen_markdown/大数据资料-王/a安装文档/Nginx安装及配置简介.note.md
+- raw/wujinsen_markdown/大数据资料-王/a安装文档/Nginx安装部署.note.md
+- raw/wujinsen_markdown/大数据资料-王/a安装文档/nginx + tomcat.note.md
+- raw/wujinsen_markdown/大数据资料-王/a安装文档/nginx_varnish_rsync安装文档.note.md
+- raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/Keepalived原理与实战精讲.note.md
+- raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/Nginx 教程.note.md
+- raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/Nginx 配置高并发.note.md
+- raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/ipvsadm --persistent 与 --set.note.md
+- raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/ipvsadm命令参考.note.md
+- raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/nginx upstream的分配方式。.note.md
+- raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/nginx.conf详解.note.md
+related: [限流算法与令牌桶, sse-服务端推送, gateway-超时与重试配置]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Nginx 限流与缓冲调优
 
-> 反向代理 [[nginx反向代理与前端部署指南]]；算法 [[middleware/限流算法与令牌桶]]；SSE [[middleware/sse-服务端推送]]。
+> 反向代理 `moli-knowledge/kb/wiki-moli/ops/nginx反向代理与前端部署指南.md`；算法 [[middleware/限流算法与令牌桶]]；SSE [[middleware/sse-服务端推送]]。
 
 ## 1. 限流 zone
 

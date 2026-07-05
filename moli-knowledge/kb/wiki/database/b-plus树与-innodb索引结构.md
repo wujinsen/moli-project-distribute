@@ -5,12 +5,14 @@ type: concept
 status: active
 tags: [mysql, B+Tree, InnoDB, 聚簇索引, 数据结构]
 sources:
- - raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
- - raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
- - raw/wujinsen_markdown/面试笔试/Database/mysql/B树与B+树.note.md
+- raw/wujinsen_markdown/DataBase/mysql/MySQL索引背后的数据结构及算法原理.note.md
+- raw/wujinsen_markdown/DataBase/mysql/索引/梳理了一遍MySQL索引，发现也不过如此.note.md
+- raw/wujinsen_markdown/面试笔试/Database/mysql/B树与B+树.note.md
+- raw/wujinsen_markdown/面试笔试/树/B+树介绍.note.md
+- raw/wujinsen_markdown/面试笔试/树/B树和B+树的总结.note.md
 related: [mysql-索引, mysql-覆盖索引与回表优化, mysql-索引面试题]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # B+Tree 与 InnoDB 索引结构
@@ -65,3 +67,16 @@ B+Tree 插入需保持有序。向已满页中间插入 → **页分裂**，空�
 ## 磁盘 I/O 与 B+Tree 选型（一句话）
 
 数据库按**页**（通常 16KB）读写磁盘。B+Tree 节点大小 ≈ 页大小，一次 I/O 读一整节点，最大化单次 I/O 的 key 数量 → 降低树高与 I/O 次数。
+## B 树 vs B+ 树（raw 面试笔试/树）
+
+| | B 树 | B+ 树 |
+|---|------|-------|
+| 数据存储 | 内部节点也可存数据 | **只在叶子存数据** |
+| 叶子链表 | 无 | **有**，范围扫描友好 |
+| InnoDB | — | **聚簇索引默认 B+** |
+
+见 [[database/mysql-索引面试题]] Q1。
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 B/B+ 树面试 raw。

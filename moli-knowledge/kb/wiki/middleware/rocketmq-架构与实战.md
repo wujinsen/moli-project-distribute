@@ -5,12 +5,14 @@ type: article
 status: active
 tags: [RocketMQ, MQ, 消息队列]
 sources:
- - raw/wujinsen_markdown/架构/消息队列/RocketMQ/rocketmq常用命令.note.md
- - raw/wujinsen_markdown/架构/消息队列/RocketMQ/安装部署/rocketmq4.5.2 - 服务安装， web管理界面安装.note.md
- - raw/wujinsen_markdown/架构/消息队列/RocketMQ/问题解决/Rocketmq之No route info of this topic解决思路.note.md
-related: [消息队列, kafka-与-mq选型, rocketmq-事务消息实践, 秒杀设计]
+- raw/wujinsen_markdown/架构/消息队列/RocketMQ/Spring Cloud异步场景分布式事务怎样做？试试RocketMQ.note.md
+- raw/wujinsen_markdown/架构/消息队列/RocketMQ/rocketmq常用命令.note.md
+- raw/wujinsen_markdown/架构/消息队列/RocketMQ/安装部署/rocketmq  web管理界面安装.note.md
+- raw/wujinsen_markdown/架构/消息队列/RocketMQ/安装部署/rocketmq4.5.2 - 服务安装， web管理界面安装.note.md
+- raw/wujinsen_markdown/架构/消息队列/RocketMQ/问题解决/Rocketmq之No route info of this topic解决思路.note.md
+related: [消息队列, kafka-与-mq选型, rocketmq-事务消息实践]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # RocketMQ 架构与实战
@@ -46,3 +48,7 @@ mqadmin topicList -n localhost:9876
 ## 相关
 
 [[middleware/rocketmq-事务消息实践]] · [[middleware/消息队列]]
+
+## 批次#1312 增补（wujinsen P1）
+
+合并 RocketMQ 安装/事务/命令 raw。

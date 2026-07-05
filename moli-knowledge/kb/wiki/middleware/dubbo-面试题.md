@@ -5,10 +5,10 @@ type: interview
 status: active
 tags: [dubbo, nacos, 面试题, RPC]
 sources:
- - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
-related: [dubbo-与-nacos, dubbo-调用原理与分层, nacos-注册与配置, 服务调用与架构]
+- raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
+related: [dubbo-与-nacos, dubbo-调用原理与分层, nacos-注册与配置]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # Dubbo（面试题系列）
@@ -54,3 +54,14 @@ Dubbo RPC 二进制、性能高、接口契约；Feign HTTP REST。已选 Dubbo�
 ## Q10. No provider 怎么排？
 
 Provider 是否起、group/version、namespace、防火墙、Nacos 是否 8848。见。
+## Dubbo 面试补充
+
+- **SPI** 与 Adaptive 扩展点
+- **集群容错**：Failover / Failfast 等
+- 注册中心挂掉：Consumer 本地缓存 Provider 列表仍可调用（短期）
+
+原理 [[middleware/dubbo-调用原理与分层]]。
+
+## 批次#1313 增补（wujinsen P2）
+
+合并精尽 Dubbo 面试题 raw。

@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [Prometheus, 监控, 运维]
 sources:
- - raw/wujinsen_markdown/
-related: [压测监控与prometheus, spring-boot-actuator监控, 可观测性与运维体系汇总]
+- raw/wujinsen_markdown/ (enterprise-kb/ops 专题页)
+related: [压测监控与prometheus, prometheus-告警规则设计]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Prometheus 告警规则设计
 
-> 监控栈 [[middleware/压测监控与prometheus]]；指标 [[spring-boot-actuator监控]]；体系。
+> 监控栈 [[middleware/压测监控与prometheus]]；指标 [[ops/prometheus-告警规则设计]]；体系。
 
 ## 1. 告警原则
 

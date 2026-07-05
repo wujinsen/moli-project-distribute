@@ -5,15 +5,15 @@ type: article
 status: active
 tags: [测试, Docker, MySQL]
 sources:
- - raw/wujinsen_markdown/
-related: [junit5-单元测试, docker部署指南, 数据库初始化指南]
+- raw/wujinsen_markdown/ (enterprise-kb/database 专题页)
+related: [pact-契约测试入门]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-05
 ---
 
 # Testcontainers 集成测试
 
-> JUnit5 [[junit5-单元测试]]；Docker ；初始化。
+> JUnit5 + Docker 容器；库表初始化见 `moli-knowledge/kb/wiki-moli/guides/数据库初始化指南.md`。
 
 JUnit 5 测试中 **Docker 拉起** MySQL/Redis，真实依赖集成验证。
 
@@ -36,4 +36,4 @@ void loginFlow() {
 
 ## 相关
 
-[[mockito-测试实战]] · [[middleware/pact-契约测试入门]]
+[[java/java-编码规范与CodeReview要点]] · [[middleware/pact-契约测试入门]]

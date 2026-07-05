@@ -5,12 +5,12 @@ type: article
 status: active
 tags: [BI, 报表, 演进, 设计]
 sources:
- - moli-bi/moli-bi-server/
- - wiki/security/字段级数据权限设计.md
- - wiki/search/elasticsearch-搜索.md
-related: [bi服务, 字段级数据权限设计, elasticsearch-搜索, mybatis-与-druid持久层, rbac-权限模型]
+- moli-bi/moli-bi-server/
+- wiki/search/elasticsearch-搜索.md
+- wiki/security/字段级数据权限设计.md
+related: [字段级数据权限设计, elasticsearch-搜索, mybatis-与-druid持久层, rbac-权限模型]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # BI 报表服务演进路线
@@ -47,7 +47,7 @@ BI 是列级权限的**首要业务场景**。
 | 需求 | 技术 |
 |------|------|
 | 模糊搜日志/文档 | [[search/elasticsearch-搜索]] |
-| 大数据导出 | 异步任务 + MinIO（参考 [[minio-附件存储指南]]） |
+| 大数据导出 | 异步任务 + MinIO（参考 `moli-knowledge/kb/wiki-moli/ops/minio-附件存储指南.md`） |
 | 实时大屏 | Redis 缓存热点聚合 [[cache/redis-缓存]] |
 
 ## 阶段 4：与全家桶集成
