@@ -5,3 +5,7 @@ llm_config.json
 ../lint-report.md
 ../lint-report.json
 .lint-report.*
+
+# 生产 raw 图包（本地 pack 生成，手工上传 EC2，勿提交）
+raw-asset-bundle.tar.gz
+raw-asset-bundle/

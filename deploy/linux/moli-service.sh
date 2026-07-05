@@ -4,6 +4,8 @@
 # 基于 deploy/linux/moli-server.sh，适配 moli-project-distribute 三服务目录
 #
 # 部署根: /opt/moli-project-distribute
+# 方式 A（整仓）: JAR 在 moli-*/target/ 或 moli-*-server/target/
+# 方式 B（扁平）: JAR 在 moli-*/ 根目录
 #   moli-user-center/  jar + application-pro.yml + conf/moli-user-center.env
 #   moli-gateway/
 #   moli-knowledge/
@@ -42,6 +44,12 @@ declare -A SVC_PID_NAME=(
   [user-center]="user-center"
   [gateway]="gateway"
   [knowledge]="knowledge"
+)
+# 方式 A（整仓 git pull）：JAR 在 Maven target 子目录
+declare -A SVC_MAVEN_TARGET=(
+  [user-center]="moli-user-center-server/target"
+  [gateway]="target"
+  [knowledge]="moli-knowledge-server/target"
 )
 
 if [[ -z "$SERVICE_KEY" || -z "${SVC_MODULE[$SERVICE_KEY]:-}" ]]; then
@@ -167,8 +175,22 @@ resolve_jar() {
     return 0
   fi
 
-  echo "[ERROR] cannot find jar under $APP_HOME"
-  echo "        set JAR_FILE in conf/moli-${SERVICE_KEY}.env or place ${JAR_PREFIX}-*.jar there"
+  # 整仓部署：JAR 在 moli-*/target/ 或 moli-*-server/target/
+  local maven_rel="${SVC_MAVEN_TARGET[$SERVICE_KEY]:-}"
+  if [[ -n "$maven_rel" ]]; then
+    local maven_dir="${APP_HOME}/${maven_rel}"
+    shopt -s nullglob
+    matched=("${maven_dir}/${JAR_PREFIX}-"*.jar)
+    shopt -u nullglob
+    if ((${#matched[@]} > 0)); then
+      JAR_FILE="$(ls -1t "${matched[@]}" | head -n 1)"
+      echo "[INFO] using Maven target jar: $JAR_FILE"
+      return 0
+    fi
+  fi
+
+  echo "[ERROR] cannot find jar under $APP_HOME (flat layout or ${SVC_MAVEN_TARGET[$SERVICE_KEY]:-target})"
+  echo "        set JAR_FILE in conf/moli-${SERVICE_KEY}.env or place ${JAR_PREFIX}-*.jar in APP_HOME"
   return 1
 }
 

@@ -466,17 +466,19 @@ POST /kb/sync/trigger
 
 ## 8. T22 · wujinsen 插图回迁（运维）
 
-> PRD：`docs/product/wujinsen-wiki-image-remediation-prd.md` · 架构图：`docs/diagrams/moli-kb-wujinsen-image-remediation.drawio`
+> PRD：`docs/product/wujinsen-wiki-image-remediation-prd.md` · **生产上线**：[`deploy/上线流程.md`](../../deploy/上线流程.md) §4.3
 
 | 步骤 | 命令 / 动作 |
 |------|-------------|
-| 验收报告 | `python kb/tools/verify_wujinsen_images.py --report` → `WUJINSEN_R3_REPORT.md` |
+| 验收报告 | `python3 kb/tools/verify_wujinsen_images.py --report` → `WUJINSEN_R3_REPORT.md` |
 | manifest | `kb/tools/WUJINSEN_IMAGE_REMEDIATION.json`（397/397 done） |
-| wiki lint | `python kb/tools/lint.py --strict` |
-| Sync | `python kb/tools/sync_to_db.py --wiki-dir wiki --space enterprise-kb`（有 wiki 变更时） |
-| 部署 | knowledge-server（Asset API）+ meiling-ui（`KbMarkdownImage`）+ 网关 |
+| Sync | `bash kb/tools/ci/run_sync.sh sync-all`（需 pymysql；**不**上传 png） |
+| **生产 raw 图包** | 开发机 `pack_raw_assets.py` → EC2 上传 `raw-asset-bundle.tar.gz` + `deploy_raw_assets.sh` |
+| 部署 | knowledge-server（Asset API）+ meiling-ui（`KbMarkdownImage`）+ `KB_RAW_ROOT` |
 
-Web 抽检清单见 [`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-t22-image-remediation.md) §4。
+**勿**上传整包 `wujinsen_markdown`；最小包约 **12 MiB / 212 png**。annex 图在 `kb/wiki/**/.assets/`。
+
+Web 抽检：[`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-t22-image-remediation.md) §4 · 冒烟 S6：[`deploy/上线流程.md`](../../deploy/上线流程.md) §6。
 
 ---
 
@@ -484,6 +486,7 @@ Web 抽检清单见 [`docs/test/knowledge-t22-image-remediation.md`](../test/kno
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-06 | §8 对齐生产：raw-asset-bundle + deploy 脚本；Sync 与插图分包 |
 | 2026-07-05 | §8 T22 插图回迁运维；§1.3 修正 enterprise-kb 磁盘路径 |
 | 2026-06-28 | §3.2 Web vs 完整能力差距；§2.6 raw 簇已引用 |
 | 2026-06-28 | 整合入库 + 治理为统一操作手册 |

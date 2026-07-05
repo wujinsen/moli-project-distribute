@@ -16,6 +16,12 @@ ENRICH_PY="${TOOLS}/enrich.py"
 
 MODE="${1:-dry-run}"
 
+# EC2 / Amazon Linux 通常只有 python3；可用 KB_SYNC_PYTHON 覆盖（与 moli-knowledge.env 一致）
+PYTHON="${KB_SYNC_PYTHON:-python3}"
+if ! command -v "${PYTHON}" >/dev/null 2>&1; then
+  PYTHON=python
+fi
+
 KB_SYNC_HOST="${KB_SYNC_HOST:-127.0.0.1}"
 KB_SYNC_PORT="${KB_SYNC_PORT:-3306}"
 KB_SYNC_USER="${KB_SYNC_USER:-root}"
@@ -37,19 +43,19 @@ mysql_cli() {
 
 case "${MODE}" in
   dry-run)
-    python "${SYNC_PY}" --dry-run
+    "${PYTHON}" "${SYNC_PY}" --dry-run
     ;;
   lint)
     # 知识治理体检（report-only：不因 ERROR/WARN 失败，便于在 dry-run 里观察）
-    python "${LINT_PY}" "${@:2}"
+    "${PYTHON}" "${LINT_PY}" "${@:2}"
     ;;
   enrich)
     # Wiki enrich：已有页追加 patch（默认 dry-run；--apply 写盘）
-    python "${ENRICH_PY}" "${@:2}"
+    "${PYTHON}" "${ENRICH_PY}" "${@:2}"
     ;;
   lint-strict)
     # 门禁模式：有 ERROR 即失败；加 --strict 时 WARN 也失败
-    python "${LINT_PY}" --strict "${@:2}"
+    "${PYTHON}" "${LINT_PY}" --strict "${@:2}"
     ;;
   lint-strict-all)
     # 多空间门禁：逐个 wiki 空间跑 --strict，任一失败即整体失败（merge 前严格治理时用）
@@ -57,7 +63,7 @@ case "${MODE}" in
     for entry in "${KB_SPACES[@]}"; do
       wiki_dir="${entry%%:*}"
       echo "[ci] lint-strict --wiki-dir ${wiki_dir} ..."
-      python "${LINT_PY}" --strict --wiki-dir "${wiki_dir}" "${@:2}"
+      "${PYTHON}" "${LINT_PY}" --strict --wiki-dir "${wiki_dir}" "${@:2}"
     done
     ;;
   lint-all)
@@ -67,7 +73,7 @@ case "${MODE}" in
     for entry in "${KB_SPACES[@]}"; do
       wiki_dir="${entry%%:*}"
       echo "[ci] lint --wiki-dir ${wiki_dir} ..."
-      if ! python "${LINT_PY}" --wiki-dir "${wiki_dir}" "${@:2}"; then
+      if ! "${PYTHON}" "${LINT_PY}" --wiki-dir "${wiki_dir}" "${@:2}"; then
         had_issue=1
       fi
     done
@@ -98,7 +104,7 @@ case "${MODE}" in
     echo "[ci] schema ready."
     ;;
   sync)
-    python "${SYNC_PY}" \
+    "${PYTHON}" "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
@@ -107,7 +113,7 @@ case "${MODE}" in
       --space "${KB_SYNC_SPACE}"
     ;;
   purge-raw-archive)
-    python "${SYNC_PY}" \
+    "${PYTHON}" "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
@@ -117,7 +123,7 @@ case "${MODE}" in
       --purge-raw-archive
     ;;
   purge-manual-web)
-    python "${SYNC_PY}" \
+    "${PYTHON}" "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
@@ -127,7 +133,7 @@ case "${MODE}" in
       --purge-manual-web
     ;;
   purge-manual-web-all)
-    python "${SYNC_PY}" \
+    "${PYTHON}" "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
@@ -136,7 +142,7 @@ case "${MODE}" in
       --purge-manual-web --all-spaces
     ;;
   purge-manual-web-dry-run)
-    python "${SYNC_PY}" \
+    "${PYTHON}" "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
@@ -186,7 +192,7 @@ case "${MODE}" in
       wiki_dir="${entry%%:*}"
       space_code="${entry##*:}"
       echo "[ci] dry-run --wiki-dir ${wiki_dir} --space ${space_code} ..."
-      python "${SYNC_PY}" --dry-run --wiki-dir "${wiki_dir}" --space "${space_code}"
+      "${PYTHON}" "${SYNC_PY}" --dry-run --wiki-dir "${wiki_dir}" --space "${space_code}"
     done
     ;;
   sync-all)
@@ -195,7 +201,7 @@ case "${MODE}" in
       wiki_dir="${entry%%:*}"
       space_code="${entry##*:}"
       echo "[ci] sync --wiki-dir ${wiki_dir} --space ${space_code} ..."
-      python "${SYNC_PY}" \
+      "${PYTHON}" "${SYNC_PY}" \
         --wiki-dir "${wiki_dir}" \
         --host "${KB_SYNC_HOST}" \
         --port "${KB_SYNC_PORT}" \

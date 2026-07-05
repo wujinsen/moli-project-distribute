@@ -61,11 +61,19 @@ npm test
 
 **PASS**：非 `alt=image N` 占位；登录后 blob 非 JSON。
 
-## 5. 发布前
+## 5. 生产发布（EC2）
 
-1. `sync_to_db.py --space enterprise-kb`（有 wiki 变更时）
-2. 网关 + knowledge-server + meiling-ui 部署含 F1/F2
-3. 更新 `WUJINSEN_*` 报告日期（可选）
+> **Runbook 正文**：[`deploy/上线流程.md`](../../deploy/上线流程.md) §4.3 · §6 S6
+
+| 步骤 | 做什么 |
+|------|--------|
+| 1 | `sync-all` 写 MySQL（需 **pymysql**；与 lint 退出码无关） |
+| 2 | 磁盘保留 **`kb/wiki/`**（含 annex `.assets/`） |
+| 3 | 开发机 `python tools/pack_raw_assets.py` → 上传 **`raw-asset-bundle.tar.gz`** + **`deploy_raw_assets.sh`** |
+| 4 | EC2 `sed -i 's/\r$//' deploy_raw_assets.sh` → `bash deploy_raw_assets.sh`（212 png → `kb/raw/`） |
+| 5 | 确认 `KB_RAW_ROOT` · T22 JAR · meiling-ui `KbMarkdownImage` |
+
+**不要**上传整包 `kb/raw/wujinsen_markdown/`（约 0.29 GiB）；最小包约 **12 MiB**（`stats_raw_asset_refs.py` / `raw-asset-paths.txt`）。
 
 ## 6. 相关报告（`kb/tools/`）
 
@@ -75,3 +83,5 @@ npm test
 | `WUJINSEN_DEFER_INGEST_PLAN.md` | defer 重开记录 |
 | `WUJINSEN_ATTACH_RESOLVED.md` | `.note.attach` 7 条 |
 | `WUJINSEN_IMAGE_REMEDIATION.json` | manifest 唯一真相 |
+| `pack_raw_assets.py` / `deploy_raw_assets.sh` | 生产最小 raw 图包（约 12 MiB） |
+| `stats_raw_asset_refs.py` | 统计 `/kb/raw/asset` 引用数与体积 |

@@ -16,6 +16,10 @@
 
 user-center · knowledge-server · gateway → 详见 [`上线流程.md`](上线流程.md) §1–§4。
 
+**部署布局**：整仓 `git pull` 用 **方式 A**（JAR 在 `*/target/`）；rsync/scp 换包用 **方式 B**（JAR 在服务根目录）。二者勿混用。
+
+**知识库插图（T22）**：Sync 只进 MySQL；B/D 档另传 **`kb/tools/raw-asset-bundle.tar.gz`**，见 [`上线流程.md`](上线流程.md) §4.3。
+
 ## 敏感文件
 
 `conf/moli-*.env`、`application-pro.yml` 含密码与密钥，**仅留在部署机**；仓库内只保留 `.example` 与 yml 模板。
