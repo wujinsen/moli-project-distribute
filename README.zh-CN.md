@@ -238,7 +238,7 @@ http://localhost:21000/KnowledgeServer/...
 - [架构 / 调用 / 鉴权设计](docs/zh-CN/ARCHITECTURE.md)
 - [技术栈详细文档](docs/zh-CN/TECH_STACK.md)
 - [RBAC 权限设计文档](docs/zh-CN/RBAC.md)
-- [API 接口文档](docs/api/README.md) · [API 迭代地图](docs/api-iteration-map.md)
+- [API 接口文档](docs/api/README.md) · [API 迭代地图](docs/api/api-iteration-map.md)
 - [网关模块](moli-gateway/README.md)
 - [用户中心模块](moli-user-center/README.md)
 - [订单模块](moli-order/README.md)

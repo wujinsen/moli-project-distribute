@@ -63,7 +63,7 @@
 |------|--------|------|
 | `KbMarkdownImage` + 接入 browse/preview | **P0** | `/kb/raw/asset`、`/kb/wiki/asset` |
 | 浏览页附件只读 + 跳转编辑页 | **P1** | 见 §1.2 |
-| 编辑页 Vditor 插图上传（F2） | P2 | 写 `.assets/` + markdown |
+| 编辑页 Vditor 插图上传（F2） | ✅ | `POST /kb/wiki/asset` · `KbWikiImageInsert` |
 
 | 行 | 数据源 | 单选 (v2) | 多选 (v3) |
 |----|--------|-----------|-----------|

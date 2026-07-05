@@ -51,6 +51,8 @@
 | Wiki 治理 | [wiki-govern-frontend.md](wiki-govern-frontend.md) | **工作台** |
 | 平台 LLM 配置 | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | **工作台** |
 | 前端路由总表 | [frontend-routes-map.md](frontend-routes-map.md) | **工作台** |
+| Raw / Wiki 插图 Asset（R0） | [kb-markdown-image-frontend.md](kb-markdown-image-frontend.md) · KNOWLEDGE_API §Asset | **v1 稳定**（T22） |
+| Wiki 编辑页上传（F2） | 同上 · `POST /kb/wiki/asset` | **v1 稳定**（T22） |
 
 ## 前端 · meiling-ui
 

@@ -174,4 +174,76 @@ public class KbAssetServiceImplTest {
                 "file", "a.png", "image/png", new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47});
         service.uploadWikiAsset(SPACE_ID, "missing/page", multipart);
     }
+
+    @Test(expected = BaseException.class)
+    public void uploadWikiAsset_rejectsEmptyFile() {
+        Path md = wikiDir.resolve("java/jvm.md");
+        try {
+            Files.createDirectories(md.getParent());
+            Files.write(md, "# jvm\n".getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        MockMultipartFile empty = new MockMultipartFile("file", "a.png", "image/png", new byte[0]);
+        service.uploadWikiAsset(SPACE_ID, "java/jvm", empty);
+    }
+
+    @Test(expected = BaseException.class)
+    public void uploadWikiAsset_rejectsOversized() {
+        when(wikiProperties.getAssetMaxBytes()).thenReturn(10L);
+        Path md = wikiDir.resolve("java/jvm.md");
+        try {
+            Files.createDirectories(md.getParent());
+            Files.write(md, "# jvm\n".getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        MockMultipartFile large = new MockMultipartFile(
+                "file", "big.png", "image/png", new byte[64]);
+        service.uploadWikiAsset(SPACE_ID, "java/jvm", large);
+    }
+
+    @Test(expected = BaseException.class)
+    public void uploadWikiAsset_rejectsUnsupportedExtension() {
+        Path md = wikiDir.resolve("java/jvm.md");
+        try {
+            Files.createDirectories(md.getParent());
+            Files.write(md, "# jvm\n".getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        MockMultipartFile pdf = new MockMultipartFile(
+                "file", "doc.pdf", "application/pdf", new byte[]{1, 2, 3});
+        service.uploadWikiAsset(SPACE_ID, "java/jvm", pdf);
+    }
+
+    @Test(expected = BaseException.class)
+    public void uploadWikiAsset_rejectsSvgWhenDisabled() {
+        Path md = wikiDir.resolve("java/jvm.md");
+        try {
+            Files.createDirectories(md.getParent());
+            Files.write(md, "# jvm\n".getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        MockMultipartFile svg = new MockMultipartFile(
+                "file", "icon.svg", "image/svg+xml", "<svg/>".getBytes(StandardCharsets.UTF_8));
+        service.uploadWikiAsset(SPACE_ID, "java/jvm", svg);
+    }
+
+    @Test
+    public void resolveUploadExtension_fromContentTypeWhenNoExtension() {
+        MockMultipartFile png = new MockMultipartFile("file", "upload", "image/png", new byte[]{1});
+        Assert.assertEquals("png", KbAssetServiceImpl.resolveUploadExtension(png));
+    }
+
+    @Test
+    public void buildImageAlt_stripsPathAndExtension() {
+        Assert.assertEquals("gc-diagram", KbAssetServiceImpl.buildImageAlt("C:\\imgs\\gc-diagram.png"));
+    }
+
+    @Test(expected = BaseException.class)
+    public void assertAllowedImageExt_rejectsUnknown() {
+        KbAssetServiceImpl.assertAllowedImageExt("bmp", false);
+    }
 }

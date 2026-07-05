@@ -18,6 +18,7 @@
 | **[knowledge-e2e-regression.md](knowledge-e2e-regression.md)** | **知识库深度回归（CI + 手测）** |
 | [knowledge-wiki-lint-space.md](knowledge-wiki-lint-space.md) | lint-space 单测 |
 | [knowledge-script-vs-llm-matrix.md](knowledge-script-vs-llm-matrix.md) | 脚本 vs LLM |
+| **[knowledge-t22-image-remediation.md](knowledge-t22-image-remediation.md)** | **T22 wujinsen 插图回迁验收 + 自动化测试** |
 
 ## 压测
 

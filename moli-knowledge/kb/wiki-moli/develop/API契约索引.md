@@ -6,10 +6,10 @@ status: active
 tags: [API, 契约, 联调, 索引]
 sources:
   - docs/api/README.md
-  - docs/api-iteration-map.md
+  - docs/api/api-iteration-map.md
 related: [项目文档总览, swagger接口调试指南, 网关, 知识库服务]
 created: 2026-06-20
-updated: 2026-06-20
+updated: 2026-07-05
 ---
 
 # API 契约索引
@@ -21,7 +21,7 @@ updated: 2026-06-20
 
 | 文档 | 说明 |
 |------|------|
-| `docs/api-iteration-map.md` | 各服务 API 成熟度 |
+| `docs/api/api-iteration-map.md` | 各服务 API 成熟度 |
 | `docs/api/gateway-routes.md` | 四路由、StripPrefix |
 | `docs/api/frontend-routes-map.md` | 前端菜单 ↔ API |
 
@@ -43,6 +43,7 @@ updated: 2026-06-20
 | `docs/api/ingest-workbench-frontend.md` | Ingest I1–I5 |
 | `docs/api/wiki-govern-frontend.md` | Wiki 治理 W1–W8 |
 | `docs/api/kb-llm-platform-frontend.md` | LLM 平台 T19 |
+| `docs/api/kb-markdown-image-frontend.md` | 插图 Asset R0/F2（T22） |
 
 ## 调试
 

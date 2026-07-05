@@ -33,7 +33,7 @@
 
 | wiki 目录 | space_code |
 |-----------|------------|
-| `kb/wiki-moli/` | `enterprise-kb` |
+| `kb/wiki/` | `enterprise-kb` |
 | `kb/wiki-moli/` | `moli-ops-manual` |
 | `kb/wiki-jp-exam/` | `jp-fe-ap-exam` |
 

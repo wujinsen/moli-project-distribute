@@ -8,7 +8,7 @@
 |------|------|
 | **[v1-release-runbook.md](v1-release-runbook.md)** | 发布步骤：DB → 配置 → 启动 → Sync → 冒烟 |
 | [production-checklist.md](production-checklist.md) | 生产/预发配置与安全检查 |
-| **[../../deploy/README.md](../../deploy/README.md)** | **生产部署模板**（`pro/` 本地密钥，不提交 Git） |
+| **[../../deploy/README.md](../../deploy/README.md)** · [`deploy/上线流程.md`](../../deploy/上线流程.md) | **生产部署**（systemd · env 模板） |
 | [sql-migration-order.md](sql-migration-order.md) | **SQL 增量执行顺序** |
 | [monitoring-and-logs.md](monitoring-and-logs.md) | 日志与基础监控（v1） |
 | [rollback-guide.md](rollback-guide.md) | 发布回滚 |

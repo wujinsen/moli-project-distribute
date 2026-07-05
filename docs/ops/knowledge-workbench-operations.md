@@ -46,8 +46,10 @@
 |------|-----|
 | spaceId | `900000000000000001` |
 | spaceCode | `enterprise-kb` |
-| wiki 磁盘 | `moli-knowledge/kb/wiki-moli/` |
+| wiki 磁盘 | `moli-knowledge/kb/wiki/` |
 | raw 磁盘 | `moli-knowledge/kb/raw/`（只读投喂） |
+
+> 茉莉项目手册空间为 `moli-ops-manual` · 磁盘 `kb/wiki-moli/`；Ingest 治理演示常用 `enterprise-kb`。
 
 ### 1.4 依赖对照（按能力）
 
@@ -458,6 +460,23 @@ POST /kb/sync/trigger
 | Ingest 验收 | [`docs/test/knowledge-ingest-acceptance.md`](../test/knowledge-ingest-acceptance.md) |
 | 治理 API 测试 | [`docs/test/knowledge-wiki-lint-space.md`](../test/knowledge-wiki-lint-space.md) |
 | 治理前端对接 | [`docs/api/wiki-govern-frontend.md`](../api/wiki-govern-frontend.md) |
+| **T22 插图回迁** | [`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-t22-image-remediation.md) · `kb/tools/WUJINSEN_*` |
+
+---
+
+## 8. T22 · wujinsen 插图回迁（运维）
+
+> PRD：`docs/product/wujinsen-wiki-image-remediation-prd.md` · 架构图：`docs/diagrams/moli-kb-wujinsen-image-remediation.drawio`
+
+| 步骤 | 命令 / 动作 |
+|------|-------------|
+| 验收报告 | `python kb/tools/verify_wujinsen_images.py --report` → `WUJINSEN_R3_REPORT.md` |
+| manifest | `kb/tools/WUJINSEN_IMAGE_REMEDIATION.json`（397/397 done） |
+| wiki lint | `python kb/tools/lint.py --strict` |
+| Sync | `python kb/tools/sync_to_db.py --wiki-dir wiki --space enterprise-kb`（有 wiki 变更时） |
+| 部署 | knowledge-server（Asset API）+ meiling-ui（`KbMarkdownImage`）+ 网关 |
+
+Web 抽检清单见 [`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-t22-image-remediation.md) §4。
 
 ---
 
@@ -465,5 +484,6 @@ POST /kb/sync/trigger
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-05 | §8 T22 插图回迁运维；§1.3 修正 enterprise-kb 磁盘路径 |
 | 2026-06-28 | §3.2 Web vs 完整能力差距；§2.6 raw 簇已引用 |
 | 2026-06-28 | 整合入库 + 治理为统一操作手册 |
