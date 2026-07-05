@@ -10,7 +10,7 @@
 
 | 产品线 | 菜单 | 产品方案 | 前端对接 | 后端状态 |
 |--------|------|----------|----------|----------|
-| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) | T15+T18+T19 ✅ |
+| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] · [双入口导入 PRD](knowledge-import-entry-prd.md) · [wujinsen 图片回迁 T22](wujinsen-wiki-image-remediation-prd.md) | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) | T15+T18+T19 ✅；**T20/T22 🔵** |
 | **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [knowledge-workbench-frontend.md](../api/knowledge-workbench-frontend.md) · [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g ✅；**T16f 前端 🔵** |
 | **单页编辑** | Wiki 编辑 | [[Wiki在线编辑与AI协助改稿]] | KNOWLEDGE_API §8.2–8.4 | T14 ✅ |
 | **健康体检** | 健康体检 | wiki-moli / 查询与体检指南 | KNOWLEDGE_API §4 | DB 快照，与治理分工 |
@@ -28,6 +28,7 @@
 | 治理 Lint 数据源 | DB `GET /kb/lint` | 磁盘 **`lint-space`**（文件真值） |
 | Ingest 正文生成 | 永远 LLM | 默认 LLM；**`useLlmGenerate=false`** 模板模式（raw 直贴） |
 | Ingest commit | 可重复 ingest 已 covered raw | **raw 覆盖门禁**（已被其它 wiki 引用则拒绝） |
+| 页附件 UI | 浏览页 upload/delete | **浏览只读**；**Wiki 编辑页** upload/delete（T4/T20） |
 | 入库 / Sync 后 | 无引导 | **`nextSteps`** → Wiki 治理 Lint、健康体检 |
 | enrich 一词 | 治理页 enrich | **仅**：T14 单页 `POST /kb/wiki-moli/enrich`、Ingest Plan `enrich[]` |
 

@@ -1020,6 +1020,36 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 > 前端上传示例：`FormData` 追加 `documentId` 与 `file` 字段；下载用 `window.open` 或带 `Authorization` 的 blob 请求。
 > ⚠️ 附件接口已接入空间 ACL（读/写随文档空间权限）。
 
+**存储模型（无 URL 字段）**
+
+| 存储 | 内容 |
+|------|------|
+| **MinIO** | 文件二进制；键 = `object_key` |
+| **MySQL `kb_attachment`** | 元数据：`document_id`、`file_name`、**`object_key`**、`file_size`、`content_type` |
+| **MySQL `kb_document`** | **不含**附件 URL；正文 `content` 为 markdown，附件与之**独立** |
+
+上传后 `object_key` 形如：`kb/attachment/{documentId}/{attachmentId}/{fileName}`（见 `KbAttachmentServiceImpl`）。
+
+**下载 URL（运行时拼装，不入库）**
+
+```text
+GET {网关}/KnowledgeServer/kb/attachment/{attachmentId}
+```
+
+前端用列表接口返回的 `id` 拼 URL；服务端按 `id` 查 `object_key` 再从 MinIO 读流。**不要**把 MinIO 直链或 `object_key` 暴露给浏览器。
+
+若要在正文引用附件，需 editor **手改 markdown**（或后续 T21 插入链接）；Sync **不会**自动把附件写进 `content`。
+
+**前端入口（2026-07-05 定案）**
+
+| 页面 | 附件能力 |
+|------|----------|
+| **文档浏览** `knowledge/browse` | **只读**：列表 + 下载；无 upload/delete |
+| **Wiki 编辑** `knowledge/wiki/edit` | **可写**：upload + delete + 列表；需 `canEdit` 且已有 `documentId`（Sync 后） |
+| editor 在浏览页 | 可选 CTA「在编辑页管理附件 →」跳转 edit 并带 `documentId` / `slug` |
+
+详见 [knowledge-workbench-frontend.md §1.2](knowledge-workbench-frontend.md#12-页附件-minio--ui-入口定案) · [knowledge-import-entry-prd.md §4.4](../product/knowledge-import-entry-prd.md#44-wiki-页附件t4-已有--t21-增强--不在本-tab)。
+
 ### 5.7 空间 `/kb/space`
 
 | 方法 | 路径 | 说明 |
@@ -1290,6 +1320,55 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 > 产品方案：[`kb/wiki-moli/develop/Wiki在线编辑与AI协助改稿.md`](../../moli-knowledge/kb/wiki-moli/develop/Wiki在线编辑与AI协助改稿.md)。  
 > **保存铁律**：写回服务器 `kb/wiki*/*.md`，再 Sync；不默认只写 `kb_document`。
+
+### 8.0 Inline 图片 Asset（T22 R0）✅
+
+> 方案：[`docs/product/wujinsen-wiki-image-remediation-prd.md`](../product/wujinsen-wiki-image-remediation-prd.md) §4.1。  
+> 后端：`KbAssetController` + `KbAssetService`（二进制直出，**非** `MoliResult` 包装）。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/kb/raw/asset?path=&spaceId=` | 读 `kb.ingest.raw-root` 下图片；需空间 **viewer**；`spaceId` 省略默认 `enterprise-kb` |
+| GET | `/kb/wiki/asset?slug=&rel=&spaceId=` | 读 `{slug}{assetSubdirSuffix}/` 下图片（默认 `{slug}.assets/`）；需空间 **viewer** |
+| GET | `/kb/wiki-moli/asset?slug=&rel=&spaceId=` | 与上一行同 handler（文档别名） |
+
+**Query**
+
+| 参数 | 必填 | 说明 |
+|------|------|------|
+| `path` | raw 接口 | 相对 raw 根，如 `wujinsen_markdown/.../imageFile1.png`；可带可选前缀 `raw/` |
+| `slug` | wiki 接口 | wiki 全路径 slug，如 `bigdata/flink-流批一体入门` |
+| `rel` | wiki 接口 | 相对 asset 目录，如 `imageFile1.png` 或 `assets/imageFile1.png` |
+| `spaceId` | 否 | 空间 ID；ACL 与浏览读权限一致 |
+
+**响应**
+
+- `200`：`Content-Type: image/png|jpeg|gif|webp`；`Content-Disposition: inline`；`Cache-Control: private, max-age=3600`（可配 `kb.wiki.asset-cache-max-age-seconds`）
+- 越权路径（`..`、越根）→ 业务错误
+- 非图片扩展名 / 默认禁用的 `svg` → 业务错误
+- 文件不存在 → 业务错误
+
+**Markdown 引用示例（D 档 raw 直链）**
+
+```markdown
+![架构图](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/架构/.../imageFile1.png)
+```
+
+**Markdown 引用示例（A/B 档 wiki 复制后）**
+
+```markdown
+![GC 示意](assets/gc.png)
+```
+
+前端按当前页 `slug` 解析为：`GET /KnowledgeServer/kb/wiki/asset?spaceId=...&slug=...&rel=assets/gc.png`
+
+**配置**（`kb.wiki.*`）
+
+| 键 | 默认 | 说明 |
+|----|------|------|
+| `asset-subdir-suffix` | `.assets` | slug `java/foo` → 目录 `java/foo.assets/` |
+| `allow-svg` | `false` | 是否允许 `.svg` |
+| `asset-cache-max-age-seconds` | `3600` | `Cache-Control` max-age |
 
 ### 8.1 读/写 wiki 文件 ✅（T14a 已实现）
 

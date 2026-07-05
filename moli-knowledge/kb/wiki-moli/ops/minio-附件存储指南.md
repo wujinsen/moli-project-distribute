@@ -10,7 +10,7 @@ sources:
   - raw/wujinsen_markdown/架构/文件存储/minio/minio安装.note.md
 related: [知识库服务, 知识库使用指南, 本地启动指南, 技术栈与版本]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-07-05
 ---
 
 # MinIO 附件存储指南
@@ -72,6 +72,33 @@ minio:
 | 删除 | DELETE | `/kb/attachment/{id}` |
 
 流程：上传 → MinIO `putObject` + 写 `kb_attachment` 表；删除为**软删**记录，MinIO 对象默认保留（见 `KNOWLEDGE_API.md`）。
+
+**MySQL 存什么（没有 URL 字段）**
+
+| 字段 | 含义 |
+|------|------|
+| `id` | 附件主键；**下载 URL 用这个 id** |
+| `document_id` | 挂在哪篇文档（`kb_document.id`） |
+| `file_name` | 原始文件名 |
+| **`object_key`** | MinIO 对象键，如 `kb/attachment/900/1001/demo.pdf` |
+| `file_size` / `content_type` | 大小与 MIME |
+| `is_delete` | 软删标记 |
+
+**下载链接怎么来**
+
+- 库内**不存** HTTP URL。
+- 前端拼：`GET /KnowledgeServer/kb/attachment/{id}`（带 `Authorization`）。
+- 服务端：`id` → 查 `object_key` → MinIO 读流返回。
+
+**正文会不会自动带上附件链接？**
+
+- **不会**。`kb_document.content` 是 markdown 正文；附件在独立表。
+- 要在正文里可点，需 editor 手改 md（或未来 T21「插入附件链接」）；与 T22 inline 图（`.assets/` / Asset API）是另一条线。
+
+**前端入口（2026-07-05）**
+
+- **文档浏览**：附件列表 + 下载（只读）。
+- **Wiki 编辑**：上传 / 删除 / 列表。详见 `docs/api/knowledge-workbench-frontend.md` §1.2。
 
 ## 5. 与 wiki 双轨
 

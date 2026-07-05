@@ -1,0 +1,80 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="import-entry" name="Knowledge Import Entry">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;知识入库 · 双入口导入（T20）&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;Raw 投喂 + Ingest 加工 · Wiki 成品直导 · MinIO 为页附件（非 raw）&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="15" width="720" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="user" value="&lt;b&gt;用户 / Editor&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ui" value="&lt;b&gt;Ingest 工作台&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Tab1 投喂 Raw&lt;br&gt;Tab2 选源入库（现有）&lt;br&gt;Tab3 成品导入&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="65" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e_u_ui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=block;" edge="1" parent="1" source="user" target="ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_raw" value="路径 A · Raw（待加工）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;startSize=26;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="180" width="520" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="raw_up" value="&lt;b&gt;上传 / 批量&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;POST raw-upload&lt;br&gt;或 Git/SFTP → raw/&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="lane_raw">
+          <mxGeometry x="20" y="45" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="raw_dir" value="&lt;b&gt;kb/raw/{prefix}/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;只读投喂池&lt;br&gt;Agent 不改写&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffffff;strokeColor=#d6b656;size=12;" vertex="1" parent="lane_raw">
+          <mxGeometry x="190" y="40" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ingest" value="&lt;b&gt;Ingest&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Express / Expert&lt;br&gt;模板 useLlmGenerate=false&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_raw">
+          <mxGeometry x="370" y="45" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="commit" value="&lt;b&gt;commit&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;写 wiki + index/log/edges&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_raw">
+          <mxGeometry x="190" y="130" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_raw1" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="lane_raw" source="raw_up" target="raw_dir"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_raw2" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="lane_raw" source="raw_dir" target="ingest"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_raw3" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="lane_raw" source="ingest" target="commit"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lane_wiki" value="路径 B · Wiki 成品（已出稿）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=26;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="180" width="480" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="md_up" value="&lt;b&gt;上传 .md&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;选空间+分类+slug&lt;br&gt;wiki-import / PUT page&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="lane_wiki">
+          <mxGeometry x="20" y="45" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="wiki_dir" value="&lt;b&gt;kb/wiki*/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;{dir_slug}/{slug}.md&lt;br&gt;真相源 · 可 Git&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffffff;strokeColor=#82b366;size=12;" vertex="1" parent="lane_wiki">
+          <mxGeometry x="200" y="40" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="skip_ingest" value="&lt;font style=&quot;font-size:10px;&quot;&gt;跳过 raw &amp; Plan/LLM&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;" vertex="1" parent="lane_wiki">
+          <mxGeometry x="20" y="120" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="e_w1" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="lane_wiki" source="md_up" target="wiki_dir"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lane_sync" value="共用 · Sync → Web 可见" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=26;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="420" width="1040" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sync" value="&lt;b&gt;POST /kb/sync/trigger&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;sync_to_db · source=kb&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="lane_sync">
+          <mxGeometry x="200" y="40" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="&lt;b&gt;kb_document&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;浏览 / 搜索 / Ask&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="lane_sync">
+          <mxGeometry x="480" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="browse" value="&lt;b&gt;文档浏览&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="lane_sync">
+          <mxGeometry x="720" y="40" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s1" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="lane_sync" source="sync" target="db"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_s2" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="lane_sync" source="db" target="browse"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_c_s" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="1" source="commit" target="sync"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_w_s" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;" edge="1" parent="1" source="wiki_dir" target="sync"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lane_att" value="旁路 · Wiki 页附件（非 raw / 非正文导入）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=26;fontStyle=1;rounded=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="560" width="1040" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="att" value="&lt;b&gt;pdf/png/zip…&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;需先有 documentId（Sync 后）&lt;br&gt;MinIO + kb_attachment&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" vertex="1" parent="lane_att">
+          <mxGeometry x="200" y="35" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e_db_att" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;" edge="1" parent="1" source="db" target="att"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="decision" value="&lt;b&gt;用户怎么选？&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;还要 Plan/LLM 加工 → Raw + Ingest&lt;br&gt;md 已是终稿 → Wiki 成品导入&lt;br&gt;大文件挂页 → MinIO 附件&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="180" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ui_dec" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;" edge="1" parent="1" source="ui" target="decision"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

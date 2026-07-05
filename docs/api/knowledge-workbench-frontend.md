@@ -24,6 +24,35 @@
 
 **筛选模型**：维度内 **OR**（`kbTypes` / `categoryIds` 重复 query）；维度间 **AND**；空=不过滤。
 
+### 1.2 页附件（MinIO）· UI 入口定案
+
+> **产品**：与 [knowledge-import-entry-prd.md §4.4](../product/knowledge-import-entry-prd.md#44-wiki-页附件t4-已有--t21-增强--不在本-tab) 一致。  
+> **存储**：见 [KNOWLEDGE_API.md §5.6](KNOWLEDGE_API.md#56-附件-kbattachmentt4)（`kb_attachment.object_key` + 运行时 `/kb/attachment/{id}`）。
+
+| 页面 | 路由 | 附件 UI |
+|------|------|---------|
+| **文档浏览** | `knowledge/browse/index` | **只读**：`GET /kb/attachment/list` + 下载；**禁止** upload/delete |
+| **Wiki 编辑** | `knowledge/wiki/edit` | **可写**：upload / delete / 列表（`KbAttachmentsPanel` 或等价组件） |
+
+**前置条件**
+
+1. 页已 Sync，有 `documentId`（upload 必填 `documentId`）。  
+2. 当前空间 `canEdit=true` 才展示编辑页上传区。  
+3. 浏览页 viewer 仅见列表与下载，不见上传按钮。
+
+**浏览页 editor 可选 CTA**
+
+```text
+[管理附件 →]  →  router.push('/knowledge/wiki/edit?slug=...&spaceId=...&documentId=...')
+```
+
+**与 inline 图区分**
+
+| 能力 | 存储 | 入口 |
+|------|------|------|
+| MinIO 页附件（pdf/zip） | `kb_attachment` + MinIO | Wiki **编辑**页 |
+| 正文 inline 图（T22） | wiki `.assets/` 或 raw + Asset API | markdown + `/kb/wiki/asset` |
+
 | 行 | 数据源 | 单选 (v2) | 多选 (v3) |
 |----|--------|-----------|-----------|
 | 体裁 | `GET /kb/index/types?spaceId=` | `kbType` | `kbTypes=…&kbTypes=…` |

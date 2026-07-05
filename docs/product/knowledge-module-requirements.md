@@ -100,3 +100,4 @@
 - [Ingest工作台产品方案](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)
 - [Wiki治理工作台产品方案](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md)
 - [Wiki在线编辑与AI协助改稿](../../moli-knowledge/kb/wiki-moli/develop/Wiki在线编辑与AI协助改稿.md)
+- **[双入口导入 PRD（T20）](knowledge-import-entry-prd.md)** — Raw 投喂 + Wiki 成品导入

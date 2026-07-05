@@ -40,6 +40,18 @@ public class KbWikiProperties {
     /** 文件级体检脚本超时（秒）。 */
     private int lintTimeoutSeconds = 120;
 
+    /**
+     * Wiki 页 inline 图片目录后缀（T22 R0）。
+     * slug {@code java/foo} 对应 {@code java/foo.assets/}，与 {@code java/foo.md} 同级。
+     */
+    private String assetSubdirSuffix = ".assets";
+
+    /** 是否允许 {@code .svg}（默认禁用以降低 XSS 风险）。 */
+    private boolean allowSvg = false;
+
+    /** Asset 响应 Cache-Control max-age（秒）。 */
+    private int assetCacheMaxAgeSeconds = 3600;
+
     private static Map<String, String> defaultSpaceDirs() {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("enterprise-kb", "wiki");

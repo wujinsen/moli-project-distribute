@@ -108,6 +108,10 @@ kb:
     max-bytes: 2097152
     lint-script-path: moli-knowledge/kb/tools/lint.py
     lint-timeout-seconds: 120
+    # T22 R0 inline 图片：slug=java/foo → java/foo.assets/
+    asset-subdir-suffix: .assets
+    allow-svg: false
+    asset-cache-max-age-seconds: 3600
     govern:
       # 治理页模型下拉（可选）；留空则仅 kb.llm.model
       models: []
