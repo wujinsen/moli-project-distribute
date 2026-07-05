@@ -1,0 +1,83 @@
+---
+title: 缓存更新的套路.note（原文插图 annex）
+slug: annex-缓存更新的套路
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/DataBase/Redis/缓存策略/缓存更新的套路.note.md
+related: [redis-面试题]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+看到好些⼈在写更新缓存数据代码时，先删除缓存，然后再更新数据库，⽽后续的操作会 把数据再装载的缓存中。然⽽，这个是逻辑是错误的。试想，两个并发操作，⼀个是更新 操作，另⼀个是查询操作，更新操作删除缓存后，查询操作没有命中缓存，先把⽼数据读 出来后放到缓存中，然后更新操作更新了数据库。于是，在缓存中的数据还是⽼的数据， 导致缓存中的数据是脏的，⽽且还⼀直这样脏下去了。 我不知道为什么这么多⼈⽤的都是这个逻辑，当我在微博上发了这个贴以后，我发现好些 ⼈给了好多⾮常复杂和诡异的⽅案，所以，我想写这篇⽂章说⼀下⼏个缓存更新的Design Patern（让我们多⼀些套路吧）。 这⾥，我们先不讨论更新缓存和更新数据这两个事是⼀个事务的事，或是会有失败的可 能，我们先假设更新数据库和更新缓存都可以成功的情况（我们先把成功的代码逻辑先写 对）。 更新缓存的的DesignPatern有四种：Cacheaside, Readthrough, Writethrough, Write behind caching，我们下⾯⼀⼀来看⼀下这四种Patern。
+
+# CacheAsidePatern
+
+这是最常⽤最常⽤的patern了。其具体逻辑如下： 失效：应⽤程序先从cache取数据，没有得到，则从数据库中取数据，成功后，放到缓 存中。 命中：应⽤程序从cache中取数据，取到后返回。 更新：先把数据存到数据库中，成功后，再让缓存失效。
+
+![image 1](assets/imageFile1.png)
+
+Cache-Aside-Design-Patern-Flow-Diagram
+
+![image 2](assets/imageFile2.png)
+
+Updating-Data-using-the-Cache-Aside-Patern-Flow-Diagram-1
+
+注意，我们的更新是先更新数据库，成功后，让缓存失效。那么，这种⽅式是否可以没有 ⽂章前⾯提到过的那个问题呢？我们可以脑补⼀下。 ⼀个是查询操作，⼀个是更新操作的并发，⾸先，没有了删除cache数据的操作了，⽽是先 更新了数据库中的数据，此时，缓存依然有效，所以，并发的查询操作拿的是没有更新的 数据，但是，更新操作⻢上让缓存的失效了，后续的查询操作再把数据从数据库中拉出 来。⽽不会像⽂章开头的那个逻辑产⽣的问题，后续的查询操作⼀直都在取⽼的数据。 这是标准的design patern，包括Facebok的论⽂《 》也 使⽤了这个策略。为什么不是写完数据库后更新缓存？你可以看⼀下Quora上的这个问答《
+
+Scaling Memcache at Facebok
+
+Why does Facebok use delete to remove the key-value pair in Memcached instead of up dating the Memcached during write request to the backend?
+
+》，主要是怕两个并发的写操
+
+作导致脏数据。 那么，是不是Cache Aside这个就不会有并发问题了？不是的，⽐如，⼀个是读操作，但是 没有命中缓存，然后就到数据库中取数据，此时来了⼀个写操作，写完数据库后，让缓存 失效，然后，之前的那个读操作再把⽼的数据放进去，所以，会造成脏数据。 但，这个case理论上会出现，不过，实际上出现的概率可能⾮常低，因为这个条件需要发 ⽣在读缓存时缓存失效，⽽且并发着有⼀个写操作。⽽实际上数据库的写操作会⽐读操作 慢得多，⽽且还要锁表，⽽读操作必需在写操作前进⼊数据库操作，⽽⼜要晚于写操作更 新缓存，所有的这些条件都具备的概率基本并不⼤。 所以，这也就是Quora上的那个答案⾥说的，要么通过2PC或是Paxos协议保证⼀致性，要 么就是拼命的降低并发时脏数据的概率，⽽Facebok使⽤了这个降低概率的玩法，因为 2PC太慢，⽽Paxos太复杂。当然，最好还是为缓存设置上过期时间。
+
+# Read/WriteThroughPatern
+
+我们可以看到，在上⾯的Cache Aside套路中，我们的应⽤代码需要维护两个数据存储，⼀ 个是缓存（Cache），⼀个是数据库（Repository）。所以，应⽤程序⽐较啰嗦。⽽ Read/Write Through套路是把更新数据库（Repository）的操作由缓存⾃⼰代理了，所以， 对于应⽤层来说，就简单很多了。可以理解为，应⽤认为后端就是⼀个单⼀的存储，⽽存 储⾃⼰维护⾃⼰的Cache。
+
+## Read Through
+
+Read Through 套路就是在查询操作中更新缓存，也就是说，当缓存失效的时候（过期或 LRU换出），Cache Aside是由调⽤⽅负责把数据加载⼊缓存，⽽Read Through则⽤缓存服 务⾃⼰来加载，从⽽对应⽤⽅是透明的。
+
+Write Through
+
+Write Through 套路和Read Through相仿，不过是在更新数据时发⽣。当有数据更新的时 候，如果没有命中缓存，直接更新数据库，然后返回。如果命中了缓存，则更新缓存，然 后再由Cache⾃⼰更新数据库（这是⼀个同步操作） 下图⾃来Wikipedia的 。其中的Memory你可以理解为就是我们例⼦⾥的数据库。
+
+Cache词条
+
+![image 3](assets/imageFile3.png)
+
+Write-through_with_no-write-alocation
+
+# WriteBehindCachingPatern
+
+Write Behind ⼜叫 Write Back。⼀些了解Linux操作系统内核的同学对write back应该⾮常 熟悉，这不就是Linux⽂件系统的Page Cache的算法吗？是的，你看基础这玩意全都是相 通的。所以，基础很重要，我已经不是⼀次说过基础很重要这事了。 Write Back套路，⼀句说就是，在更新数据的时候，只更新缓存，不更新数据库，⽽我们的 缓存会异步地批量更新数据库。这个设计的好处就是让数据的I/O操作⻜快⽆⽐（因为直接 操作内存嘛 ），因为异步，write backg还可以合并对同⼀个数据的多次操作，所以性能的 提⾼是相当可观的。
+
+但是，其带来的问题是，数据不是强⼀致性的，⽽且可能会丢失（我们知道Unix/Linux⾮正 常关机会导致数据丢失，就是因为这个事）。在软件设计上，我们基本上不可能做出⼀个 没有缺陷的设计，就像算法设计中的时间换空间，空间换时间⼀个道理，有时候，强⼀致 性和⾼性能，⾼可⽤和⾼性性是有冲突的。软件设计从来都是取舍Trade-Of。 另外，Write Back实现逻辑⽐较复杂，因为他需要track有哪数据是被更新了的，需要刷到 持久层上。操作系统的write back会在仅当这个cache需要失效的时候，才会被真正持久起 来，⽐如，内存不够了，或是进程退出了等情况，这⼜叫lazy write。 在wikipedia上有⼀张write back的流程图，基本逻辑如下：
+
+![image 4](assets/imageFile4.png)
+
+Write-back_with_write-alocation
+
+再多唠叨⼀些
+
+- 1） 上 ⾯ 讲 的 这 些 DesignPatern， 其 实 并 不 是 软 件 架 构 ⾥ 的 mysql数 据 库 和 memcache/redis的更新策略，这些东⻄都是计算机体系结构⾥的设计，⽐如CPU的缓存， 硬盘⽂件系统中的缓存，硬盘上的缓存，数据库中的缓存。基本上来说，这些缓存更新的 设计模式都是⾮常⽼古董的，⽽且历经⻓时间考验的策略，所以这也就是，⼯程学上所谓 的Best Practice，遵从就好了。
+
+- 2）有时候，我们觉得能做宏观的系统架构的⼈⼀定是很有经验的，其实，宏观系统架构中 的很多设计都来源于这些微观的东⻄。⽐如，云计算中的很多虚拟化技术的原理，和传统 的虚拟内存不是很像么？Unix下的那些I/O模型，也放⼤到了架构⾥的同步异步的模型，还 有Unix发明的管道不就是数据流式计算架构吗？TCP的好些设计也⽤在不同系统间的通讯 中，仔细看看这些微观层⾯，你会发现有很多设计都⾮常精妙 …所以，请允许我在这⾥放 句观点鲜明的话⸺如果你要做好架构，⾸先你得把计算机体系结构以及很多⽼古董的基础 技术吃透了。
+
+- 3）在软件开发或设计中，我⾮常建议在之前先去参考⼀下已有的设计和思路，看看相应的 guideline，best practice或design patern，吃透了已有的这些东⻄，再决定是否要重新 发明轮⼦。千万不要似是⽽⾮地，想当然的做软件设计。
+
+- 4）上⾯，我们没有考虑缓存（Cache）和持久层（Repository）的整体事务的问题。⽐ 如，更新Cache成功，更新数据库失败了怎么吗？或是反过来。关于这个事，如果你需要强 ⼀致性，你需要使⽤“两阶段提交协议”⸺prepare, comit/rolback，⽐如Java 7 的
+
+
+XARes ource XA Transaction EhCache
+
+，还有MySQL 5.7的 ，有些cache也⽀持XA，⽐如 。当然， XA这样的强⼀致性的玩法会导致性能下降，关于分布式的事务的相关话题，你可以看看《
+
+》⼀⽂。 （全⽂完）
+
+分布式系统的事务处理

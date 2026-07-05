@@ -1,6 +1,6 @@
 # Markdown 插图鉴权 · 前端对接说明（T22 F1）
 
-> **读者**：meiling-ui 前端。后端 **R0 ✅**（`GET /kb/raw/asset`、`GET /kb/wiki/asset`）；**F1 待开发**。  
+> **读者**：meiling-ui 前端。后端 **R0 ✅**（`GET /kb/raw/asset`、`GET /kb/wiki/asset`）；**F1 ✅**；**F2 ✅**（`POST /kb/wiki/asset`）。  
 > **总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) §1.2–§1.3  
 > **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §8.0  
 > **回迁背景**：[wujinsen-wiki-image-remediation-prd.md](../product/wujinsen-wiki-image-remediation-prd.md)
@@ -25,7 +25,7 @@
 |------|------|---------------------------|
 | 文档浏览 | `knowledge/browse/index` | ✅ 正文渲染 |
 | 文档管理 / 预览 | `knowledge/documents/index`、`KbDocPreviewModal` | ✅ |
-| Wiki 编辑 | `knowledge/wiki/edit` | ✅ 预览区；编辑区插入图后续 T22 F2 |
+| Wiki 编辑 | `knowledge/wiki/edit` | ✅ 预览区 + **F2「插入图片」**（写 `.assets/` + 插 markdown） |
 | 智能问答引用块 | `knowledge/ask/index` | ✅ 若展示 `content` markdown |
 
 ---
@@ -251,6 +251,26 @@ router.push({
 
 ---
 
+## 6.1 F2 · Wiki 编辑插入插图 ✅
+
+| 项 | 说明 |
+|----|------|
+| 组件 | `KbWikiImageInsert.vue`（编辑 tab 工具栏） |
+| API | `POST /KnowledgeServer/kb/wiki/asset` · FormData：`spaceId`、`slug`、`file` |
+| 前置 | wiki `.md` **须已保存**（`exists=true`）；否则按钮禁用并提示「请先保存」 |
+| 落盘 | `{slug}.assets/img-{ts}-{hex}.png` |
+| 插入 | 光标处写入 `![alt](assets/….png)`（相对路径，预览走 F1） |
+| 大小 | 默认 5MB · `kb.wiki.asset-max-bytes` / `VITE_KB_WIKI_ASSET_MAX_MB` |
+
+```typescript
+import { uploadKbWikiAssetApi } from '@/api/knowledge'
+
+const res = await uploadKbWikiAssetApi(spaceId, slug, file)
+if (res.code === 10000) insertAtCursor(res.data.markdown + '\n')
+```
+
+---
+
 ## 7. 验收清单
 
 ### 7.1 插图（F1）
@@ -261,6 +281,13 @@ router.push({
 - [ ] viewer 账号（无 edit）也能看图（空间读权限）
 - [ ] 外链 `https://` 图片仍正常
 - [ ] 组件 unmount 后 `revokeObjectURL`，无内存泄漏
+
+### 7.1b 编辑插入（F2）
+
+- [ ] Wiki 编辑 · 编辑 tab ·「插入图片」→ 选 png → 光标处出现 `![](assets/img-….png)`
+- [ ] 预览 tab 可见刚插入的图
+- [ ] 未保存新页时按钮禁用；保存后可上传
+- [ ] 超 5MB 或非图片格式有 Toast 提示
 
 ### 7.2 附件（§1.2）
 

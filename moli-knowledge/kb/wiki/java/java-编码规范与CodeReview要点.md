@@ -58,3 +58,5 @@ updated: 2026-07-05
 3. 资源关闭（try-with-resources）
 4. 日志与敏感信息
 5. 单元测试覆盖核心分支
+
+原文插图 annex：[[database/annex-如何更规范化编写Java-代码]]

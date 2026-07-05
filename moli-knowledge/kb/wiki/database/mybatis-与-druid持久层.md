@@ -89,3 +89,25 @@ loadtest 已暴露 **Prometheus Druid 指标**（`druid.pool.*`），见 [[datab
 ## 批次#1324 增补（wujinsen Phase2 长尾）
 
 合并 PageHelper 插件 raw。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/javaweb/jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/javaweb/jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。.note.md` · T22 **B** 档
+
+### 来自：jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/jackson-mapper-asl%E6%80%BB%E7%BB%93%E4%B8%80%E4%B8%8B%E8%87%AA%E5%B7%B1%E4%BD%BF%E7%94%A8jackson%E5%A4%84%E7%90%86%E5%AF%B9%E8%B1%A1%E4%B8%8EJSON%E4%B9%8B%E9%97%B4%E7%9B%B8%E4%BA%92%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%BF%83%E5%BE%97%E3%80%82.note_images/imageFile1.png)
+
+原文插图 annex：[[database/annex-为什么我再也不使用MVC框架了？]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md` · T22 **B** 档
+
+### 来自：MyBatis 通过包含的jdbcType类型
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/Mybatis/MyBatis%20%E9%80%9A%E8%BF%87%E5%8C%85%E5%90%AB%E7%9A%84jdbcType%E7%B1%BB%E5%9E%8B.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/Mybatis/MyBatis%20%E9%80%9A%E8%BF%87%E5%8C%85%E5%90%AB%E7%9A%84jdbcType%E7%B1%BB%E5%9E%8B.note_images/imageFile2.png)

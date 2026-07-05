@@ -105,3 +105,31 @@ RPC 超时除业务慢外，可查 Netty 是否 EventLoop 被占满。
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 合并 `并发编程/Netty/` Reactor raw。
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 2 组
+
+> 图源 `raw/wujinsen_markdown/并发编程/Netty/netty源码分析之服务端启动全解析.note.md` · T22 **B** 档
+
+### 来自：netty源码分析之服务端启动全解析
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/netty%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%90%AF%E5%8A%A8%E5%85%A8%E8%A7%A3%E6%9E%90.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/并发编程/Netty/翻译文章/Preface.note.md` · T22 **B** 档
+
+### 来自：Preface
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/Preface.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/Preface.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/Preface.note_images/imageFile3.png)
+
+原文插图 annex：[[middleware/annex-Netty介绍]]
+
+原文插图 annex：[[java/annex-Netty高性能之Reactor线程模型]]
+
+原文插图 annex：[[middleware/annex-Netty-In-Action]]
+
+原文插图 annex：[[middleware/annex-Java-Netty-4.x-用户指南]]

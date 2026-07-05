@@ -152,17 +152,15 @@ ApplicationMaster 向 RM 申请 Container；队列容量/公平调度（Capacity
 
 Phase3：BigData 零散 Ambari/Cloudera 等。
 
-<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Hadoop/用户画像.note.md -->
 ## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 2 组
 
 > 图源 `raw/wujinsen_markdown/BigData/Hadoop/用户画像.note.md` · T22 **D** 档
 
 ### 来自：用户画像
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Hadoop/%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F.note_images/imageFile1.png)
-
-<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/在大厂的数据工程师工作日常工作分享.note.md -->
-## 原文插图（wujinsen）
 
 > 图源 `raw/wujinsen_markdown/BigData/在大厂的数据工程师工作日常工作分享.note.md` · T22 **D** 档
 
@@ -181,3 +179,67 @@ Phase3：BigData 零散 Ambari/Cloudera 等。
 原文插图 annex：[[bigdata/annex-MapReduce源码分析总结(转)]]
 
 原文插图 annex：[[bigdata/annex-hadoop入门之设置datanode的心跳时间的方法]]
+
+原文插图 annex：[[bigdata/annex-MAPREDUCE详解]]
+
+原文插图 annex：[[bigdata/annex-分布式存储技术及应用（1）]]
+
+原文插图 annex：[[bigdata/annex-申请域名]]
+
+原文插图 annex：[[bigdata/annex-HDFS源码学习（10）——NameNode与DataNode间的通信]]
+
+原文插图 annex：[[bigdata/annex-hive入门学习线路指导]]
+
+原文插图 annex：[[bigdata/annex-Apache、CDH和Cloudera三者有什么区别？]]
+
+原文插图 annex：[[bigdata/annex-本地YUM源制作]]
+
+原文插图 annex：[[bigdata/annex-ytvpn云梯VPN连接方法]]
+
+原文插图 annex：[[bigdata/annex-对称与非对称加密-1遍]]
+
+原文插图 annex：[[bigdata/annex-大数据处理系统关键层次架构]]
+
+原文插图 annex：[[bigdata/annex-DataNode工作和服务原理]]
+
+原文插图 annex：[[bigdata/annex-Hadoop2.6.0eclipse插件制作与安装]]
+
+原文插图 annex：[[bigdata/annex-Mapreduce作业的工作原理]]
+
+原文插图 annex：[[bigdata/annex-wordcount学习-1遍]]
+
+原文插图 annex：[[bigdata/annex-海量分布式存储技术HDFS（2）]]
+
+原文插图 annex：[[bigdata/annex-Hadoop应用开发技术详解》迷你书]]
+
+原文插图 annex：[[bigdata/annex-architect-201312]]
+
+原文插图 annex：[[bigdata/annex-Cloudera-Manager、CDH零基础入门、线路指导]]
+
+原文插图 annex：[[bigdata/annex-Hadoop-Ambari-安装]]
+
+原文插图 annex：[[bigdata/annex-Getting-LeaderNotAvailableException-In-Console-Producer-After-Increasing-P]]
+
+原文插图 annex：[[bigdata/annex-HDFS-HA-Quorum-Journal-Manager]]
+
+原文插图 annex：[[bigdata/annex-HDFS学习(三)-–-Namenode-and-Datanode]]
+
+原文插图 annex：[[bigdata/annex-Hadoop-mapreduce原理学习]]
+
+原文插图 annex：[[bigdata/annex-Hadoop大数据面试-Hadoop篇-复制链接]]
+
+原文插图 annex：[[bigdata/annex-2016-12-21]]
+
+原文插图 annex：[[bigdata/annex-解读Secondary-NameNode的功能]]
+
+原文插图 annex：[[bigdata/annex-hadoop1.0-和hadoop2.0-任务处理架构比较]]
+
+原文插图 annex：[[bigdata/annex-hadoop2.2.0-HDFS-HA-Federation]]
+
+原文插图 annex：[[bigdata/annex-hadoop-rpc]]
+
+原文插图 annex：[[bigdata/annex-hadoop的原生比较器RawComparator_T_-public-WritableCom...]]
+
+原文插图 annex：[[bigdata/annex-了解apache-Hadoop-Hadoop最全生态系统介绍]]
+
+原文插图 annex：[[bigdata/annex-大数据架构师、开发人员、公司必读：国外大数据应用的10个项目案例（图表）]]

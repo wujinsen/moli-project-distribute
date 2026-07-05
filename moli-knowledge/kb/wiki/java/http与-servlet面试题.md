@@ -59,3 +59,5 @@ Gateway 路由错、StripPrefix 错、Tomcat context-path、Controller 映射错
 ## Q12. load-on-startup 作用？
 
 控制 Servlet 启动顺序与提前 init；数值越小越先加载。
+
+原文插图 annex：[[database/annex-Java后台面试-常见问题]]

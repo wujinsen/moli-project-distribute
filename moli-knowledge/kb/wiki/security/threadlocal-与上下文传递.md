@@ -52,3 +52,14 @@ public void filterChain(...) {
 ## 相关
 
 [[spring/spring-async与线程池]] · [[java/java-并发面试题]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md` · T22 **B** 档
+
+### 来自：【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9068%E6%9C%9F%E3%80%91%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E5%AF%B9%E5%B9%B6%E5%8F%91%E7%86%9F%E6%82%89%E5%90%97%EF%BC%9F%E8%AF%B4%E8%AF%B4Synchronized%E5%8F%8A%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9068%E6%9C%9F%E3%80%91%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E5%AF%B9%E5%B9%B6%E5%8F%91%E7%86%9F%E6%82%89%E5%90%97%EF%BC%9F%E8%AF%B4%E8%AF%B4Synchronized%E5%8F%8A%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.note_images/imageFile2.png)

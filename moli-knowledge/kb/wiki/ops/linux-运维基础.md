@@ -155,3 +155,23 @@ nohup java -jar user-center-server.jar --spring.profiles.active=pro > logs/uc.lo
 原文插图 annex：[[ops/annex-堡垒机]]
 
 原文插图 annex：[[ops/annex-“网络中的跳板是什么意思]]
+
+原文插图 annex：[[ops/annex-VM利用host-only上网]]
+
+原文插图 annex：[[ops/annex-Linux常用软件安装]]
+
+原文插图 annex：[[ops/annex-本地YUM源制作-linux]]
+
+原文插图 annex：[[ops/annex-linux虚拟机配置双网卡(1)(21-43-59)]]
+
+原文插图 annex：[[ops/annex-linux虚拟机配置双网卡(1)(23-14-15)]]
+
+原文插图 annex：[[ops/annex-linux虚拟机配置双网卡]]
+
+原文插图 annex：[[ops/annex-ubuntu创建新用户并增加管理员权限]]
+
+原文插图 annex：[[ops/annex-在CentOS中用yum命令下载RPM包但不进行安装的方法]]
+
+原文插图 annex：[[ops/annex-linux-内存清理-释放命令-清理linux内存]]
+
+原文插图 annex：[[ops/annex-null-2_&1-的作用]]

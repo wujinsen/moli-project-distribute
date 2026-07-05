@@ -61,3 +61,7 @@ ZK 锁：临时顺序节点 + 监听前驱；**可靠性高、性能低于 Redis
 ## 批次#1321 增补（wujinsen Phase2 P1 BigData）
 
 合并 BigData/王 ZK 原理 raw。
+
+原文插图 annex：[[middleware/annex-Zookeeper介绍]]
+
+原文插图 annex：[[middleware/annex-精尽-Zookeeper-面试题（最新更新时间：2020-09-01]]

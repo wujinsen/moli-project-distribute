@@ -61,3 +61,16 @@ updated: 2026-07-05
 > CHM 8：CAS 初始化 + 锁桶头 + volatile 域保证无锁 get 可见；扩容 ForwardingNode 协调迁移。
 
 详见 [[java/java-并发面试题]] Q6～Q8。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/面试笔试/Java面试题精选/【67期】谈谈ConcurrentHashMap是如何保证线程安全的？.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Java面试题精选/【67期】谈谈ConcurrentHashMap是如何保证线程安全的？.note.md` · T22 **B** 档
+
+### 来自：【67期】谈谈ConcurrentHashMap是如何保证线程安全的？
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9067%E6%9C%9F%E3%80%91%E8%B0%88%E8%B0%88ConcurrentHashMap%E6%98%AF%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%EF%BC%9F.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9067%E6%9C%9F%E3%80%91%E8%B0%88%E8%B0%88ConcurrentHashMap%E6%98%AF%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%EF%BC%9F.note_images/imageFile2.png)
+
+原文插图 annex：[[java/annex-面试小结之并发篇]]

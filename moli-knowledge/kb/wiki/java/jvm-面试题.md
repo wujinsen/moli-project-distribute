@@ -145,3 +145,156 @@ JVM 实现内存布局；JMM 是并发可见性规范，见 [[java/jmm与happens
 原文插图 annex：[[java/annex-JDK的命令行工具]]
 
 原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 16 组
+
+> 图源 `raw/wujinsen_markdown/jvm/JVM内存划分.note.md` · T22 **B** 档
+
+### 来自：JVM内存划分
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/JVM%E5%86%85%E5%AD%98%E5%88%92%E5%88%86.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/对象的内存布局.note.md` · T22 **B** 档
+
+### 来自：对象的内存布局
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/对象的创建.note.md` · T22 **B** 档
+
+### 来自：对象的创建
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/新生代Eden与两个Survivor区的解释.note.md` · T22 **B** 档
+
+### 来自：新生代Eden与两个Survivor区的解释
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E6%96%B0%E7%94%9F%E4%BB%A3Eden%E4%B8%8E%E4%B8%A4%E4%B8%AASurvivor%E5%8C%BA%E7%9A%84%E8%A7%A3%E9%87%8A.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/理解GC日志.note.md` · T22 **B** 档
+
+### 来自：理解GC日志
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E7%90%86%E8%A7%A3GC%E6%97%A5%E5%BF%97.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/jvm/JVM内存划分.note.md` · T22 **B** 档
+
+### 来自：JVM内存划分
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/JVM%E5%86%85%E5%AD%98%E5%88%92%E5%88%86.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/jvm/对象的内存布局.note.md` · T22 **B** 档
+
+### 来自：对象的内存布局
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/jvm/对象的创建.note.md` · T22 **B** 档
+
+### 来自：对象的创建
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/jvm/理解GC日志.note.md` · T22 **B** 档
+
+### 来自：理解GC日志
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E7%90%86%E8%A7%A3GC%E6%97%A5%E5%BF%97.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md` · T22 **B** 档
+
+### 来自：复合索引的优点和注意事项
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%95%B4%E7%90%86/%E5%A4%8D%E5%90%88%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BC%98%E7%82%B9%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/面试题整理/游戏排行榜算法设计实现比较.note.md` · T22 **B** 档
+
+### 来自：游戏排行榜算法设计实现比较
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%95%B4%E7%90%86/%E6%B8%B8%E6%88%8F%E6%8E%92%E8%A1%8C%E6%A6%9C%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E5%AE%9E%E7%8E%B0%E6%AF%94%E8%BE%83.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/对象的访问定位.note.md` · T22 **B** 档
+
+### 来自：对象的访问定位
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/jvm/对象的访问定位.note.md` · T22 **B** 档
+
+### 来自：对象的访问定位
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/垃圾收集算法.note.md` · T22 **B** 档
+
+### 来自：垃圾收集算法
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile3.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/jvm/垃圾收集算法.note.md` · T22 **B** 档
+
+### 来自：垃圾收集算法
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile3.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Java/JVM/垃圾收集器.note.md` · T22 **B** 档
+
+### 来自：垃圾收集器
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java/JVM/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java/JVM/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java/JVM/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.note_images/imageFile3.png)
+
+原文插图 annex：[[java/annex-小白都能看得懂的java虚拟机内存模型]]
+
+原文插图 annex：[[java/annex-JDK的命令行工具]]
+
+原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]
+
+原文插图 annex：[[java/annex-垃圾回收器]]
+
+原文插图 annex：[[java/annex-JVM虚拟机笔记]]
+
+原文插图 annex：[[java/annex-Java虚拟机：JVM高级特性与最佳实践（第2版）]]
+
+原文插图 annex：[[java/annex-《深入理解-Java-内存模型》读书笔记]]
+
+原文插图 annex：[[java/annex-精尽-Java【虚拟机】面试题]]
+
+原文插图 annex：[[database/annex-Java后台面试-常见问题]]
+
+原文插图 annex：[[java/annex-eclipse-memory-analyzer-安装使用示例]]
+
+原文插图 annex：[[java/annex-假笨说-警惕大量类加载器的创建导致诡异的Full-GC]]
+
+原文插图 annex：[[java/annex-cpu-100%]]
+
+原文插图 annex：[[java/annex-java-CPU-100%-排查]]
+
+原文插图 annex：[[database/annex-java-CPU-100%-排查-database]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/jvm/Minor GC和Full GC区别.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/jvm/Minor GC和Full GC区别.note.md` · T22 **B** 档
+
+### 来自：Minor GC和Full GC区别
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/Minor%20GC%E5%92%8CFull%20GC%E5%8C%BA%E5%88%AB.note_images/imageFile1.png)

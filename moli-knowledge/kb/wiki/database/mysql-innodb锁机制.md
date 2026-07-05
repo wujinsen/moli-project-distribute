@@ -57,3 +57,7 @@ RR 下当前读常用 Next-Key 防幻读。无索引时可能**锁表/锁大量�
 ## 批次#1313 增补（wujinsen P2）
 
 补充表锁/全局锁 raw。
+
+原文插图 annex：[[database/annex-MySQL死锁案例，我一口气说了6个]]
+
+原文插图 annex：[[database/annex-全局锁和表锁-：给表加个字段怎么有这么多阻碍？]]

@@ -64,3 +64,7 @@ Cache + DB 非单事务 → 要么 2PC/XA（慢），要么接受最终一致 + 
 ## 批次#1312 增补（wujinsen P1）
 
 合并缓存穿透/击穿/雪崩 raw。
+
+原文插图 annex：[[cache/annex-缓存更新的套路]]
+
+原文插图 annex：[[cache/annex-REDIS缓存穿透，缓存击穿，缓存雪崩原因+解决方案]]

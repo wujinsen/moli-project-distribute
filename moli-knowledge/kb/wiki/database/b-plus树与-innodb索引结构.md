@@ -84,3 +84,22 @@ B+Tree 插入需保持有序。向已满页中间插入 → **页分裂**，空�
 原文插图 annex：[[database/annex-MySQL索引背后的数据结构及算法原理]]
 
 原文插图 annex：[[database/annex-B+树介绍]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/面试笔试/Database/mysql/B树与B+树.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Database/mysql/B树与B+树.note.md` · T22 **B** 档
+
+### 来自：B树与B+树
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Database/mysql/B%E6%A0%91%E4%B8%8EB%2B%E6%A0%91.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Database/mysql/B%E6%A0%91%E4%B8%8EB%2B%E6%A0%91.note_images/imageFile2.png)
+
+原文插图 annex：[[database/annex-MySQL索引背后的数据结构及算法原理]]
+
+原文插图 annex：[[database/annex-B+树介绍]]
+
+原文插图 annex：[[database/annex-B树和B+树的总结]]
+
+原文插图 annex：[[database/annex-梳理了一遍MySQL索引，发现也不过如此]]

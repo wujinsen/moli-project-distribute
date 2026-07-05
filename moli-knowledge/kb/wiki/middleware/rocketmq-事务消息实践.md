@@ -45,3 +45,11 @@ updated: 2026-07-05
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 合并 RocketMQ 事务消息源码 raw。
+
+原文插图 annex：[[middleware/annex-事务消息]]
+
+原文插图 annex：[[cache/annex-Spring-Cloud异步场景分布式事务怎样做？试试RocketMQ]]
+
+原文插图 annex：[[middleware/annex-基于RocketMQ实现分布式事务-完整示例]]
+
+原文插图 annex：[[middleware/annex-RocketMQ-源码分析-——-事务消息]]

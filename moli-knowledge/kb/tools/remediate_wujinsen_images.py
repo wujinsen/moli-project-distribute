@@ -42,16 +42,22 @@ def companion_image_dirs(md_path: Path) -> list[Path]:
     out: list[Path] = []
     name = md_path.name
     parent = md_path.parent
-    if not name.endswith(".note.md"):
-        return out
-    stem = name[: -len(".note.md")]
-    for suffix in (".note_images", "_note_images"):
-        p = parent / f"{stem}{suffix}"
-        if p.is_dir():
+
+    def add_dir(p: Path) -> None:
+        if p.is_dir() and p not in out:
             out.append(p)
-    alt = parent / f"{name}.note_images"
-    if alt.is_dir():
-        out.append(alt)
+
+    if name.endswith(".note.md"):
+        stem = name[: -len(".note.md")]
+        for suffix in (".note_images", "_note_images"):
+            add_dir(parent / f"{stem}{suffix}")
+        add_dir(parent / f"{name}.note_images")
+    elif parent.name.endswith(".note.attach"):
+        attach_base = parent.name[: -len(".note.attach")]
+        for suffix in (".note_images", "_note_images"):
+            add_dir(parent.parent / f"{attach_base}{suffix}")
+        add_dir(parent.parent / f"{md_path.stem}_images")
+        add_dir(parent / f"{md_path.stem}_images")
     return out
 
 
@@ -211,6 +217,20 @@ def slugify_annex(raw_rel: str) -> str:
     return f"annex-{s}"[:80]
 
 
+def disambiguate_annex_slug(annex_slug: str, cat: str) -> str:
+    """Avoid cross-category bare stem collision (lint dup_slug)."""
+    fname = f"{annex_slug}.md"
+    for p in WIKI.rglob(fname):
+        if p.name in ("index.md", "log.md"):
+            continue
+        if p.parent.name != cat:
+            suffix = f"-{cat}"
+            if not annex_slug.endswith(suffix):
+                return f"{annex_slug}{suffix}"[:80]
+            return annex_slug[:80]
+    return annex_slug
+
+
 def hub_category(slug: str) -> str:
     return slug.split("/", 1)[0] if "/" in slug else "articles"
 
@@ -236,7 +256,7 @@ def apply_strategy_a(
 
     hub = cited[0]
     cat = hub_category(hub)
-    annex_slug = row.get("annex_slug") or slugify_annex(raw_rel)
+    annex_slug = disambiguate_annex_slug(row.get("annex_slug") or slugify_annex(raw_rel), cat)
     full_annex_slug = f"{cat}/{annex_slug}"
     annex_md = WIKI / cat / f"{annex_slug}.md"
     assets_dir = WIKI / cat / f"{annex_slug}.assets"
@@ -410,6 +430,12 @@ def select_rows(
         if strategy_filter == "A":
             if r.get("strategy") not in ("A", "C-or-A"):
                 continue
+        elif strategy_filter == "B":
+            if r.get("strategy") != "B":
+                continue
+        elif strategy_filter == "D":
+            if r.get("strategy") not in ("D", "C-or-A"):
+                continue
         out.append(r)
     if top_by_png:
         out.sort(key=lambda x: (-x.get("png_files", 0), x["raw_path"]))
@@ -464,7 +490,15 @@ def main() -> int:
         args.min_png,
         status="pending",
         top_by_png=args.top_by_png or args.strategy == "A",
-        strategy_filter="A" if args.strategy == "A" else None,
+        strategy_filter=(
+            "A"
+            if args.strategy == "A"
+            else "B"
+            if args.strategy == "B"
+            else "D"
+            if args.strategy == "D"
+            else None
+        ),
     )
 
     if not selected:

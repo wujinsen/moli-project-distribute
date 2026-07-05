@@ -115,3 +115,13 @@ pipeline {
 补挂 `架构/DevOps/jenkins/` Maven 构建 raw。
 
 原文插图 annex：[[ops/annex-nexus私服搭建]]
+
+原文插图 annex：[[ops/annex-nginx配置二级目录，反向代理不同ip+端口]]
+
+原文插图 annex：[[ops/annex-使用nginx部署多个前端项目]]
+
+原文插图 annex：[[ops/annex-JIRA-7.8-版本的安装与破解]]
+
+原文插图 annex：[[ops/annex-Nginx-proxy_set_header-Host-$host-和-proxy_set_header-Host-$http_host-的作用对比]]
+
+原文插图 annex：[[ops/annex-Nginx-安装]]

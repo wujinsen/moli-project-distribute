@@ -92,3 +92,48 @@ flowchart LR
 合并 `BigData/ElasticSearch/` 教程 raw。
 
 原文插图 annex：[[search/annex-Linux-Elasticsearch初步使用(安装、Head配置、分词器配置)]]
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 3 组
+
+> 图源 `raw/wujinsen_markdown/BigData/ElasticSearch/Elasticsearch和mysql数据增量同步.note.md` · T22 **B** 档
+
+### 来自：Elasticsearch和mysql数据增量同步
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/ElasticSearch/Elasticsearch%E5%92%8Cmysql%E6%95%B0%E6%8D%AE%E5%A2%9E%E9%87%8F%E5%90%8C%E6%AD%A5.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/BigData/ElasticSearch/同步mysql数据到ElasticSearch的最佳实践.note.md` · T22 **B** 档
+
+### 来自：同步mysql数据到ElasticSearch的最佳实践
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/ElasticSearch/%E5%90%8C%E6%AD%A5mysql%E6%95%B0%E6%8D%AE%E5%88%B0ElasticSearch%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/ElasticSearch/%E5%90%8C%E6%AD%A5mysql%E6%95%B0%E6%8D%AE%E5%88%B0ElasticSearch%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/BigData/ElasticSearch/ElasticSearch同步MySql.note.md` · T22 **B** 档
+
+### 来自：ElasticSearch同步MySql
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/ElasticSearch/ElasticSearch%E5%90%8C%E6%AD%A5MySql.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/ElasticSearch/ElasticSearch%E5%90%8C%E6%AD%A5MySql.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/ElasticSearch/ElasticSearch%E5%90%8C%E6%AD%A5MySql.note_images/imageFile3.png)
+
+原文插图 annex：[[search/annex-Linux-Elasticsearch初步使用(安装、Head配置、分词器配置)]]
+
+原文插图 annex：[[search/annex-面试小结之Elasticsearch篇]]
+
+原文插图 annex：[[search/annex-Elasticsearch之elasticsearch5.x-新特性]]
+
+原文插图 annex：[[search/annex-Windows环境搭建ElasticSearch-5.6并配置head]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/ElasticSearch/ES源码解析与优化实战/elasticsearch 选主流程.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/ElasticSearch/ES源码解析与优化实战/elasticsearch 选主流程.note.md` · T22 **B** 档
+
+### 来自：elasticsearch 选主流程
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/ElasticSearch/ES%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/elasticsearch%20%E9%80%89%E4%B8%BB%E6%B5%81%E7%A8%8B.note_images/imageFile1.png)

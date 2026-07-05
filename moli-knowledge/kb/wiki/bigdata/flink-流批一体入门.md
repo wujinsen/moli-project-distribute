@@ -58,6 +58,7 @@ updated: 2026-07-05
 | **Checkpoint** | 分布式快照容错；Barrier 对齐 |
 | **State** | Keyed State / Operator State |
 
+
 ## 3. 窗口
 
 滚动 Tumbling、滑动 Sliding、会话 Session；与 Kafka 源见 [[bigdata/kafka-大数据管道]]。
@@ -80,3 +81,46 @@ Apache Storm 为 **纯流** 早期方案（Spout/Bolt、acker 机制）。维护
 原文插图 annex：[[bigdata/annex-Flink从入门到入土（详细教程）]]
 
 原文插图 annex：[[bigdata/annex-Storm安装启动]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Flink/基础/flink-table-planner-blink.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Flink/基础/flink-table-planner-blink.note.md` · T22 **B** 档
+
+### 来自：flink-table-planner-blink
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Flink/%E5%9F%BA%E7%A1%80/flink-table-planner-blink.note_images/imageFile1.png)
+
+原文插图 annex：[[bigdata/annex-Flink从入门到入土（详细教程）]]
+
+原文插图 annex：[[bigdata/annex-Storm安装启动]]
+
+原文插图 annex：[[bigdata/annex-Storm的基本概念]]
+
+原文插图 annex：[[bigdata/annex-Storm入门教程：一致性事务]]
+
+原文插图 annex：[[bigdata/annex-Storm概念讲解和工作原理介绍]]
+
+原文插图 annex：[[bigdata/annex-storm-入门原理介绍]]
+
+原文插图 annex：[[bigdata/annex-Flink-原理与实现：Window-机制]]
+
+原文插图 annex：[[bigdata/annex-Storm-集群空闲-CPU-飙高问题排查]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Flink/aboutyun/深入解析 Flink 细粒度资源管理.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Flink/aboutyun/深入解析 Flink 细粒度资源管理.note.md` · T22 **B** 档
+
+### 来自：深入解析 Flink 细粒度资源管理
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Flink/aboutyun/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%20Flink%20%E7%BB%86%E7%B2%92%E5%BA%A6%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Flink/flinkcdc/flink cdc mysql到clickhouse.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Flink/flinkcdc/flink cdc mysql到clickhouse.note.md` · T22 **B** 档
+
+### 来自：flink cdc mysql到clickhouse
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Flink/flinkcdc/flink%20cdc%20mysql%E5%88%B0clickhouse.note_images/imageFile1.png)

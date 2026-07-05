@@ -85,17 +85,15 @@ Topic 分区 + 副本；Producer → Broker → Consumer Group。Zookeeper/KRaft
 
 本页由 Phase 2 #1321 从 wujinsen `BigData/` 与 `大数据资料-王/` 合并创建；sources **44** 篇。
 
-<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Kafka/为什么要在Kubernetes上运行Kafka，有哪些问题？.note.md -->
 ## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 2 组
 
 > 图源 `raw/wujinsen_markdown/BigData/Kafka/为什么要在Kubernetes上运行Kafka，有哪些问题？.note.md` · T22 **D** 档
 
 ### 来自：为什么要在Kubernetes上运行Kafka，有哪些问题？
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Kafka/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8Kubernetes%E4%B8%8A%E8%BF%90%E8%A1%8CKafka%EF%BC%8C%E6%9C%89%E5%93%AA%E4%BA%9B%E9%97%AE%E9%A2%98%EF%BC%9F.note_images/imageFile1.png)
-
-<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Kafka/安装部署/kafka集群资源评估.note.md -->
-## 原文插图（wujinsen）
 
 > 图源 `raw/wujinsen_markdown/BigData/Kafka/安装部署/kafka集群资源评估.note.md` · T22 **D** 档
 
@@ -106,3 +104,27 @@ Topic 分区 + 副本；Producer → Broker → Consumer Group。Zookeeper/KRaft
 原文插图 annex：[[bigdata/annex-Kafka深度解析(1)]]
 
 原文插图 annex：[[bigdata/annex-Kafka部署与代码实例]]
+
+原文插图 annex：[[bigdata/annex-Kafka实战－KafkaOffsetMonitor]]
+
+原文插图 annex：[[bigdata/annex-Kafka入门经典教程]]
+
+原文插图 annex：[[bigdata/annex-Kafka源码环境搭建]]
+
+原文插图 annex：[[bigdata/annex-ActiveMQ-readme-王森丰]]
+
+原文插图 annex：[[bigdata/annex-kafka]]
+
+原文插图 annex：[[bigdata/annex-快速理解Kafka分布式消息队列框架]]
+
+原文插图 annex：[[bigdata/annex-分布式发布订阅消息系统-Kafka-架构设计]]
+
+原文插图 annex：[[bigdata/annex-kafka分布式消息系统]]
+
+原文插图 annex：[[bigdata/annex-Kafka-rebalance机制]]
+
+原文插图 annex：[[bigdata/annex-kafka-java示例]]
+
+原文插图 annex：[[bigdata/annex-Kafka-Consumer开发的一些关键点]]
+
+原文插图 annex：[[bigdata/annex-apache-kafka系列之在zookeeper中存储结构]]

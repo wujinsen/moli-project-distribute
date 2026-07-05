@@ -71,3 +71,7 @@ Gateway 通过 Nacos Discovery + `lb://service-name` 转发，StripPrefix 后打
 ## 批次#1312 增补（wujinsen P1）
 
 合并 Nacos 架构与踩坑 raw。
+
+原文插图 annex：[[middleware/annex-War包部署无法注册到Nacos]]
+
+原文插图 annex：[[middleware/annex-Nacos-架构]]

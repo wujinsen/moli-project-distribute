@@ -100,3 +100,86 @@ updated: 2026-07-05
 原文插图 annex：[[java/annex-JDK的命令行工具]]
 
 原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 7 组
+
+> 图源 `raw/wujinsen_markdown/jvm/JVM内存划分.note.md` · T22 **B** 档
+
+### 来自：JVM内存划分
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/JVM%E5%86%85%E5%AD%98%E5%88%92%E5%88%86.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/对象的内存布局.note.md` · T22 **B** 档
+
+### 来自：对象的内存布局
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/对象的创建.note.md` · T22 **B** 档
+
+### 来自：对象的创建
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/新生代Eden与两个Survivor区的解释.note.md` · T22 **B** 档
+
+### 来自：新生代Eden与两个Survivor区的解释
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E6%96%B0%E7%94%9F%E4%BB%A3Eden%E4%B8%8E%E4%B8%A4%E4%B8%AASurvivor%E5%8C%BA%E7%9A%84%E8%A7%A3%E9%87%8A.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/理解GC日志.note.md` · T22 **B** 档
+
+### 来自：理解GC日志
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E7%90%86%E8%A7%A3GC%E6%97%A5%E5%BF%97.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/对象的访问定位.note.md` · T22 **B** 档
+
+### 来自：对象的访问定位
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%AE%BF%E9%97%AE%E5%AE%9A%E4%BD%8D.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/jvm/垃圾收集算法.note.md` · T22 **B** 档
+
+### 来自：垃圾收集算法
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E7%AE%97%E6%B3%95.note_images/imageFile3.png)
+
+原文插图 annex：[[java/annex-小白都能看得懂的java虚拟机内存模型]]
+
+原文插图 annex：[[java/annex-JDK的命令行工具]]
+
+原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]
+
+原文插图 annex：[[java/annex-垃圾回收器]]
+
+原文插图 annex：[[java/annex-JVM虚拟机笔记]]
+
+原文插图 annex：[[java/annex-Java虚拟机：JVM高级特性与最佳实践（第2版）]]
+
+原文插图 annex：[[java/annex-《深入理解-Java-内存模型》读书笔记]]
+
+原文插图 annex：[[java/annex-eclipse-memory-analyzer-安装使用示例]]
+
+原文插图 annex：[[java/annex-假笨说-警惕大量类加载器的创建导致诡异的Full-GC]]
+
+原文插图 annex：[[java/annex-cpu-100%]]
+
+原文插图 annex：[[java/annex-java-CPU-100%-排查]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/jvm/Minor GC和Full GC区别.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/jvm/Minor GC和Full GC区别.note.md` · T22 **B** 档
+
+### 来自：Minor GC和Full GC区别
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/jvm/Minor%20GC%E5%92%8CFull%20GC%E5%8C%BA%E5%88%AB.note_images/imageFile1.png)

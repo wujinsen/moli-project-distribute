@@ -63,3 +63,7 @@ updated: 2026-07-05
 ## 批次#1324 增补（wujinsen Phase2 长尾）
 
 合并 MyCat 源码阅读 raw。
+
+原文插图 annex：[[database/annex-分库分表的几种常见形式以及可能遇到的难]]
+
+原文插图 annex：[[database/annex-Mycat源码篇-起步,Mycat源码阅读调试环境搭建]]

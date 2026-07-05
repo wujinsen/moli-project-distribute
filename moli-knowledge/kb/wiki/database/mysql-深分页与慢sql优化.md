@@ -58,3 +58,25 @@ INNER JOIN (
 ## 面试一句话
 
 > 深分页用「子查询主键 + JOIN」或「上次最大 id 游标」；先 EXPLAIN 再改 SQL/索引。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md` · T22 **B** 档
+
+### 来自：解决mysql占用cpu高的问题
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E4%BC%98%E5%8C%96/%E8%A7%A3%E5%86%B3mysql%E5%8D%A0%E7%94%A8cpu%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E4%BC%98%E5%8C%96/%E8%A7%A3%E5%86%B3mysql%E5%8D%A0%E7%94%A8cpu%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98.note_images/imageFile2.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md` · T22 **B** 档
+
+### 来自：一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E4%B8%80%E6%AC%A1%20SQL%20%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90%EF%BC%88900W%2B%20%E6%95%B0%E6%8D%AE%EF%BC%8C%E4%BB%8E%2017s%20%E5%88%B0%20300ms%EF%BC%89.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E4%B8%80%E6%AC%A1%20SQL%20%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90%EF%BC%88900W%2B%20%E6%95%B0%E6%8D%AE%EF%BC%8C%E4%BB%8E%2017s%20%E5%88%B0%20300ms%EF%BC%89.note_images/imageFile2.png)

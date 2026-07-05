@@ -87,3 +87,76 @@ updated: 2026-07-05
 2. Reactor 单/多/主从 → [[middleware/netty-reactor与线程模型]]
 3. Bootstrap/Pipeline/粘包 → [[middleware/netty-pipeline与编解码]]
 4. 面试题 → [[middleware/netty-与-io面试题]]
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 2 组
+
+> 图源 `raw/wujinsen_markdown/并发编程/Netty/netty源码分析之服务端启动全解析.note.md` · T22 **B** 档
+
+### 来自：netty源码分析之服务端启动全解析
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/netty%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8B%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%90%AF%E5%8A%A8%E5%85%A8%E8%A7%A3%E6%9E%90.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/并发编程/Netty/翻译文章/Preface.note.md` · T22 **B** 档
+
+### 来自：Preface
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/Preface.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/Preface.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/Netty/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/Preface.note_images/imageFile3.png)
+
+原文插图 annex：[[java/annex-Netty高性能之Reactor线程模型]]
+
+原文插图 annex：[[middleware/annex-Java-Netty-4.x-用户指南]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Buffer.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Buffer.note.md` · T22 **B** 档
+
+### 来自：Java NIO Buffer
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Buffer.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Channel.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Channel.note.md` · T22 **B** 档
+
+### 来自：Java NIO Channel
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Channel.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Pipe.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Pipe.note.md` · T22 **B** 档
+
+### 来自：Java NIO Pipe
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Pipe.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Scatter Gather.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Scatter Gather.note.md` · T22 **B** 档
+
+### 来自：Java NIO Scatter Gather
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Scatter%20Gather.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Scatter%20Gather.note_images/imageFile2.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO 概述.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO 概述.note.md` · T22 **B** 档
+
+### 来自：Java NIO 概述
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20%E6%A6%82%E8%BF%B0.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20%E6%A6%82%E8%BF%B0.note_images/imageFile2.png)

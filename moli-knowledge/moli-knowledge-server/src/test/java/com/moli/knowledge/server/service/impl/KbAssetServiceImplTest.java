@@ -14,6 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
+
+import com.moli.knowledge.server.dto.KbWikiAssetUploadVo;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -69,6 +72,7 @@ public class KbAssetServiceImplTest {
         when(wikiProperties.getAssetSubdirSuffix()).thenReturn(".assets");
         when(wikiProperties.isAllowSvg()).thenReturn(false);
         when(wikiProperties.getAssetCacheMaxAgeSeconds()).thenReturn(3600);
+        when(wikiProperties.getAssetMaxBytes()).thenReturn(5L * 1024 * 1024);
 
         Map<String, String> dirs = new LinkedHashMap<>();
         dirs.put(SPACE_CODE, "wiki");
@@ -139,5 +143,35 @@ public class KbAssetServiceImplTest {
     @Test
     public void cleanRawRelative_stripsLeadingRaw() {
         Assert.assertEquals("a/b.png", KbAssetServiceImpl.cleanRawRelative("raw/a/b.png"));
+    }
+
+    @Test
+    public void uploadWikiAsset_success() throws Exception {
+        Path md = wikiDir.resolve("java/jvm.md");
+        Files.createDirectories(md.getParent());
+        Files.write(md, "# jvm\n".getBytes(StandardCharsets.UTF_8));
+
+        MockMultipartFile multipart = new MockMultipartFile(
+                "file",
+                "gc-diagram.png",
+                "image/png",
+                new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47});
+
+        KbWikiAssetUploadVo vo = service.uploadWikiAsset(SPACE_ID, "java/jvm", multipart);
+
+        verify(kbAclService).assertCanEdit(SPACE_ID);
+        Assert.assertTrue(vo.getFileName().startsWith("img-"));
+        Assert.assertTrue(vo.getRel().startsWith("assets/img-"));
+        Assert.assertTrue(vo.getMarkdown().contains("gc-diagram"));
+        Assert.assertTrue(vo.getMarkdown().contains(vo.getRel()));
+        Path saved = wikiDir.resolve("java/jvm.assets").resolve(vo.getFileName());
+        Assert.assertTrue(Files.isRegularFile(saved));
+    }
+
+    @Test(expected = BaseException.class)
+    public void uploadWikiAsset_requiresExistingWikiFile() {
+        MockMultipartFile multipart = new MockMultipartFile(
+                "file", "a.png", "image/png", new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47});
+        service.uploadWikiAsset(SPACE_ID, "missing/page", multipart);
     }
 }

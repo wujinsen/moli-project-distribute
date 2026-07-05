@@ -65,3 +65,37 @@ jstack PID | grep -A 30 <hex-tid>
 [[ops/linux-运维基础]] ·
 
 原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 3 组
+
+> 图源 `raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md` · T22 **B** 档
+
+### 来自：复合索引的优点和注意事项
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%95%B4%E7%90%86/%E5%A4%8D%E5%90%88%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BC%98%E7%82%B9%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/面试题整理/游戏排行榜算法设计实现比较.note.md` · T22 **B** 档
+
+### 来自：游戏排行榜算法设计实现比较
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%95%B4%E7%90%86/%E6%B8%B8%E6%88%8F%E6%8E%92%E8%A1%8C%E6%A6%9C%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E5%AE%9E%E7%8E%B0%E6%AF%94%E8%BE%83.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md` · T22 **B** 档
+
+### 来自：解决mysql占用cpu高的问题
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E4%BC%98%E5%8C%96/%E8%A7%A3%E5%86%B3mysql%E5%8D%A0%E7%94%A8cpu%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E4%BC%98%E5%8C%96/%E8%A7%A3%E5%86%B3mysql%E5%8D%A0%E7%94%A8cpu%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98.note_images/imageFile2.png)
+
+原文插图 annex：[[java/annex-九大工具助你玩转Java性能优化]]
+
+原文插图 annex：[[database/annex-Java后台面试-常见问题]]
+
+原文插图 annex：[[java/annex-假笨说-警惕大量类加载器的创建导致诡异的Full-GC]]
+
+原文插图 annex：[[java/annex-java-CPU-100%-排查]]
+
+原文插图 annex：[[database/annex-java-CPU-100%-排查-database]]

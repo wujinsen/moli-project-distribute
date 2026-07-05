@@ -109,3 +109,86 @@ JMM 可见性规则：程序顺序、锁、volatile、传递性等。见 [[java/
 Phase3：王树 x线程 簇 sources。
 
 原文插图 annex：[[java/annex-volatile]]
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 5 组
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Java面试题精选/【67期】谈谈ConcurrentHashMap是如何保证线程安全的？.note.md` · T22 **B** 档
+
+### 来自：【67期】谈谈ConcurrentHashMap是如何保证线程安全的？
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9067%E6%9C%9F%E3%80%91%E8%B0%88%E8%B0%88ConcurrentHashMap%E6%98%AF%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%EF%BC%9F.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9067%E6%9C%9F%E3%80%91%E8%B0%88%E8%B0%88ConcurrentHashMap%E6%98%AF%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%EF%BC%9F.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Java面试题精选/【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理.note.md` · T22 **B** 档
+
+### 来自：【68期】面试官：对并发熟悉吗？说说Synchronized及实现原理
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9068%E6%9C%9F%E3%80%91%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E5%AF%B9%E5%B9%B6%E5%8F%91%E7%86%9F%E6%82%89%E5%90%97%EF%BC%9F%E8%AF%B4%E8%AF%B4Synchronized%E5%8F%8A%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9068%E6%9C%9F%E3%80%91%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E5%AF%B9%E5%B9%B6%E5%8F%91%E7%86%9F%E6%82%89%E5%90%97%EF%BC%9F%E8%AF%B4%E8%AF%B4Synchronized%E5%8F%8A%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Java/JVM/垃圾收集器.note.md` · T22 **B** 档
+
+### 来自：垃圾收集器
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java/JVM/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java/JVM/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java/JVM/%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8.note_images/imageFile3.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Java面试题精选/【70期】面试官：对并发熟悉吗？谈谈对volatile的使用及其原理.note.md` · T22 **B** 档
+
+### 来自：【70期】面试官：对并发熟悉吗？谈谈对volatile的使用及其原理
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9070%E6%9C%9F%E3%80%91%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E5%AF%B9%E5%B9%B6%E5%8F%91%E7%86%9F%E6%82%89%E5%90%97%EF%BC%9F%E8%B0%88%E8%B0%88%E5%AF%B9volatile%E7%9A%84%E4%BD%BF%E7%94%A8%E5%8F%8A%E5%85%B6%E5%8E%9F%E7%90%86.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9070%E6%9C%9F%E3%80%91%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E5%AF%B9%E5%B9%B6%E5%8F%91%E7%86%9F%E6%82%89%E5%90%97%EF%BC%9F%E8%B0%88%E8%B0%88%E5%AF%B9volatile%E7%9A%84%E4%BD%BF%E7%94%A8%E5%8F%8A%E5%85%B6%E5%8E%9F%E7%90%86.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Java%E9%9D%A2%E8%AF%95%E9%A2%98%E7%B2%BE%E9%80%89/%E3%80%9070%E6%9C%9F%E3%80%91%E9%9D%A2%E8%AF%95%E5%AE%98%EF%BC%9A%E5%AF%B9%E5%B9%B6%E5%8F%91%E7%86%9F%E6%82%89%E5%90%97%EF%BC%9F%E8%B0%88%E8%B0%88%E5%AF%B9volatile%E7%9A%84%E4%BD%BF%E7%94%A8%E5%8F%8A%E5%85%B6%E5%8E%9F%E7%90%86.note_images/imageFile3.png)
+
+> 图源 `raw/wujinsen_markdown/并发编程/java/深入理解并发之CompareAndSet(CAS).note.md` · T22 **B** 档
+
+### 来自：深入理解并发之CompareAndSet(CAS)
+
+![imageFile1.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile1.png)
+
+![imageFile2.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile2.png)
+
+![imageFile3.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile3.png)
+
+![imageFile4.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile4.png)
+
+![imageFile5.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile5.png)
+
+原文插图 annex：[[java/annex-volatile]]
+
+原文插图 annex：[[java/annex-面试小结之并发篇]]
+
+原文插图 annex：[[java/annex-Java并发编程：Lock]]
+
+原文插图 annex：[[java/annex-【49期】面试官：SpringMVC的控制器是单例的吗]]
+
+原文插图 annex：[[java/annex-Java并发编程：synchronized]]
+
+原文插图 annex：[[database/annex-面试小结之综合篇]]
+
+原文插图 annex：[[java/annex-多线程单元测试]]
+
+原文插图 annex：[[java/annex-Java常见的异常类之间的继承关系]]
+
+原文插图 annex：[[database/annex-Java后台面试-常见问题]]
+
+原文插图 annex：[[java/annex-Java-的这些坑，你踩到了吗？]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/并发编程/java/synchronized与static synchronized 的区别.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/并发编程/java/synchronized与static synchronized 的区别.note.md` · T22 **B** 档
+
+### 来自：synchronized与static synchronized 的区别
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/synchronized%E4%B8%8Estatic%20synchronized%20%E7%9A%84%E5%8C%BA%E5%88%AB.note_images/imageFile1.png)

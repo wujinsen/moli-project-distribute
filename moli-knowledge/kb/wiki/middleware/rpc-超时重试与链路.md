@@ -45,3 +45,5 @@ A→B→C 每层 3s 超时，用户感知 9s+。治理：
 ## 相关
 
 [[ops/skywalking-安装与链路追踪]] ·
+
+原文插图 annex：[[middleware/annex-精尽-Dubbo-面试题]]

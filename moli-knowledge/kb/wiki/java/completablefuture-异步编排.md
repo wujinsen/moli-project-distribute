@@ -55,3 +55,5 @@ return userF.thenCombine(permF, (u, perms) -> {
 ## 相关
 
 [[java/juc-并发工具类]] · [[java/异步编程面试题]]
+
+原文插图 annex：[[java/annex-面试小结之并发篇]]

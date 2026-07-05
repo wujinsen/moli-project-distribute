@@ -51,3 +51,32 @@ Flink 原生流；Spark SS 微批；低延迟选 Flink。
 本页 Phase 2 #1323 创建；sources **12** 篇。
 
 原文插图 annex：[[bigdata/annex-Flink从入门到入土（详细教程）]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Flink/基础/flink-table-planner-blink.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Flink/基础/flink-table-planner-blink.note.md` · T22 **B** 档
+
+### 来自：flink-table-planner-blink
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Flink/%E5%9F%BA%E7%A1%80/flink-table-planner-blink.note_images/imageFile1.png)
+
+原文插图 annex：[[bigdata/annex-Flink-原理与实现：Window-机制]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Flink/aboutyun/深入解析 Flink 细粒度资源管理.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Flink/aboutyun/深入解析 Flink 细粒度资源管理.note.md` · T22 **B** 档
+
+### 来自：深入解析 Flink 细粒度资源管理
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Flink/aboutyun/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90%20Flink%20%E7%BB%86%E7%B2%92%E5%BA%A6%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Flink/flinkcdc/flink cdc mysql到clickhouse.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Flink/flinkcdc/flink cdc mysql到clickhouse.note.md` · T22 **B** 档
+
+### 来自：flink cdc mysql到clickhouse
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Flink/flinkcdc/flink%20cdc%20mysql%E5%88%B0clickhouse.note_images/imageFile1.png)

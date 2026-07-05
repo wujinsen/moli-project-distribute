@@ -65,3 +65,5 @@ try { writeDb(); } finally { sem.release(); }
 ## 相关
 
 [[java/concurrenthashmap原理]] · [[cache/分布式锁]]
+
+原文插图 annex：[[java/annex-面试小结之并发篇]]

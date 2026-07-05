@@ -52,3 +52,5 @@ JMM 在生成的指令中插入 **LoadLoad / StoreStore / LoadStore / StoreLoad*
 ## 面试一句话
 
 > happens-before 描述可见性与有序性约束，不是「谁先执行」；JMM 通过锁、volatile、final 等规则，在允许优化的前提下给程序员可依赖的内存语义。
+
+原文插图 annex：[[java/annex-《深入理解-Java-内存模型》读书笔记]]

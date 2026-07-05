@@ -54,3 +54,21 @@ Spring Cloud Gateway 见 [[spring/spring-cloud-gateway]]；静态资源与 SPA �
 ## 批次#1323 增补（wujinsen Phase2 P2 数仓调度）
 
 本页 Phase 2 #1323 创建；sources **7** 篇。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/Keepalived原理与实战精讲.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/Keepalived原理与实战精讲.note.md` · T22 **B** 档
+
+### 来自：Keepalived原理与实战精讲
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nginx%2Bka%2Blvs/Keepalived%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%B2%BE%E8%AE%B2.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/nginx upstream的分配方式。.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nginx+ka+lvs/nginx upstream的分配方式。.note.md` · T22 **B** 档
+
+### 来自：nginx upstream的分配方式。
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nginx%2Bka%2Blvs/nginx%20upstream%E7%9A%84%E5%88%86%E9%85%8D%E6%96%B9%E5%BC%8F%E3%80%82.note_images/imageFile1.png)

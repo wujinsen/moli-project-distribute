@@ -116,3 +116,82 @@ Netty 封装 NIO：
 - 文件异步读写 → AIO 或线程池 + NIO
 
 原文插图 annex：[[java/annex-volatile]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/并发编程/java/深入理解并发之CompareAndSet(CAS).note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/并发编程/java/深入理解并发之CompareAndSet(CAS).note.md` · T22 **B** 档
+
+### 来自：深入理解并发之CompareAndSet(CAS)
+
+![imageFile1.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile1.png)
+
+![imageFile2.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile2.png)
+
+![imageFile3.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile3.png)
+
+![imageFile4.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile4.png)
+
+![imageFile5.png](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E5%B9%B6%E5%8F%91%E4%B9%8BCompareAndSet%28CAS%29.note_images/imageFile5.png)
+
+原文插图 annex：[[java/annex-volatile]]
+
+原文插图 annex：[[java/annex-Netty高性能之Reactor线程模型]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Buffer.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Buffer.note.md` · T22 **B** 档
+
+### 来自：Java NIO Buffer
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Buffer.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Channel.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Channel.note.md` · T22 **B** 档
+
+### 来自：Java NIO Channel
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Channel.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Pipe.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Pipe.note.md` · T22 **B** 档
+
+### 来自：Java NIO Pipe
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Pipe.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/并发编程/java/synchronized与static synchronized 的区别.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/并发编程/java/synchronized与static synchronized 的区别.note.md` · T22 **B** 档
+
+### 来自：synchronized与static synchronized 的区别
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/java/synchronized%E4%B8%8Estatic%20synchronized%20%E7%9A%84%E5%8C%BA%E5%88%AB.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Scatter Gather.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO Scatter Gather.note.md` · T22 **B** 档
+
+### 来自：Java NIO Scatter Gather
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Scatter%20Gather.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20Scatter%20Gather.note_images/imageFile2.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/大数据资料-王/nio/Java NIO 概述.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/nio/Java NIO 概述.note.md` · T22 **B** 档
+
+### 来自：Java NIO 概述
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20%E6%A6%82%E8%BF%B0.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/nio/Java%20NIO%20%E6%A6%82%E8%BF%B0.note_images/imageFile2.png)

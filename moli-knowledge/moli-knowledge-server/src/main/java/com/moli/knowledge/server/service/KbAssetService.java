@@ -1,5 +1,8 @@
 package com.moli.knowledge.server.service;
 
+import com.moli.knowledge.server.dto.KbWikiAssetUploadVo;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -23,4 +26,13 @@ public interface KbAssetService {
      * @param rel     相对 asset 目录的路径，如 {@code imageFile1.png} 或 {@code assets/imageFile1.png}
      */
     void serveWikiAsset(Long spaceId, String slug, String rel, HttpServletResponse response);
+
+    /**
+     * 上传 wiki 页 inline 插图至 {@code {slug}.assets/}（T22 F2）。
+     *
+     * @param spaceId 空间 ID（需 editor）
+     * @param slug    wiki 全路径 slug
+     * @param file    图片文件（png/jpeg/gif/webp；默认禁 svg）
+     */
+    KbWikiAssetUploadVo uploadWikiAsset(Long spaceId, String slug, MultipartFile file);
 }

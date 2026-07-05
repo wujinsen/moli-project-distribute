@@ -50,3 +50,7 @@ updated: 2026-07-05
 ## 批次#1323 增补（wujinsen Phase2 P2 数仓调度）
 
 本页 Phase 2 #1323 创建；sources **16** 篇。
+
+原文插图 annex：[[bigdata/annex-Sqoop-数据导出：全量、增量、更新]]
+
+原文插图 annex：[[bigdata/annex-利用-Log-Pilot-+-Kafka-+-Elasticsearch-+-Kibana-搭建-kubernetes日志解决方案]]

@@ -83,3 +83,16 @@ WHERE b=1 AND c=2; -- ❌ 缺 a
 ## 面试速记
 
 见 [[database/mysql-索引面试题]] Q6～Q8。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md` · T22 **B** 档
+
+### 来自：mysql索引命中规则
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/mysql%E7%B4%A2%E5%BC%95%E5%91%BD%E4%B8%AD%E8%A7%84%E5%88%99.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/mysql%E7%B4%A2%E5%BC%95%E5%91%BD%E4%B8%AD%E8%A7%84%E5%88%99.note_images/imageFile2.png)
+
+原文插图 annex：[[database/annex-MySQL索引索引不生效的情况]]

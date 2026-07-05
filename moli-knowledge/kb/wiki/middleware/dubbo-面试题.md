@@ -65,3 +65,5 @@ Provider 是否起、group/version、namespace、防火墙、Nacos 是否 8848�
 ## 批次#1313 增补（wujinsen P2）
 
 合并精尽 Dubbo 面试题 raw。
+
+原文插图 annex：[[middleware/annex-精尽-Dubbo-面试题]]

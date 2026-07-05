@@ -1331,6 +1331,8 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | GET | `/kb/raw/asset?path=&spaceId=` | 读 `kb.ingest.raw-root` 下图片；需空间 **viewer**；`spaceId` 省略默认 `enterprise-kb` |
 | GET | `/kb/wiki/asset?slug=&rel=&spaceId=` | 读 `{slug}{assetSubdirSuffix}/` 下图片（默认 `{slug}.assets/`）；需空间 **viewer** |
 | GET | `/kb/wiki-moli/asset?slug=&rel=&spaceId=` | 与上一行同 handler（文档别名） |
+| POST | `/kb/wiki/asset` | **F2**：上传 inline 插图至 `{slug}.assets/`；multipart `spaceId`+`slug`+`file`；需 **editor**；wiki `.md` 须已存在 |
+| POST | `/kb/wiki-moli/asset` | 与上一行同 handler |
 
 **Query**
 
@@ -1359,6 +1361,18 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 ```markdown
 ![GC 示意](assets/gc.png)
 ```
+
+**F2 上传响应（`MoliResult<KbWikiAssetUploadVo>`）**
+
+| 字段 | 说明 |
+|------|------|
+| `rel` | `assets/img-{ts}-{hex}.png` |
+| `fileName` | 磁盘文件名 |
+| `fileSize` | 字节 |
+| `contentType` | MIME |
+| `markdown` | 建议插入片段，如 `![alt](assets/img-….png)` |
+
+配置：`kb.wiki.asset-max-bytes`（默认 5MB）。
 
 前端按当前页 `slug` 解析为：`GET /KnowledgeServer/kb/wiki/asset?spaceId=...&slug=...&rel=assets/gc.png`
 

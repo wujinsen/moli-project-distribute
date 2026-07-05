@@ -82,3 +82,13 @@ updated: 2026-07-05
 原文插图 annex：[[bigdata/annex-Hive安装与配置详解]]
 
 原文插图 annex：[[bigdata/annex-hive2.3.2安装使用]]
+
+原文插图 annex：[[bigdata/annex-hive]]
+
+原文插图 annex：[[bigdata/annex-采坑记录]]
+
+原文插图 annex：[[bigdata/annex-修改hive元数据库]]
+
+原文插图 annex：[[bigdata/annex-Hortonwork-Ambari配置Hive集成Hbase的java开发maven配置]]
+
+原文插图 annex：[[bigdata/annex-hive-web页面的搭建]]

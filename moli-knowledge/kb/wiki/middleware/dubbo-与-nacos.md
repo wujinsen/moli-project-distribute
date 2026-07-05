@@ -41,3 +41,5 @@ updated: 2026-07-05
 | 服务间内部 | **Dubbo RPC**（已移除 OpenFeign） |
 
 见。
+
+原文插图 annex：[[middleware/annex-精尽-Dubbo-面试题]]

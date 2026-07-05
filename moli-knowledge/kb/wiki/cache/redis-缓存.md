@@ -46,3 +46,5 @@ Redis 在目标系统中是**基础设施级**组件，不只是「可选缓存�
 ```
 
 索引与慢 SQL 仍靠 MySQL 侧优化，见 [[database/mysql-索引]]。
+
+原文插图 annex：[[cache/annex-缓存更新的套路]]

@@ -69,3 +69,5 @@ mc cp local.pdf myminio/attachments/
 ## 相关
 
 [[ops/linux-运维基础]] · [[middleware/消息队列]]（异步导出大文件时可配合 MQ）
+
+原文插图 annex：[[middleware/annex-上传文件到minio文件大小限制]]

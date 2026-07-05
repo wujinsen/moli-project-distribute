@@ -46,3 +46,7 @@ updated: 2026-07-05
 ## 批次#1312 增补（wujinsen P1）
 
 合并 `DataBase/mongodb/` 选型 raw。
+
+原文插图 annex：[[database/annex-MongoDB-分片集群技术]]
+
+原文插图 annex：[[database/annex-MongoDB数据同步工具之-MongoShake]]

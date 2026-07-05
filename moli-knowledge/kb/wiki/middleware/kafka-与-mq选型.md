@@ -114,3 +114,8 @@ Redis List 队列（典型现状）缺持久化与标准 ACK，宕机可能丢�
 
 日志/埋点管道架构见 [[bigdata/kafka-大数据管道]]（批次 #1321）。
 
+原文插图 annex：[[middleware/annex-kafka丢消息处理]]
+
+原文插图 annex：[[middleware/annex-精尽-Kafka-面试题（最新更新时间：2019-12-14）]]
+
+原文插图 annex：[[middleware/annex-面试问：Kafka-为什么速度那么快？]]

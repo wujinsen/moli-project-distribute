@@ -52,3 +52,9 @@ mqadmin topicList -n localhost:9876
 ## 批次#1312 增补（wujinsen P1）
 
 合并 RocketMQ 安装/事务/命令 raw。
+
+原文插图 annex：[[cache/annex-Spring-Cloud异步场景分布式事务怎样做？试试RocketMQ]]
+
+原文插图 annex：[[middleware/annex-Rocketmq之No-route-info-of-this-topic解决思路]]
+
+原文插图 annex：[[middleware/annex-rocketmq-web管理界面安装]]

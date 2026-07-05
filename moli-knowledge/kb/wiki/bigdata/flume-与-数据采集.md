@@ -43,3 +43,7 @@ Channel 类型：Memory（快）/ File（持久）。事务提交保证 At-least
 本页由 Phase 2 #1321 从 wujinsen `BigData/` 与 `大数据资料-王/` 合并创建；sources **7** 篇。
 
 原文插图 annex：[[bigdata/annex-让你快速认识flume及安装和使用flume1.5传输数据(日志)到hadoop2.2]]
+
+原文插图 annex：[[bigdata/annex-Flume的体系结构介绍以及Flume入门案例(往HDFS上传数据)]]
+
+原文插图 annex：[[bigdata/annex-什么是Flume]]

@@ -47,3 +47,5 @@ ZRANGEBYSCORE delay_queue 0 now LIMIT 0 1
 ## 相关
 
 [[spring/spring-async与线程池]] · [[middleware/消息队列]]
+
+原文插图 annex：[[cache/annex-缓存更新的套路]]

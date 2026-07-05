@@ -51,3 +51,5 @@ Map
 ## 相关
 
 [[java/hashmap-面试题]] · [[java/java-并发面试题]]
+
+原文插图 annex：[[java/annex-面试：HashMap-夺命二十一问！]]

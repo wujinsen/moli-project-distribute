@@ -23,7 +23,8 @@ OUT = HERE / "WUJINSEN_IMAGE_REMEDIATION.md"
 SKIP_DELETED = HERE / "WUJINSEN_SKIP_DELETED.md"
 
 IMG_REF = re.compile(r"!\[[^\]]*\]\([^)]*(?:note_images|_images/)[^)]*\)", re.I)
-RAW_SRC = re.compile(r"raw/wujinsen_markdown/([^\s\]]+\.md)")
+# YAML sources lines: allow spaces and brackets until trailing `.md`.
+RAW_SRC = re.compile(r"raw/wujinsen_markdown/([^\n]+\.md)")
 
 
 def norm(p: str) -> str:
@@ -34,16 +35,22 @@ def companion_image_dirs(md_path: Path) -> list[Path]:
     out: list[Path] = []
     name = md_path.name
     parent = md_path.parent
-    if not name.endswith(".note.md"):
-        return out
-    stem = name[: -len(".note.md")]
-    for suffix in (".note_images", "_note_images"):
-        p = parent / f"{stem}{suffix}"
-        if p.is_dir():
+
+    def add_dir(p: Path) -> None:
+        if p.is_dir() and p not in out:
             out.append(p)
-    alt = parent / f"{name}.note_images"
-    if alt.is_dir():
-        out.append(alt)
+
+    if name.endswith(".note.md"):
+        stem = name[: -len(".note.md")]
+        for suffix in (".note_images", "_note_images"):
+            add_dir(parent / f"{stem}{suffix}")
+        add_dir(parent / f"{name}.note_images")
+    elif parent.name.endswith(".note.attach"):
+        attach_base = parent.name[: -len(".note.attach")]
+        for suffix in (".note_images", "_note_images"):
+            add_dir(parent.parent / f"{attach_base}{suffix}")
+        add_dir(parent.parent / f"{md_path.stem}_images")
+        add_dir(parent / f"{md_path.stem}_images")
     return out
 
 
@@ -53,7 +60,7 @@ def count_images(md_path: Path) -> tuple[int, int]:
         text = md_path.read_text(encoding="utf-8", errors="ignore")
     except OSError:
         return 0, 0
-    refs = len(IMG_REF.findall(text)) + text.count(".note_images/")
+    refs = len(IMG_REF.findall(text)) + text.count(".note_images/") + text.count("_images/")
     png = 0
     for d in companion_image_dirs(md_path):
         png += sum(1 for _ in d.rglob("*") if _.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp"})
@@ -169,6 +176,7 @@ def main() -> int:
         "| **C-or-A** | 单 cite：annex 或谨慎全文替换 |",
         "| **D** | 过渡：仅 `/kb/raw/asset` 直链 |",
         "| **defer** | 未 cite，暂不回迁 |",
+        "| **defer-closed** | 已归档（见 `WUJINSEN_DEFER_INVENTORY.md`） |",
         "| **skip-deleted** | #1331 已删 raw，不可恢复 |",
         "",
         "## 优先集（已 cite · 待回迁）",

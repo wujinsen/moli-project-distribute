@@ -59,3 +59,6 @@ Docker 单机容器；**Kubernetes** 编排多节点。ROADMAP 可观测/生产�
 
 合并 Docker 安装/命令/挂载/Java 部署 raw。
 
+原文插图 annex：[[ops/annex-某小公司项目环境部署演变之路]]
+
+原文插图 annex：[[ops/annex-docker-部署-java-项目]]

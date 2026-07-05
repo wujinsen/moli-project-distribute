@@ -68,3 +68,5 @@ Shiro `AuthenticationFilter`、Spring `CharacterEncodingFilter` 都在 **Filter 
 1. Servlet 生命周期与一次 HTTP 请求 [[java/servlet生命周期与请求流程]]
 2. Spring MVC 如何挂到 DispatcherServlet [[spring/spring-mvc请求流程]]
 3. 面试题 [[java/http与-servlet面试题]]
+
+原文插图 annex：[[database/annex-Java后台面试-常见问题]]

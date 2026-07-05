@@ -75,3 +75,29 @@ sign = HMAC(appSecret, sortedParams + timestamp)
 ## 批次#1320 增补（wujinsen Phase2 P0）
 
 合并 `javaweb/jwt/` JWT 实践 raw。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/javaweb/jwt/讲真，别再使用JWT了！.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/javaweb/jwt/讲真，别再使用JWT了！.note.md` · T22 **B** 档
+
+### 来自：讲真，别再使用JWT了！
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/jwt/%E8%AE%B2%E7%9C%9F%EF%BC%8C%E5%88%AB%E5%86%8D%E4%BD%BF%E7%94%A8JWT%E4%BA%86%EF%BC%81.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/jwt/%E8%AE%B2%E7%9C%9F%EF%BC%8C%E5%88%AB%E5%86%8D%E4%BD%BF%E7%94%A8JWT%E4%BA%86%EF%BC%81.note_images/imageFile2.png)
+
+原文插图 annex：[[security/annex-Cookie,Session和Token机制和区别.]]
+
+原文插图 annex：[[security/annex-Cookie和Token]]
+
+原文插图 annex：[[security/annex-top无法查看病毒进程解决方案]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/javaweb/jwt/什么是 JWT -- JSON WEB TOKEN.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/javaweb/jwt/什么是 JWT -- JSON WEB TOKEN.note.md` · T22 **B** 档
+
+### 来自：什么是 JWT -- JSON WEB TOKEN
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/jwt/%E4%BB%80%E4%B9%88%E6%98%AF%20JWT%20--%20JSON%20WEB%20TOKEN.note_images/imageFile1.png)

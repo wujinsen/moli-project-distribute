@@ -74,3 +74,15 @@ MergeTree 引擎；分区 + 排序键；物化视图预聚合。源码阅读见 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/OLAP/ClickHouse/%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/clickhouse%E7%B2%BE%E7%A1%AE%E5%8E%BB%E9%87%8D.note_images/imageFile1.png)
 
 原文插图 annex：[[bigdata/annex-老司机教你如何调教Presto和ClickHouse，应对业务难题！]]
+
+原文插图 annex：[[bigdata/annex-百信银行基于ApacheHudi实时数据湖演进方案]]
+
+原文插图 annex：[[bigdata/annex-ClickHouse主键索引最佳实践]]
+
+原文插图 annex：[[bigdata/annex-实时数仓实战项目：架构、分层、设计、场景、框架、以及流批一体...]]
+
+原文插图 annex：[[bigdata/annex-优化查询性能-深入理解ClickHouse跳数索引]]
+
+原文插图 annex：[[bigdata/annex-Flink实战之Flink-CDC-+-Hudi-+-Hive-+-Presto-构建实时数据湖]]
+
+原文插图 annex：[[bigdata/annex-从-ClickHouse-到-ByteHouse：实时数据分析场景下的优化实践]]

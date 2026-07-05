@@ -68,3 +68,7 @@ InnoDB 通过 **undo log 版本链** + **Read View** 实现可重复读；快照
 原文插图 annex：[[database/annex-正确的理解MySQL的MVCC及实现原理]]
 
 原文插图 annex：[[database/annex-事务隔离级别中的可重复读能防幻读吗]]
+
+原文插图 annex：[[database/annex-MySQL死锁案例，我一口气说了6个]]
+
+原文插图 annex：[[database/annex-数据库事务的四大特性以及事务的隔离级别]]

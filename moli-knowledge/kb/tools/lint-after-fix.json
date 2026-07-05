@@ -1,0 +1,1627 @@
+{
+  "stats": {
+    "pages": 179,
+    "issues": 230,
+    "errors": 0,
+    "warnings": 230,
+    "infos": 0,
+    "by_kind": {
+      "missing_source": 179,
+      "missing_dates": 10,
+      "missing_concept": 23,
+      "orphan": 18
+    }
+  },
+  "issues": [
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/dolphinscheduler-任务调度",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/elk-日志分析栈",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/flink-流批一体入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/flink-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/flume-与-数据采集",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/hadoop-生态入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "bigdata/hadoop-生态入门",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/hadoop-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/hbase-列式存储入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "bigdata/hbase-列式存储入门",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/hive-数仓与-sql",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/kafka-大数据管道",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "bigdata/kafka-大数据管道",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/olap-与-实时数仓",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/spark-核心概念与实践",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/spark-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/数仓分层与建模",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "bigdata/数据采集与-etl-工具选型",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/cache-aside与缓存更新模式",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/caffeine-本地缓存实践",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redis-实现延迟队列",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redis-持久化与高可用",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redis-数据结构与使用场景",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "cache/redis-数据结构与使用场景",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redis-缓存",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "cache/redis-缓存",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redis-集群与哨兵实践",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "cache/redis-集群与哨兵实践",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redis-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "cache/redis-面试题",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redisson-看门狗与分布式锁",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/redis分布式锁实现",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/分布式锁",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/分布式锁面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/延迟消息与队列",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "cache/缓存双写与一致性策略",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/b-plus树与-innodb索引结构",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/druid-连接池泄漏排查",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/druid连接池与监控",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/flyway-数据库版本迁移",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mongodb与文档库选型",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mybatis-plus-用法与注入防护",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mybatis-与-druid持久层",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-binlog与canal同步",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-innodb锁机制",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-slow-log慢查询分析",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-事务与锁",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-事务面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-复合索引与最左前缀",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-死锁与排查",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-深分页与慢sql优化",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-索引",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-索引失效场景",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-索引面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-覆盖索引与回表优化",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/mysql-隔离级别与mvcc",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/sharding-分库分表入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/testcontainers-集成测试",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/分布式id生成",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "database/雪花算法与时钟回拨",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "frontend/前端基础面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "frontend/前端技术栈",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/arthas-在线诊断",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/bio-nio-aio对比",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/completablefuture-异步编排",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/concurrenthashmap原理",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/hashmap-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/http与-servlet面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/java-cpu-100排查实战",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/java-并发",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/java-并发面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/java-编码规范与CodeReview要点",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/java-集合框架",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/jmm与happens-before",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/juc-并发工具类",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/jvm-gc调优实战",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/jvm-oom与排查入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/jvm-内存与gc",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/jvm-垃圾收集算法与收集器",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/jvm-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/mdc-日志链路上下文",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/production-jvm启动参数",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/servlet生命周期与请求流程",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/synchronized与锁原理",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/tomcat与-servlet容器",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/transmittable-thread-local跨线程",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/volatile与可见性",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "java/异步编程面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/api-向后兼容策略",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/bi报表服务演进路线",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/dubbo-与-nacos",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/dubbo-调用原理与分层",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/dubbo-超时链路传递",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/dubbo-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/feign-开发踩坑",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/feign-超时重试配置",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/gateway-超时与重试配置",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/gateway-路由与过滤器",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/io模型与-netty",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/kafka-与-mq选型",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/loadtest-profile与压测登录",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/minio-对象存储实践",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/nacos-config动态配置实践",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/nacos-注册与配置",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/netty-pipeline与编解码",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/netty-reactor与线程模型",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/netty-与-io面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/nginx-限流与缓冲调优",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/okhttp-与-http客户端",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/openfeign-与-http客户端",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/pact-契约测试入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/rabbitmq-入门与使用场景",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/rocketmq-事务消息实践",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/rocketmq-架构与实战",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/rocketmq-消息堆积排查",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/rpc-超时重试与链路",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/sentinel-接入与规则配置",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/sentinel-限流与熔断",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/sentinel-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/sse-服务端推送",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/webclient-与-resttemplate",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/zookeeper-与协调服务",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/zookeeper-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/分布式id面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/分布式事务",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/分布式理论基础",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/分布式理论面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/压测监控与prometheus",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/接口幂等性实践",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/消息队列",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/跨域与前后端分离",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/限流算法与令牌桶",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "middleware/高并发券系统实战",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/jenkins-ci入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "ops/jenkins-ci入门",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/k8s-健康检查探针",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/k8s入门与容器编排",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/linux-ulimit与文件句柄",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/linux-运维基础",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "ops/linux-运维基础",
+      "detail": "缺 created",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/maven-多模块与依赖管理",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_dates",
+      "page": "ops/maven-多模块与依赖管理",
+      "detail": "缺 created, updated",
+      "suggest": "补 frontmatter created/updated（YYYY-MM-DD）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/nginx-反向代理与负载",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/prometheus-告警规则设计",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/shell-脚本入门",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/skywalking-安装与链路追踪",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/容器与-docker",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/容量规划与水平扩展",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/生产环境服务启停脚本",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/网络-端口与连通性排查",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "ops/蓝绿与滚动发布",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "patterns/spring框架中的设计模式",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "patterns/算法面试题精选",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "patterns/设计模式",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "patterns/设计模式面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "search/elasticsearch-ik分词与分析器",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "search/elasticsearch-搜索",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "search/elasticsearch-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "search/es-match与bool查询",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "search/es-搜索与分片路由",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "search/es-索引与写入流程",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/api-接口安全设计",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/bcrypt-密码哈希与加盐",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/csrf与xss防护",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/https与-tls基础",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/rbac-权限模型",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/shiro-starter与跨服务校验",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/shiro-鉴权体系",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/shiro-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/sso与系统门户",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/threadlocal-与上下文传递",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/字段级数据权限设计",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "security/认证与会话机制",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/enableautoconfiguration原理",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-aop与代理",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-aop执行流程",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-application启动流程",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-async与线程池",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-boot-启动优化",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-boot-自动配置",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-boot-面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-cache-注解缓存",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-cloud-gateway",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-ioc与bean生命周期",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-mvc请求流程",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-三级缓存与循环依赖",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-事务",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-声明式事务",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_source",
+      "page": "spring/spring-容器面试题",
+      "detail": "sources 为空",
+      "suggest": "补 frontmatter sources（raw 路径或 URL），保证可追溯"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[docker部署指南]] 被 5 个页引用却无独立页",
+      "suggest": "新建 concepts/docker部署指南.md 收编该概念（引用方：database/testcontainers-集成测试, ops/k8s-健康检查探针, ops/k8s入门与容器编排, ops/容器与-docker …(+1)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[git-分支与发布策略]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/git-分支与发布策略.md 收编该概念（引用方：database/flyway-数据库版本迁移, middleware/api-向后兼容策略, ops/蓝绿与滚动发布）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[micrometer-与指标暴露]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/micrometer-与指标暴露.md 收编该概念（引用方：cache/caffeine-本地缓存实践, java/arthas-在线诊断, java/mdc-日志链路上下文）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[minio-附件存储指南]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/minio-附件存储指南.md 收编该概念（引用方：middleware/bi报表服务演进路线, ops/容器与-docker, security/api-接口安全设计）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[mysql-主从读写分离]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/mysql-主从读写分离.md 收编该概念（引用方：database/flyway-数据库版本迁移, database/mysql-binlog与canal同步, ops/容量规划与水平扩展）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[nginx反向代理与前端部署指南]] 被 7 个页引用却无独立页",
+      "suggest": "新建 concepts/nginx反向代理与前端部署指南.md 收编该概念（引用方：frontend/前端技术栈, middleware/nginx-限流与缓冲调优, middleware/sse-服务端推送, middleware/跨域与前后端分离 …(+3)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[skywalking-链路追踪]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/skywalking-链路追踪.md 收编该概念（引用方：java/arthas-在线诊断, java/mdc-日志链路上下文, middleware/rpc-超时重试与链路）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[spring-boot-actuator监控]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/spring-boot-actuator监控.md 收编该概念（引用方：ops/k8s-健康检查探针, ops/prometheus-告警规则设计, spring/spring-boot-启动优化）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[webflux-响应式入门]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/webflux-响应式入门.md 收编该概念（引用方：java/completablefuture-异步编排, middleware/sse-服务端推送, middleware/webclient-与-resttemplate）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[前端开发与联调指南]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/前端开发与联调指南.md 收编该概念（引用方：frontend/前端技术栈, middleware/sse-服务端推送, middleware/跨域与前后端分离）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[多级缓存架构]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/多级缓存架构.md 收编该概念（引用方：cache/caffeine-本地缓存实践, cache/缓存双写与一致性策略, spring/spring-cache-注解缓存）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[技术栈与版本]] 被 4 个页引用却无独立页",
+      "suggest": "新建 concepts/技术栈与版本.md 收编该概念（引用方：database/mongodb与文档库选型, database/mybatis-与-druid持久层, middleware/nacos-config动态配置实践, spring/spring-boot-自动配置）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[故障排查指南]] 被 19 个页引用却无独立页",
+      "suggest": "新建 concepts/故障排查指南.md 收编该概念（引用方：database/druid-连接池泄漏排查, database/druid连接池与监控, database/mybatis-与-druid持久层, database/mysql-死锁与排查 …(+15)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[服务调用与架构]] 被 11 个页引用却无独立页",
+      "suggest": "新建 concepts/服务调用与架构.md 收编该概念（引用方：middleware/dubbo-与-nacos, middleware/dubbo-调用原理与分层, middleware/dubbo-面试题, middleware/gateway-路由与过滤器 …(+7)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[本地启动指南]] 被 5 个页引用却无独立页",
+      "suggest": "新建 concepts/本地启动指南.md 收编该概念（引用方：middleware/nacos-config动态配置实践, middleware/nacos-注册与配置, ops/容器与-docker, ops/生产环境服务启停脚本 …(+1)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[用户中心]] 被 7 个页引用却无独立页",
+      "suggest": "新建 concepts/用户中心.md 收编该概念（引用方：middleware/loadtest-profile与压测登录, security/rbac-权限模型, security/shiro-starter与跨服务校验, security/shiro-鉴权体系 …(+3)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[登录与鉴权指南]] 被 6 个页引用却无独立页",
+      "suggest": "新建 concepts/登录与鉴权指南.md 收编该概念（引用方：frontend/前端技术栈, middleware/loadtest-profile与压测登录, middleware/跨域与前后端分离, security/api-接口安全设计 …(+2)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[知识库服务]] 被 4 个页引用却无独立页",
+      "suggest": "新建 concepts/知识库服务.md 收编该概念（引用方：database/mongodb与文档库选型, search/elasticsearch-搜索, search/es-match与bool查询, security/sso与系统门户）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[秒杀压测指南]] 被 4 个页引用却无独立页",
+      "suggest": "新建 concepts/秒杀压测指南.md 收编该概念（引用方：middleware/loadtest-profile与压测登录, middleware/压测监控与prometheus, ops/k8s入门与容器编排, ops/容量规划与水平扩展）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[秒杀设计]] 被 12 个页引用却无独立页",
+      "suggest": "新建 concepts/秒杀设计.md 收编该概念（引用方：cache/redis-实现延迟队列, cache/redis-缓存, cache/redis分布式锁实现, cache/分布式锁 …(+8)）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[线程池-实战调优]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/线程池-实战调优.md 收编该概念（引用方：java/completablefuture-异步编排, java/juc-并发工具类, spring/spring-async与线程池）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[网关]] 被 4 个页引用却无独立页",
+      "suggest": "新建 concepts/网关.md 收编该概念（引用方：middleware/gateway-路由与过滤器, middleware/sentinel-接入与规则配置, spring/spring-cloud-gateway, spring/spring-mvc请求流程）"
+    },
+    {
+      "level": "warn",
+      "kind": "missing_concept",
+      "page": null,
+      "detail": "[[订单-状态机设计]] 被 3 个页引用却无独立页",
+      "suggest": "新建 concepts/订单-状态机设计.md 收编该概念（引用方：cache/redis-实现延迟队列, cache/延迟消息与队列, database/分布式id生成）"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "bigdata/dolphinscheduler-任务调度",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "bigdata/elk-日志分析栈",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "bigdata/hbase-列式存储入门",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "database/flyway-数据库版本迁移",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "database/mongodb与文档库选型",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "database/mysql-slow-log慢查询分析",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "middleware/bi报表服务演进路线",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "middleware/rocketmq-消息堆积排查",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "ops/k8s-健康检查探针",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "ops/maven-多模块与依赖管理",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "ops/nginx-反向代理与负载",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "ops/shell-脚本入门",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "ops/skywalking-安装与链路追踪",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "patterns/算法面试题精选",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "search/elasticsearch-ik分词与分析器",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "security/bcrypt-密码哈希与加盐",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "security/csrf与xss防护",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    },
+    {
+      "level": "warn",
+      "kind": "orphan",
+      "page": "spring/spring-boot-启动优化",
+      "detail": "无任何入链（含 index 目录）",
+      "suggest": "在相关页补 [[]] 引用，或加入 index.md 目录"
+    }
+  ]
+}

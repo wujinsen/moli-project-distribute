@@ -157,3 +157,122 @@ COMPACT/DYNAMIC 影响溢出列存储与索引记录大小；大 VARCHAR 可能 
 原文插图 annex：[[database/annex-MySQL索引背后的数据结构及算法原理]]
 
 原文插图 annex：[[database/annex-mysql规范]]
+
+## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 9 组
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/索引/复合索引的优点和注意事项.note.md` · T22 **B** 档
+
+### 来自：复合索引的优点和注意事项
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E5%A4%8D%E5%90%88%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BC%98%E7%82%B9%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/mysql/数据仓库中的SQL性能优化（Hive篇）.note.md` · T22 **B** 档
+
+### 来自：数据仓库中的SQL性能优化（Hive篇）
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/mysql/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E4%B8%AD%E7%9A%84SQL%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%EF%BC%88Hive%E7%AF%87%EF%BC%89.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/面试题整理/复合索引的优点和注意事项.note.md` · T22 **B** 档
+
+### 来自：复合索引的优点和注意事项
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%9D%A2%E8%AF%95%E9%A2%98%E6%95%B4%E7%90%86/%E5%A4%8D%E5%90%88%E7%B4%A2%E5%BC%95%E7%9A%84%E4%BC%98%E7%82%B9%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/优化/解决mysql占用cpu高的问题.note.md` · T22 **B** 档
+
+### 来自：解决mysql占用cpu高的问题
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E4%BC%98%E5%8C%96/%E8%A7%A3%E5%86%B3mysql%E5%8D%A0%E7%94%A8cpu%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E4%BC%98%E5%8C%96/%E8%A7%A3%E5%86%B3mysql%E5%8D%A0%E7%94%A8cpu%E9%AB%98%E7%9A%84%E9%97%AE%E9%A2%98.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/索引/mysql索引命中规则.note.md` · T22 **B** 档
+
+### 来自：mysql索引命中规则
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/mysql%E7%B4%A2%E5%BC%95%E5%91%BD%E4%B8%AD%E8%A7%84%E5%88%99.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/mysql%E7%B4%A2%E5%BC%95%E5%91%BD%E4%B8%AD%E8%A7%84%E5%88%99.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/mysql/c3p0源码分析.note.md` · T22 **B** 档
+
+### 来自：c3p0源码分析
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/mysql/c3p0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/mysql/c3p0%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/面试笔试/Database/mysql/B树与B+树.note.md` · T22 **B** 档
+
+### 来自：B树与B+树
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Database/mysql/B%E6%A0%91%E4%B8%8EB%2B%E6%A0%91.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/Database/mysql/B%E6%A0%91%E4%B8%8EB%2B%E6%A0%91.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/索引/二叉树，B树，B+树.note.md` · T22 **B** 档
+
+### 来自：二叉树，B树，B+树
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E4%BA%8C%E5%8F%89%E6%A0%91%EF%BC%8CB%E6%A0%91%EF%BC%8CB%2B%E6%A0%91.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E4%BA%8C%E5%8F%89%E6%A0%91%EF%BC%8CB%E6%A0%91%EF%BC%8CB%2B%E6%A0%91.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E4%BA%8C%E5%8F%89%E6%A0%91%EF%BC%8CB%E6%A0%91%EF%BC%8CB%2B%E6%A0%91.note_images/imageFile3.png)
+
+> 图源 `raw/wujinsen_markdown/大数据资料-王/a安装文档/MySQL主从安装文档（ok）.note.md` · T22 **B** 档
+
+### 来自：MySQL主从安装文档（ok）
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/a%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3/MySQL%E4%B8%BB%E4%BB%8E%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3%EF%BC%88ok%EF%BC%89.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/a%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3/MySQL%E4%B8%BB%E4%BB%8E%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3%EF%BC%88ok%EF%BC%89.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E5%A4%A7%E6%95%B0%E6%8D%AE%E8%B5%84%E6%96%99-%E7%8E%8B/a%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3/MySQL%E4%B8%BB%E4%BB%8E%E5%AE%89%E8%A3%85%E6%96%87%E6%A1%A3%EF%BC%88ok%EF%BC%89.note_images/imageFile3.png)
+
+原文插图 annex：[[database/annex-mysql-覆盖索引]]
+
+原文插图 annex：[[database/annex-正确的理解MySQL的MVCC及实现原理]]
+
+原文插图 annex：[[database/annex-事务隔离级别中的可重复读能防幻读吗]]
+
+原文插图 annex：[[database/annex-MySQL索引背后的数据结构及算法原理]]
+
+原文插图 annex：[[database/annex-mysql规范]]
+
+原文插图 annex：[[database/annex-MySql的时区（serverTimezone）引发的血案]]
+
+原文插图 annex：[[database/annex-MySQL死锁案例，我一口气说了6个]]
+
+原文插图 annex：[[database/annex-数据库事务的四大特性以及事务的隔离级别]]
+
+原文插图 annex：[[database/annex-梳理了一遍MySQL索引，发现也不过如此]]
+
+原文插图 annex：[[database/annex-MySQL索引索引不生效的情况]]
+
+原文插图 annex：[[database/annex-面试小结之综合篇]]
+
+原文插图 annex：[[database/annex-MySQL5.6安装步骤]]
+
+原文插图 annex：[[database/annex-Amoeba搞定mysql主从读写分离]]
+
+原文插图 annex：[[database/annex-MySQL-与-Redis-缓存的同步方案]]
+
+原文插图 annex：[[database/annex-MySQL-InnoDB-行记录格式（ROW_FORMAT）]]
+
+原文插图 annex：[[database/annex-mysql-同一张表查询-left-join]]
+
+原文插图 annex：[[database/annex-全局锁和表锁-：给表加个字段怎么有这么多阻碍？]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/DataBase/mysql/索引/一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）.note.md` · T22 **B** 档
+
+### 来自：一次 SQL 查询优化原理分析（900W+ 数据，从 17s 到 300ms）
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E4%B8%80%E6%AC%A1%20SQL%20%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90%EF%BC%88900W%2B%20%E6%95%B0%E6%8D%AE%EF%BC%8C%E4%BB%8E%2017s%20%E5%88%B0%20300ms%EF%BC%89.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/DataBase/mysql/%E7%B4%A2%E5%BC%95/%E4%B8%80%E6%AC%A1%20SQL%20%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90%EF%BC%88900W%2B%20%E6%95%B0%E6%8D%AE%EF%BC%8C%E4%BB%8E%2017s%20%E5%88%B0%20300ms%EF%BC%89.note_images/imageFile2.png)

@@ -98,3 +98,7 @@ key=锁名，Hash 的 field=`uuid:线程ID`，value=重入次数。
 ## 批次#1313 增补（wujinsen P2）
 
 合并 `面试笔试/redis/` raw。
+
+原文插图 annex：[[cache/annex-Redis-分布式锁进化史解读+缺陷分析]]
+
+原文插图 annex：[[cache/annex-Redis-分布式锁没这么简单，网上大多数都有-bug]]

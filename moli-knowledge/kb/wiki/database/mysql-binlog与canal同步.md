@@ -47,3 +47,5 @@ MySQL binlog → Canal Server → MQ/直接写 ES/Redis
 ## 批次#1312 增补（wujinsen P1）
 
 合并 `DataBase/canal/` Canal 同步 raw。
+
+原文插图 annex：[[cache/annex-Spring-Cloud异步场景分布式事务怎样做？试试RocketMQ]]

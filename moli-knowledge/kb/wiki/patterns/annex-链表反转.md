@@ -1,0 +1,84 @@
+---
+title: 链表反转.note（原文插图 annex）
+slug: annex-链表反转
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/数据结构与算法/链表反转.note.md
+related: [算法面试题精选]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+要求很简单，输⼊⼀个链表，反转链表后，输出新链表的表头。
+
+反转链表是有2种⽅法(递归法，遍历法)实现的，⾯试官最爱考察的算法⽆⾮是斐波那契数列和单链表反转，递归⽅法实 现链表反转⽐较优雅，但是对于不了解递归的同学来说还是有理解难度的。
+
+# 1|1递归法
+
+总体来说，递归法是从最后⼀个Node开始，在弹栈的过程中将指针顺序置换的。
+
+![image 1](assets/imageFile1.png)
+
+为了⽅便理解，我们以 1->2->3->4这个链表来做演示。输出的效果是4->3->2->1
+
+⾸先定义Node： public static class Node {
+
+public int value; public Node next;
+
+public Node(int data) {
+
+this.value = data; }
+
+}
+
+反转⽅法如下：
+
+public Node reverse(Node head) { if (head == null || head.next == null)
+
+return head; Node temp = head.next; Node newHead = reverse(head.next);
+
+temp.next = head; head.next = null; return newHead;
+
+}
+
+递归实质上就是系统帮你压栈的过程，系统在压栈的时候会保留现场。
+
+我们来看是怎样的⼀个递归过程：1->2->3->4
+
+程序到达Node newHead = reverse(head.next);时进⼊递归 我们假设此时递归到了3结点，此时head=3结点，temp=3结点.next(实际上是4结点) 执⾏Node newHead = reverse(head.next);传⼊的head.next是4结点，返回的newHead 是4结点。 接下来就是弹栈过程了
+
+程序继续执⾏ temp.next = head就相当于4->3 head.next = null 即把3结点指向4结点的指针断掉。 返回新链表的头结点newHead
+
+注意：当retuen后，系统会恢复2结点压栈时的现场，此时的head=2结点；temp=2结点.next(3结点)，再进⾏上述的操 作。最后完成整个链表的翻转。
+
+# 1|2遍历法
+
+遍历法就是在链表遍历的过程中将指针顺序置换
+
+![image 2](assets/imageFile2.png)
+
+先上代码：
+
+public static Node reverseList(Node node) { Node pre = null; Node next = null; while (node != null) {
+
+next = node.next; node.next = pre; pre = node; node = next;
+
+} return pre;
+
+}
+
+依旧是1->2->3->4 准备两个空结点 pre⽤来保存先前结点、next⽤来做临时变量 在头结点node遍历的时候此时为1结点 next = 1结点.next(2结点) 1结点.next=pre(null) pre = 1结点
+
+- node = 2结点
+
+
+进⾏下⼀次循环node=2结点
+
+next = 2结点.next(3结点) 2结点.next=pre(1结点)=>即完成2->1 pre = 2结点
+
+- node = 3结点
+
+
+进⾏循环...

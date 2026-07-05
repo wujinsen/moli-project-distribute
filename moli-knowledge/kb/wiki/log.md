@@ -1355,3 +1355,15 @@
 ## [2026-07-05] maintenance | 批次#1334 prune orphan wujinsen sources + 去 scaffold + 重建 frontmatter 179 页 + 补 nexus raw（uncited→0）
 ## [2026-07-05] remediate | T22 R2 D档 10/10 raw
 ## [2026-07-05] remediate | T22 R2 A档 50/50 raw
+## [2026-07-05] remediate | T22 R2 B档 58/58 raw
+## [2026-07-05] remediate | T22 R2c merge 45 hub pages
+## [2026-07-05] remediate | T22 R2 A档 127/127 raw
+## [2026-07-05] verify | T22 R3 1719 refs OK · WUJINSEN_R3_REPORT.md
+## [2026-07-05] remediate | T22 tail attach 7/7 + defer-closed 145 · WUJINSEN_DEFER_INVENTORY.md
+## [2026-07-05] remediate | T22 R2c merge 2 hub pages
+## [2026-07-05] remediate | T22 tail attach 7/7, defer-closed 145
+## [2026-07-05] audit-merge | reopened 145, still defer 0, done kept 252
+## [2026-07-05] remediate | T22 R2 A档 121/121 raw
+## [2026-07-05] remediate | T22 R2 B档 24/24 raw
+## [2026-07-05] verify | T22 R3 3544 refs OK · WUJINSEN_R3_REPORT.md (annex assets rename)
+## [2026-07-05] sync | enterprise-kb insert=118 update=96 skip=260 (defer-reopen batch)

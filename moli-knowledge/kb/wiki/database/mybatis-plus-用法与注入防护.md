@@ -108,3 +108,15 @@ Mapper 方法本身无事务；**Service 类** `@Transactional` 包住多次 Map
 
 `${}` 拼接用户输入会导致注入；动态排序需枚举校验。
 
+原文插图 annex：[[database/annex-如何更规范化编写Java-代码]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md` · T22 **B** 档
+
+### 来自：MyBatis 通过包含的jdbcType类型
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/Mybatis/MyBatis%20%E9%80%9A%E8%BF%87%E5%8C%85%E5%90%AB%E7%9A%84jdbcType%E7%B1%BB%E5%9E%8B.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/Mybatis/MyBatis%20%E9%80%9A%E8%BF%87%E5%8C%85%E5%90%AB%E7%9A%84jdbcType%E7%B1%BB%E5%9E%8B.note_images/imageFile2.png)

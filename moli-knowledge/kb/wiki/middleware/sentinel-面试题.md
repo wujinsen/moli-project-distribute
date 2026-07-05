@@ -51,3 +51,18 @@ Redis+Lua 原子计数、Sentinel 集群流控、Gateway 统一 QPS。秒杀库�
 ## Q9. 热点参数限流场景？
 
 秒杀商品 id、恶意刷某一 SKU。对参数值单独 QPS 限制。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/面试笔试/高级java/2018年一线互联网公司Java高级面试题总结.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/面试笔试/高级java/2018年一线互联网公司Java高级面试题总结.note.md` · T22 **B** 档
+
+### 来自：2018年一线互联网公司Java高级面试题总结
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%AB%98%E7%BA%A7java/2018%E5%B9%B4%E4%B8%80%E7%BA%BF%E4%BA%92%E8%81%94%E7%BD%91%E5%85%AC%E5%8F%B8Java%E9%AB%98%E7%BA%A7%E9%9D%A2%E8%AF%95%E9%A2%98%E6%80%BB%E7%BB%93.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%AB%98%E7%BA%A7java/2018%E5%B9%B4%E4%B8%80%E7%BA%BF%E4%BA%92%E8%81%94%E7%BD%91%E5%85%AC%E5%8F%B8Java%E9%AB%98%E7%BA%A7%E9%9D%A2%E8%AF%95%E9%A2%98%E6%80%BB%E7%BB%93.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/%E9%9D%A2%E8%AF%95%E7%AC%94%E8%AF%95/%E9%AB%98%E7%BA%A7java/2018%E5%B9%B4%E4%B8%80%E7%BA%BF%E4%BA%92%E8%81%94%E7%BD%91%E5%85%AC%E5%8F%B8Java%E9%AB%98%E7%BA%A7%E9%9D%A2%E8%AF%95%E9%A2%98%E6%80%BB%E7%BB%93.note_images/imageFile3.png)
+
+原文插图 annex：[[middleware/annex-精尽-Dubbo-面试题]]

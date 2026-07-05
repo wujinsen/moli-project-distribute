@@ -74,3 +74,5 @@ shard = hash(document_id) % num_primary_shards
 ## 7. 与 MySQL 对比
 
 MySQL InnoDB redo/undo 保证事务持久（[[database/mysql-事务与锁]]）；ES 侧重**搜索可见性**与**最终一致**，不适合替代 OLTP 主库。
+
+原文插图 annex：[[search/annex-面试小结之Elasticsearch篇]]

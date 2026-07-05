@@ -74,3 +74,5 @@ Tomcat 从 **线程池** 取线程执行整个 Filter + Servlet 链。长耗时 
 | 两次 Filter | 同时配了 ShiroConfig + Starter（勿重复） |
 
 Gateway 404 与 Tomcat 404 排查路径不同，见。
+
+原文插图 annex：[[database/annex-Java后台面试-常见问题]]

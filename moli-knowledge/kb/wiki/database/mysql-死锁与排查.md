@@ -56,3 +56,5 @@ SELECT * FROM performance_schema.data_lock_waits;
 ## 与 Spring 事务
 
 `@Transactional` 方法过长 → 持锁时间拉长 → 死锁概率升。见 [[spring/spring-声明式事务]]。
+
+原文插图 annex：[[database/annex-MySQL死锁案例，我一口气说了6个]]

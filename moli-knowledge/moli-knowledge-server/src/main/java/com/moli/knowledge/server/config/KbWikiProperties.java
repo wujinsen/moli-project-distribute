@@ -52,6 +52,9 @@ public class KbWikiProperties {
     /** Asset 响应 Cache-Control max-age（秒）。 */
     private int assetCacheMaxAgeSeconds = 3600;
 
+    /** 单张 inline 插图上传大小上限（字节，T22 F2）。 */
+    private long assetMaxBytes = 5 * 1024 * 1024;
+
     private static Map<String, String> defaultSpaceDirs() {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("enterprise-kb", "wiki");

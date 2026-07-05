@@ -129,8 +129,9 @@ Spark 偏 **批+微批**；低延迟流见 [[bigdata/flink-流批一体入门]]�
 
 本页由 Phase 2 #1321 从 wujinsen `BigData/` 与 `大数据资料-王/` 合并创建；sources **85** 篇。
 
-<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Spark/各模式下运行spark自带实例SparkPi.note.md -->
 ## 原文插图（wujinsen）
+
+> wujinsen 原文插图回迁（T22）· 共 6 组
 
 > 图源 `raw/wujinsen_markdown/BigData/Spark/各模式下运行spark自带实例SparkPi.note.md` · T22 **D** 档
 
@@ -138,23 +139,41 @@ Spark 偏 **批+微批**；低延迟流见 [[bigdata/flink-流批一体入门]]�
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Spark/%E5%90%84%E6%A8%A1%E5%BC%8F%E4%B8%8B%E8%BF%90%E8%A1%8Cspark%E8%87%AA%E5%B8%A6%E5%AE%9E%E4%BE%8BSparkPi.note_images/imageFile1.png)
 
-<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Spark/消息队列设计精要.note.md -->
-## 原文插图（wujinsen）
-
 > 图源 `raw/wujinsen_markdown/BigData/Spark/消息队列设计精要.note.md` · T22 **D** 档
 
 ### 来自：消息队列设计精要
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Spark/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%AE%BE%E8%AE%A1%E7%B2%BE%E8%A6%81.note_images/imageFile1.png)
 
-<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/spark(1)/Spark常见问题总结2.note.md -->
-## 原文插图（wujinsen）
-
 > 图源 `raw/wujinsen_markdown/BigData/spark(1)/Spark常见问题总结2.note.md` · T22 **D** 档
 
 ### 来自：Spark常见问题总结2
 
 ![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/Spark%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%932.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/BigData/Spark/【Kafka二】Kafka工作原理详解.note.md` · T22 **B** 档
+
+### 来自：【Kafka二】Kafka工作原理详解
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Spark/%E3%80%90Kafka%E4%BA%8C%E3%80%91Kafka%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3.note_images/imageFile1.png)
+
+> 图源 `raw/wujinsen_markdown/BigData/spark(1)/spark性能调优总结1.note.md` · T22 **B** 档
+
+### 来自：spark性能调优总结1
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/spark%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E6%80%BB%E7%BB%931.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/spark%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E6%80%BB%E7%BB%931.note_images/imageFile2.png)
+
+> 图源 `raw/wujinsen_markdown/BigData/spark(1)/理解Spark的核心RDD.note.md` · T22 **B** 档
+
+### 来自：理解Spark的核心RDD
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/%E7%90%86%E8%A7%A3Spark%E7%9A%84%E6%A0%B8%E5%BF%83RDD.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/%E7%90%86%E8%A7%A3Spark%E7%9A%84%E6%A0%B8%E5%BF%83RDD.note_images/imageFile2.png)
+
+![image 3](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/%E7%90%86%E8%A7%A3Spark%E7%9A%84%E6%A0%B8%E5%BF%83RDD.note_images/imageFile3.png)
 
 原文插图 annex：[[bigdata/annex-Spark常用算子详解]]
 
@@ -167,3 +186,60 @@ Spark 偏 **批+微批**；低延迟流见 [[bigdata/flink-流批一体入门]]�
 原文插图 annex：[[bigdata/annex-Spark技术内幕：Stage划分及提交源码分析]]
 
 原文插图 annex：[[bigdata/annex-Spark性能优化指南——高级篇]]
+
+原文插图 annex：[[bigdata/annex-Parquet格式详解]]
+
+原文插图 annex：[[bigdata/annex-Spark计算过程分析]]
+
+原文插图 annex：[[bigdata/annex-论SparkStreaming的数据可靠性和一致性]]
+
+原文插图 annex：[[bigdata/annex-Spark性能调优]]
+
+原文插图 annex：[[bigdata/annex-SparkStreaming编程指南]]
+
+原文插图 annex：[[bigdata/annex-Spark常见问题总结3]]
+
+原文插图 annex：[[bigdata/annex-spark-sql]]
+
+原文插图 annex：[[bigdata/annex-Spark性能优化指南——基础篇]]
+
+原文插图 annex：[[bigdata/annex-executor启动和任务处理流程]]
+
+原文插图 annex：[[bigdata/annex-master启动流程]]
+
+原文插图 annex：[[bigdata/annex-worker启动流程]]
+
+原文插图 annex：[[bigdata/annex-任务启动流程submit]]
+
+原文插图 annex：[[bigdata/annex-任务提交流程]]
+
+原文插图 annex：[[bigdata/annex-spark-yarn-模式安装]]
+
+原文插图 annex：[[bigdata/annex-Spark技术内幕：Shuffle-Map-Task运算结果的处理]]
+
+原文插图 annex：[[bigdata/annex-使用Spark-MLlib给豆瓣用户推荐电影]]
+
+原文插图 annex：[[bigdata/annex-spark-on-yarn提交任务时报ClosedChannelException解决方案]]
+
+原文插图 annex：[[bigdata/annex-Preview-of-Apache-Spark-2.0-now-on-Databricks-Community-Edition-Easier,-Fa]]
+
+原文插图 annex：[[bigdata/annex-Spark技术内幕：Sort-Based-Shuffle实现解析]]
+
+原文插图 annex：[[bigdata/annex-Sharethrough使用Spark-Streaming优化实时竞价]]
+
+原文插图 annex：[[bigdata/annex-Spark1.0.0-的一些小经验]]
+
+原文插图 annex：[[bigdata/annex-Spark技术内幕：Shuffle-Read的整体流程]]
+
+原文插图 annex：[[bigdata/annex-Spark技术内幕：Storage-模块整体架构]]
+
+原文插图 annex：[[bigdata/annex-开发自己的Shuffle-Service？]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/spark(1)/Spark on yarn中的内存溢出案例.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/spark(1)/Spark on yarn中的内存溢出案例.note.md` · T22 **B** 档
+
+### 来自：Spark on yarn中的内存溢出案例
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/Spark%20on%20yarn%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E6%A1%88%E4%BE%8B.note_images/imageFile1.png)

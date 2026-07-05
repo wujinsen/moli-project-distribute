@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbIngestProperties;
 import com.moli.knowledge.server.config.KbWikiProperties;
+import com.moli.knowledge.server.dto.KbWikiAssetUploadVo;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.service.KbAclService;
@@ -11,6 +12,7 @@ import com.moli.knowledge.server.service.KbAssetService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -89,6 +92,132 @@ public class KbAssetServiceImpl implements KbAssetService {
         assertImageFile(file);
 
         streamFile(file, response);
+    }
+
+    @Override
+    public KbWikiAssetUploadVo uploadWikiAsset(Long spaceId, String slug, MultipartFile file) {
+        assertWikiEnabled();
+        KbSpace space = resolveSpace(spaceId);
+        kbAclService.assertCanEdit(space.getId());
+
+        if (file == null || file.isEmpty()) {
+            throw new BaseException("上传文件不能为空");
+        }
+        if (file.getSize() > wikiProperties.getAssetMaxBytes()) {
+            throw new BaseException("图片超过大小上限（" + wikiProperties.getAssetMaxBytes() + " 字节）");
+        }
+
+        String cleanSlug = normalizeSlug(slug);
+        String wikiDir = resolveWikiDir(space.getSpaceCode());
+        Path mdFile = resolveWikiMdFile(wikiDir, cleanSlug);
+        if (!Files.isRegularFile(mdFile)) {
+            throw new BaseException("wiki 文件不存在，请先保存页面后再上传插图");
+        }
+
+        String ext = resolveUploadExtension(file);
+        assertAllowedImageExt(ext, wikiProperties.isAllowSvg());
+        String storedName = buildStoredAssetFileName(ext);
+        Path assetDir = resolveWikiAssetDir(wikiDir, cleanSlug);
+        try {
+            Files.createDirectories(assetDir);
+        } catch (IOException e) {
+            throw new BaseException("创建插图目录失败：" + e.getMessage());
+        }
+        Path target = normalizeUnder(assetDir, storedName);
+        try {
+            file.transferTo(target.toFile());
+        } catch (IOException e) {
+            log.error("保存 wiki asset 失败: {}", target, e);
+            throw new BaseException("保存图片失败：" + e.getMessage());
+        }
+
+        String rel = "assets/" + storedName;
+        KbWikiAssetUploadVo vo = new KbWikiAssetUploadVo();
+        vo.setRel(rel);
+        vo.setFileName(storedName);
+        vo.setFileSize(file.getSize());
+        vo.setContentType(resolveContentType(target, wikiProperties.isAllowSvg()));
+        vo.setMarkdown("![" + buildImageAlt(file.getOriginalFilename()) + "](" + rel + ")");
+        return vo;
+    }
+
+    static String buildStoredAssetFileName(String ext) {
+        String hex = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return "img-" + System.currentTimeMillis() + "-" + hex + "." + ext;
+    }
+
+    static String buildImageAlt(String originalName) {
+        if (StringUtils.isBlank(originalName)) {
+            return "image";
+        }
+        String name = originalName.replace('\\', '/');
+        int slash = name.lastIndexOf('/');
+        if (slash >= 0) {
+            name = name.substring(slash + 1);
+        }
+        int dot = name.lastIndexOf('.');
+        if (dot > 0) {
+            name = name.substring(0, dot);
+        }
+        name = name.trim();
+        return StringUtils.isBlank(name) ? "image" : name;
+    }
+
+    static String resolveUploadExtension(MultipartFile file) {
+        String original = file.getOriginalFilename();
+        if (StringUtils.isNotBlank(original)) {
+            String name = original.replace('\\', '/');
+            int slash = name.lastIndexOf('/');
+            if (slash >= 0) {
+                name = name.substring(slash + 1);
+            }
+            int dot = name.lastIndexOf('.');
+            if (dot >= 0 && dot < name.length() - 1) {
+                return name.substring(dot + 1).toLowerCase(Locale.ROOT);
+            }
+        }
+        String contentType = file.getContentType();
+        if (StringUtils.isNotBlank(contentType)) {
+            if (contentType.contains("png")) {
+                return "png";
+            }
+            if (contentType.contains("jpeg") || contentType.contains("jpg")) {
+                return "jpeg";
+            }
+            if (contentType.contains("gif")) {
+                return "gif";
+            }
+            if (contentType.contains("webp")) {
+                return "webp";
+            }
+            if (contentType.contains("svg")) {
+                return "svg";
+            }
+        }
+        throw new BaseException("不支持的图片类型");
+    }
+
+    static void assertAllowedImageExt(String ext, boolean allowSvg) {
+        if ("svg".equals(ext) && !allowSvg) {
+            throw new BaseException("不支持的图片类型: svg");
+        }
+        if (!EXT_TO_MIME.containsKey(ext)) {
+            throw new BaseException("不支持的图片类型: " + ext);
+        }
+    }
+
+    private void assertImageExtension(String fileName) {
+        assertAllowedImageExt(extension(Paths.get(fileName)), wikiProperties.isAllowSvg());
+    }
+
+    private Path resolveWikiMdFile(String wikiDir, String slug) {
+        Path root = resolveWikiRoot();
+        Path base = root.resolve(wikiDir).normalize();
+        Path file = base.resolve(slug + ".md").normalize();
+        if (!file.startsWith(base)) {
+            throw new BaseException("非法 slug（越权）: " + slug);
+        }
+        return file;
     }
 
     /** 去掉可选 {@code raw/} 前缀。 */

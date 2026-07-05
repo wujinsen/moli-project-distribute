@@ -70,3 +70,5 @@ MySQL 5.6+ **Index Condition Pushdown**：联合索引中，即使无法覆盖�
 - 不要为覆盖而 `SELECT *`；明确列 + 合理联合索引才是正道。
 
 原文插图 annex：[[database/annex-mysql-覆盖索引]]
+
+原文插图 annex：[[database/annex-梳理了一遍MySQL索引，发现也不过如此]]

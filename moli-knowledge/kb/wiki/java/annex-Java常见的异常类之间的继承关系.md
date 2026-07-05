@@ -1,0 +1,18 @@
+---
+title: Java常见的异常类之间的继承关系.note（原文插图 annex）
+slug: annex-Java常见的异常类之间的继承关系
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/面试笔试/Java/Java常见的异常类之间的继承关系.note.md
+related: [java-并发面试题]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+![image 1](assets/imageFile1.png)
+
+Java把所有的⾮正常情况分成两种：异常（Exception）和错误（Eror），他们都继承Throwable⽗ 类。 Eror错误，⼀般是指与虚拟机相关的问题，如系统奔溃、虚拟机错误、动态链接失败等，这种错误⽆ 法恢复或不可能捕获，将导致应⽤程序中断。通常应⽤程序⽆法处理这些错误，因此应⽤程序不应该 试图使⽤catch块来捕获Eror对象。在定义该⽅法是也⽆须在其throws⼦句中声明该⽅法可能抛出 Eror及其任何⼦类。这类异常主要是和硬件有关的，⽽不是由程序本⾝抛出的。 Exception是Throwable的⼀个主要⼦类。Exception下⾯还有⼦类，其中⼀部分⼦类分别对应于Java程序 运⾏时常常遇到的各种异常的处理，其中包括隐式异常。⽐如，程序中除数为0引起的错误、数组下标 越界错误等，这类异常也称为运⾏时异常，因为它们虽然是由程序本⾝引起的异常，但不是程序主动 抛出的，⽽是在程序运⾏中产⽣的。Exception ⼦类下⾯的另⼀部分⼦类对应于Java程序中的⾮运⾏时 异常的处理，这些异常也称为显式异常。它们都是在程序中⽤语句抛出、并且也是⽤语句进⾏捕获 的，⽐如，⽂件没找到引起的异常、类没找到引起的异常等。
+
+⼀些主要⼦类对应的异常处理功能简要说明如下： ArithmeticException——由于除数为0引起的异 常； ArrayStoreException——由于数组存储空间不够引起的异常； ClassCastException—⼀当把⼀ 个对象归为某个类，但实际上此对象并不是由这个类 创建的，也不是其⼦类创建的，则会引起异 常； IllegalMonitorStateException——监控器状态出错引起的异常； NegativeArraySizeException⼀数组长度是负数，则产⽣异常； NullPointerException—⼀程序试图访问⼀个空的数组中的元素或 访问空的对象中的 ⽅法或变量时产⽣异常； OutofMemoryException——⽤new语句创建对象时，如 系统⽆法为其分配内存空 间则产⽣异常； SecurityException——由于访问了不应访问的指针，使安全 性出问题⽽引起异常； IndexOutOfBoundsExcention——由于数组下标越界或字符串访问越界引起异 常； IOException——由于⽂件未找到、未打开或者I/O操作不能进⾏⽽引起异 常； ClassNotFoundException——未找到指定名字的类或接⼜引起异 常； CloneNotSupportedException——⼀程序中的⼀个对象引⽤Object类的clone⽅法，但 此对象并没 有连接Cloneable接⼜，从⽽引起异常； InterruptedException—⼀当⼀个线程处于等待状态时，另⼀ 个线程中断此线程，从 ⽽引起异常； NoSuchMethodException⼀所调⽤的⽅法未找到，引起异 常； Illega1AccessExcePtion—⼀试图访问⼀个⾮public⽅法； StringIndexOutOfBoundsException ——访问字符串序号越界，引起异常； ArrayIdexOutOfBoundsException—⼀访问数组元素下标越 界，引起异常； NumberFormatException——字符的UTF代码数据格式有错引起异 常； IllegalThreadException—⼀线程调⽤某个⽅法⽽所处状态不适当，引起异 常； FileNotFoundException——未找到指定⽂件引起异常； EOFException——未完成输⼊操作即 遇⽂件结束引起异常。

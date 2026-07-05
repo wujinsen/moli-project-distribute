@@ -73,3 +73,5 @@ Master 管集群元数据，**不处理文档级** CRUD。
 ## 7. 客户端路由
 
 TransportClient（旧）/ REST：轮询连接节点，由协调节点分发。生产用 **同版本 JVM**（ES 本地序列化敏感）。
+
+原文插图 annex：[[search/annex-面试小结之Elasticsearch篇]]

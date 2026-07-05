@@ -58,3 +58,5 @@ Producer → Exchange → (Binding) → Queue → Consumer
 合并 RabbitMQ 安装/私信队列 raw。
 
 原文插图 annex：[[middleware/annex-RabbitMQ安装教程]]
+
+原文插图 annex：[[middleware/annex-RabbitMQ系列(一)：Windows下RabbitMQ安装及入门]]

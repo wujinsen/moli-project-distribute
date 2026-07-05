@@ -57,3 +57,5 @@ MVCC 主要优化**快照读**的读-写并发。
 原文插图 annex：[[database/annex-正确的理解MySQL的MVCC及实现原理]]
 
 原文插图 annex：[[database/annex-事务隔离级别中的可重复读能防幻读吗]]
+
+原文插图 annex：[[database/annex-数据库事务的四大特性以及事务的隔离级别]]

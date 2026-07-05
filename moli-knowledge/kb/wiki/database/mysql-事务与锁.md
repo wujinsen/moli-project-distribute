@@ -56,3 +56,9 @@ InnoDB 默认引擎，**支持事务 + 行级锁 + MVCC**。目标系统 MySQL 8
 | **行锁** | InnoDB DML：`Record / Gap / Next-Key` |
 
 分布式互斥跨 JVM 用 [[cache/分布式锁]]，不是表锁替代。
+
+原文插图 annex：[[database/annex-MySQL死锁案例，我一口气说了6个]]
+
+原文插图 annex：[[database/annex-数据库事务的四大特性以及事务的隔离级别]]
+
+原文插图 annex：[[database/annex-全局锁和表锁-：给表加个字段怎么有这么多阻碍？]]
