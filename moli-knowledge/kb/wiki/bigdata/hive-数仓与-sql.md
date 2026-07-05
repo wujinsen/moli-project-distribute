@@ -69,3 +69,12 @@ updated: 2026-07-05
 ## 批次#1321 增补（wujinsen Phase2 P1 BigData）
 
 本页由 Phase 2 #1321 从 wujinsen `BigData/` 与 `大数据资料-王/` 合并创建；sources **30** 篇。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Hive/Hive命令/hive常用命令.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Hive/Hive命令/hive常用命令.note.md` · T22 **D** 档
+
+### 来自：hive常用命令
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Hive/Hive%E5%91%BD%E4%BB%A4/hive%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4.note_images/imageFile1.png)

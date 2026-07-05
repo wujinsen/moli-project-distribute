@@ -41,3 +41,12 @@ ES 查询语法见 [[search/elasticsearch-搜索]]、[[search/elasticsearch-面�
 ## 批次#1323 增补（wujinsen Phase2 P2 数仓调度）
 
 本页 Phase 2 #1323 创建；sources **5** 篇。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/FileBeat/filebeat-kafka日志收集.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/FileBeat/filebeat-kafka日志收集.note.md` · T22 **D** 档
+
+### 来自：filebeat-kafka日志收集
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/FileBeat/filebeat-kafka%E6%97%A5%E5%BF%97%E6%94%B6%E9%9B%86.note_images/imageFile1.png)

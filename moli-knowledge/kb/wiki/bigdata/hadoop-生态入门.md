@@ -151,3 +151,21 @@ ApplicationMaster 向 RM 申请 Container；队列容量/公平调度（Capacity
 ## 批次#1330 增补（wujinsen Phase3 收口）
 
 Phase3：BigData 零散 Ambari/Cloudera 等。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Hadoop/用户画像.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Hadoop/用户画像.note.md` · T22 **D** 档
+
+### 来自：用户画像
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Hadoop/%E7%94%A8%E6%88%B7%E7%94%BB%E5%83%8F.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/在大厂的数据工程师工作日常工作分享.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/在大厂的数据工程师工作日常工作分享.note.md` · T22 **D** 档
+
+### 来自：在大厂的数据工程师工作日常工作分享
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/%E5%9C%A8%E5%A4%A7%E5%8E%82%E7%9A%84%E6%95%B0%E6%8D%AE%E5%B7%A5%E7%A8%8B%E5%B8%88%E5%B7%A5%E4%BD%9C%E6%97%A5%E5%B8%B8%E5%B7%A5%E4%BD%9C%E5%88%86%E4%BA%AB.note_images/imageFile1.png)

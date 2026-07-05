@@ -63,3 +63,12 @@ MergeTree 引擎；分区 + 排序键；物化视图预聚合。源码阅读见 
 ## 批次#1323 增补（wujinsen Phase2 P2 数仓调度）
 
 本页 Phase 2 #1323 创建；sources **24** 篇。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/OLAP/ClickHouse/基础教程/clickhouse精确去重.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/OLAP/ClickHouse/基础教程/clickhouse精确去重.note.md` · T22 **D** 档
+
+### 来自：clickhouse精确去重
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/OLAP/ClickHouse/%E5%9F%BA%E7%A1%80%E6%95%99%E7%A8%8B/clickhouse%E7%B2%BE%E7%A1%AE%E5%8E%BB%E9%87%8D.note_images/imageFile1.png)

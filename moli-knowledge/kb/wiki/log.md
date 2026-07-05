@@ -1353,3 +1353,4 @@
 ## [2026-07-05] maintenance | 批次#1332 enterprise-kb 断链修复 → wiki-moli 改路径引用 + 已删页映射已有 slug；lint errors 62→0
 ## [2026-07-05] maintenance | 批次#1333 enterprise-kb lint 收口 → repair fm 179 页 + concept 链接 + sources 解析修复 + index orphan 18；strict 0 问题
 ## [2026-07-05] maintenance | 批次#1334 prune orphan wujinsen sources + 去 scaffold + 重建 frontmatter 179 页 + 补 nexus raw（uncited→0）
+## [2026-07-05] remediate | T22 R2 D档 10/10 raw

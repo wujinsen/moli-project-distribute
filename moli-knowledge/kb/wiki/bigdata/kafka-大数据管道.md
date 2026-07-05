@@ -84,3 +84,21 @@ Topic 分区 + 副本；Producer → Broker → Consumer Group。Zookeeper/KRaft
 ## 批次#1321 增补（wujinsen Phase2 P1 BigData）
 
 本页由 Phase 2 #1321 从 wujinsen `BigData/` 与 `大数据资料-王/` 合并创建；sources **44** 篇。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Kafka/为什么要在Kubernetes上运行Kafka，有哪些问题？.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Kafka/为什么要在Kubernetes上运行Kafka，有哪些问题？.note.md` · T22 **D** 档
+
+### 来自：为什么要在Kubernetes上运行Kafka，有哪些问题？
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Kafka/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%9C%A8Kubernetes%E4%B8%8A%E8%BF%90%E8%A1%8CKafka%EF%BC%8C%E6%9C%89%E5%93%AA%E4%BA%9B%E9%97%AE%E9%A2%98%EF%BC%9F.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Kafka/安装部署/kafka集群资源评估.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Kafka/安装部署/kafka集群资源评估.note.md` · T22 **D** 档
+
+### 来自：kafka集群资源评估
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Kafka/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/kafka%E9%9B%86%E7%BE%A4%E8%B5%84%E6%BA%90%E8%AF%84%E4%BC%B0.note_images/imageFile1.png)

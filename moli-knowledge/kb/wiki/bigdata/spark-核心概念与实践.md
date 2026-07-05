@@ -128,3 +128,30 @@ Spark 偏 **批+微批**；低延迟流见 [[bigdata/flink-流批一体入门]]�
 ## 批次#1321 增补（wujinsen Phase2 P1 BigData）
 
 本页由 Phase 2 #1321 从 wujinsen `BigData/` 与 `大数据资料-王/` 合并创建；sources **85** 篇。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Spark/各模式下运行spark自带实例SparkPi.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Spark/各模式下运行spark自带实例SparkPi.note.md` · T22 **D** 档
+
+### 来自：各模式下运行spark自带实例SparkPi
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Spark/%E5%90%84%E6%A8%A1%E5%BC%8F%E4%B8%8B%E8%BF%90%E8%A1%8Cspark%E8%87%AA%E5%B8%A6%E5%AE%9E%E4%BE%8BSparkPi.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/Spark/消息队列设计精要.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/Spark/消息队列设计精要.note.md` · T22 **D** 档
+
+### 来自：消息队列设计精要
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/Spark/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E8%AE%BE%E8%AE%A1%E7%B2%BE%E8%A6%81.note_images/imageFile1.png)
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/BigData/spark(1)/Spark常见问题总结2.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/BigData/spark(1)/Spark常见问题总结2.note.md` · T22 **D** 档
+
+### 来自：Spark常见问题总结2
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/BigData/spark%281%29/Spark%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%932.note_images/imageFile1.png)
