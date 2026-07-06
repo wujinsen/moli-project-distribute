@@ -163,15 +163,40 @@ bash tools/ci/run_sync.sh dry-run-all
 
 ### 7.2 写库（二选一）
 
+**必须先加载 DB 账号**（与 [`deploy/上线流程.md`](../../deploy/上线流程.md) §4.2.1 相同），否则会 `1045 Access denied`：
+
+```bash
+cd /opt/moli-project-distribute/moli-knowledge/kb
+set -a
+source <(sed 's/\r$//' /opt/moli-project-distribute/moli-knowledge/conf/moli-knowledge.env)
+set +a
+export KB_SYNC_HOST="${DB_HOST:-127.0.0.1}"
+export KB_SYNC_PORT="${DB_PORT:-3306}"
+export KB_SYNC_USER="${SPRING_DATASOURCE_USERNAME}"
+export KB_SYNC_PASSWORD="${SPRING_DATASOURCE_PASSWORD}"
+export KB_SYNC_DB="${DB_NAME:-moli}"
+
+# 建议先验证
+mysql -h"${KB_SYNC_HOST}" -P"${KB_SYNC_PORT}" -u"${KB_SYNC_USER}" -p"${KB_SYNC_PASSWORD}" "${KB_SYNC_DB}" -e "SELECT 1"
+```
+
 **仅茉莉系统手册**（推荐，本批只改了 `wiki-moli`）：
 
 ```bash
-python3 tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
+python3 tools/sync_to_db.py \
+  --wiki-dir wiki-moli \
+  --space moli-ops-manual \
+  --host "${KB_SYNC_HOST}" \
+  --port "${KB_SYNC_PORT}" \
+  --user "${KB_SYNC_USER}" \
+  --password "${KB_SYNC_PASSWORD}" \
+  --db "${KB_SYNC_DB}"
 ```
 
 **三空间一起**：
 
 ```bash
+export KB_SYNC_PYTHON=python3
 bash tools/ci/run_sync.sh sync-all
 ```
 
@@ -297,6 +322,10 @@ git add wiki-moli/develop/ && git commit && git push
 # EC2
 cd /opt/moli-project-distribute && git pull
 # 换 knowledge JAR → knowledge restart
-cd moli-knowledge/kb && source env… && python3 tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
+cd moli-knowledge/kb
+set -a && source <(sed 's/\r$//' ../conf/moli-knowledge.env) && set +a
+python3 tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual \
+  --host "${DB_HOST:-127.0.0.1}" --user "${SPRING_DATASOURCE_USERNAME}" \
+  --password "${SPRING_DATASOURCE_PASSWORD}" --db "${DB_NAME:-moli}"
 # Web：茉莉系统手册 → 搜「概要设计」
 ```
