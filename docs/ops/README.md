@@ -19,6 +19,7 @@
 | 文档 | 用途 |
 |------|------|
 | [knowledge-workbench-operations.md](knowledge-workbench-operations.md) | 入库 + Wiki 治理操作 |
+| **[kb-t20-design-docs-release.md](kb-t20-design-docs-release.md)** | **T20 后端 + 概要设计 Web 浏览 · 上线 Runbook（2026-07-06）** |
 | [../product/moli-v1-release-scope.md](../product/moli-v1-release-scope.md) | v1 功能边界 |
 
 ## 茉莉系统手册（wiki-moli）
