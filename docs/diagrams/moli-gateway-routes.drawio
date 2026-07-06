@@ -1,41 +1,58 @@
-<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+<mxfile host="drawio-plugin" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" modified="2026-07-06T06:10:49.321Z" version="22.1.22" etag="qAxgFamAj0ntId-tjM8M" type="embed">
   <diagram id="gw-routes" name="Gateway Routes">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1200" pageHeight="700" math="0" shadow="0">
+    <mxGraphModel dx="1635" dy="965" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="700" math="0" shadow="0">
       <root>
-        <mxCell id="0"/><mxCell id="1" parent="0"/>
-        <mxCell id="title" value="茉莉网关路由一览&#xa;moli-gateway :21000 · StripPrefix=1 · lb://Nacos" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="40" y="20" width="500" height="40" as="geometry"/>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="茉莉网关路由一览&#xa;moli-gateway :21000 · StripPrefix=1 · lb://Nacos" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="20" width="500" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="ui" value="meiling-ui&#xa;HTTP + Authorization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
-          <mxGeometry x="40" y="100" width="140" height="60" as="geometry"/>
+        <mxCell id="ui" value="meiling-ui&#xa;HTTP + Authorization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="50" y="250" width="140" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="gw" value="moli-gateway&#xa;:21000&#xa;Spring Cloud Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="240" y="90" width="180" height="80" as="geometry"/>
+        <mxCell id="gw" value="moli-gateway&#xa;:21000&#xa;Spring Cloud Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="290" y="240" width="180" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="uc" value="user-center-server&#xa;:8888 HTTP · :20881 Dubbo&#xa;lb://user-center-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="520" y="80" width="200" height="70" as="geometry"/>
+        <mxCell id="uc" value="user-center-server&#xa;:8888 HTTP · :20881 Dubbo&#xa;lb://user-center-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="770" y="150" width="200" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="order" value="order-server&#xa;:8087&#xa;lb://order-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="520" y="180" width="200" height="60" as="geometry"/>
+        <mxCell id="order" value="order-server&#xa;:8087&#xa;lb://order-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="770" y="460" width="200" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="bi" value="bi-server&#xa;:1128&#xa;lb://bi-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="520" y="260" width="200" height="60" as="geometry"/>
+        <mxCell id="bi" value="bi-server&#xa;:1128&#xa;lb://bi-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="770" y="580" width="200" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="kb" value="knowledge-server&#xa;:8090&#xa;lb://knowledge-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="520" y="340" width="200" height="60" as="geometry"/>
+        <mxCell id="kb" value="knowledge-server&#xa;:8090&#xa;lb://knowledge-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="770" y="330" width="200" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="tbl" value="路由表（application-dev.yml）&#xa;─────────────────────────&#xa;/UserCenter/**      → user-center-server&#xa;/OrderServer/**     → order-server&#xa;/BiServer/**        → bi-server&#xa;/KnowledgeServer/** → knowledge-server&#xa;&#xa;过滤器：StripPrefix=1（去掉第一段路径）&#xa;例：/OrderServer/seckill/order → order-server /seckill/order" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
-          <mxGeometry x="40" y="200" width="380" height="160" as="geometry"/>
+        <mxCell id="tbl" value="路由表（application-dev.yml）&#xa;─────────────────────────&#xa;/UserCenter/**      → user-center-server&#xa;/OrderServer/**     → order-server&#xa;/BiServer/**        → bi-server&#xa;/KnowledgeServer/** → knowledge-server&#xa;&#xa;过滤器：StripPrefix=1（去掉第一段路径）&#xa;例：/OrderServer/seckill/order → order-server /seckill/order" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="50" y="440" width="380" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="nacos" value="Nacos :8848&#xa;服务发现" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" vertex="1" parent="1">
-          <mxGeometry x="780" y="200" width="120" height="50" as="geometry"/>
+        <mxCell id="nacos" value="Nacos :8848&#xa;服务发现" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="810" y="250" width="120" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="e1" value="/UserCenter/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" parent="1" source="gw" target="uc"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e2" value="/OrderServer/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;" edge="1" parent="1" source="gw" target="order"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e3" value="/BiServer/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;" edge="1" parent="1" source="gw" target="bi"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e4" value="/KnowledgeServer/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;" edge="1" parent="1" source="gw" target="kb"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e5" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="ui" target="gw"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e6" value="lb://" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#b85450;" edge="1" parent="1" source="gw" target="nacos"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e1" value="/UserCenter/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="gw" target="uc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="/OrderServer/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="gw" target="order" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="/BiServer/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="gw" target="bi" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="/KnowledgeServer/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="gw" target="kb" edge="1">
+          <mxGeometry x="0.3058" y="10" relative="1" as="geometry">
+            <mxPoint x="430" y="130" as="sourcePoint" />
+            <mxPoint x="870" y="530" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;" parent="1" source="ui" target="gw" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="lb://" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#b85450;" parent="1" source="gw" target="nacos" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
