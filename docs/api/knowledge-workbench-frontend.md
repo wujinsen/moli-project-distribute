@@ -10,7 +10,7 @@
 
 | 优先级 | 页面 | 路由 | 后端 | 前端 | 对接文档 |
 |--------|------|------|------|------|----------|
-| **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19 | 🔵 **Spec 已定**（见 §10.1；UI 待 meiling-ui 落地） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) |
+| **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19 · 🔵 **T20 待后端** | 🔵 **Spec 已定**（Tab2 §10.1；**T20 三 Tab** 见下） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) · **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** |
 | **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | 🔵 **Spec 已定**（见 §10.2；当前 MVP 仅 Lint+AI） | [wiki-govern-frontend.md](wiki-govern-frontend.md) |
 | P1 | Wiki 编辑 | `knowledge/wiki/edit` | ✅ T14 | ✅ 已有 | KNOWLEDGE_API §8 |
 | P1 | 健康体检 | `knowledge/lint/index` | ✅ | ✅ 已有 | KNOWLEDGE_API §4 |
@@ -175,6 +175,7 @@ export interface KbWorkflowHintVo {
 
 | 页面 | 文档章节 |
 |------|----------|
+| **T20 导入入口** | [kb-import-entry-frontend.md §10](kb-import-entry-frontend.md#10-验收清单t20--前端) |
 | Wiki 治理 | [wiki-govern-frontend.md §13–§15](wiki-govern-frontend.md#13-验收清单与进度w1w8) |
 | Ingest 增量 | [ingest-workbench-frontend.md §11–§13](ingest-workbench-frontend.md#11-验收清单与进度i1i5) |
 | 操作手册（非前端） | [knowledge-workbench-operations.md §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距) |
@@ -185,7 +186,7 @@ export interface KbWorkflowHintVo {
 
 | 模块 | 后端 | 前端 UI | 缺口摘要 |
 |------|------|---------|----------|
-| **Ingest** | ✅ T15+T18+T19 | 🔵 Spec ✅ | §10.1：`KbWorkflowNextSteps` + raw 冲突面板 |
+| **Ingest** | ✅ T15+T18+T19 · 🔵 T20 契约 | 🔵 Spec ✅ | Tab2：§10.1 nextSteps + raw 冲突；**Tab1/3**：[kb-import-entry-frontend.md](kb-import-entry-frontend.md) |
 | **Wiki 治理** | ✅ T16a/e/g | 🔵 MVP 两步 | §10.2：script/auto/merge-hint 四步闭环 |
 | **共享** | ✅ `nextSteps` 字段 | 🔵 | `KbWorkflowNextSteps.vue` 复用（§10.1） |
 

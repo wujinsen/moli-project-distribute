@@ -52,6 +52,7 @@
 | `11_kb_wiki_govern_menu.sql` | Wiki 治理菜单 + `kb:wiki:govern` 动作 |
 | `11_kb_platform_llm_config.sql` | **T19** 平台 LLM 配置表 `kb_platform_llm_config` |
 | `12_kb_platform_llm_menu.sql` | **T19** 系统管理菜单「知识库 LLM」+ `kb:platform:llm` |
+| `16_kb_import_entry_menu.sql` | **T20** Ingest Tab1 · `kb:ingest:rawUpload` 动作 + 角色 2/3 授权 |
 
 ## 新环境初始化
 

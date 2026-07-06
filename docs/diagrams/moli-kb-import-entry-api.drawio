@@ -1,0 +1,111 @@
+<mxfile host="drawio-plugin" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" modified="2026-07-06T05:44:44.411Z" version="22.1.22" etag="BjF61IFsdCI0qNTvRfhM" type="embed">
+  <diagram id="import-api-seq" name="T20 API Sequence">
+    <mxGraphModel dx="1635" dy="965" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;T20 · 双入口导入 API 时序&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;Editor 浏览器 → Gateway → knowledge-server → Linux 磁盘 · 全程 HTTP&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="40" y="20" width="680" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_a" value="路径 A · Tab1 Raw 投喂（T20a）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;startSize=28;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="80" width="1320" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ui1" value="KbRawUploadPanel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" parent="lane_a" vertex="1">
+          <mxGeometry x="24" y="42" width="120" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="gw_a" value="Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="lane_a" vertex="1">
+          <mxGeometry x="180" y="42" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="ing_c" value="KbIngestController&lt;br&gt;POST /raw-upload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="lane_a" vertex="1">
+          <mxGeometry x="306" y="42" width="150" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="raw_svc" value="KbRawUploadService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="lane_a" vertex="1">
+          <mxGeometry x="492" y="42" width="140" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="raw_disk" value="kb/raw/*.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=11;" parent="lane_a" vertex="1">
+          <mxGeometry x="668" y="42" width="110" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="tab2" value="Tab2 Ingest → Sync" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="lane_a" vertex="1">
+          <mxGeometry x="814" y="42" width="130" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a1" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_a" source="ui1" target="gw_a" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a2" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_a" source="gw_a" target="ing_c" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a3" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_a" source="ing_c" target="raw_svc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a4" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_a" source="raw_svc" target="raw_disk" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a5" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;rounded=0;" parent="lane_a" source="raw_disk" target="tab2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_b" value="路径 B · Tab3 Wiki 成品导入（T20b）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=28;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="210" width="1320" height="130" as="geometry">
+            <mxRectangle x="40" y="210" width="250" height="30" as="alternateBounds" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ui3" value="KbWikiImportPanel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="24" y="46" width="120" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="gw_b" value="Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="180" y="46" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wiki_c" value="KbWikiController&lt;br&gt;POST /page/import" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="306" y="46" width="150" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="imp_svc" value="KbWikiImportService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="492" y="46" width="140" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="file_svc" value="KbWikiFileService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="668" y="46" width="130" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wiki_disk" value="kb/wiki*/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="834" y="46" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_svc" value="KbSyncService" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="960" y="46" width="110" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="kb_document" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" parent="lane_b" vertex="1">
+          <mxGeometry x="1106" y="46" width="100" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="lint_opt" value="可选 lint-preview" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontSize=10;" parent="lane_b" vertex="1">
+          <mxGeometry x="492" y="96" width="120" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b1" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_b" source="ui3" target="gw_b" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b2" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_b" source="gw_b" target="wiki_c" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b3" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_b" source="wiki_c" target="imp_svc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b4" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_b" source="imp_svc" target="file_svc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b5" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_b" source="file_svc" target="wiki_disk" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b6" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_b" source="wiki_disk" target="sync_svc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b7" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" parent="lane_b" source="sync_svc" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_b8" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;rounded=0;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="lane_b" source="imp_svc" target="lint_opt" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;Editor&lt;/b&gt; 仅 HTTP · 无需 SSH&lt;br&gt;Tab1: rawUpload+editor · Tab3: wiki:edit+sync" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="40" y="370" width="280" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="ops_note" value="&lt;b&gt;运维兜底&lt;/b&gt; rsync/git 直写磁盘 → Web Sync（虚线 · 非主路径）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;fontSize=11;dashed=1;" parent="1" vertex="1">
+          <mxGeometry x="360" y="370" width="360" height="52" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

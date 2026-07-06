@@ -21,7 +21,8 @@
 |------|------|
 | [KNOWLEDGE_API.md](KNOWLEDGE_API.md) | `/kb/*` 契约 |
 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | 前端总览 B1–B10 |
-| [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | Ingest I1–I5 |
+| [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | Ingest I1–I5 · Tab2 |
+| [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | **T20** Tab1 Raw 投喂 + Tab3 成品导入 |
 | [wiki-govern-frontend.md](wiki-govern-frontend.md) | Wiki 治理 W1–W8 |
 | [kb-markdown-image-frontend.md](kb-markdown-image-frontend.md) | T22 F1 · `KbMarkdownImage` 插图鉴权 |
 | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | LLM 平台 T19 |

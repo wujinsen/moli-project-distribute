@@ -1,8 +1,23 @@
 # Ingest 工作台 · 前端对接说明（meiling-ui）
 
-> **读者**：meiling-ui 前端。后端 **T15a–e + T18 + T19 ✅**；本文是联调权威说明（含增量需求）。  
+> **读者**：meiling-ui 前端。后端 **T15a–e + T18 + T19 ✅**；**T20 导入入口 🔵 契约已定、后端并行开发**。  
 > **总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
-> **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §9 · **产品方案**：[Ingest工作台产品方案.md](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)
+> **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §9 · **T20 Tab1/Tab3** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)**  
+> **产品方案**：[Ingest工作台产品方案.md](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md) · **T20 PRD**：[knowledge-import-entry-prd.md](../product/knowledge-import-entry-prd.md)
+
+---
+
+## 0. T20 · 三 Tab 导入入口（新增）
+
+Ingest 页扩展为 **投喂 Raw · 选源入库 · 成品导入** 三 Tab；Tab2 本文 §1–§13 **不变**。
+
+| Tab | 文档 | API |
+|-----|------|-----|
+| Tab1 投喂 Raw | [kb-import-entry-frontend.md §5–§6](kb-import-entry-frontend.md#5-tab1--raw-投喂) | `POST /kb/ingest/raw-upload`（§9.10） |
+| Tab2 选源入库 | 本文 §1–§13 | §9 既有接口 |
+| Tab3 成品导入 | [kb-import-entry-frontend.md §6](kb-import-entry-frontend.md#6-tab3--wiki-成品导入) | `POST /kb/wiki/page/import`（§8.8） |
+
+完整 UI 结构、TypeScript 类型、Mock 策略、验收 **T20-F1–F7** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)**。
 
 ---
 
@@ -24,6 +39,8 @@
 ---
 
 ## 2. 推荐界面结构
+
+> **T20**：外层增加 `el-tabs`；Tab2 结构如下；Tab1/Tab3 见 [kb-import-entry-frontend.md §3](kb-import-entry-frontend.md#3-页面结构)。
 
 ```
 KnowledgeIngestView.vue
@@ -336,6 +353,7 @@ export function publishIngestJobApi(
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-06 | §0 T20 三 Tab + 链 [kb-import-entry-frontend.md](kb-import-entry-frontend.md) |
 | 2026-06-28 | §4.4 Expert `useLlmGenerate=!templateMode`；B3 `llmFallback` 字段 |
 | 2026-06-28 | §11 I1–I5 验收进度 + §12 落点 |
 | 2026-06-28 | 新增前端对接文档：Express 参数、模板模式、nextSteps、raw 门禁 |

@@ -18,6 +18,7 @@
 | **用户中心** | [`user-center-overview.md`](user-center-overview.md) · [`user-center-detailed-design.md`](user-center-detailed-design.md) · [`portal-system-group.md`](portal-system-group.md) |
 | **订单 · 秒杀** | [`order-seckill-design.md`](order-seckill-design.md) |
 | **知识库 LLM 平台设置（T19）** | [`kb-llm-platform-settings.md`](kb-llm-platform-settings.md) · 前端 [`../api/kb-llm-platform-frontend.md`](../api/kb-llm-platform-frontend.md) |
+| **知识库双入口导入（T20）** | [`kb-import-entry-design.md`](kb-import-entry-design.md) · 产品 [`../product/knowledge-import-entry-prd.md`](../product/knowledge-import-entry-prd.md) |
 | **知识库模块总览** | [`knowledge-module-overview.md`](knowledge-module-overview.md) |
 | **BI 模块（v1 骨架）** | [`bi-module-overview.md`](bi-module-overview.md) · [bi-api.md](../api/bi-api.md) |
 | **API 网关** | [`gateway-design.md`](gateway-design.md) · 路由 [`../api/gateway-routes.md`](../api/gateway-routes.md) |

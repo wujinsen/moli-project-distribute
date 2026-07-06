@@ -10,7 +10,7 @@
 
 | 产品线 | 菜单 | 产品方案 | 前端对接 | 后端状态 |
 |--------|------|----------|----------|----------|
-| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] · [双入口导入 PRD](knowledge-import-entry-prd.md) · [wujinsen 图片回迁 T22](wujinsen-wiki-image-remediation-prd.md) | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) | T15+T18+T19 ✅；**T20/T22 🔵** |
+| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] · [双入口导入 PRD](knowledge-import-entry-prd.md) · **[T20 设计](../design/kb-import-entry-design.md)** · [wujinsen 图片回迁 T22](wujinsen-wiki-image-remediation-prd.md) | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) | T15+T18+T19 ✅；**T20 🔵 设计已定** |
 | **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [knowledge-workbench-frontend.md](../api/knowledge-workbench-frontend.md) · [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g ✅；**T16f 前端 🔵** |
 | **单页编辑** | Wiki 编辑 | [[Wiki在线编辑与AI协助改稿]] | KNOWLEDGE_API §8.2–8.4 | T14 ✅ |
 | **健康体检** | 健康体检 | wiki-moli / 查询与体检指南 | KNOWLEDGE_API §4 | DB 快照，与治理分工 |

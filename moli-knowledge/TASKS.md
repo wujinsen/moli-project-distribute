@@ -17,8 +17,8 @@
 | Java API | ✅ CRUD/Ask/Browse/Graph/Lint/ACL/附件/全文检索/Ingest/Wiki 治理 API | Meilisearch/向量（量级触发再上） |
 | 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
 | kb 知识 | ✅ wiki + wiki-moli + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
-| 后端工作台 | ✅ T14 单页编辑 · T15 Ingest · T16a/e/g 治理 · T17 分类落盘 · T18 Express · T19 LLM 平台 | — |
-| 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理全链路 · **T19d** LLM 设置 UI · 空间 CRUD（二期） |
+| 后端工作台 | ✅ T14 单页编辑 · T15 Ingest · T16a/e/g 治理 · T17 分类落盘 · T18 Express · T19 LLM 平台 | **T20** 双入口导入（设计已定） |
+| 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理全链路 · **T19d** LLM 设置 UI · **T20f** 导入 Tab · 空间 CRUD（二期） |
 
 ---
 
@@ -314,6 +314,33 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 **开工提示词**：
 
 > 读 `kb/wiki/guides/Ingest工作台产品方案.md`、`kb/AGENTS.md` §4、T14 的 `KbWikiFileService` 设计。实现 T15a：`/kb/ingest/raw-tree` + job/plan API + 前端 Plan 表；Plan LLM 只输出 JSON；不写 wiki 直到 commit。
+
+---
+
+## T20 · 双入口导入（Raw 投喂 + Wiki 成品） 🔵 设计已定 · 待实现
+
+> **产品 PRD**：[`docs/product/knowledge-import-entry-prd.md`](../docs/product/knowledge-import-entry-prd.md)  
+> **技术设计**：[`docs/design/kb-import-entry-design.md`](../docs/design/kb-import-entry-design.md)  
+> **流程图**：[`docs/diagrams/moli-kb-import-entry.drawio`](../docs/diagrams/moli-kb-import-entry.drawio) · [API 时序](../docs/diagrams/moli-kb-import-entry-api.drawio)  
+> 与 **T15 Tab2** 并列：T20 Tab1/3 为其补充 **Web 输入**；Tab2 Ingest 逻辑 **不变**。
+
+**目标**：Ingest 工作台三 Tab——① Web 上传 raw → ② 现有 Ingest → ③ 成品 md 直写 wiki + Sync。
+
+| 子任务 | 范围 | 验收 | 状态 |
+|--------|------|------|------|
+| **T20a** | `POST /kb/ingest/raw-upload` + `KbRawUploadService` + Tab1 UI | 上传 md 至 raw → Tab2 可见 → 模板 Ingest → Sync | 🔵 |
+| **T20b** | `POST /kb/wiki/page/import` + `KbWikiImportService` + Tab3 UI | 成品 md 不进 raw；直写 wiki → Sync → 浏览 | 🔵 |
+| **T20c** | zip raw、import/batch、`.assets` 包（T22 联动） | 10 篇 md ≤1 次 Sync | P1 |
+| **T20d** | `docs/sql/16_kb_import_entry_menu.sql`（`kb:ingest:rawUpload`） | editor 权限与 Tab 可见性 | P1 |
+| **T20f** | meiling-ui 三 Tab + 决策树文案 + API/i18n | 与 T14e 新建复用分类选择 | 🔵 |
+
+**开工提示词**：
+
+> 读 [`docs/design/kb-import-entry-design.md`](../docs/design/kb-import-entry-design.md) §3–§9。先实现 **T20a**：`KbRawUploadService`（路径安全与 `rawTree` 同源）、`KbIngestController` 增 `POST /raw-upload`、单测；再 **T20b**：`KbWikiImportService`（categoryId→dir_slug、frontmatter 补全、复用 `KbWikiFileService.writePage` + `KbSyncService`）。前端 meiling-ui 扩展 `KnowledgeIngestWorkbenchView` 三 Tab。禁止直写 `kb_document`。
+
+**依赖**：✅ T14a（wiki 写盘）· ✅ T15（Ingest Tab2）· ✅ T3 Sync · T9 ACL
+
+**铁律**：raw 只追加；Tab3 不写 raw；Sync 后 `source=kb` 才可见。
 
 ---
 

@@ -1306,7 +1306,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | §6 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + `/kb/sync/*` | §4 |
 | **Wiki 编辑** | `knowledge/wiki/edit` ✅ T14 | `/kb/wiki-moli/page` + `ai-revise` + `enrich` | §8 |
-| **Ingest 工作台** | `knowledge/ingest/index` ✅ T15 | `/kb/ingest/*`（§9 · 24 接口） | **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)** |
+| **Ingest 工作台** | `knowledge/ingest/index` ✅ T15 | `/kb/ingest/*`（§9 · 24 接口）+ **T20** §9.10 | **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)** · **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** |
 | **Wiki 治理** | `knowledge/wiki-govern/index` 🔵 T16f | `/kb/wiki-moli/lint-space` + `/kb/wiki-moli/govern/*` | **[wiki-govern-frontend.md](wiki-govern-frontend.md)** |
 | 空间管理 | `knowledge/spaces/index` | `/kb/space/*` | §3 |
 
@@ -1674,14 +1674,65 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 后端鉴权以**空间 editor**为准（与文档编辑一致）。前端编辑入口/路由 `meta.perms` 标注 `kb:wiki:edit` 仅作菜单级提示，按钮显隐按所属空间 `canEdit`；动作权限种子 SQL（`kb:wiki:edit`）可后续补充，不影响 T14a 功能。
 
+### 8.8 Wiki 成品导入（T20b · 🔵 契约已定 / 待实现）
+
+> **前端对接** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** §6  
+> **设计** → [kb-import-entry-design.md](../design/kb-import-entry-design.md) §4  
+> **状态**：`KbWikiImportService` / `POST /page/import` **尚未合入**；前端可按本文 Mock 并行开发。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/kb/wiki/page/import` | multipart 单文件成品 md → 写 wiki 磁盘 |
+| POST | `/kb/wiki/page/import/batch` | P1 · 多文件 + 一次 Sync |
+
+Controller：`KbWikiController`（与 §8.1 `/kb/wiki/page` 同基路径；文档中 `/kb/wiki-moli/page` 为历史别名表述）。
+
+#### `POST /kb/wiki/page/import`
+
+**Content-Type**：`multipart/form-data`
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `spaceId` | 是 | 目标空间 |
+| `categoryId` | 是 | 对应 `kb_category.id`；落盘 `{dir_slug}/{slug}.md` |
+| `file` | 是 | 单个 `.md` |
+| `slug` | 否 | 裸 slug；默认文件名 stem |
+| `title` | 否 | 覆盖 frontmatter title |
+| `onConflict` | 否 | `FAIL`（默认）/ `OVERWRITE` |
+| `lintPreview` | 否 | `true` 时返回 warn 列表，不阻塞 |
+| `sync` | 否 | `true`（**默认 true**）时 import 后 `POST /kb/sync/trigger` |
+
+**响应** `WikiImportResultVo`：
+
+```json
+{
+  "slug": "ops/运维手册",
+  "spaceId": 900000000000000003,
+  "relativePath": "wiki-moli/ops/运维手册.md",
+  "created": true,
+  "contentHash": "abc…",
+  "lintWarnings": [],
+  "sync": { "triggered": true, "success": true, "documentId": 900123 },
+  "nextSteps": [{ "code": "wiki_govern_lint", "label": "建议运行 Wiki 治理 Lint", "routePath": "/knowledge/wiki/govern", "routeQuery": {} }]
+}
+```
+
+| 错误 | 说明 |
+|------|------|
+| 409 | `onConflict=FAIL` 且 wiki 文件已存在 |
+| 400 | 非 `.md`、slug/`dir_slug` 非法、frontmatter 无法解析 |
+| 403 | 非空间 editor 或无 `kb:wiki:edit` / `kb:sync:trigger`（内嵌 Sync 时） |
+
+落盘路径与 §8.1 `space-dirs` 一致（`enterprise-kb`→`wiki`，`moli-ops-manual`→`wiki-moli`，`jp-fe-ap-exam`→`wiki-jp-exam`）。**不写 raw**；保存只写文件，默认 Sync 后进 `kb_document`。
+
 ---
 
 ## 9. Ingest 工作台（T15）
 
 > 产品方案：[`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
-> **前端对接** → **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)**（Express、模板模式、nextSteps）。  
+> **前端对接** → **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)**（Express、模板模式、nextSteps）· **T20 Tab1/Tab3** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)**  
 > **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。  
-> **状态**：T15a–e、**T18**、**T19（模板模式 + nextSteps + raw 门禁）** 已全部实现。
+> **状态**：T15a–e、**T18**、**T19** 已全部实现；**T20a/T20b 契约已定，待实现**（§9.10、§8.8）。
 
 统一前缀 **`/kb/ingest`**，返回 `MoliResult<T>`。经网关示例：`POST {VITE_API_BASE_URL}/KnowledgeServer/kb/ingest/jobs`。
 
@@ -2391,3 +2442,46 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 - 后端鉴权以**空间 ACL** 为准（读=viewer，写=editor）；`sys_action` 仅作前端按钮显隐。
 - 前端：`meiling-ui` `knowledge/ingest/index` → `KnowledgeIngestWorkbenchView.vue`。
 - 架构图：[`docs/diagrams/moli-kb-ingest-workbench.drawio`](../diagrams/moli-kb-ingest-workbench.drawio)。
+
+### 9.10 Raw 投喂上传（T20a · 🔵 契约已定 / 待实现）
+
+> **前端对接** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** §5  
+> **设计** → [kb-import-entry-design.md](../design/kb-import-entry-design.md) §3  
+> **状态**：`KbRawUploadService` / `POST /raw-upload` **尚未合入**。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/kb/ingest/raw-upload` | multipart：`prefix` + 多 `file` |
+| POST | `/kb/ingest/raw-upload/zip` | P1 · zip 解压到 prefix |
+| GET | `/kb/ingest/raw-prefixes` | P1 · 已有 prefix 下拉 |
+
+#### `POST /kb/ingest/raw-upload`
+
+**Content-Type**：`multipart/form-data`
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `spaceId` | 是 | ACL 按空间（raw 目录物理共享） |
+| `prefix` | 是 | 相对 `kb/raw/` 子路径，如 `test-walkthrough`、`school/fe` |
+| `file` | 是 | 可重复字段名；`.md` / `.markdown` / `.txt` |
+| `onConflict` | 否 | `SKIP`（默认）/ `OVERWRITE` / `RENAME` |
+
+**响应** `RawUploadResultVo`：
+
+```json
+{
+  "uploaded": [{ "path": "test-walkthrough/demo.md", "size": 1024, "overwritten": false }],
+  "skipped": [{ "path": "test-walkthrough/exists.md", "reason": "ALREADY_EXISTS" }],
+  "renamed": [{ "path": "test-walkthrough/demo-1.md", "originalName": "demo.md" }]
+}
+```
+
+`path` 均为 **相对 `kb/raw/`**（不含 `raw/` 前缀），与 §9.1 `raw-tree` / Ingest `rawPaths` 一致。
+
+| 限制 / 错误 | 说明 |
+|-------------|------|
+| 单文件 ≤ 5MB、单次 ≤ 20 文件 | `kb.ingest.raw-upload-max-bytes` / `raw-upload-max-files` |
+| 403 | 无 `kb:ingest:rawUpload` 或非空间 editor |
+| 400 | `prefix` 含 `..`、越权目录、非法扩展名、空文件 |
+
+**不**创建 `kb_ingest_job`、**不**调 LLM、**不**触发 raw 覆盖门禁（门禁仅在 commit/publish，§9.5）。上传成功后前端切 Tab2 并高亮 `rawPaths`。

@@ -205,6 +205,20 @@ Ingest 列表里 raw 可能显示：
 
 **绿色「已使用模板入库」只表示草稿生成成功**；若随后 commit 报错，**磁盘不会有新文件**（勿在 `wiki-jp-exam/fe/` 等路径空等）。
 
+### 2.7 T20 双入口导入（规划 · Editor 浏览器）
+
+> 设计：[`docs/design/kb-import-entry-design.md`](../design/kb-import-entry-design.md) · PRD：[`knowledge-import-entry-prd.md`](../product/knowledge-import-entry-prd.md)
+
+**Editor 不需要 SSH**。服务已部署在 Linux 上时，上传 = 浏览器 → 网关 → `knowledge-server` 写**同机** `kb/raw` 或 `kb/wiki*`。
+
+| 入口 | Tab | Editor 操作 | T20 状态 |
+|------|-----|-------------|----------|
+| raw 投喂 | Tab1 | 选 prefix · 上传 md → 自动跳 Tab2 Ingest | 🔵 待实现 |
+| 选源入库 | Tab2 | 勾选 raw → Express/Expert → commit → Sync | ✅ 已有 |
+| 成品 wiki | Tab3 | 选空间+分类 · 上传 md → 默认 Sync | 🔵 待实现 |
+
+**T20 上线前**：Editor 只能 Tab2（且 raw 须已在服务器磁盘，常来自 Git 部署）或 Wiki 编辑单篇。**运维** bulk 语料可用 rsync/git 直写磁盘，不属于 Editor 常规 SOP。
+
 ---
 
 ## 3. 模块二：Wiki 治理
@@ -486,6 +500,7 @@ Web 抽检：[`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-06 | §2.7 T20：Editor 浏览器上传、SSH 仅运维兜底 |
 | 2026-07-06 | §8 对齐生产：raw-asset-bundle + deploy 脚本；Sync 与插图分包 |
 | 2026-07-05 | §8 T22 插图回迁运维；§1.3 修正 enterprise-kb 磁盘路径 |
 | 2026-06-28 | §3.2 Web vs 完整能力差距；§2.6 raw 簇已引用 |

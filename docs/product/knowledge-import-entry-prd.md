@@ -1,6 +1,6 @@
 # 知识库 · 双入口导入 PRD（T20）
 
-> **状态**：draft · 2026-07-05  
+> **状态**：draft · 2026-07-05 · **技术设计**：[`docs/design/kb-import-entry-design.md`](../design/kb-import-entry-design.md)  
 > **里程碑**：M6 扩展（Ingest 工作台 · 投喂 + 成品导入）  
 > **上级索引**：[knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) · [knowledge-module-requirements.md](knowledge-module-requirements.md)  
 > **HTTP 契约（待补）**：`docs/api/KNOWLEDGE_API.md` §9.x / §8.x  
@@ -16,7 +16,7 @@
 
 | 现状 | 痛点 |
 |------|------|
-| Ingest 只能**读** `kb/raw/`，不能 Web 投喂 | 用户需 SSH/Git 拷文件才能入库 |
+| Ingest 只能**读** `kb/raw/`，不能 Web 投喂 | Editor 无法在界面传 raw；T20 Tab1 待做 |
 | Wiki 成品 md 无统一「导入」入口 | 与「新建文档」T14e 未闭环；易误以为 `POST /kb/document` |
 | MinIO 附件与 raw/wiki 概念混用 | 用户不清楚 pdf 该放 raw 还是附件 |
 
@@ -46,12 +46,14 @@
 
 ## 2. 用户与场景
 
+> **Editor 全程浏览器**；服务器部署在 Linux 不改变此结论。SSH/SFTP 仅 **运维批量兜底**，见 [技术设计 §1.4](../design/kb-import-entry-design.md#14-editor-路径-vs-运维兜底必读)。
+
 | 角色 | 场景 | 入口 |
 |------|------|------|
-| editor | 有道/Notion 导出 md，需 LLM 合并进库 | A：上传 raw → Ingest Express |
-| editor | 运维 Runbook 已写好 md，直接发布 | B：成品导入 → Sync |
-| editor | 技术方案 pdf 挂在某页下下载 | C：Sync 后 Wiki 编辑页传附件 |
-| 运维 | 批量拷目录到服务器 | Git/SFTP → raw 或 wiki → 刷新树 / Sync |
+| editor | 有道/Notion 导出 md，需 LLM 合并进库 | Tab1 上传 raw → Tab2 Ingest（**浏览器**） |
+| editor | 运维 Runbook 已写好 md，直接发布 | Tab3 成品导入 → Sync（**浏览器**） |
+| editor | 技术方案 pdf 挂在某页下下载 | Sync 后 Wiki 编辑页传附件（MinIO） |
+| 运维 / CI | 批量迁移、首发语料 | `git pull` / rsync 写入 `kb/raw` 或 `kb/wiki*` → Web 刷新/Sync（**非 Editor 常规**） |
 
 ---
 
@@ -103,12 +105,12 @@ Wiki 编辑页保留 **MinIO 附件区（T4/T21）**，不在 Tab1/2 处理二�
 | 冲突 | 同名：跳过 / 覆盖 / 重命名（三选一，默认跳过并列表提示） |
 | 权限 | 空间 **editor** + 动作 **`kb:ingest:rawUpload`**（新） |
 
-#### 4.1.2 批量导入（P1）
+#### 4.1.2 批量与运维（P1 · 非 Editor 主路径）
 
 | 方式 | 行为 |
 |------|------|
-| Web 多选上传 | 同 prefix 批量写入 raw |
-| 运维说明 | 文档提示：Git clone / SFTP 到 `kb/raw/` 后点 **「刷新 raw 树」** |
+| Web 多选上传（Tab1） | 同 prefix 批量写入 raw（**Editor 常规**） |
+| 运维 / CI 直写磁盘 | `git pull`、rsync、SFTP 写入 `kb/raw/` 后，Editor 点 **刷新 raw 树**（**兜底**，不要求 Editor SSH） |
 | 刷新 | 复用 `GET /kb/ingest/raw-tree`（已有） |
 
 #### 4.1.3 上传后引导
@@ -302,6 +304,7 @@ Wiki 编辑页保留 **MinIO 附件区（T4/T21）**，不在 Tab1/2 处理二�
 | 交付 | 路径 |
 |------|------|
 | 本 PRD | `docs/product/knowledge-import-entry-prd.md` |
+| **技术设计** | [`docs/design/kb-import-entry-design.md`](../design/kb-import-entry-design.md) |
 | wujinsen 图片回迁 | [wujinsen-wiki-image-remediation-prd.md](wujinsen-wiki-image-remediation-prd.md)（T22） |
 | 流程图 | `docs/diagrams/moli-kb-import-entry.drawio` + PNG |
 | API 补章 | `docs/api/KNOWLEDGE_API.md` §9.9 / §8.1（实现时） |
@@ -315,4 +318,6 @@ Wiki 编辑页保留 **MinIO 附件区（T4/T21）**，不在 Tab1/2 处理二�
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-06 | Editor 浏览器主路径；SSH/rsync 降为运维兜底；链技术设计 §1.4 |
+| 2026-07-06 | 链到技术设计 `kb-import-entry-design.md` |
 | 2026-07-05 | 初稿：双入口 Raw/Wiki + MinIO 旁路；并入 Ingest 工作台三 Tab |
