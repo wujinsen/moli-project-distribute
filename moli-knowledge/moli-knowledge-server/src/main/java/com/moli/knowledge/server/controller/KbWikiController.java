@@ -73,7 +73,7 @@ public class KbWikiController {
     }
 
     @PostMapping("/page/import")
-    @ApiOperation("T20b · 浏览器导入成品 wiki md（可选 lint + Sync）")
+    @ApiOperation("T20b/e · 浏览器导入成品 wiki md（可选 assetsZip、lint、Sync）")
     public MoliResult<WikiImportResultVo> importPage(@RequestParam Long spaceId,
                                                      @RequestParam Long categoryId,
                                                      @RequestParam MultipartFile file,
@@ -81,9 +81,10 @@ public class KbWikiController {
                                                      @RequestParam(required = false) String title,
                                                      @RequestParam(required = false, defaultValue = "FAIL") String onConflict,
                                                      @RequestParam(required = false, defaultValue = "false") boolean lintPreview,
-                                                     @RequestParam(required = false, defaultValue = "true") boolean sync) {
+                                                     @RequestParam(required = false, defaultValue = "true") boolean sync,
+                                                     @RequestParam(required = false) MultipartFile assetsZip) {
         return MoliResult.success(kbWikiImportService.importPage(
-                spaceId, categoryId, file, slug, title, onConflict, lintPreview, sync));
+                spaceId, categoryId, file, slug, title, onConflict, lintPreview, sync, assetsZip));
     }
 
     @PostMapping("/ai-revise")

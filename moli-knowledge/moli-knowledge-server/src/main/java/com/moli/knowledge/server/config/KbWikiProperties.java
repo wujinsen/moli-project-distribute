@@ -55,6 +55,12 @@ public class KbWikiProperties {
     /** 单张 inline 插图上传大小上限（字节，T22 F2）。 */
     private long assetMaxBytes = 5 * 1024 * 1024;
 
+    /** T20e · 成品导入附带 assetsZip 解压总大小上限（字节）。 */
+    private long importAssetsZipMaxBytes = 50L * 1024 * 1024;
+
+    /** T20e · assetsZip 内最多文件数。 */
+    private int importAssetsMaxEntries = 200;
+
     private static Map<String, String> defaultSpaceDirs() {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("enterprise-kb", "wiki");

@@ -112,6 +112,9 @@ kb:
     asset-subdir-suffix: .assets
     allow-svg: false
     asset-cache-max-age-seconds: 3600
+    # T20e · Tab3 成品导入附带 assetsZip
+    import-assets-zip-max-bytes: 52428800
+    import-assets-max-entries: 200
     govern:
       # 治理页模型下拉（可选）；留空则仅 kb.llm.model
       models: []

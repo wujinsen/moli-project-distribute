@@ -12,5 +12,6 @@ public interface KbWikiImportService {
                                   String title,
                                   String onConflict,
                                   boolean lintPreview,
-                                  boolean sync);
+                                  boolean sync,
+                                  MultipartFile assetsZip);
 }

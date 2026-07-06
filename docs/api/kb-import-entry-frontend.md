@@ -207,6 +207,7 @@ export type RawUploadResultVo = {
 | `onConflict` | 否 | `FAIL`（默认）/ `OVERWRITE` |
 | `lintPreview` | 否 | `true` 返回 warn，不阻塞 |
 | `sync` | 否 | `true`（**默认 true**）导入后 trigger Sync |
+| `assetsZip` | 否 | **T20e** · zip 插图包（png/jpg/gif/webp）；解压到 `{slug}.assets/` |
 
 ```typescript
 const form = new FormData()
@@ -243,6 +244,7 @@ export type WikiImportResultVo = {
   lintWarnings: string[]
   sync: WikiImportSyncVo
   nextSteps: KbWorkflowHintVo[]
+  assetsImported: string[]   // T20e · 如 assets/imageFile1.png
 }
 ```
 

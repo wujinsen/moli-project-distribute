@@ -1701,6 +1701,7 @@ Controller：`KbWikiController`（与 §8.1 `/kb/wiki/page` 同基路径；文�
 | `onConflict` | 否 | `FAIL`（默认）/ `OVERWRITE` |
 | `lintPreview` | 否 | `true` 时返回 warn 列表，不阻塞 |
 | `sync` | 否 | `true`（**默认 true**）时 import 后 `POST /kb/sync/trigger` |
+| `assetsZip` | 否 | **T20e** · zip 内 png/jpg/gif/webp（可选 svg）；解压至 `{slug}.assets/` 并重写 `![](…)` → `![](assets/…)` |
 
 **响应** `WikiImportResultVo`：
 
@@ -1712,6 +1713,7 @@ Controller：`KbWikiController`（与 §8.1 `/kb/wiki/page` 同基路径；文�
   "created": true,
   "contentHash": "abc…",
   "lintWarnings": [],
+  "assetsImported": ["assets/imageFile1.png"],
   "sync": { "triggered": true, "success": true, "documentId": 900123 },
   "nextSteps": [{ "code": "wiki_govern_lint", "label": "建议运行 Wiki 治理 Lint", "routePath": "/knowledge/wiki/govern", "routeQuery": {} }]
 }

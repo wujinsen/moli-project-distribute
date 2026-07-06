@@ -1,6 +1,6 @@
 # 企业知识库 · 待办任务清单（可并行开工）
 
-> 更新：2026-06-28
+> 更新：2026-07-06
 > 用途：每个任务**自包含、文件边界清晰**，可在不同对话框/工作区并行开工，尽量不互相冲突。
 > 范式与分工见 [`kb/ROADMAP.md`](kb/ROADMAP.md)；表结构见 [`../docs/sql/KNOWLEDGE_SCHEMA.md`](../docs/sql/KNOWLEDGE_SCHEMA.md)。
 >
@@ -17,7 +17,7 @@
 | Java API | ✅ CRUD/Ask/Browse/Graph/Lint/ACL/附件/全文检索/Ingest/Wiki 治理 API | Meilisearch/向量（量级触发再上） |
 | 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
 | kb 知识 | ✅ wiki + wiki-moli + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
-| 后端工作台 | ✅ T14 单页编辑 · T15 Ingest · T16a/e/g 治理 · T17 分类落盘 · T18 Express · T19 LLM 平台 | **T20** 双入口导入（设计已定） |
+| 后端工作台 | ✅ T14…T19 · **T20a/b/e P0–P2** | T20c/d P1 |
 | 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理全链路 · **T19d** LLM 设置 UI · **T20f** 导入 Tab · 空间 CRUD（二期） |
 
 ---
@@ -317,10 +317,11 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ---
 
-## T20 · 双入口导入（Raw 投喂 + Wiki 成品） 🔵 设计已定 · 待实现
+## T20 · 双入口导入（Raw 投喂 + Wiki 成品） ✅ 后端 P0 已交付 · 🔵 前端 T20f 待做
 
 > **产品 PRD**：[`docs/product/knowledge-import-entry-prd.md`](../docs/product/knowledge-import-entry-prd.md)  
 > **技术设计**：[`docs/design/kb-import-entry-design.md`](../docs/design/kb-import-entry-design.md)  
+> **前端对接**：[`docs/api/kb-import-entry-frontend.md`](../docs/api/kb-import-entry-frontend.md)  
 > **流程图**：[`docs/diagrams/moli-kb-import-entry.drawio`](../docs/diagrams/moli-kb-import-entry.drawio) · [API 时序](../docs/diagrams/moli-kb-import-entry-api.drawio)  
 > 与 **T15 Tab2** 并列：T20 Tab1/3 为其补充 **Web 输入**；Tab2 Ingest 逻辑 **不变**。
 
@@ -328,15 +329,18 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 子任务 | 范围 | 验收 | 状态 |
 |--------|------|------|------|
-| **T20a** | `POST /kb/ingest/raw-upload` + `KbRawUploadService` + Tab1 UI | 上传 md 至 raw → Tab2 可见 → 模板 Ingest → Sync | 🔵 |
-| **T20b** | `POST /kb/wiki/page/import` + `KbWikiImportService` + Tab3 UI | 成品 md 不进 raw；直写 wiki → Sync → 浏览 | 🔵 |
-| **T20c** | zip raw、import/batch、`.assets` 包（T22 联动） | 10 篇 md ≤1 次 Sync | P1 |
-| **T20d** | `docs/sql/16_kb_import_entry_menu.sql`（`kb:ingest:rawUpload`） | editor 权限与 Tab 可见性 | P1 |
+| **T20a** | `POST /kb/ingest/raw-upload` + `KbRawUploadService` | 上传 md 至 raw → Tab2 可见 → Ingest → Sync | ✅ 后端 · 🔵 Tab1 UI |
+| **T20b** | `POST /kb/wiki/page/import` + `KbWikiImportService` | 成品 md 直写 wiki → Sync → 浏览 | ✅ 后端 · 🔵 Tab3 UI |
+| **T20e** | Tab3 可选 `assetsZip` → `{slug}.assets/` + 路径重写 | 相对路径插图 + zip → T22 可浏览 | ✅ 后端 · 🔵 Tab3 UI |
+| **T20c** | zip raw、import/batch | 10 篇 md ≤1 次 Sync | P1 |
+| **T20d** | `docs/sql/16_kb_import_entry_menu.sql` + Shiro `kb:ingest:rawUpload` | editor 权限与 Tab 可见性 | SQL ✅ · 后端 Shiro P1 |
 | **T20f** | meiling-ui 三 Tab + 决策树文案 + API/i18n | 与 T14e 新建复用分类选择 | 🔵 |
 
-**开工提示词**：
+**后端交付（2026-07-06）**：`KbRawUploadService` / `KbWikiImportService` / `KbWikiAssetBundleUtil`（T20e）· 单测含 wiki-import 集成测 + assetsZip。
 
-> 读 [`docs/design/kb-import-entry-design.md`](../docs/design/kb-import-entry-design.md) §3–§9。先实现 **T20a**：`KbRawUploadService`（路径安全与 `rawTree` 同源）、`KbIngestController` 增 `POST /raw-upload`、单测；再 **T20b**：`KbWikiImportService`（categoryId→dir_slug、frontmatter 补全、复用 `KbWikiFileService.writePage` + `KbSyncService`）。前端 meiling-ui 扩展 `KnowledgeIngestWorkbenchView` 三 Tab。禁止直写 `kb_document`。
+**开工提示词（前端 T20f）**：
+
+> 读 [`docs/api/kb-import-entry-frontend.md`](../docs/api/kb-import-entry-frontend.md)。扩展 `KnowledgeIngestWorkbenchView` 三 Tab；Tab1 调 `POST /kb/ingest/raw-upload`；Tab3 调 `POST /kb/wiki/page/import`（可选 `assetsZip` 插图包）。
 
 **依赖**：✅ T14a（wiki 写盘）· ✅ T15（Ingest Tab2）· ✅ T3 Sync · T9 ACL
 

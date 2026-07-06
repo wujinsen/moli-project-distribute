@@ -25,6 +25,8 @@ import com.moli.knowledge.server.service.KbWikiFileService;
 import com.moli.knowledge.server.service.KbWikiImportService;
 import com.moli.knowledge.server.service.ingest.IngestPlanPathResolver;
 import com.moli.knowledge.server.util.KbRawPathUtil;
+import com.moli.knowledge.server.util.KbWikiAssetBundleUtil;
+import com.moli.knowledge.server.util.KbWikiAssetBundleUtil.AssetBundlePlan;
 import com.moli.knowledge.server.util.KbWikiImportFrontmatterUtil;
 import com.moli.knowledge.server.util.KbWorkflowHints;
 import com.moli.knowledge.server.util.ShiroUtils;
@@ -34,9 +36,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -68,7 +75,8 @@ public class KbWikiImportServiceImpl implements KbWikiImportService {
                                          String title,
                                          String onConflict,
                                          boolean lintPreview,
-                                         boolean sync) {
+                                         boolean sync,
+                                         MultipartFile assetsZip) {
         assertEnabled();
         if (spaceId == null) {
             throw new BaseException("spaceId 不能为空");
@@ -112,6 +120,23 @@ public class KbWikiImportServiceImpl implements KbWikiImportService {
             throw new BaseException("文件内容不能为空");
         }
 
+        AssetBundlePlan assetPlan = null;
+        if (assetsZip != null && !assetsZip.isEmpty()) {
+            try (InputStream in = assetsZip.getInputStream()) {
+                assetPlan = KbWikiAssetBundleUtil.planFromZip(
+                        in,
+                        wikiProperties.getImportAssetsZipMaxBytes(),
+                        wikiProperties.getImportAssetsMaxEntries(),
+                        wikiProperties.isAllowSvg());
+            } catch (BaseException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new BaseException("读取 assetsZip 失败：" + e.getMessage());
+            }
+            rawMarkdown = KbWikiAssetBundleUtil.rewriteMarkdownImages(
+                    rawMarkdown, assetPlan.getBaseNames());
+        }
+
         String preservedCreated = existing.isExists()
                 ? KbWikiImportFrontmatterUtil.extractCreated(existing.getContent()) : null;
         String content = KbWikiImportFrontmatterUtil.prepareImportContent(
@@ -124,6 +149,18 @@ public class KbWikiImportServiceImpl implements KbWikiImportService {
         saveRequest.setChangeLog("web-import:" + originalName);
         WikiSaveResultVo saved = kbWikiFileService.writePage(saveRequest);
 
+        List<String> assetsImported = new ArrayList<>();
+        if (assetPlan != null) {
+            String wikiDir = resolveWikiDir(space.getSpaceCode());
+            Path wikiRoot = resolveWikiRoot();
+            Path assetDir = KbWikiAssetBundleUtil.resolveWikiAssetDir(
+                    wikiRoot, wikiDir, fullSlug, wikiProperties.getAssetSubdirSuffix());
+            assetsImported = KbWikiAssetBundleUtil.writeAssetFiles(
+                    assetDir, assetPlan, wikiProperties.isAllowSvg(), wikiProperties.getAssetMaxBytes());
+            log.info("[wiki-import] assets user={} space={} slug={} count={}",
+                    ShiroUtils.getUserId(), space.getSpaceCode(), fullSlug, assetsImported.size());
+        }
+
         log.info("[wiki-import] user={} space={} slug={} created={}",
                 ShiroUtils.getUserId(), space.getSpaceCode(), fullSlug, saved.isCreated());
 
@@ -133,6 +170,7 @@ public class KbWikiImportServiceImpl implements KbWikiImportService {
         result.setRelativePath(saved.getRelativePath());
         result.setCreated(saved.isCreated());
         result.setContentHash(saved.getContentHash());
+        result.setAssetsImported(assetsImported);
 
         if (lintPreview) {
             WikiLintPreviewRequest lintReq = new WikiLintPreviewRequest();
@@ -221,5 +259,25 @@ public class KbWikiImportServiceImpl implements KbWikiImportService {
         if (!wikiProperties.isEnabled()) {
             throw new BaseException("Wiki 在线编辑未启用");
         }
+    }
+
+    private Path resolveWikiRoot() {
+        Path root = Paths.get(wikiProperties.getRoot());
+        if (!root.isAbsolute()) {
+            root = Paths.get(System.getProperty("user.dir")).resolve(root);
+        }
+        return root.normalize();
+    }
+
+    private String resolveWikiDir(String spaceCode) {
+        Map<String, String> dirs = wikiProperties.getSpaceDirs();
+        if (dirs == null || dirs.isEmpty()) {
+            throw new BaseException("wiki space-dirs 未配置");
+        }
+        String wikiDir = dirs.get(spaceCode);
+        if (StringUtils.isBlank(wikiDir)) {
+            throw new BaseException("未知空间 wiki 目录: " + spaceCode);
+        }
+        return wikiDir;
     }
 }

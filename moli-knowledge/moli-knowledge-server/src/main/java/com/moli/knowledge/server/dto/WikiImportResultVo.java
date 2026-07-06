@@ -34,4 +34,7 @@ public class WikiImportResultVo {
 
     @ApiModelProperty("建议下一步")
     private List<KbWorkflowHintVo> nextSteps = new ArrayList<>();
+
+    @ApiModelProperty("T20e · 写入 wiki .assets 的相对路径列表（assets/foo.png）")
+    private List<String> assetsImported = new ArrayList<>();
 }

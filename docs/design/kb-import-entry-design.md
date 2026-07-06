@@ -439,7 +439,7 @@ Web 上传 **不自动 commit Git**；运维若用 `git pull` 部署，需约定
 | **T20b P0** | `page/import` + frontmatter | Tab3 单文件 | 成品 md 进 wiki、不进 raw → Sync → 搜索可见 |
 | **T20c P1** | zip raw、import/batch | Tab1 zip、Tab3 多文件 | 10 篇 ≤1 次 Sync |
 | **T20d P1** | SQL 权限、nextSteps 对齐 | 决策树文案、权限隐藏 | editor 无 rawUpload 时 Tab1 只读提示 |
-| **T20e P2** | import 附带 `.assets` zip | Tab3 资产包 | T22 插图闭环 |
+| **T20e P2** | import 附带 `assetsZip` | Tab3 资产包 | ✅ 后端 · 🔵 UI |
 
 ### 8.2 测试要点
 
