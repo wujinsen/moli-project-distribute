@@ -51,4 +51,10 @@ public class KbIngestProperties {
      * Express {@code publish} 默认仍为 sync=true；显式 {@code sync=false} 可跳过。
      */
     private boolean commitAutoSync = true;
+
+    /** T20a · 单文件 raw 上传大小上限（字节）。 */
+    private long rawUploadMaxBytes = 5L * 1024 * 1024;
+
+    /** T20a · 单次 raw 上传最多文件数。 */
+    private int rawUploadMaxFiles = 20;
 }

@@ -1674,11 +1674,11 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 
 后端鉴权以**空间 editor**为准（与文档编辑一致）。前端编辑入口/路由 `meta.perms` 标注 `kb:wiki:edit` 仅作菜单级提示，按钮显隐按所属空间 `canEdit`；动作权限种子 SQL（`kb:wiki:edit`）可后续补充，不影响 T14a 功能。
 
-### 8.8 Wiki 成品导入（T20b · 🔵 契约已定 / 待实现）
+### 8.8 Wiki 成品导入（T20b · ✅ 已实现）
 
 > **前端对接** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** §6  
 > **设计** → [kb-import-entry-design.md](../design/kb-import-entry-design.md) §4  
-> **状态**：`KbWikiImportService` / `POST /page/import` **尚未合入**；前端可按本文 Mock 并行开发。
+> **状态**：`KbWikiImportService` / `POST /page/import` **已实现**（`KbWikiController`）。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -1732,7 +1732,7 @@ Controller：`KbWikiController`（与 §8.1 `/kb/wiki/page` 同基路径；文�
 > 产品方案：[`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
 > **前端对接** → **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)**（Express、模板模式、nextSteps）· **T20 Tab1/Tab3** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)**  
 > **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。  
-> **状态**：T15a–e、**T18**、**T19** 已全部实现；**T20a/T20b 契约已定，待实现**（§9.10、§8.8）。
+> **状态**：T15a–e、**T18**、**T19**、**T20a/T20b** 已全部实现（§9.10、§8.8）。
 
 统一前缀 **`/kb/ingest`**，返回 `MoliResult<T>`。经网关示例：`POST {VITE_API_BASE_URL}/KnowledgeServer/kb/ingest/jobs`。
 
@@ -2443,11 +2443,11 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 - 前端：`meiling-ui` `knowledge/ingest/index` → `KnowledgeIngestWorkbenchView.vue`。
 - 架构图：[`docs/diagrams/moli-kb-ingest-workbench.drawio`](../diagrams/moli-kb-ingest-workbench.drawio)。
 
-### 9.10 Raw 投喂上传（T20a · 🔵 契约已定 / 待实现）
+### 9.10 Raw 投喂上传（T20a · ✅ 已实现）
 
 > **前端对接** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** §5  
 > **设计** → [kb-import-entry-design.md](../design/kb-import-entry-design.md) §3  
-> **状态**：`KbRawUploadService` / `POST /raw-upload` **尚未合入**。
+> **状态**：`KbRawUploadService` / `POST /raw-upload` **已实现**（`KbIngestController`）。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|

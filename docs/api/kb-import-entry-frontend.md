@@ -1,7 +1,7 @@
 # 知识库导入入口 · 前端对接说明（meiling-ui · T20）
 
 > **读者**：meiling-ui 前端。  
-> **状态**：**契约已定 · 后端 T20a/T20b 并行开发中**（Swagger 暂无时可按本文 Mock 或联调 stub）。  
+> **状态**：**T20a/T20b 后端 ✅**；前端三 Tab 可联调（Mock 可选关闭）。  
 > **HTTP 契约总表**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §8.8（Wiki 成品）· §9.10（Raw 投喂）  
 > **产品设计**：[knowledge-import-entry-prd.md](../product/knowledge-import-entry-prd.md)  
 > **技术方案**：[kb-import-entry-design.md](../design/kb-import-entry-design.md)
@@ -86,10 +86,10 @@ Tab2 `IngestRawPanel` 收到后：刷新 `GET /kb/ingest/raw-tree`，展开 pref
 
 | # | Tab | 方法 | 路径 | 状态 |
 |---|-----|------|------|------|
-| 1 | Tab1 | POST | `/kb/ingest/raw-upload` | 🔵 待后端 T20a |
+| 1 | Tab1 | POST | `/kb/ingest/raw-upload` | ✅ T20a |
 | 2 | Tab1 | GET | `/kb/ingest/raw-tree` | ✅ 已有 |
 | 3 | Tab1 | GET | `/kb/ingest/raw-prefixes` | 🔵 P1 可选 |
-| 4 | Tab3 | POST | `/kb/wiki/page/import` | 🔵 待后端 T20b |
+| 4 | Tab3 | POST | `/kb/wiki/page/import` | ✅ T20b |
 | 5 | Tab3 | GET | `/kb/category/tree?spaceId=` | ✅ 已有 |
 | 6 | Tab3 | POST | `/kb/wiki/page/lint-preview` | ✅ 已有（可选） |
 | 7 | Tab3 | POST | `/kb/sync/trigger` | ✅ 已有（import 内嵌或手动） |

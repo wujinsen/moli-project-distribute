@@ -19,9 +19,11 @@ import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
 import com.moli.knowledge.server.dto.RawCoverageVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
+import com.moli.knowledge.server.dto.RawUploadResultVo;
 import com.moli.knowledge.server.config.KbIngestProperties;
 import com.moli.knowledge.server.service.KbIngestService;
 import com.moli.knowledge.server.service.KbRawCoverageService;
+import com.moli.knowledge.server.service.KbRawUploadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -34,8 +36,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,6 +59,9 @@ public class KbIngestController {
     @Resource
     private KbRawCoverageService kbRawCoverageService;
 
+    @Resource
+    private KbRawUploadService kbRawUploadService;
+
     @GetMapping("/raw-tree")
     @ApiOperation("raw 只读目录树")
     public MoliResult<List<RawTreeNodeVo>> rawTree(@RequestParam(required = false) String prefix) {
@@ -68,6 +75,16 @@ public class KbIngestController {
                                                  @RequestParam(required = false, defaultValue = "all") String filter,
                                                  @RequestParam(required = false, defaultValue = "false") boolean refresh) {
         return MoliResult.success(kbRawCoverageService.coverage(spaceId, prefix, filter, refresh));
+    }
+
+    @PostMapping("/raw-upload")
+    @ApiOperation("T20a · 浏览器上传 raw 语料到 kb/raw/（需空间 editor）")
+    public MoliResult<RawUploadResultVo> rawUpload(@RequestParam Long spaceId,
+                                                   @RequestParam String prefix,
+                                                   @RequestParam("file") MultipartFile[] files,
+                                                   @RequestParam(required = false, defaultValue = "SKIP") String onConflict) {
+        List<MultipartFile> list = files == null ? java.util.Collections.emptyList() : Arrays.asList(files);
+        return MoliResult.success(kbRawUploadService.upload(spaceId, prefix, list, onConflict));
     }
 
     @PostMapping("/jobs")

@@ -5,6 +5,7 @@ import com.moli.knowledge.server.dto.WikiEnrichRequest;
 import com.moli.knowledge.server.dto.WikiEnrichResultVo;
 import com.moli.knowledge.server.dto.WikiAiReviseRequest;
 import com.moli.knowledge.server.dto.WikiAiReviseResultVo;
+import com.moli.knowledge.server.dto.WikiImportResultVo;
 import com.moli.knowledge.server.dto.WikiLintPreviewRequest;
 import com.moli.knowledge.server.dto.WikiLintPreviewVo;
 import com.moli.knowledge.server.dto.WikiPageVo;
@@ -25,6 +26,7 @@ import com.moli.knowledge.server.dto.WikiGovernOptionsVo;
 import com.moli.knowledge.server.dto.WikiGovernScriptFixRequest;
 import com.moli.knowledge.server.dto.WikiGovernScriptFixResultVo;
 import com.moli.knowledge.server.service.KbWikiGovernService;
+import com.moli.knowledge.server.service.KbWikiImportService;
 import com.moli.knowledge.server.service.KbWikiLintService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 
@@ -53,6 +56,8 @@ public class KbWikiController {
     private KbWikiLintService kbWikiLintService;
     @Resource
     private KbWikiGovernService kbWikiGovernService;
+    @Resource
+    private KbWikiImportService kbWikiImportService;
 
     @GetMapping("/page")
     @ApiOperation("读 wiki 文件全文（frontmatter+正文）；需空间 editor。文件不存在返回 exists=false")
@@ -65,6 +70,20 @@ public class KbWikiController {
     @ApiOperation("写 wiki 文件；需空间 editor。保存后需 Sync 才进库")
     public MoliResult<WikiSaveResultVo> save(@RequestBody WikiSaveRequest request) {
         return MoliResult.success(kbWikiFileService.writePage(request));
+    }
+
+    @PostMapping("/page/import")
+    @ApiOperation("T20b · 浏览器导入成品 wiki md（可选 lint + Sync）")
+    public MoliResult<WikiImportResultVo> importPage(@RequestParam Long spaceId,
+                                                     @RequestParam Long categoryId,
+                                                     @RequestParam MultipartFile file,
+                                                     @RequestParam(required = false) String slug,
+                                                     @RequestParam(required = false) String title,
+                                                     @RequestParam(required = false, defaultValue = "FAIL") String onConflict,
+                                                     @RequestParam(required = false, defaultValue = "false") boolean lintPreview,
+                                                     @RequestParam(required = false, defaultValue = "true") boolean sync) {
+        return MoliResult.success(kbWikiImportService.importPage(
+                spaceId, categoryId, file, slug, title, onConflict, lintPreview, sync));
     }
 
     @PostMapping("/ai-revise")

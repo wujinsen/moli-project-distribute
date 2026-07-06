@@ -128,6 +128,9 @@ kb:
     raw-snippet-chars: 4000
     # Expert commit / Express publish 未传 sync 时自动 wiki→MySQL（ingest 完即入库）
     commit-auto-sync: true
+    # T20a · Raw 浏览器投喂
+    raw-upload-max-bytes: 5242880
+    raw-upload-max-files: 20
   browse:
     # 浏览与管理统一按分类（= wiki 一级目录）；groupBy=type 已废弃
     default-group-by: category
