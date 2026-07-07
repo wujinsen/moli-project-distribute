@@ -94,7 +94,7 @@ case "${MODE}" in
     echo "[ci] import kb schema (skip sys_* seed if tables absent) ..."
     # 03 脚本末尾含 sys_system 增量 INSERT，CI 最小库无 user-center 表，截断到 sys 段之前
     awk '/INSERT INTO `sys_system`/ {exit} {print}' "${SCHEMA}" | mysql_cli "${KB_SYNC_DB}"
-    for extra in "04_kb_space_jp_exam.sql" "07_kb_space_ops_manual.sql" "10_kb_category_dir_slug.sql" "11_kb_category_enterprise_trim.sql"; do
+    for extra in "04_kb_space_jp_exam.sql" "07_kb_space_ops_manual.sql" "10_kb_category_dir_slug.sql" "11_kb_category_enterprise_trim.sql" "16_kb_category_jp_certify.sql"; do
       extra_path="${REPO_ROOT}/docs/sql/${extra}"
       if [[ -f "${extra_path}" ]]; then
         echo "[ci] import optional space seed ${extra} ..."

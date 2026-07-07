@@ -6,6 +6,9 @@
 |------|--------|------|
 | 基本情報 FE | **`kb/raw/school/fe/`** | 基本情報技術者（真题/样题/答案） |
 | 応用情報 AP | **`kb/raw/school/ap/`** | 応用情報技術者（暂无文件时可先建空目录） |
+| **Certify サーティファイ** | **`kb/raw/school/certify/`** | IT 基础资格 Moodle 模拟题 + 中文解析 → **`certify/`** |
+
+入口页：[[Certifyサーティファイ]] · Ingest：`python kb/tools/ingest_certify_wiki.py`
 
 约定详见 [`raw/school/README.md`](../raw/school/README.md)。
 
@@ -32,6 +35,11 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all
 
 - [[fe_kamoku_b_set_sample_qs3]] — create article
 
-## 批次 #WB-20260629000744（Web Ingest 2026-06-29） <!-- ingest-job:726574521091506176 -->
+## certify 分类（批次 #certify-20260707）
 
-- [[fe_kamoku_b_set_sample_qs3]] — create article
+- [[Certifyサーティファイ]] — create guide（Certify 入口）
+- [[certify-katakana-vocab]] — create article（片假名词汇 395 条）
+- 模擬問題 1/2/3/5/6/サンプル + 中文解析 — create article ×12
+- ランダム問題 1/2/3/5/サンプル + 中文解析 — create article ×10
+- 開発技術 / 技術要素（アルゴ）/ 技術要素(DB) / マネジメント_ストラテジ + 中文解析 — create article ×8
+

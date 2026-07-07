@@ -9,6 +9,7 @@
 |------|------|-------------|
 | **`school/fe/`** | 基本情報技術者（FE）真题、样题、答案 | `wiki-jp-exam/fe/` 等 |
 | **`school/ap/`** | 応用情報技術者（AP）语料（暂无文件时先建目录） | `wiki-jp-exam/ap/` 等 |
+| **`school/certify/`** | Certify（サーティファイ）IT 基础 Moodle 模拟题、中文解析、片假名词汇 | **`wiki-jp-exam/certify/`** |
 
 ## 命名建议
 
