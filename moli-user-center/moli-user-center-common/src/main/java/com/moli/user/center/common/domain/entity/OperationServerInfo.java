@@ -24,4 +24,10 @@ public class OperationServerInfo extends BaseEntity {
     private Integer environment;
 
     private String remark;
+
+    @ApiModelProperty("健康状态 0未知 1可达 2不可达 3跳过")
+    private Integer status;
+
+    @ApiModelProperty("最近探测时间")
+    private java.util.Date lastCheckTime;
 }

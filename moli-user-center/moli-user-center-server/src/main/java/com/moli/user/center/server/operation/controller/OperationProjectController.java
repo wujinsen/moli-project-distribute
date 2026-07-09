@@ -36,7 +36,7 @@ public class OperationProjectController {
             lambdaQueryWrapper.like(OperationProjectDeployInfo::getProjectName, operationProjectDeployInfo.getProjectName());
         }
         if (StringUtils.isNotBlank(operationProjectDeployInfo.getServerIp())) {
-            lambdaQueryWrapper.eq(OperationProjectDeployInfo::getServerIp, operationProjectDeployInfo.getServerIp());
+            lambdaQueryWrapper.like(OperationProjectDeployInfo::getServerIp, operationProjectDeployInfo.getServerIp());
         }
         if (operationProjectDeployInfo.getEnvironment() != null) {
             lambdaQueryWrapper.eq(OperationProjectDeployInfo::getEnvironment, operationProjectDeployInfo.getEnvironment());

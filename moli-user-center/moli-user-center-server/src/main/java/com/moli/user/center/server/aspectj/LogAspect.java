@@ -50,6 +50,12 @@ public class LogAspect {
     public void writeOperationPointcut() {
     }
 
+    @Pointcut("execution(* com.moli.user.center.server.operation.controller..*.*(..)) "
+            + "&& @annotation(com.moli.common.log.MoliLog) "
+            + "&& @annotation(org.springframework.web.bind.annotation.GetMapping)")
+    public void operationMoliLogGetPointcut() {
+    }
+
     @Pointcut("execution(* com.moli.user.center.server.controller.LoginController.*(..)) "
             + "|| execution(* com.moli.user.center.server.controller.LogController.*(..))")
     public void writeOperationExcludePointcut() {
@@ -61,6 +67,11 @@ public class LogAspect {
 
     @AfterReturning(pointcut = "controllerWriteOps()", returning = "jsonResult")
     public void doAfterReturning(JoinPoint joinPoint, Object jsonResult) {
+        handleLog(joinPoint, resolveMoliLog(joinPoint), null, jsonResult);
+    }
+
+    @AfterReturning(pointcut = "operationMoliLogGetPointcut()", returning = "jsonResult")
+    public void doAfterReturningOperationGet(JoinPoint joinPoint, Object jsonResult) {
         handleLog(joinPoint, resolveMoliLog(joinPoint), null, jsonResult);
     }
 
@@ -125,7 +136,7 @@ public class LogAspect {
             setRequestValue(joinPoint, operLog);
         }
         if (saveResponse && jsonResult != null && Integer.valueOf(1).equals(operLog.getStatus())) {
-            operLog.setResponseResult(StringUtils.substring(JSON.toJSONString(jsonResult), 0, 2000));
+            operLog.setResponseResult(StringUtils.substring(sanitizeSensitiveJson(JSON.toJSONString(jsonResult)), 0, 2000));
         }
     }
 
@@ -160,7 +171,7 @@ public class LogAspect {
         String requestMethod = operLog.getRequestMethod();
         if (HttpMethodEnum.PUT.name().equals(requestMethod) || HttpMethodEnum.POST.name().equals(requestMethod)) {
             String params = argsArrayToString(joinPoint.getArgs());
-            operLog.setRequestParam(StringUtils.substring(params, 0, 2000));
+            operLog.setRequestParam(StringUtils.substring(sanitizeSensitiveJson(params), 0, 2000));
         } else {
             Map<?, ?> paramsMap = (Map<?, ?>) ServletUtils.getRequest()
                     .getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
@@ -183,6 +194,13 @@ public class LogAspect {
             }
         }
         return params.toString().trim();
+    }
+
+    private String sanitizeSensitiveJson(String raw) {
+        if (StringUtils.isBlank(raw)) {
+            return raw;
+        }
+        return raw.replaceAll("(\"password\"\\s*:\\s*)\"[^\"]*\"", "$1\"******\"");
     }
 
     @SuppressWarnings("rawtypes")

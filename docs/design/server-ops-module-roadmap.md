@@ -1,6 +1,6 @@
 # 服务器运维模块 · 演进规划（技术端运维）
 
-> 更新：2026-07-02 · 状态：**规划**（现状为静态台账 CRUD）
+> 更新：2026-07-09 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）
 > 归属：`moli-user-center` · `operation_*` 表 · 菜单「运营/运维管理」(id 400)
 > 边界：**只管服务器/基础设施资产运维**；知识库内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（另一条独立路线，互不重叠）
 
@@ -71,24 +71,25 @@
 
 | 任务 | 内容 | 涉及 |
 |------|------|------|
-| **SVR-1** | 密码/凭据 **AES 加密入库** + 列表脱敏（复用 `KbLlmConfigCipher` 同款 AES-256-GCM 思路，密钥走环境变量）；新增 Service 层承载加解密 | 4 表、4 Controller、新增 `OperationSecretCipher` |
-| **SVR-2** | 敏感变更**审计**：确认 `operation.*` 被 `LogAspect` 覆盖；insert/update/remove 写 `sys_operation_log`（`business_type` 标记） | `aspectj/LogAspect.java` |
-| **SVR-3** | 明文查看**降权**：默认脱敏，仅特定权限码（如 `operation:secret:view`）返回明文，且记审计 | Controller + 新权限码 |
+| **SVR-1** | 密码/凭据 **AES 加密入库** + 列表脱敏；Service 层 `OperationSecretCipher` / `OperationSecretSupport` | ✅ 2026-07-09 |
+| **SVR-2** | 敏感变更**审计**：`LogAspect` 覆盖 operation；请求参数 password 脱敏 | ✅ 2026-07-09 |
+| **SVR-3** | 明文查看**降权**：`GET .../{id}/secret` + `operation:secret:view` | ✅ 2026-07-09 |
 
 ### P1 —— 可观测
 
 | 任务 | 内容 |
 |------|------|
-| **SVR-4** | **健康探测**：对 `operation_server_info` / `operation_component_deploy_info` 做 TCP 端口探活 / HTTP 探测，记录 `last_check_time` / `status`；列表展示状态灯（新增字段或探测缓存表） |
-| **SVR-5** | **级联视图**：`/operation/server/{id}/topology` 返回该服务器上的项目 + 组件（聚合 server-project + server-component） |
-| **SVR-6** | 前端「运维管理」页展示状态灯 + 拓扑视图（meiling-ui） |
+| **SVR-4** | **健康探测**：对 `operation_server_info` / `operation_component_deploy_info` 做 TCP 端口探活，记录 `last_check_time` / `status`；`POST .../check` 触发探测 | ✅ 2026-07-09 |
+| **SVR-5** | **级联视图**：`GET /operation/server/{id}/topology` 返回该服务器上的项目 + 组件（聚合 N:N + server_id/server_ip 回退） | ✅ 2026-07-09 |
+| **SVR-6** | 前端「运维管理」页展示状态灯 + 行内探测 + 拓扑弹窗（meiling-ui） | ✅ 2026-07-09 |
 
 ### P2 —— 联动与自动化（按需）
 
 | 任务 | 内容 |
 |------|------|
-| **SVR-7** | 部署信息与真实端口矩阵（`docs/ops/production-checklist.md` 端口表）对齐校验，标记"台账与实际不符" |
-| **SVR-8** | （可选）部署动作触发（重启/查看状态），接 `deploy/linux/moli-service.sh` —— **高风险，需专门评审** |
+| **SVR-7** | 部署信息与 `docs/ops/production-checklist.md` 端口矩阵对齐校验；`GET /operation/audit/port-matrix`；组件列表带 `portMatchStatus` | ✅ 2026-07-09 |
+| **SVR-8** | 只读查询 `deploy/linux/moli-service.sh status`；`POST .../{action}` 变更动作需 `ops.deploy.enabled=true` + `operation:deploy:exec` | ✅ 2026-07-09 |
+| **SVR-9** | 驾驶舱 ops 页 KPI 接 `GET /operation/stats` 真实台账计数 | ✅ 2026-07-09 |
 
 ---
 
@@ -96,8 +97,9 @@
 
 | 类型 | 增量 |
 |------|------|
-| 字段 | `operation_server_info` / `operation_component_deploy_info` 增 `status`、`last_check_time`（SVR-4） |
-| 权限 | 新增 `operation:secret:view`（SVR-3）；探测/拓扑视图沿用现有 `*:list` |
+| 字段 | `operation_server_info` / `operation_component_deploy_info` 增 `status`、`last_check_time`（SVR-4）—— 迁移 `docs/sql/18_operation_health_columns.sql` |
+| 权限 | 新增 `operation:secret:view`（SVR-3）；`operation:deploy:exec`（SVR-8 变更动作）；探测/拓扑/审计沿用 `*:list` |
+| 配置 | `ops.deploy.enabled`（默认 false）、`OPS_DEPLOY_ROOT`；迁移 `docs/sql/19_operation_deploy_exec.sql` |
 | 加密 | 复用 `KB_LLM_CONFIG_SECRET` 思路，建议独立 `OPS_SECRET_KEY`，避免跨域共享密钥 |
 
 ---

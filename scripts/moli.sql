@@ -36,20 +36,22 @@ CREATE TABLE `operation_component_deploy_info`  (
   `version` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '版本',
   `environment` int NULL DEFAULT NULL COMMENT '环境',
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `status` tinyint NULL DEFAULT 0 COMMENT '健康 0未知 1可达 2不可达 3跳过',
+  `last_check_time` datetime NULL DEFAULT NULL COMMENT '最近探测时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '组件部署信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of operation_component_deploy_info
 -- ----------------------------
-INSERT INTO `operation_component_deploy_info` VALUES (301, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', '10.0.3.20', 'root', 'change-me', '/var/lib/mysql', '3306', '8.0.36', 4, 'moli 业务库');
-INSERT INTO `operation_component_deploy_info` VALUES (302, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', '10.0.3.30', '-', 'change-me', '/var/lib/redis', '6379', '7.2', 4, 'Session / 验证码缓存');
-INSERT INTO `operation_component_deploy_info` VALUES (303, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Nginx', '52.62.xxx.xxx', 'root', 'change-me', '/etc/nginx', '443', '1.24', 4, 'HTTPS 反向代理');
-INSERT INTO `operation_component_deploy_info` VALUES (304, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MinIO', '127.0.0.1', 'minioadmin', 'change-me', '/data/minio', '9000', 'RELEASE.2024', 1, '开发环境文件存储');
-INSERT INTO `operation_component_deploy_info` VALUES (305, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Java Runtime', '52.62.xxx.xxx', 'ec2-user', '-', '/usr/lib/jvm/java-11-amazon-corretto', '-', '11', 4, 'Spring Boot 运行环境');
-INSERT INTO `operation_component_deploy_info` VALUES (306, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', '127.0.0.1', '-', 'change-me', '/var/lib/redis', '6379', '7.2', 1, '本地开发 Redis');
-INSERT INTO `operation_component_deploy_info` VALUES (307, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', '127.0.0.1', 'root', 'change-me', '/var/lib/mysql', '3306', '8.0.36', 1, '本地 moli 库');
-INSERT INTO `operation_component_deploy_info` VALUES (308, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Systemd', '52.62.xxx.xxx', 'root', '-', '/etc/systemd/system/moli-server.service', '-', '-', 4, '后端进程托管');
+INSERT INTO `operation_component_deploy_info` VALUES (301, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', '10.0.3.20', 'root', 'change-me', '/var/lib/mysql', '3306', '8.0.36', 4, 'moli 业务库', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (302, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', '10.0.3.30', '-', 'change-me', '/var/lib/redis', '6379', '7.2', 4, 'Session / 验证码缓存', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (303, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Nginx', '52.62.xxx.xxx', 'root', 'change-me', '/etc/nginx', '443', '1.24', 4, 'HTTPS 反向代理', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (304, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MinIO', '127.0.0.1', 'minioadmin', 'change-me', '/data/minio', '9000', 'RELEASE.2024', 1, '开发环境文件存储', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (305, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Java Runtime', '52.62.xxx.xxx', 'ec2-user', '-', '/usr/lib/jvm/java-11-amazon-corretto', '-', '11', 4, 'Spring Boot 运行环境', 3, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (306, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', '127.0.0.1', '-', 'change-me', '/var/lib/redis', '6379', '7.2', 1, '本地开发 Redis', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (307, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', '127.0.0.1', 'root', 'change-me', '/var/lib/mysql', '3306', '8.0.36', 1, '本地 moli 库', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (308, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Systemd', '52.62.xxx.xxx', 'root', '-', '/etc/systemd/system/moli-server.service', '-', '-', 4, '后端进程托管', 3, NULL);
 
 -- ----------------------------
 -- Table structure for operation_platform_info
@@ -156,18 +158,20 @@ CREATE TABLE `operation_server_info`  (
   `port` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '端口',
   `environment` int NULL DEFAULT NULL COMMENT '环境',
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `status` tinyint NULL DEFAULT 0 COMMENT '健康 0未知 1可达 2不可达 3跳过',
+  `last_check_time` datetime NULL DEFAULT NULL COMMENT '最近探测时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '服务器信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of operation_server_info
 -- ----------------------------
-INSERT INTO `operation_server_info` VALUES (201, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-dev', '127.0.0.1', '127.0.0.1', '9080', 1, '本地开发机，跑 moli-server + Redis');
-INSERT INTO `operation_server_info` VALUES (202, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-test', '10.0.1.10', '172.31.10.10', '9080', 2, '测试环境 EC2');
-INSERT INTO `operation_server_info` VALUES (203, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pre', '10.0.2.10', '172.31.20.10', '9080', 3, '预发布环境 EC2');
-INSERT INTO `operation_server_info` VALUES (204, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pro', '52.62.xxx.xxx', '172.31.30.10', '443', 4, '生产 EC2，Nginx 反代 api.wu-jinsen.com');
-INSERT INTO `operation_server_info` VALUES (205, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-mysql-pro', '10.0.3.20', '172.31.30.20', '3306', 4, 'RDS MySQL 或自建数据库');
-INSERT INTO `operation_server_info` VALUES (206, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-redis-pro', '10.0.3.30', '172.31.30.30', '6379', 4, 'Redis，Shiro Session 存储');
+INSERT INTO `operation_server_info` VALUES (201, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-dev', '127.0.0.1', '127.0.0.1', '9080', 1, '本地开发机，跑 moli-server + Redis', 0, NULL);
+INSERT INTO `operation_server_info` VALUES (202, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-test', '10.0.1.10', '172.31.10.10', '9080', 2, '测试环境 EC2', 0, NULL);
+INSERT INTO `operation_server_info` VALUES (203, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pre', '10.0.2.10', '172.31.20.10', '9080', 3, '预发布环境 EC2', 0, NULL);
+INSERT INTO `operation_server_info` VALUES (204, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pro', '52.62.xxx.xxx', '172.31.30.10', '443', 4, '生产 EC2，Nginx 反代 api.wu-jinsen.com', 0, NULL);
+INSERT INTO `operation_server_info` VALUES (205, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-mysql-pro', '10.0.3.20', '172.31.30.20', '3306', 4, 'RDS MySQL 或自建数据库', 0, NULL);
+INSERT INTO `operation_server_info` VALUES (206, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-redis-pro', '10.0.3.30', '172.31.30.30', '6379', 4, 'Redis，Shiro Session 存储', 0, NULL);
 
 -- ----------------------------
 -- Table structure for operation_server_project
@@ -251,6 +255,7 @@ INSERT INTO `sys_action` VALUES (71, 'operation:project:remove', 'project', 'rem
 INSERT INTO `sys_action` VALUES (72, 'operation:component:add', 'component', 'add', '新增组件', 404, 1, 1);
 INSERT INTO `sys_action` VALUES (73, 'operation:component:edit', 'component', 'edit', '修改组件', 404, 2, 1);
 INSERT INTO `sys_action` VALUES (74, 'operation:component:remove', 'component', 'remove', '删除组件', 404, 3, 1);
+INSERT INTO `sys_action` VALUES (75, 'operation:secret:view', 'operation', 'secretView', '查看运维凭据', 400, 5, 1);
 INSERT INTO `sys_action` VALUES (75, 'system:role:assignPerm', 'role', 'assignPerm', '分配权限', 3, 4, 1);
 INSERT INTO `sys_action` VALUES (76, 'system:role:assignUser', 'role', 'assignUser', '分配用户', 3, 5, 1);
 
@@ -886,6 +891,8 @@ INSERT INTO `sys_role_action` VALUES (1, 'operation:server:edit');
 INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:server:edit');
 INSERT INTO `sys_role_action` VALUES (1, 'operation:server:remove');
 INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:server:remove');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:secret:view');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:secret:view');
 INSERT INTO `sys_role_action` VALUES (1, 'system:dept:add');
 INSERT INTO `sys_role_action` VALUES (3, 'system:dept:add');
 INSERT INTO `sys_role_action` VALUES (720354230530998272, 'system:dept:add');

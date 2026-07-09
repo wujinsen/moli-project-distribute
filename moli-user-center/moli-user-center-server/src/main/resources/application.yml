@@ -23,3 +23,12 @@ sso:
   ticket-ttl-seconds: 60
   entry-path: /sso/login
   shared-secret: ${SSO_SHARED_SECRET:}
+
+ops:
+  secret:
+    key: ${OPS_SECRET_KEY:}
+  deploy:
+    enabled: ${OPS_DEPLOY_ENABLED:false}
+    deploy-root: ${OPS_DEPLOY_ROOT:/opt/moli-project-distribute}
+    script-path: ${OPS_DEPLOY_SCRIPT:}
+    timeout-seconds: 15

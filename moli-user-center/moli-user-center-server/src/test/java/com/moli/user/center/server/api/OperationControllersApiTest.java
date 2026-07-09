@@ -1,18 +1,33 @@
 package com.moli.user.center.server.api;
 
+import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
+import com.moli.user.center.common.domain.vo.OperationComponentVo;
+import com.moli.user.center.common.domain.vo.OperationPlatformVo;
+import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
+import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
+import com.moli.user.center.common.domain.vo.OperationServerVo;
+import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
+import com.moli.user.center.common.domain.vo.OperationPortAuditVo;
+import com.moli.user.center.common.domain.vo.OperationStatsVo;
+import com.moli.user.center.server.operation.controller.OperationAuditController;
 import com.moli.user.center.server.operation.controller.OperationComponentController;
+import com.moli.user.center.server.operation.controller.OperationDeployController;
 import com.moli.user.center.server.operation.controller.OperationPlatformController;
 import com.moli.user.center.server.operation.controller.OperationProjectController;
 import com.moli.user.center.server.operation.controller.OperationServerController;
-import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
-import com.moli.user.center.server.operation.mapper.OperationPlatformMapper;
+import com.moli.user.center.server.operation.controller.OperationStatsController;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
-import com.moli.user.center.server.operation.mapper.OperationServerMapper;
+import com.moli.user.center.server.operation.service.OperationAuditService;
+import com.moli.user.center.server.operation.service.OperationComponentService;
+import com.moli.user.center.server.operation.service.OperationDeployService;
+import com.moli.user.center.server.operation.service.OperationPlatformService;
+import com.moli.user.center.server.operation.service.OperationServerService;
+import com.moli.user.center.server.operation.service.OperationStatsService;
 import com.moli.user.center.server.testsupport.AbstractApiTest;
 import com.moli.user.center.server.testsupport.ControllerTestSupport;
 import org.junit.Test;
@@ -20,6 +35,10 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OperationControllersApiTest extends AbstractApiTest {
@@ -32,19 +51,31 @@ public class OperationControllersApiTest extends AbstractApiTest {
     private OperationProjectController projectController;
     @InjectMocks
     private OperationComponentController componentController;
+    @InjectMocks
+    private OperationAuditController auditController;
+    @InjectMocks
+    private OperationStatsController statsController;
+    @InjectMocks
+    private OperationDeployController deployController;
 
     @Mock
-    private OperationPlatformMapper operationPlatformMapper;
+    private OperationServerService operationServerService;
     @Mock
-    private OperationServerMapper operationServerMapper;
+    private OperationPlatformService operationPlatformService;
+    @Mock
+    private OperationComponentService operationComponentService;
+    @Mock
+    private OperationAuditService operationAuditService;
+    @Mock
+    private OperationStatsService operationStatsService;
+    @Mock
+    private OperationDeployService operationDeployService;
     @Mock
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
-    @Mock
-    private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
 
     @Test
     public void GET_operation_platform_list() {
-        ControllerTestSupport.stubEmptyPage(operationPlatformMapper);
+        when(operationPlatformService.list(any())).thenReturn(new PageRes<>());
         OperationPlatformInfo q = new OperationPlatformInfo();
         q.setPageNum(1);
         q.setPageSize(10);
@@ -53,30 +84,37 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_platform_insert() {
-        ControllerTestSupport.stubInsert(operationPlatformMapper);
+        doNothing().when(operationPlatformService).create(any());
         ControllerTestSupport.assertSuccess(platformController.insert(new OperationPlatformInfo()));
     }
 
     @Test
     public void PUT_operation_platform_update() {
-        ControllerTestSupport.stubUpdate(operationPlatformMapper);
+        doNothing().when(operationPlatformService).update(any());
         ControllerTestSupport.assertSuccess(platformController.update(new OperationPlatformInfo()));
     }
 
     @Test
     public void GET_operation_platform_id() {
-        ControllerTestSupport.stubSelectById(operationPlatformMapper, new OperationPlatformInfo());
+        when(operationPlatformService.getById(1L)).thenReturn(new OperationPlatformVo());
         ControllerTestSupport.assertSuccess(platformController.selectOne(1L));
     }
 
     @Test
+    public void GET_operation_platform_secret() {
+        when(operationPlatformService.revealPassword(1L)).thenReturn(new OperationSecretRevealVo("secret"));
+        ControllerTestSupport.assertSuccess(platformController.revealSecret(1L));
+    }
+
+    @Test
     public void DELETE_operation_platform_ids() {
+        doNothing().when(operationPlatformService).deleteByIds(any());
         ControllerTestSupport.assertSuccess(platformController.remove(new Long[]{1L}));
     }
 
     @Test
     public void GET_operation_server_list() {
-        ControllerTestSupport.stubEmptyPage(operationServerMapper);
+        when(operationServerService.list(any())).thenReturn(new PageRes<>());
         OperationServerInfoVo q = new OperationServerInfoVo();
         q.setPageNum(1);
         q.setPageSize(10);
@@ -85,24 +123,37 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_server_insert() {
-        ControllerTestSupport.stubInsert(operationServerMapper);
+        doNothing().when(operationServerService).create(any());
         ControllerTestSupport.assertSuccess(serverController.insert(new OperationServerInfo()));
     }
 
     @Test
     public void PUT_operation_server_update() {
-        ControllerTestSupport.stubUpdate(operationServerMapper);
+        doNothing().when(operationServerService).update(any());
         ControllerTestSupport.assertSuccess(serverController.update(new OperationServerInfo()));
     }
 
     @Test
     public void GET_operation_server_id() {
-        ControllerTestSupport.stubSelectById(operationServerMapper, new OperationServerInfo());
+        when(operationServerService.getById(1L)).thenReturn(new OperationServerVo());
         ControllerTestSupport.assertSuccess(serverController.selectOne(1L));
     }
 
     @Test
+    public void GET_operation_server_topology() {
+        when(operationServerService.getTopology(1L)).thenReturn(new OperationServerTopologyVo());
+        ControllerTestSupport.assertSuccess(serverController.topology(1L));
+    }
+
+    @Test
+    public void POST_operation_server_check() {
+        when(operationServerService.checkHealth(1L)).thenReturn(new OperationServerVo());
+        ControllerTestSupport.assertSuccess(serverController.checkHealth(1L));
+    }
+
+    @Test
     public void DELETE_operation_server_ids() {
+        doNothing().when(operationServerService).deleteByIds(any());
         ControllerTestSupport.assertSuccess(serverController.remove(new Long[]{1L}));
     }
 
@@ -140,7 +191,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void GET_operation_component_list() {
-        ControllerTestSupport.stubEmptyPage(operationComponentDeployInfoMapper);
+        when(operationComponentService.list(any())).thenReturn(new PageRes<>());
         OperationComponentDeployInfo q = new OperationComponentDeployInfo();
         q.setPageNum(1);
         q.setPageSize(10);
@@ -149,24 +200,63 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_component_insert() {
-        ControllerTestSupport.stubInsert(operationComponentDeployInfoMapper);
+        doNothing().when(operationComponentService).create(any());
         ControllerTestSupport.assertSuccess(componentController.insert(new OperationComponentDeployInfo()));
     }
 
     @Test
     public void PUT_operation_component_update() {
-        ControllerTestSupport.stubUpdate(operationComponentDeployInfoMapper);
+        doNothing().when(operationComponentService).update(any());
         ControllerTestSupport.assertSuccess(componentController.update(new OperationComponentDeployInfo()));
     }
 
     @Test
     public void GET_operation_component_id() {
-        ControllerTestSupport.stubSelectById(operationComponentDeployInfoMapper, new OperationComponentDeployInfo());
+        when(operationComponentService.getById(1L)).thenReturn(new OperationComponentVo());
         ControllerTestSupport.assertSuccess(componentController.selectOne(1L));
     }
 
     @Test
+    public void GET_operation_component_secret() {
+        when(operationComponentService.revealPassword(1L)).thenReturn(new OperationSecretRevealVo("secret"));
+        ControllerTestSupport.assertSuccess(componentController.revealSecret(1L));
+    }
+
+    @Test
+    public void POST_operation_component_check() {
+        when(operationComponentService.checkHealth(1L)).thenReturn(new OperationComponentVo());
+        ControllerTestSupport.assertSuccess(componentController.checkHealth(1L));
+    }
+
+    @Test
     public void DELETE_operation_component_ids() {
+        doNothing().when(operationComponentService).deleteByIds(any());
         ControllerTestSupport.assertSuccess(componentController.remove(new Long[]{1L}));
+    }
+
+    @Test
+    public void GET_operation_audit_port_matrix() {
+        when(operationAuditService.auditPortMatrix()).thenReturn(new OperationPortAuditVo());
+        ControllerTestSupport.assertSuccess(auditController.portMatrix());
+    }
+
+    @Test
+    public void GET_operation_stats() {
+        when(operationStatsService.getStats()).thenReturn(new OperationStatsVo());
+        ControllerTestSupport.assertSuccess(statsController.stats());
+    }
+
+    @Test
+    public void GET_operation_deploy_status() {
+        when(operationDeployService.status("user-center")).thenReturn(new OperationDeployStatusVo());
+        ControllerTestSupport.assertSuccess(deployController.status("user-center"));
+    }
+
+    @Test
+    public void POST_operation_deploy_restart() {
+        OperationDeployStatusVo vo = new OperationDeployStatusVo();
+        vo.setRunning(true);
+        when(operationDeployService.execute("user-center", "restart", null)).thenReturn(vo);
+        ControllerTestSupport.assertSuccess(deployController.execute("user-center", "restart", null));
     }
 }

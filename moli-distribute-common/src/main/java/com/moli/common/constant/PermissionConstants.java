@@ -69,6 +69,8 @@ public final class PermissionConstants {
     public static final String OPERATION_COMPONENT_REMOVE = "operation:component:remove";
     /** 查看运维平台/组件明文凭据 */
     public static final String OPERATION_SECRET_VIEW = "operation:secret:view";
+    /** 执行部署脚本 start/stop/restart（status/logs 仅需 list） */
+    public static final String OPERATION_DEPLOY_EXEC = "operation:deploy:exec";
 
     /** 企业知识库 · 空间管理（C 菜单 perms） */
     public static final String KB_SPACE_ADMIN = "kb:space:admin";
