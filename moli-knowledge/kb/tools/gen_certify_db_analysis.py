@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Generate 技術要素(DB) markdown + 中文解析 from Moodle HTML."""
 from __future__ import annotations
 
@@ -8,6 +8,9 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from certify_md_layout import render_stem_sections  # noqa: E402
+from certify_stem_loader import stem_zh_for  # noqa: E402
+from certify_stem_zh import STEM_ZH_HEADING  # noqa: E402
 from bs4 import BeautifulSoup  # noqa: E402
 from certify_analysis_lookup import lookup_by_question, lookup_stats  # noqa: E402
 from certify_export_questions import norm  # noqa: E402
@@ -32,12 +35,8 @@ def _parse_html_questions() -> list[dict]:
     return qs
 
 
-def _stem_zh(q: dict) -> str:
-    hit = lookup_by_question(q, STEM)
-    if hit and hit.get("stem_zh"):
-        return hit["stem_zh"]
-    text = re.sub(r"!\[[^\]]*\]\([^)]+\)", "[图]", q.get("text") or "")
-    return text[:500] + ("..." if len(text) > 500 else "")
+def _stem_zh(qnum: int, q: dict) -> str:
+    return stem_zh_for(qnum, q.get("text") or "", STEM)
 
 
 def _analysis_body(qnum: int, q: dict) -> str:
@@ -123,24 +122,21 @@ def build_zh_md(questions: list[dict], summary: dict) -> str:
     ]
     for q in questions:
         qnum = int(q["number"])
-        lines.extend(["---", "", f"## 第 {qnum} 题", "", "### 日文题干", ""])
-        if q.get("text"):
-            lines.append(q["text"])
-        else:
-            lines.append("（见 HTML）")
-        lines.extend(["", "### 中文题意", "", _stem_zh(q), ""])
-        if q.get("options"):
-            lines.extend(["### 选项", ""])
-            for opt in q["options"]:
-                marks_m = []
-                if opt.get("selected"):
-                    marks_m.append("已选")
-                if opt.get("is_correct"):
-                    marks_m.append("正解")
-                suffix = f"（{', '.join(marks_m)}）" if marks_m else ""
-                lbl = opt.get("label") or "?"
-                lines.append(f"- **{lbl}.** {opt.get('text', '')}{suffix}")
-            lines.append("")
+        lines.extend(["---", "", f"## 第 {qnum} 题", ""])
+        ja = q.get("text") or "（见 HTML）"
+        opts = []
+        for opt in q.get("options") or []:
+            marks_m = []
+            if opt.get("selected"):
+                marks_m.append("已选")
+            if opt.get("is_correct"):
+                marks_m.append("正解")
+            opts.append({
+                "label": opt.get("label") or "?",
+                "text": opt.get("text", ""),
+                "suffix": ", ".join(marks_m),
+            })
+        lines.extend(render_stem_sections(ja, _stem_zh(qnum, q), opts))
         hit = lookup_by_question(q, STEM)
         ans = q.get("correct_answer") or (hit or {}).get("answer", "")
         lines.extend(["### 正确答案", "", f"**{ans}**", "", "### 解析", "", _analysis_body(qnum, q), ""])

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Generate マネジメント・ストラテジ markdown + 中文解析 from Moodle HTML."""
 from __future__ import annotations
 
@@ -10,7 +10,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from moodle_quiz_html_to_md import html_to_markdown, _parse_questions, _parse_summary  # noqa: E402
 from certify_mgmt_analyses import ANALYSES  # noqa: E402
+from certify_md_layout import render_stem_sections  # noqa: E402
+from certify_stem_loader import stem_zh_for  # noqa: E402
+from certify_stem_zh import STEM_ZH_HEADING  # noqa: E402
 from bs4 import BeautifulSoup  # noqa: E402
+
+EXAM_SLUG = "マネジメント_ストラテジ"
 
 KB = Path(__file__).resolve().parents[1]
 DIR = KB / "raw/school/certify"
@@ -32,10 +37,7 @@ def _parse_html_questions() -> list[dict]:
 
 
 def _stem_zh(qnum: int, q: dict) -> str:
-    if qnum in ANALYSES:
-        return ANALYSES[qnum]["stem_zh"]
-    text = re.sub(r"!\[[^\]]*\]\([^)]+\)", "[图]", q.get("text") or "")
-    return text[:500] + ("..." if len(text) > 500 else "")
+    return stem_zh_for(qnum, q.get("text") or "", EXAM_SLUG, ANALYSES)
 
 
 def _analysis_body(qnum: int, q: dict) -> str:
@@ -111,24 +113,21 @@ def build_zh_md(questions: list[dict], summary: dict) -> str:
     ]
     for q in questions:
         qnum = int(q["number"])
-        lines.extend(["---", "", f"## 第 {qnum} 题", "", "### 日文题干", ""])
-        if q.get("text"):
-            lines.append(q["text"])
-        else:
-            lines.append("（见 HTML）")
-        lines.extend(["", "### 中文题意", "", _stem_zh(qnum, q), ""])
-        if q.get("options"):
-            lines.extend(["### 选项", ""])
-            for opt in q["options"]:
-                marks_m = []
-                if opt.get("selected"):
-                    marks_m.append("已选")
-                if opt.get("is_correct"):
-                    marks_m.append("正解")
-                suffix = f"（{', '.join(marks_m)}）" if marks_m else ""
-                lbl = opt.get("label") or "?"
-                lines.append(f"- **{lbl}.** {opt.get('text', '')}{suffix}")
-            lines.append("")
+        lines.extend(["---", "", f"## 第 {qnum} 题", ""])
+        ja = q.get("text") or "（见 HTML）"
+        opts = []
+        for opt in q.get("options") or []:
+            marks_m = []
+            if opt.get("selected"):
+                marks_m.append("已选")
+            if opt.get("is_correct"):
+                marks_m.append("正解")
+            opts.append({
+                "label": opt.get("label") or "?",
+                "text": opt.get("text", ""),
+                "suffix": ", ".join(marks_m),
+            })
+        lines.extend(render_stem_sections(ja, _stem_zh(qnum, q), opts))
         ans = ANALYSES.get(qnum, {}).get("answer") or q.get("correct_answer", "")
         lines.extend(["### 正确答案", "", f"**{ans}**", "", "### 解析", "", _analysis_body(qnum, q), ""])
     lines.extend([

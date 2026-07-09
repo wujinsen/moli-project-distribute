@@ -8,6 +8,8 @@ from functools import lru_cache
 from pathlib import Path
 
 from certify_export_questions import export, norm
+from certify_md_layout import OPTIONS_SUBHEADING
+from certify_stem_zh import STEM_ZH_HEADING
 
 KB = Path(__file__).resolve().parents[1]
 DIR = KB / "raw/school/certify"
@@ -36,11 +38,18 @@ def _parse_zh_md(path: Path) -> dict[int, dict[str, str]]:
         if not m:
             continue
         qnum = int(m.group(1))
-        stem_m = re.search(r"### 中文题意\s*\n\s*\n(.+?)\n\s*\n### ", chunk, re.S)
+        stem_m = re.search(
+            rf"{re.escape(STEM_ZH_HEADING)}\s*\n\s*\n(.+?)\n\s*\n(?:{re.escape(OPTIONS_SUBHEADING)}|### )",
+            chunk,
+            re.S,
+        )
         body_m = re.search(r"### 解析\s*\n\s*\n(.+?)(?:\n---|\Z)", chunk, re.S)
         if stem_m and body_m:
+            stem = stem_m.group(1).strip()
+            if OPTIONS_SUBHEADING in stem:
+                stem = stem.split(OPTIONS_SUBHEADING)[0].strip()
             out[qnum] = {
-                "stem_zh": stem_m.group(1).strip(),
+                "stem_zh": stem,
                 "body": body_m.group(1).strip(),
             }
     return out

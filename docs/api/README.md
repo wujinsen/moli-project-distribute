@@ -21,6 +21,7 @@
 |------|------|
 | [KNOWLEDGE_API.md](KNOWLEDGE_API.md) | `/kb/*` 契约 |
 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | 前端总览 B1–B10 |
+| **[knowledge-ops-frontend.md](knowledge-ops-frontend.md)** | **KB 运维 · Sync O1–O4 · 排期（给前端）** |
 | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | Ingest I1–I5 · Tab2 |
 | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | **T20** Tab1 Raw 投喂 + Tab3 成品导入 |
 | [wiki-govern-frontend.md](wiki-govern-frontend.md) | Wiki 治理 W1–W8 |

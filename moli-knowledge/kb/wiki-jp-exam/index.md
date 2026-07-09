@@ -43,3 +43,9 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all
 - ランダム問題 1/2/3/5/サンプル + 中文解析 — create article ×10
 - 開発技術 / 技術要素（アルゴ）/ 技術要素(DB) / マネジメント_ストラテジ + 中文解析 — create article ×8
 
+## certify 分类（批次 #certify-20260707c）
+
+- [[certify-katakana-vocab]] — update（395→**400** 条；新增 63 译项 + 复合词/OCR 合并规则）
+- [[模擬問題4]] / [[模擬問題4-中文解析]] — create（pic/OCR 50 问）
+- enrich [[Certifyサーティファイ]] — 模擬問題4 索引 + 词汇条数
+

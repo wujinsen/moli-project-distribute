@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Generate 模擬問題サンプル markdown + 中文解析 from Moodle HTML."""
 from __future__ import annotations
 
@@ -10,7 +10,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from moodle_quiz_html_to_md import html_to_markdown, _parse_questions, _parse_summary  # noqa: E402
 from certify_sample_analyses import ANALYSES  # noqa: E402
+from certify_md_layout import render_stem_sections  # noqa: E402
+from certify_stem_loader import stem_zh_for  # noqa: E402
+from certify_stem_zh import STEM_ZH_HEADING  # noqa: E402
 from bs4 import BeautifulSoup  # noqa: E402
+
+EXAM_SLUG = "模擬問題サンプル"
 
 KB = Path(__file__).resolve().parents[1]
 DIR = KB / "raw/school/certify"
@@ -31,10 +36,7 @@ def _parse_html_questions() -> list[dict]:
 
 
 def _stem_zh(qnum: int, q: dict) -> str:
-    if qnum in ANALYSES:
-        return ANALYSES[qnum]["stem_zh"]
-    text = re.sub(r"!\[[^\]]*\]\([^)]+\)", "[插图]", q.get("text") or "")
-    return text[:500] + ("..." if len(text) > 500 else "")
+    return stem_zh_for(qnum, q.get("text") or "", EXAM_SLUG, ANALYSES)
 
 
 def _analysis_body(qnum: int, q: dict) -> str:
@@ -96,7 +98,7 @@ def build_zh_md(questions: list[dict], summary: dict) -> str:
             lines.append(q["text"])
         else:
             lines.append("（HTML 中无题干内容，可能截断）")
-        lines.extend(["", "### 中文题意", "", _stem_zh(qnum, q), ""])
+        lines.extend(["", STEM_ZH_HEADING, "", _stem_zh(qnum, q), ""])
         if q.get("options"):
             lines.extend(["### 选项", ""])
             for opt in q["options"]:

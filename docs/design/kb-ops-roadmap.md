@@ -1,6 +1,7 @@
 # 知识库运维 · 子域规划（内容管道运维）
 
-> 更新：2026-07-02 · 状态：**规划**（部分后端已就绪）
+> 更新：2026-07-02 · 状态：**规划**（部分后端已就绪）  
+> **产品 PRD**：[`docs/product/knowledge-ops-prd.md`](../product/knowledge-ops-prd.md) · **前端对接**：[`docs/api/knowledge-ops-frontend.md`](../api/knowledge-ops-frontend.md)  
 > 归属：`moli-knowledge` · `kb_sync_log` / `kb_lint_issue` / `kb_platform_llm_config`
 > 边界：**只管知识库内容管道运维**（wiki→DB 同步、体检、LLM 配置）；服务器/基础设施运维见 [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md)（另一条独立路线，互不重叠）
 

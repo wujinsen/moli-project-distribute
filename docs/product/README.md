@@ -21,6 +21,7 @@
 | **知识库模块需求（工程索引）** | [`knowledge-module-requirements.md`](knowledge-module-requirements.md) | v1 ✅ |
 | **知识库工作台需求总览** | [`knowledge-workbench-requirements.md`](knowledge-workbench-requirements.md) | 2026-06-27 |
 | **知识库双入口导入 PRD（T20）** | [`knowledge-import-entry-prd.md`](knowledge-import-entry-prd.md) | draft · 2026-07-05 |
+| **知识库内容管道运维 PRD（KBOPS）** | [`knowledge-ops-prd.md`](knowledge-ops-prd.md) | draft · 2026-07-09 |
 | **wujinsen 图片回迁 PRD（T22）** | [`wujinsen-wiki-image-remediation-prd.md`](wujinsen-wiki-image-remediation-prd.md) | ✅ 397/397 · 2026-07-05 |
 | **网关 PRD 原文** | [`kb/raw/prd/gateway-prd-v1.md`](../../moli-knowledge/kb/raw/prd/gateway-prd-v1.md) | raw |
 | **订单秒杀 PRD 原文** | [`kb/raw/prd/order-seckill-prd-v1.md`](../../moli-knowledge/kb/raw/prd/order-seckill-prd-v1.md) | raw |

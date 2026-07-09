@@ -1,6 +1,7 @@
 # 知识库 LLM · 平台设置页 · 前端对接说明（meiling-ui · T19d）
 
 > **读者**：meiling-ui 前端。后端 **T19a–c / T19e ✅** 已就绪；本文是 **T19d 联调权威说明**。  
+> **运维排期总览**：[knowledge-ops-frontend.md](knowledge-ops-frontend.md) · **产品 PRD**：[knowledge-ops-prd.md](../product/knowledge-ops-prd.md)  
 > **HTTP 契约总表**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §3.5  
 > **产品设计**：[kb-llm-platform-settings.md](../design/kb-llm-platform-settings.md)  
 > **菜单 SQL**：[`docs/sql/12_kb_platform_llm_menu.sql`](../sql/12_kb_platform_llm_menu.sql)（部署前 DBA 执行）

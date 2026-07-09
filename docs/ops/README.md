@@ -19,6 +19,8 @@
 | 文档 | 用途 |
 |------|------|
 | [knowledge-workbench-operations.md](knowledge-workbench-operations.md) | 入库 + Wiki 治理操作 |
+| **[knowledge-ops-prd.md](../product/knowledge-ops-prd.md)** | **KBOPS 产品 PRD（优先级与验收）** |
+| **[knowledge-ops-frontend.md](../api/knowledge-ops-frontend.md)** | **KB 运维 · 前端对接（给 meiling-ui）** |
 | **[kb-t20-design-docs-release.md](kb-t20-design-docs-release.md)** | **T20 后端 + 概要设计 Web 浏览 · 上线 Runbook（2026-07-06）** |
 | [../product/moli-v1-release-scope.md](../product/moli-v1-release-scope.md) | v1 功能边界 |
 
@@ -33,7 +35,7 @@
 | 数据库 | `guides/数据库初始化指南.md` + [scripts/README.md](../../scripts/README.md) |
 | 登录鉴权 | `guides/登录与鉴权指南.md` |
 | 故障排查 | `guides/故障排查指南.md` |
-| wiki 同步 | `guides/wiki同步指南.md` |
+| wiki 同步 | `ops/wiki同步指南.md` |
 
 ## 工程配套
 

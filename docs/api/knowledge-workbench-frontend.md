@@ -1,7 +1,7 @@
 # 知识库工作台 · 前端开发总览（meiling-ui）
 
 > **读者**：meiling-ui 前端。后端 API **已就绪**；本文是联调入口，细节见各子文档。  
-> **产品需求**：[knowledge-workbench-requirements.md](../product/knowledge-workbench-requirements.md)  
+> **产品需求**：[knowledge-workbench-requirements.md](../product/knowledge-workbench-requirements.md) · **[知识库运维 PRD](../product/knowledge-ops-prd.md)**  
 > **HTTP 契约总表**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md)
 
 ---
@@ -10,10 +10,11 @@
 
 | 优先级 | 页面 | 路由 | 后端 | 前端 | 对接文档 |
 |--------|------|------|------|------|----------|
+| **P0** | **健康体检 · Sync 区** | `knowledge/lint/index` | 🔵 KBOPS-1 | 🔵 **O1–O4** | **[knowledge-ops-frontend.md §3](knowledge-ops-frontend.md#3-p0--健康体检页-sync-增强o1o4)** |
 | **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19 · 🔵 **T20 待后端** | 🔵 **Spec 已定**（Tab2 §10.1；**T20 三 Tab** 见下） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) · **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** |
-| **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | 🔵 **Spec 已定**（见 §10.2；当前 MVP 仅 Lint+AI） | [wiki-govern-frontend.md](wiki-govern-frontend.md) |
+| **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | 🔵 **Spec 已定**（见 §10.2；当前 MVP 仅 Lint+AI） | [wiki-govern-frontend.md](wiki-govern-frontend.md) · **[knowledge-ops-frontend.md §4](knowledge-ops-frontend.md#4-p0--wiki-治理t16f--kbops-6)** |
+| P1 | 平台 LLM 设置 | `system/kb-llm` | ✅ T19 | 🔵 T19d | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) |
 | P1 | Wiki 编辑 | `knowledge/wiki/edit` | ✅ T14 | ✅ 已有 | KNOWLEDGE_API §8 |
-| P1 | 健康体检 | `knowledge/lint/index` | ✅ | ✅ 已有 | KNOWLEDGE_API §4 |
 
 **网关前缀**：`{VITE_API_BASE_URL}/KnowledgeServer` + 下表路径（如 `/kb/wiki-moli/lint-space`）。
 
@@ -177,6 +178,7 @@ export interface KbWorkflowHintVo {
 |------|----------|
 | **T20 导入入口** | [kb-import-entry-frontend.md §10](kb-import-entry-frontend.md#10-验收清单t20--前端) |
 | Wiki 治理 | [wiki-govern-frontend.md §13–§15](wiki-govern-frontend.md#13-验收清单与进度w1w8) |
+| **KB 运维 Sync UI** | [knowledge-ops-frontend.md §3、§10](knowledge-ops-frontend.md#36-验收-o1o4) |
 | Ingest 增量 | [ingest-workbench-frontend.md §11–§13](ingest-workbench-frontend.md#11-验收清单与进度i1i5) |
 | 操作手册（非前端） | [knowledge-workbench-operations.md §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距) |
 

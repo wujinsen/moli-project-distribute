@@ -1,6 +1,7 @@
 # Wiki 治理工作台 · 前端对接说明（meiling-ui）
 
 > **读者**：meiling-ui 前端。后端 **T16a/e/g ✅** 已就绪；**T16f 待开发**。  
+> **运维排期总览**：[knowledge-ops-frontend.md](knowledge-ops-frontend.md) · **产品 PRD**：[knowledge-ops-prd.md](../product/knowledge-ops-prd.md)  
 > **现 UI 与完整方案差距**（仅 Lint + AI 两步时）：[`docs/ops/knowledge-workbench-operations.md` §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距)  
 > **总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
 > **HTTP 契约总表**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §4.6 + §8.6  

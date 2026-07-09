@@ -14,6 +14,7 @@
 | **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [knowledge-workbench-frontend.md](../api/knowledge-workbench-frontend.md) · [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g ✅；**T16f 前端 🔵** |
 | **单页编辑** | Wiki 编辑 | [[Wiki在线编辑与AI协助改稿]] | KNOWLEDGE_API §8.2–8.4 | T14 ✅ |
 | **健康体检** | 健康体检 | wiki-moli / 查询与体检指南 | KNOWLEDGE_API §4 | DB 快照，与治理分工 |
+| **内容管道运维（KBOPS）** | 健康体检 + Sync · Wiki 治理 · LLM 设置 | [knowledge-ops-prd.md](knowledge-ops-prd.md) | [knowledge-ops-frontend.md](../api/knowledge-ops-frontend.md) | 后端 KBOPS-1~5 📋；**O1–O4 / T16f / T19d** 🔵 |
 
 **脚本 vs LLM 怎么选**：[`docs/test/knowledge-script-vs-llm-matrix.md`](../test/knowledge-script-vs-llm-matrix.md)
 
@@ -74,6 +75,7 @@
 | HTTP 契约 | `docs/api/KNOWLEDGE_API.md` |
 | **前端总览 + B1–B10** | `docs/api/knowledge-workbench-frontend.md` |
 | 治理前端（W1–W8） | `docs/api/wiki-govern-frontend.md` |
+| **运维前端（O1–O4 · 排期）** | `docs/api/knowledge-ops-frontend.md` |
 | Ingest 前端（I1–I5） | `docs/api/ingest-workbench-frontend.md` |
 | 测试 / 验收 | `docs/test/knowledge-*.md` |
 | 架构图 | `docs/diagrams/moli-kb-wiki-govern.drawio`、`moli-kb-ingest-workbench.drawio` |
@@ -84,6 +86,7 @@
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-09 | 新增 KBOPS 产品线 · [knowledge-ops-prd.md](knowledge-ops-prd.md) |
 | 2026-06-28 | 操作手册统一至 `docs/ops/knowledge-workbench-operations.md` |
 | 2026-06-27 | T16e/g：治理 script/AI/auto/merge-hint；Ingest 模板模式 + nextSteps + raw 门禁 |
 | 2026-06-25 | T15 Ingest 工作台交付 |
