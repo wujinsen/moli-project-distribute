@@ -184,6 +184,8 @@
 - `DELETE /operation/component/{ids}`：`operation:component:remove` + `list`
 - `POST /operation/component/{id}/check`：`operation:component:list`；TCP 探活，更新并返回 `OperationComponentVo`
 
+> **前端对接专稿**：[operation-frontend.md](operation-frontend.md)（枚举、TypeScript、验收 S0–S5）
+
 ### 运维审计 `OperationAuditController`（前缀 `/operation/audit`，1个）
 
 - `GET /operation/audit/port-matrix`：`operation:project:list`；对照 production-checklist 校验项目/组件端口

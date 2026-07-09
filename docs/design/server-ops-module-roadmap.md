@@ -81,7 +81,7 @@
 |------|------|
 | **SVR-4** | **健康探测**：对 `operation_server_info` / `operation_component_deploy_info` 做 TCP 端口探活，记录 `last_check_time` / `status`；`POST .../check` 触发探测 | ✅ 2026-07-09 |
 | **SVR-5** | **级联视图**：`GET /operation/server/{id}/topology` 返回该服务器上的项目 + 组件（聚合 N:N + server_id/server_ip 回退） | ✅ 2026-07-09 |
-| **SVR-6** | 前端「运维管理」页展示状态灯 + 行内探测 + 拓扑弹窗（meiling-ui） | ✅ 2026-07-09 |
+| **SVR-6** | 前端「运维管理」页展示状态灯 + 行内探测 + 拓扑弹窗（meiling-ui） | ✅ 2026-07-09 · [operation-frontend.md](../api/operation-frontend.md) §5 |
 
 ### P2 —— 联动与自动化（按需）
 
@@ -116,5 +116,6 @@
 
 - 表结构：`docs/sql/USER_CENTER_SCHEMA.md` §2.3、`scripts/moli.sql`
 - API 地图：`docs/api/user-center-api-map.md` §4
+- **前端对接**：[`docs/api/operation-frontend.md`](../api/operation-frontend.md)
 - 加密参考实现：`kb-llm-platform-settings.md` §3.3、`KbLlmConfigCipher`
 - 平台可观测性规划：`docs/ops/monitoring-and-logs.md`、`docs/zh-CN/TECH_STACK.md` §6
