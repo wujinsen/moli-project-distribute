@@ -67,6 +67,8 @@ public final class PermissionConstants {
     public static final String OPERATION_COMPONENT_ADD = "operation:component:add";
     public static final String OPERATION_COMPONENT_EDIT = "operation:component:edit";
     public static final String OPERATION_COMPONENT_REMOVE = "operation:component:remove";
+    /** 查看运维平台/组件明文凭据 */
+    public static final String OPERATION_SECRET_VIEW = "operation:secret:view";
 
     /** 企业知识库 · 空间管理（C 菜单 perms） */
     public static final String KB_SPACE_ADMIN = "kb:space:admin";
@@ -76,6 +78,10 @@ public final class PermissionConstants {
     public static final String KB_SPACE_MEMBER = "kb:space:member";
     /** 企业知识库 · 平台 LLM 系统设置（T19） */
     public static final String KB_PLATFORM_LLM = "kb:platform:llm";
+    /** 企业知识库 · 健康体检 · 扫描并落库（KBOPS-3） */
+    public static final String KB_LINT_SCAN = "kb:lint:scan";
+    /** 企业知识库 · 触发 Wiki→MySQL 同步（KBOPS-3） */
+    public static final String KB_SYNC_TRIGGER = "kb:sync:trigger";
 
     public static final String ROLE_ASSIGN_REFRESH_MSG = "角色授权已更新，请通知相关用户刷新页面后查看新菜单";
 }

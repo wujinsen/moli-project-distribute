@@ -246,6 +246,44 @@ public class KbAclServiceImpl implements KbAclService {
     }
 
     @Override
+    public void assertCanSyncTrigger(Long spaceId) {
+        if (isAdmin()) {
+            return;
+        }
+        if (spaceId == null) {
+            throw new BaseException("无权触发全库同步");
+        }
+        if (isPermitted(PermissionConstants.KB_SYNC_TRIGGER)) {
+            assertCanRead(spaceId);
+            return;
+        }
+        assertCanAdmin(spaceId);
+    }
+
+    @Override
+    public void assertCanSyncView(Long spaceId) {
+        assertCanSyncTrigger(spaceId);
+    }
+
+    @Override
+    public void assertCanLintScan(Long spaceId) {
+        if (isAdmin()) {
+            return;
+        }
+        if (isPermitted(PermissionConstants.KB_LINT_SCAN)) {
+            if (spaceId != null) {
+                assertCanRead(spaceId);
+            }
+            return;
+        }
+        if (spaceId != null) {
+            assertCanEdit(spaceId);
+            return;
+        }
+        throw new BaseException("全库体检需 kb:lint:scan 或全局管理员权限");
+    }
+
+    @Override
     public List<Long> resolveReadableSpaceIds(Long spaceId, List<Long> spaceIds) {
         if (spaceIds != null && !spaceIds.isEmpty()) {
             Set<Long> distinct = spaceIds.stream()

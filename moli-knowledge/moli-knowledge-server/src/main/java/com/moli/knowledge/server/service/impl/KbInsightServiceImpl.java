@@ -366,11 +366,7 @@ public class KbInsightServiceImpl implements KbInsightService {
 
     @Override
     public LintVo scan(Long spaceId) {
-        if (spaceId != null) {
-            kbAclService.assertCanEdit(spaceId);
-        } else if (!kbAclService.isAdmin()) {
-            throw new com.moli.common.exception.BaseException("全库体检需全局管理员权限");
-        }
+        kbAclService.assertCanLintScan(spaceId);
         LintVo vo = lint(spaceId);
         Date now = new Date();
 

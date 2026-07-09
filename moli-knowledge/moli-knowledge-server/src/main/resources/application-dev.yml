@@ -93,8 +93,22 @@ kb:
     script-path: moli-knowledge/kb/tools/sync_to_db.py
     space-code: enterprise-kb
     timeout-seconds: 300
+    lock-enabled: true
+    lock-extra-seconds: 60
+    schedule-space-codes:
+      - enterprise-kb
+      - moli-ops-manual
+      - jp-fe-ap-exam
     schedule-enabled: false
     schedule-cron: "0 0 2 * * ?"
+    alert:
+      enabled: false
+      type: feishu
+      webhook-url: ${KB_SYNC_ALERT_WEBHOOK_URL:}
+      scheduled-only: true
+      timeout-seconds: 10
+      include-output-tail: true
+      output-tail-max-chars: 500
   wiki:
     # Web 在线编辑（T14）读写 kb/wiki* markdown 文件
     enabled: true

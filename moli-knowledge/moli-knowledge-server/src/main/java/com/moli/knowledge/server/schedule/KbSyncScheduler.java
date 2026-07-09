@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * kb → MySQL 定时同步（可选，默认关闭）。
@@ -28,9 +29,17 @@ public class KbSyncScheduler {
             return;
         }
         try {
-            log.info("定时同步开始 spaceCode={}", syncProperties.getSpaceCode());
-            SyncTriggerVo result = kbSyncService.triggerScheduled();
-            log.info("定时同步结束 success={} exitCode={}", result.isSuccess(), result.getExitCode());
+            List<String> spaceCodes = kbSyncService.resolveScheduleSpaceCodes();
+            log.info("定时同步开始 spaces={}", spaceCodes);
+            for (String code : spaceCodes) {
+                try {
+                    SyncTriggerVo result = kbSyncService.triggerScheduledFor(code);
+                    log.info("定时同步结束 spaceCode={} success={} exitCode={}",
+                            code, result.isSuccess(), result.getExitCode());
+                } catch (Exception e) {
+                    log.error("定时同步失败 spaceCode={}", code, e);
+                }
+            }
         } catch (Exception e) {
             log.error("定时同步失败", e);
         }

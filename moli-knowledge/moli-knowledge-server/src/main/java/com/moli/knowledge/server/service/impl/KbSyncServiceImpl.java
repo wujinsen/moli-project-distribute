@@ -12,10 +12,13 @@ import com.moli.knowledge.server.entity.KbSyncLog;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.mapper.KbSyncLogMapper;
 import com.moli.knowledge.server.service.KbAclService;
+import com.moli.knowledge.server.service.KbSyncAlertService;
 import com.moli.knowledge.server.service.KbSyncService;
+import com.moli.knowledge.server.sync.SyncTriggerSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -28,6 +31,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +42,7 @@ public class KbSyncServiceImpl implements KbSyncService {
 
     private static final Pattern JDBC_MYSQL = Pattern.compile(
             "jdbc:mysql://([^:/]+)(?::(\\d+))?/([^?]+)");
+    private static final String SYNC_LOCK_PREFIX = "kb:sync:lock:";
 
     @Resource
     private KbSyncLogMapper kbSyncLogMapper;
@@ -49,6 +54,10 @@ public class KbSyncServiceImpl implements KbSyncService {
     private KbSyncProperties syncProperties;
     @Resource
     private KbWikiProperties wikiProperties;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private KbSyncAlertService kbSyncAlertService;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
@@ -59,7 +68,11 @@ public class KbSyncServiceImpl implements KbSyncService {
 
     @Override
     public Page<KbSyncLog> logs(Long spaceId, String batchNo, int pageNum, int pageSize) {
-        assertSyncPermission(spaceId);
+        if (spaceId != null) {
+            kbAclService.assertCanSyncView(spaceId);
+        } else if (!kbAclService.isAdmin()) {
+            throw new BaseException("无权查看全库同步日志");
+        }
         LambdaQueryWrapper<KbSyncLog> wrapper = new LambdaQueryWrapper<>();
         if (spaceId != null) {
             wrapper.eq(KbSyncLog::getSpaceId, spaceId);
@@ -73,7 +86,11 @@ public class KbSyncServiceImpl implements KbSyncService {
 
     @Override
     public SyncStatusVo status(Long spaceId) {
-        assertSyncPermission(spaceId);
+        if (spaceId != null) {
+            kbAclService.assertCanSyncView(spaceId);
+        } else if (!kbAclService.isAdmin()) {
+            throw new BaseException("无权查看全库同步状态");
+        }
         LambdaQueryWrapper<KbSyncLog> latestWrapper = new LambdaQueryWrapper<>();
         if (spaceId != null) {
             latestWrapper.eq(KbSyncLog::getSpaceId, spaceId);
@@ -115,8 +132,8 @@ public class KbSyncServiceImpl implements KbSyncService {
             throw new BaseException("同步 API 已禁用（kb.sync.enabled=false）");
         }
         KbSpace space = resolveSpace(spaceId, spaceCode);
-        assertSyncPermission(space.getId());
-        return executeSync(space);
+        kbAclService.assertCanSyncTrigger(space.getId());
+        return executeSync(space, SyncTriggerSource.MANUAL);
     }
 
     @Override
@@ -126,19 +143,85 @@ public class KbSyncServiceImpl implements KbSyncService {
         }
         KbSpace space = resolveSpace(spaceId, null);
         kbAclService.assertCanEdit(space.getId());
-        return executeSync(space);
+        return executeSync(space, SyncTriggerSource.AFTER_EDIT);
     }
 
     @Override
     public SyncTriggerVo triggerScheduled() {
+        return triggerScheduledFor(syncProperties.getSpaceCode());
+    }
+
+    @Override
+    public SyncTriggerVo triggerScheduledFor(String spaceCode) {
         if (!syncProperties.isEnabled()) {
             throw new BaseException("同步已禁用（kb.sync.enabled=false）");
         }
-        KbSpace space = resolveSpace(null, syncProperties.getSpaceCode());
-        return executeSync(space);
+        KbSpace space = resolveSpace(null, spaceCode);
+        return executeSync(space, SyncTriggerSource.SCHEDULED);
     }
 
-    private SyncTriggerVo executeSync(KbSpace space) {
+    @Override
+    public List<SyncTriggerVo> triggerScheduledAll() {
+        if (!syncProperties.isEnabled()) {
+            throw new BaseException("同步已禁用（kb.sync.enabled=false）");
+        }
+        List<SyncTriggerVo> results = new ArrayList<>();
+        for (String code : resolveScheduleSpaceCodes()) {
+            results.add(triggerScheduledFor(code));
+        }
+        return results;
+    }
+
+    /** 定时任务使用的空间列表：显式配置优先，否则取 wiki space-dirs 全部 key。 */
+    @Override
+    public List<String> resolveScheduleSpaceCodes() {
+        if (syncProperties.getScheduleSpaceCodes() != null
+                && !syncProperties.getScheduleSpaceCodes().isEmpty()) {
+            return syncProperties.getScheduleSpaceCodes();
+        }
+        return new ArrayList<>(wikiProperties.getSpaceDirs().keySet());
+    }
+
+    private SyncTriggerVo executeSync(KbSpace space, SyncTriggerSource source) {
+        String lockKey = SYNC_LOCK_PREFIX + space.getSpaceCode();
+        String lockToken = UUID.randomUUID().toString();
+        boolean locked = false;
+        if (syncProperties.isLockEnabled()) {
+            int lockTtl = syncProperties.getTimeoutSeconds() + syncProperties.getLockExtraSeconds();
+            Boolean acquired = stringRedisTemplate.opsForValue()
+                    .setIfAbsent(lockKey, lockToken, lockTtl, TimeUnit.SECONDS);
+            if (Boolean.FALSE.equals(acquired)) {
+                throw new BaseException("该空间正在同步中，请稍后再试（" + space.getSpaceCode() + "）");
+            }
+            locked = true;
+        }
+
+        try {
+            SyncTriggerVo result = runSyncProcess(space);
+            kbSyncAlertService.notifyIfFailed(source, space.getSpaceCode(), result, null);
+            return result;
+        } catch (BaseException e) {
+            kbSyncAlertService.notifyIfFailed(source, space.getSpaceCode(), null, e);
+            throw e;
+        } finally {
+            if (locked) {
+                releaseSyncLock(lockKey, lockToken);
+            }
+        }
+    }
+
+    private void releaseSyncLock(String lockKey, String lockToken) {
+        try {
+            String current = stringRedisTemplate.opsForValue().get(lockKey);
+            if (lockToken.equals(current)) {
+                stringRedisTemplate.delete(lockKey);
+            }
+        } catch (Exception e) {
+            log.warn("释放 Sync 锁失败 key={}", lockKey, e);
+        }
+    }
+
+    private SyncTriggerVo runSyncProcess(KbSpace space) {
         Path script = resolveScriptPath();
         DbEndpoint db = parseJdbcUrl(datasourceUrl);
 
@@ -199,16 +282,6 @@ public class KbSyncServiceImpl implements KbSyncService {
             throw new BaseException("触发同步失败：" + e.getMessage());
         }
         return result;
-    }
-
-    private void assertSyncPermission(Long spaceId) {
-        if (kbAclService.isAdmin()) {
-            return;
-        }
-        if (spaceId == null) {
-            throw new BaseException("无权查看全库同步日志");
-        }
-        kbAclService.assertCanAdmin(spaceId);
     }
 
     private KbSpace resolveSpace(Long spaceId, String spaceCode) {

@@ -454,68 +454,81 @@ def sync_to_db(docs, rels, args):
 
             # ---- upsert 文档 ----
             for d in docs:
-                if d.slug in all_by_slug:
-                    doc_id, old_hash, was_deleted, old_source = all_by_slug[d.slug]
-                    slug_to_id[d.slug] = doc_id
-                    reactivate = was_deleted != 0 or old_source != "kb"
-                    new_cat = _category_id(d)
-                    if not reactivate and old_hash == d.content_hash:
-                        cur.execute("SELECT category_id FROM kb_document WHERE id=%s", (doc_id,))
-                        old_cat = cur.fetchone()[0]
-                        if old_cat != new_cat:
-                            cur.execute(
-                                "UPDATE kb_document SET category_id=%s, update_time=%s "
-                                "WHERE id=%s",
-                                (new_cat, now, doc_id))
-                            stats["update"] += 1
-                            _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                                 "category_fixup", d.content_hash, now)
-                        else:
-                            stats["skip"] += 1
-                            _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                                 "skip", d.content_hash, now)
-                        continue
-                    cur.execute(
-                        "UPDATE kb_document SET title=%s, summary=%s, content=%s, "
-                        "kb_type=%s, domain=%s, status=%s, source='kb', source_path=%s, "
-                        "category_id=%s, content_hash=%s, is_delete=0, "
-                        "version_no=version_no+1, update_id=%s, "
-                        "update_time=%s, publish_time=COALESCE(publish_time, %s) "
-                        "WHERE id=%s",
-                        (d.title, _summary(d), d.body, d.kb_type, _domain(d),
-                         d.status, d.rel_path, _category_id(d), d.content_hash, args.operator, now,
-                         now if d.status == 1 else None, doc_id))
-                    stats["update"] += 1
+                try:
+                    if d.slug in all_by_slug:
+                        doc_id, old_hash, was_deleted, old_source = all_by_slug[d.slug]
+                        slug_to_id[d.slug] = doc_id
+                        reactivate = was_deleted != 0 or old_source != "kb"
+                        new_cat = _category_id(d)
+                        if not reactivate and old_hash == d.content_hash:
+                            cur.execute("SELECT category_id FROM kb_document WHERE id=%s", (doc_id,))
+                            old_cat = cur.fetchone()[0]
+                            if old_cat != new_cat:
+                                cur.execute(
+                                    "UPDATE kb_document SET category_id=%s, update_time=%s "
+                                    "WHERE id=%s",
+                                    (new_cat, now, doc_id))
+                                stats["update"] += 1
+                                _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                                     "category_fixup", d.content_hash, now)
+                            else:
+                                stats["skip"] += 1
+                                _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                                     "skip", d.content_hash, now)
+                            continue
+                        cur.execute(
+                            "UPDATE kb_document SET title=%s, summary=%s, content=%s, "
+                            "kb_type=%s, domain=%s, status=%s, source='kb', source_path=%s, "
+                            "category_id=%s, content_hash=%s, is_delete=0, "
+                            "version_no=version_no+1, update_id=%s, "
+                            "update_time=%s, publish_time=COALESCE(publish_time, %s) "
+                            "WHERE id=%s",
+                            (d.title, _summary(d), d.body, d.kb_type, _domain(d),
+                             d.status, d.rel_path, _category_id(d), d.content_hash, args.operator, now,
+                             now if d.status == 1 else None, doc_id))
+                        stats["update"] += 1
+                        _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                             "reactivate" if reactivate else "update", d.content_hash, now)
+                    else:
+                        doc_id = idgen.next()
+                        slug_to_id[d.slug] = doc_id
+                        cur.execute(
+                            "INSERT INTO kb_document (id, create_id, create_time, "
+                            "update_id, update_time, space_id, category_id, slug, source, "
+                            "source_path, content_hash, title, summary, content, doc_type, "
+                            "kb_type, domain, status, view_count, like_count, version_no, "
+                            "publish_time, is_delete) VALUES "
+                            "(%s,%s,%s,%s,%s,%s,%s,%s,'kb',%s,%s,%s,%s,%s,'markdown',"
+                            "%s,%s,%s,0,0,1,%s,0)",
+                            (doc_id, args.operator, now, args.operator, now, space_id,
+                             _category_id(d), d.slug, d.rel_path, d.content_hash, d.title, _summary(d),
+                             d.body, d.kb_type, _domain(d), d.status,
+                             now if d.status == 1 else None))
+                        stats["insert"] += 1
+                        _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                             "insert", d.content_hash, now)
+                except Exception as e:                  # noqa: BLE001
+                    stats["fail"] += 1
+                    doc_id = slug_to_id.get(d.slug)
                     _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                         "reactivate" if reactivate else "update", d.content_hash, now)
-                else:
-                    doc_id = idgen.next()
-                    slug_to_id[d.slug] = doc_id
-                    cur.execute(
-                        "INSERT INTO kb_document (id, create_id, create_time, "
-                        "update_id, update_time, space_id, category_id, slug, source, "
-                        "source_path, content_hash, title, summary, content, doc_type, "
-                        "kb_type, domain, status, view_count, like_count, version_no, "
-                        "publish_time, is_delete) VALUES "
-                        "(%s,%s,%s,%s,%s,%s,%s,%s,'kb',%s,%s,%s,%s,%s,'markdown',"
-                        "%s,%s,%s,0,0,1,%s,0)",
-                        (doc_id, args.operator, now, args.operator, now, space_id,
-                         _category_id(d), d.slug, d.rel_path, d.content_hash, d.title, _summary(d),
-                         d.body, d.kb_type, _domain(d), d.status,
-                         now if d.status == 1 else None))
-                    stats["insert"] += 1
-                    _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                         "insert", d.content_hash, now)
+                         "sync", d.content_hash, now, status="fail", message=str(e))
+                    print(f"[error] 文档同步失败 {d.slug}: {e}")
 
             # ---- 删除：DB 有、wiki 没有 ----
             wiki_slugs = {d.slug for d in docs}
             for slug, (doc_id, _h) in existing.items():
                 if slug not in wiki_slugs:
-                    cur.execute("UPDATE kb_document SET is_delete=1, update_time=%s "
-                                "WHERE id=%s", (now, doc_id))
-                    stats["delete"] += 1
-                    _log(cur, idgen, batch_no, space_id, doc_id, slug,
-                         "delete", None, now)
+                    try:
+                        cur.execute("UPDATE kb_document SET is_delete=1, update_time=%s "
+                                    "WHERE id=%s", (now, doc_id))
+                        stats["delete"] += 1
+                        _log(cur, idgen, batch_no, space_id, doc_id, slug,
+                             "delete", None, now)
+                    except Exception as e:              # noqa: BLE001
+                        stats["fail"] += 1
+                        _log(cur, idgen, batch_no, space_id, doc_id, slug,
+                             "delete", None, now, status="fail", message=str(e))
+                        print(f"[error] 软删失败 {slug}: {e}")
 
             # ---- 标签 ----
             _sync_tags(cur, idgen, space_id, docs, slug_to_id, args.operator, now)
@@ -523,11 +536,18 @@ def sync_to_db(docs, rels, args):
             # ---- 关系 ----
             _sync_relations(cur, idgen, space_id, rels, slug_to_id, args.operator, now)
 
+            summary = " ".join(f"{k}={v}" for k, v in stats.items())
+            batch_status = "fail" if stats["fail"] > 0 else "success"
+            _log(cur, idgen, batch_no, space_id, None, None, "batch", None, now,
+                 status=batch_status, message=summary)
+
         conn.commit()
-        print("\n同步完成：", " ".join(f"{k}={v}" for k, v in stats.items()))
-        return 0
+        print(f"\n同步完成 batch={batch_no}：{summary}")
+        return 1 if stats["fail"] > 0 else 0
     except Exception as e:                          # noqa: BLE001
         conn.rollback()
+        if "space_id" in locals():
+            _persist_batch_fail(args, batch_no, space_id, str(e))
         print(f"[error] 同步失败，已回滚：{e}")
         return 1
     finally:
@@ -561,12 +581,44 @@ def _domain(d: "Doc") -> str | None:
     return None
 
 
-def _log(cur, idgen, batch_no, space_id, doc_id, path, action, chash, now):
+def _truncate_message(message: str | None, max_len: int = 512) -> str | None:
+    if message is None:
+        return None
+    text = str(message)
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 1] + "…"
+
+
+def _persist_batch_fail(args, batch_no, space_id, message: str) -> None:
+    """主事务回滚后，单独连接写入批次级 fail 日志（KBOPS-1）。"""
+    try:
+        import pymysql
+    except ImportError:
+        return
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        conn = pymysql.connect(
+            host=args.host, port=args.port, user=args.user,
+            password=args.password, database=args.db, charset="utf8mb4",
+            autocommit=True,
+        )
+        with conn.cursor() as cur:
+            _log(cur, IdGen(), batch_no, space_id, None, None, "batch", None, now,
+                 status="fail", message=message)
+        conn.close()
+    except Exception as e:                          # noqa: BLE001
+        print(f"[warn] 无法写入批次失败日志：{e}")
+
+
+def _log(cur, idgen, batch_no, space_id, doc_id, path, action, chash, now,
+         status: str = "success", message: str | None = None):
     cur.execute(
         "INSERT INTO kb_sync_log (id, batch_no, space_id, document_id, source_path, "
         "action, content_hash, status, message, create_time) VALUES "
-        "(%s,%s,%s,%s,%s,%s,%s,'success',NULL,%s)",
-        (idgen.next(), batch_no, space_id, doc_id, path, action, chash, now))
+        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        (idgen.next(), batch_no, space_id, doc_id, path, action, chash,
+         status, _truncate_message(message), now))
 
 
 def _sync_tags(cur, idgen, space_id, docs, slug_to_id, operator, now):

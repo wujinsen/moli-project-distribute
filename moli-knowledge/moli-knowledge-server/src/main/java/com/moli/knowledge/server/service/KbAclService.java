@@ -95,4 +95,18 @@ public interface KbAclService {
 
     /** 平台 LLM 系统设置（超管或 {@code kb:platform:llm}）。 */
     void assertPlatformLlmManage();
+
+    /**
+     * 手动触发 Sync：平台超管、{@code kb:sync:trigger}（且可读该空间）、或空间 admin/owner。
+     */
+    void assertCanSyncTrigger(Long spaceId);
+
+    /** 查看 Sync 日志/状态：与 {@link #assertCanSyncTrigger(Long)} 相同。 */
+    void assertCanSyncView(Long spaceId);
+
+    /**
+     * 扫描并落库：平台超管、{@code kb:lint:scan}、或空间 editor（单空间 fallback）。
+     * {@code spaceId=null} 表示全库扫描，需超管或 {@code kb:lint:scan}。
+     */
+    void assertCanLintScan(Long spaceId);
 }
