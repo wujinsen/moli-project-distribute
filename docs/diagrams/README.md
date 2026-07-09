@@ -11,6 +11,7 @@
 |------|------|
 | [`moli-container-architecture.drawio`](moli-container-architecture.drawio) | **全项目 C4 容器图**：网关 → 各微服务 → 基础设施 |
 | [`moli-auth-flow.drawio`](moli-auth-flow.drawio) | **鉴权流程**：登录 Session、业务请求校验 |
+| [`moli-auth-layers.drawio`](moli-auth-layers.drawio) | **鉴权分层**：网关 → 会话 → 权限 → Dubbo 五层 |
 | [`moli-knowledge-sync.drawio`](moli-knowledge-sync.drawio) | **知识库双轨概览**（简版） |
 | [`moli-kb-architecture.drawio`](moli-kb-architecture.drawio) | **知识库系统架构**：写入轨 kb/ + 读取轨 knowledge-server |
 | [`moli-kb-er.drawio`](moli-kb-er.drawio) | **ER 图**：14 张 kb_* 表及逻辑外键 |
@@ -26,6 +27,7 @@
 | [`moli-kb-meilisearch.drawio`](moli-kb-meilisearch.drawio) | **Meilisearch 接入规划**：索引轨（sync→reindex）+ 查询轨（ACL filter + 体裁/分类 facet） |
 | [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：四路由 + StripPrefix + 端口 |
 | [`moli-rbac-model.drawio`](moli-rbac-model.drawio) | **RBAC 模型**：用户→角色→菜单/动作 + Shiro 运行时 |
+| [`moli-rbac-menu-query.drawio`](moli-rbac-menu-query.drawio) | **RBAC 菜单授权查询**：sys_user_role → MenuVo 树 · admin bypass |
 | [`moli-user-center-position.drawio`](moli-user-center-position.drawio) | **用户中心定位**：网关 HTTP + Dubbo + 共享 Redis |
 | [`moli-seckill-flow.drawio`](moli-seckill-flow.drawio) | **秒杀全链路**：Gateway → Lua → 队列 → MySQL |
 | [`moli-deploy-topology.drawio`](moli-deploy-topology.drawio) | **本地部署拓扑**：基础设施 + 启动顺序 |
@@ -101,10 +103,12 @@ docs/diagrams/png/moli-kb-wiki-govern.png
 docs/diagrams/png/moli-kb-meilisearch.png
 docs/diagrams/png/moli-gateway-routes.png
 docs/diagrams/png/moli-rbac-model.png
+docs/diagrams/png/moli-rbac-menu-query.png
 docs/diagrams/png/moli-user-center-position.png
 docs/diagrams/png/moli-seckill-flow.png
 docs/diagrams/png/moli-deploy-topology.png
 docs/diagrams/png/moli-auth-flow.png
+docs/diagrams/png/moli-auth-layers.png
 docs/diagrams/png/moli-knowledge-sync.png
 ```
 

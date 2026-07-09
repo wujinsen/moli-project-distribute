@@ -43,6 +43,13 @@ provider/             UserServerProvider（Dubbo）
 
 ### 3.1 登录
 
+![登录与鉴权流程](../../../docs/diagrams/png/moli-auth-flow.png)
+
+> 可编辑源文件：[moli-auth-flow.drawio](../../../docs/diagrams/moli-auth-flow.drawio)
+
+<details>
+<summary>Mermaid 备查</summary>
+
 ```mermaid
 sequenceDiagram
     participant UI as 前端
@@ -58,6 +65,8 @@ sequenceDiagram
     LC->>LC: fillLoginContext（门户/菜单）
     LC-->>UI: token, user, permissions/menuVoList
 ```
+
+</details>
 
 ### 3.2 业务服务请求校验（Starter）
 

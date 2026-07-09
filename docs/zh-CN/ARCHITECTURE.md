@@ -9,12 +9,18 @@
 
 ## 1. 链路全景
 
-> **可视化架构图（draw.io，可编辑）**：[`docs/diagrams/`](../diagrams/README.md)  
-> - [容器架构图](../diagrams/moli-container-architecture.drawio)  
-> - [鉴权流程图](../diagrams/moli-auth-flow.drawio)  
-> - [网关路由图](../diagrams/moli-gateway-routes.drawio)  
-> - [本地部署拓扑](../diagrams/moli-deploy-topology.drawio)  
-> - [知识库同步双轨图](../diagrams/moli-knowledge-sync.drawio)
+> **可视化架构图（draw.io，可编辑）**：[`docs/diagrams/`](../diagrams/README.md)
+
+![全项目容器架构](../diagrams/png/moli-container-architecture.png)
+
+> 可编辑源文件：[moli-container-architecture.drawio](../diagrams/moli-container-architecture.drawio)
+
+![业务请求鉴权时序](../diagrams/png/moli-auth-flow.png)
+
+> 可编辑源文件：[moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio) · [网关路由](../diagrams/moli-gateway-routes.drawio) · [部署拓扑](../diagrams/moli-deploy-topology.drawio) · [知识库同步](../diagrams/moli-knowledge-sync.drawio)
+
+<details>
+<summary>ASCII 备查（链路简图）</summary>
 
 ```
 meiling-ui (浏览器)
@@ -32,7 +38,10 @@ user-center-server :8888       Dubbo Provider → 业务处理
 Redis（共享 Session/缓存）   /   MySQL（业务与权限数据）
 ```
 
-时序：
+</details>
+
+<details>
+<summary>Mermaid 备查（时序图）</summary>
 
 ```mermaid
 sequenceDiagram
@@ -52,6 +61,8 @@ sequenceDiagram
     A-->>GW: MoliResult<T>
     GW-->>UI: JSON
 ```
+
+</details>
 
 ---
 
@@ -160,6 +171,13 @@ public class UserServerProvider implements UserCenterServer {
 
 ## 4. 鉴权方式（分层）
 
+![鉴权分层](../diagrams/png/moli-auth-layers.png)
+
+> 可编辑源文件：[moli-auth-layers.drawio](../diagrams/moli-auth-layers.drawio) · 运行时流程见 [moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
+<details>
+<summary>Mermaid 备查（分层流程）</summary>
+
 ```mermaid
 flowchart TB
     L1[1. 网关层：限流 / CORS / 黑白名单]
@@ -170,6 +188,8 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
     L2 --> L5
 ```
+
+</details>
 
 | 层级 | 机制 | 实现 |
 |------|------|------|
@@ -206,6 +226,13 @@ flowchart TB
 
 **登录 / 登出 / SSO 只在 user-center-server 完成**，order/bi 仅校验 user-center 写入的共享 Session。
 
+![用户中心与跨服务 Session](../diagrams/png/moli-user-center-position.png)
+
+> 可编辑源文件：[moli-user-center-position.drawio](../diagrams/moli-user-center-position.drawio)
+
+<details>
+<summary>ASCII 备查（SSO 步骤）</summary>
+
 ```
 1. 前端 POST /UserCenter/login  →  网关  →  user-center-server LoginController
 2. Shiro UsernamePasswordToken  →  server/ShiroRealm（本地 DB 查用户 + 校验密码）
@@ -214,6 +241,8 @@ flowchart TB
 5. 网关  →  order-server  →  shiro-starter 从 Redis 还原 Session（不在业务服务登录）
 6. Dubbo getUserById / getPermissionsByUserId  →  user-center-server
 ```
+
+</details>
 
 各业务服务与 user-center **共用同一 Redis**，同一 sessionId 可在 user-center / order / bi 间通用。
 

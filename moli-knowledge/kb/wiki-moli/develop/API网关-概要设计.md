@@ -11,7 +11,7 @@ related:
   - 服务调用与架构
   - 技术方案与架构索引
 created: 2026-07-06
-updated: 2026-07-06
+updated: 2026-07-09
 ---
 
 > **浏览镜像**：工程契约权威仍在 `docs/design/gateway-design.md`；改设计请先改契约再重新运行本脚本或 Tab3 导入。
@@ -36,11 +36,12 @@ updated: 2026-07-06
 
 ## 2. 部署位置
 
+![部署拓扑](../../../../docs/diagrams/png/moli-deploy-topology.png)
 
-> **部署拓扑**：`docs/diagrams/png/moli-deploy-topology.png`（请在仓库中打开 PNG；源文件见同目录 `.drawio`）
+> 可编辑源文件：[moli-deploy-topology.drawio](../../../../docs/diagrams/moli-deploy-topology.drawio)
 
-
-> `docs/diagrams/moli-deploy-topology.drawio`
+<details>
+<summary>ASCII 备查</summary>
 
 ```
 Browser / k6
@@ -53,17 +54,17 @@ moli-gateway :21000
      └── /KnowledgeServer/** → knowledge-server :8090
 ```
 
+</details>
+
 **启动顺序**：业务服务注册 Nacos 后 **再启 gateway**，避免冷启动 503。
 
 ---
 
 ## 3. 路由设计
 
+![网关路由](../../../../docs/diagrams/png/moli-gateway-routes.png)
 
-> **网关路由**：`docs/diagrams/png/moli-gateway-routes.png`（请在仓库中打开 PNG；源文件见同目录 `.drawio`）
-
-
-> `docs/diagrams/moli-gateway-routes.drawio`
+> 可编辑源文件：[moli-gateway-routes.drawio](../../../../docs/diagrams/moli-gateway-routes.drawio)
 
 | 配置项 | 值 |
 |--------|-----|

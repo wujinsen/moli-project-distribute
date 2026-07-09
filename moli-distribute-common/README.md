@@ -17,6 +17,13 @@
 
 ## 依赖关系
 
+![全项目容器架构（common 被各服务依赖）](../docs/diagrams/png/moli-container-architecture.png)
+
+> 模块依赖简图见下；完整拓扑：[moli-container-architecture.drawio](../docs/diagrams/moli-container-architecture.drawio)
+
+<details>
+<summary>ASCII 备查</summary>
+
 ```
 moli-distribute-parent (BOM)
         │
@@ -27,6 +34,8 @@ moli-distribute-common  ◀── moli-gateway
         │                 ◀── moli-ai-server
         └─────────────────◀── moli-knowledge-server
 ```
+
+</details>
 
 ## 使用约定
 

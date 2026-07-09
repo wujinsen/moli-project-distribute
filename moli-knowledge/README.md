@@ -2,23 +2,31 @@
 
 茉莉的企业级知识库模块。采用 **AutoSci / LLM-Wiki 范式**（以 Karpathy「LLM-Wiki」为主、AutoSci 为辅），由两条轨道组成：
 
+![知识库双轨架构](../docs/diagrams/png/moli-kb-architecture.png)
+
+> 可编辑源文件：[moli-kb-architecture.drawio](../docs/diagrams/moli-kb-architecture.drawio) · 全链路见 [moli-kb-raw-pipeline.drawio](../docs/diagrams/moli-kb-raw-pipeline.drawio)
+
+<details>
+<summary>ASCII 备查</summary>
+
 ```
                  投喂源 / 提问 / 定方向
                           │
                           ▼
    ┌──────────────────────────────────────────┐
-   │  kb/   LLM-Wiki（大脑 · 单一知识源）        │   ← AI Agent 维护的 markdown 互链知识库
-   │  raw/ 原始源 → wiki/ 结构化页 + 交叉引用      │     编写 / 去重 / 提炼 / 体检都在这里
+   │  kb/   LLM-Wiki（大脑 · 单一知识源）        │
+   │  raw/ 原始源 → wiki/ 结构化页 + 交叉引用      │
    └──────────────────────────────────────────┘
-                          │  单向同步（规划中：kb → kb_document）
+                          │
                           ▼
    ┌──────────────────────────────────────────┐
-   │  moli-knowledge-server/  Java REST 后端     │   ← 下游只读门面 + 对外 Web API / 鉴权
-   │  Spring Boot + MyBatis-Plus + MySQL         │     接 Shiro/Dubbo，未来出 /kb/ask Query
+   │  moli-knowledge-server/  Java REST 后端     │
    └──────────────────────────────────────────┘
 
-   kb/tools/serve.py  轻量 Viewer（零依赖）        ← 浏览器里浏览 wiki + 试 Query，看效果用
+   kb/tools/serve.py  轻量 Viewer
 ```
+
+</details>
 
 **一句话分工**：知识在 `kb/`（markdown）里产生与保鲜；`moli-knowledge-server` 把它对外服务化；`viewer` 用来快速看效果。详见 [`kb/ROADMAP.md`](kb/ROADMAP.md)。
 

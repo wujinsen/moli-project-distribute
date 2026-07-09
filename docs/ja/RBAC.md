@@ -16,6 +16,13 @@
 
 **Apache Shiro** で認証・認可；Session と権限キャッシュは **Redis** に保存。
 
+![RBAC モデル](../diagrams/png/moli-rbac-model.png)
+
+> ソース：[moli-rbac-model.drawio](../diagrams/moli-rbac-model.drawio)
+
+<details>
+<summary>ASCII 備考</summary>
+
 ```
 ユーザー (SysUser) ──N:N──▶ ロール (SysRole) ──N:N──▶ メニュー (SysMenu)
                                                               │
@@ -24,6 +31,8 @@
      ▼ deptId
 部門 (SysDept)
 ```
+
+</details>
 
 ---
 
@@ -100,6 +109,10 @@ Shiro 認可有効化後、`@RequiresPermissions("sys:user:create")` で API 検
 
 ## 4. 認証フロー
 
+![ログイン・業務リクエスト認証](../diagrams/png/moli-auth-flow.png)
+
+> ソース：[moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
 ### ログイン — `POST /login`
 
 1. クライアントが `{userName, password}` を送信
@@ -133,9 +146,18 @@ Shiro 認可有効化後、`@RequiresPermissions("sys:user:create")` で API 検
 
 ### メニュー認可（実装済み）
 
+![メニュー認可クエリ](../diagrams/png/moli-rbac-menu-query.png)
+
+> ソース：[moli-rbac-menu-query.drawio](../diagrams/moli-rbac-menu-query.drawio)
+
+<details>
+<summary>ASCII 備考</summary>
+
 ```
 ユーザー ID → sys_user_role → sys_role_menu → sys_menu → MenuVo ツリー
 ```
+
+</details>
 
 - **スーパー管理者**：ユーザー名 `admin` は全メニュー取得
 - 実装：`MenuServiceImpl.selectMenuListByUserId()`
@@ -188,7 +210,14 @@ Shiro 認可有効化後、`@RequiresPermissions("sys:user:create")` で API 検
 
 ## 7. サービス間認証
 
-他サービスは **`moli-user-center-client`** を利用：
+![ユーザーセンターと共有 Session](../diagrams/png/moli-user-center-position.png)
+
+> ソース：[moli-user-center-position.drawio](../diagrams/moli-user-center-position.drawio)
+
+他サービスは **`moli-user-center-shiro-starter`** を利用：
+
+<details>
+<summary>ASCII 備考</summary>
 
 ```
 業務サービス                      ユーザーセンター
@@ -197,8 +226,10 @@ Shiro 認可有効化後、`@RequiresPermissions("sys:user:create")` で API 検
     │── Authorization ヘッダー ──────│  外部トラフィックはゲートウェイ経由
 ```
 
+</details>
+
 - **`ShiroConfig`**：`@DubboReference` で `UserCenterServer` を注入し、`ShiroRealm` へ setter で渡す
-- **`ShiroRealm`**：ログイン時 Dubbo でユーザー取得、ローカルでパスワード検証
+- **`ShiroRealm`（starter）**：user-center 発行 Session を復元；Dubbo で権限取得
 - 詳細は [アーキテクチャ / 呼び出し / 認証](ARCHITECTURE.md)
 
 ---

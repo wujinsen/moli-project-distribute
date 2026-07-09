@@ -9,6 +9,17 @@
 
 ## 1. リクエストの流れ
 
+![コンテナアーキテクチャ](../diagrams/png/moli-container-architecture.png)
+
+> ソース：[moli-container-architecture.drawio](../diagrams/moli-container-architecture.drawio)
+
+![認証・業務リクエスト](../diagrams/png/moli-auth-flow.png)
+
+> ソース：[moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
+<details>
+<summary>ASCII 備考</summary>
+
 ```
 meiling-ui (ブラウザ)
    │  HTTP + Header: Authorization=sessionId
@@ -19,11 +30,16 @@ moli-gateway :21000            Spring Cloud Gateway（ルーティング/限流/
 order-server / bi-server       Shiro authc がセッション検証（Redis 共有セッション）
    │  Dubbo RPC（version=1.0.0, group=moli）
    ▼
-user-center-server :1127       Dubbo Provider → 業務処理
+user-center-server :8888       Dubbo Provider → 業務処理
    │
    ▼
 Redis（共有セッション/キャッシュ）  /  MySQL（業務・権限データ）
 ```
+
+</details>
+
+<details>
+<summary>Mermaid 備考</summary>
 
 ```mermaid
 sequenceDiagram
@@ -43,6 +59,8 @@ sequenceDiagram
     A-->>GW: MoliResult<T>
     GW-->>UI: JSON
 ```
+
+</details>
 
 ---
 
@@ -123,6 +141,13 @@ public class ShiroConfig {
 
 ## 4. 認証（多層）
 
+![認証レイヤ](../diagrams/png/moli-auth-layers.png)
+
+> ソース：[moli-auth-layers.drawio](../diagrams/moli-auth-layers.drawio)
+
+<details>
+<summary>Mermaid 備考</summary>
+
 ```mermaid
 flowchart TB
     L1[1. ゲートウェイ：限流 / CORS / 許可拒否リスト]
@@ -133,6 +158,8 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
     L2 --> L5
 ```
+
+</details>
 
 | 層 | 仕組み | 実装 |
 |----|--------|------|

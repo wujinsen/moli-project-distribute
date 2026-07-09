@@ -10,6 +10,17 @@
 
 ## 1. Request Flow
 
+![Container architecture](../diagrams/png/moli-container-architecture.png)
+
+> Source: [moli-container-architecture.drawio](../diagrams/moli-container-architecture.drawio)
+
+![Auth and request flow](../diagrams/png/moli-auth-flow.png)
+
+> Source: [moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
+<details>
+<summary>ASCII backup</summary>
+
 ```
 meiling-ui (browser)
    │  HTTP + Header: Authorization=sessionId
@@ -20,11 +31,16 @@ moli-gateway :21000            Spring Cloud Gateway (routing / rate-limit / CORS
 order-server / bi-server       Shiro authc validates the session (shared Redis session)
    │  Dubbo RPC (version=1.0.0, group=moli)
    ▼
-user-center-server :1127       Dubbo Provider → business logic
+user-center-server :8888       Dubbo Provider → business logic
    │
    ▼
 Redis (shared session/cache)  /  MySQL (business & permission data)
 ```
+
+</details>
+
+<details>
+<summary>Mermaid backup (sequence)</summary>
 
 ```mermaid
 sequenceDiagram
@@ -44,6 +60,8 @@ sequenceDiagram
     A-->>GW: MoliResult<T>
     GW-->>UI: JSON
 ```
+
+</details>
 
 ---
 
@@ -133,6 +151,13 @@ public class ShiroConfig {
 
 ## 4. Authentication (layered)
 
+![Auth layers](../diagrams/png/moli-auth-layers.png)
+
+> Source: [moli-auth-layers.drawio](../diagrams/moli-auth-layers.drawio)
+
+<details>
+<summary>Mermaid backup</summary>
+
 ```mermaid
 flowchart TB
     L1[1. Gateway: rate-limit / CORS / allow-deny lists]
@@ -143,6 +168,8 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
     L2 --> L5
 ```
+
+</details>
 
 | Layer | Mechanism | Implementation |
 |-------|-----------|----------------|
