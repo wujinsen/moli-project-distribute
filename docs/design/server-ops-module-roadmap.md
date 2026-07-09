@@ -38,7 +38,7 @@
 | `OperationComponentController` | `/operation/component` | 同上 | `operation:component:*` |
 | `OperationProjectController` | `/operation/project` | 同上 | `operation:project:*` |
 
-均为 **Mapper 直连 CRUD**（无 Service 层），列表支持按名称 like + environment 过滤 + 分页。
+平台 / 服务器 / 组件 / 项目均为 **Service 层**（列表 enrichment、加解密、探活、关联维护）；列表支持按名称 like + environment 过滤 + 分页。
 
 ---
 
@@ -91,15 +91,23 @@
 | **SVR-8** | 只读查询 `deploy/linux/moli-service.sh status`；`POST .../{action}` 变更动作需 `ops.deploy.enabled=true` + `operation:deploy:exec` | ✅ 2026-07-09 |
 | **SVR-9** | 驾驶舱 ops 页 KPI 接 `GET /operation/stats` 真实台账计数 | ✅ 2026-07-09 |
 
+### 架构债收尾（2026-07-10）
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| **SVR-10** | 项目管理引入 `OperationProjectService`；列表/详情返回 `OperationProjectVo`（`portMatchStatus` / `deployRunning`）；保存时 `serverIp` → `serverId` 回填 | ✅ |
+| **SVR-11** | N:N 关联 CRUD：`GET/PUT /operation/server/{id}/links` 维护 `operation_server_project` / `operation_server_component` | ✅ |
+| **SVR-12** | 定时探活 + 部署状态同步：`OperationHealthProbeScheduler` + `POST /operation/health/probe-all`；配置 `ops.health.*`；迁移 `20_operation_project_deploy_columns.sql` | ✅ |
+
 ---
 
 ## 6. 表与权限增量（规划）
 
 | 类型 | 增量 |
 |------|------|
-| 字段 | `operation_server_info` / `operation_component_deploy_info` 增 `status`、`last_check_time`（SVR-4）—— 迁移 `docs/sql/18_operation_health_columns.sql` |
-| 权限 | 新增 `operation:secret:view`（SVR-3）；`operation:deploy:exec`（SVR-8 变更动作）；探测/拓扑/审计沿用 `*:list` |
-| 配置 | `ops.deploy.enabled`（默认 false）、`OPS_DEPLOY_ROOT`；迁移 `docs/sql/19_operation_deploy_exec.sql` |
+| 字段 | `operation_server_info` / `operation_component_deploy_info` 增 `status`、`last_check_time`（SVR-4）—— 迁移 `docs/sql/18_operation_health_columns.sql`；`operation_project_deploy_info` 增 `deploy_running`、`last_deploy_check_time`（SVR-12）—— 迁移 `docs/sql/20_operation_project_deploy_columns.sql` |
+| 权限 | 新增 `operation:secret:view`（SVR-3）；`operation:deploy:exec`（SVR-8 变更动作）；探测/拓扑/审计/关联/批量探活沿用 `*:list` 或 `server:edit` |
+| 配置 | `ops.deploy.enabled`（默认 false）、`OPS_DEPLOY_ROOT`；迁移 `docs/sql/19_operation_deploy_exec.sql`；`ops.health.probe-enabled` / `ops.health.probe-cron`（默认定时 15 分钟） |
 | 加密 | 复用 `KB_LLM_CONFIG_SECRET` 思路，建议独立 `OPS_SECRET_KEY`，避免跨域共享密钥 |
 
 ---

@@ -24,4 +24,8 @@ public class OperationProjectDeployInfo extends BaseEntity {
     @ApiModelProperty("开发环境: 1: dev 2:test 3:pre 4:pro")
     private Integer environment;
     private String remark;
+
+    @ApiModelProperty("部署进程是否运行（定时同步）")
+    private Boolean deployRunning;
+    private java.util.Date lastDeployCheckTime;
 }

@@ -9,6 +9,8 @@ import com.moli.user.center.common.domain.vo.OperationComponentVo;
 import com.moli.user.center.common.domain.vo.OperationPlatformVo;
 import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
+import com.moli.user.center.common.domain.vo.OperationProjectVo;
+import com.moli.user.center.common.domain.vo.OperationServerLinksVo;
 import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
@@ -17,11 +19,15 @@ import com.moli.user.center.common.domain.vo.OperationStatsVo;
 import com.moli.user.center.server.operation.controller.OperationAuditController;
 import com.moli.user.center.server.operation.controller.OperationComponentController;
 import com.moli.user.center.server.operation.controller.OperationDeployController;
+import com.moli.user.center.server.operation.controller.OperationHealthController;
 import com.moli.user.center.server.operation.controller.OperationPlatformController;
 import com.moli.user.center.server.operation.controller.OperationProjectController;
 import com.moli.user.center.server.operation.controller.OperationServerController;
 import com.moli.user.center.server.operation.controller.OperationStatsController;
-import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
+import com.moli.user.center.common.domain.vo.OperationHealthProbeResultVo;
+import com.moli.user.center.server.operation.service.OperationHealthProbeService;
+import com.moli.user.center.server.operation.service.OperationProjectService;
+import com.moli.user.center.server.operation.service.OperationServerLinkService;
 import com.moli.user.center.server.operation.service.OperationAuditService;
 import com.moli.user.center.server.operation.service.OperationComponentService;
 import com.moli.user.center.server.operation.service.OperationDeployService;
@@ -57,9 +63,13 @@ public class OperationControllersApiTest extends AbstractApiTest {
     private OperationStatsController statsController;
     @InjectMocks
     private OperationDeployController deployController;
+    @InjectMocks
+    private OperationHealthController healthController;
 
     @Mock
     private OperationServerService operationServerService;
+    @Mock
+    private OperationServerLinkService operationServerLinkService;
     @Mock
     private OperationPlatformService operationPlatformService;
     @Mock
@@ -71,7 +81,9 @@ public class OperationControllersApiTest extends AbstractApiTest {
     @Mock
     private OperationDeployService operationDeployService;
     @Mock
-    private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
+    private OperationProjectService operationProjectService;
+    @Mock
+    private OperationHealthProbeService operationHealthProbeService;
 
     @Test
     public void GET_operation_platform_list() {
@@ -152,6 +164,18 @@ public class OperationControllersApiTest extends AbstractApiTest {
     }
 
     @Test
+    public void GET_operation_server_links() {
+        when(operationServerLinkService.getLinks(1L)).thenReturn(new OperationServerLinksVo());
+        ControllerTestSupport.assertSuccess(serverController.links(1L));
+    }
+
+    @Test
+    public void PUT_operation_server_links() {
+        doNothing().when(operationServerLinkService).saveLinks(any(), any());
+        ControllerTestSupport.assertSuccess(serverController.saveLinks(1L, new OperationServerLinksVo()));
+    }
+
+    @Test
     public void DELETE_operation_server_ids() {
         doNothing().when(operationServerService).deleteByIds(any());
         ControllerTestSupport.assertSuccess(serverController.remove(new Long[]{1L}));
@@ -159,7 +183,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void GET_operation_project_list() {
-        ControllerTestSupport.stubEmptyPage(operationProjectDeployInfoMapper);
+        when(operationProjectService.list(any())).thenReturn(new PageRes<>());
         OperationProjectDeployInfo q = new OperationProjectDeployInfo();
         q.setPageNum(1);
         q.setPageSize(10);
@@ -168,19 +192,19 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_project_insert() {
-        ControllerTestSupport.stubInsert(operationProjectDeployInfoMapper);
+        doNothing().when(operationProjectService).create(any());
         ControllerTestSupport.assertSuccess(projectController.insert(new OperationProjectDeployInfo()));
     }
 
     @Test
     public void PUT_operation_project_update() {
-        ControllerTestSupport.stubUpdate(operationProjectDeployInfoMapper);
+        doNothing().when(operationProjectService).update(any());
         ControllerTestSupport.assertSuccess(projectController.update(new OperationProjectDeployInfo()));
     }
 
     @Test
     public void GET_operation_project_id() {
-        ControllerTestSupport.stubSelectById(operationProjectDeployInfoMapper, new OperationProjectDeployInfo());
+        when(operationProjectService.getById(1L)).thenReturn(new OperationProjectVo());
         ControllerTestSupport.assertSuccess(projectController.selectOne(1L));
     }
 
@@ -258,5 +282,11 @@ public class OperationControllersApiTest extends AbstractApiTest {
         vo.setRunning(true);
         when(operationDeployService.execute("user-center", "restart", null)).thenReturn(vo);
         ControllerTestSupport.assertSuccess(deployController.execute("user-center", "restart", null));
+    }
+
+    @Test
+    public void POST_operation_health_probe_all() {
+        when(operationHealthProbeService.probeAll()).thenReturn(new OperationHealthProbeResultVo());
+        ControllerTestSupport.assertSuccess(healthController.probeAll());
     }
 }

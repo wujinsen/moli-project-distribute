@@ -6,9 +6,11 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
+import com.moli.user.center.common.domain.vo.OperationServerLinksVo;
 import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.server.operation.service.OperationServerLinkService;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,6 +29,8 @@ public class OperationServerController {
 
     @Resource
     private OperationServerService operationServerService;
+    @Resource
+    private OperationServerLinkService operationServerLinkService;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
@@ -73,6 +77,22 @@ public class OperationServerController {
     @ApiOperation(value = "探测服务器健康", notes = "TCP 端口探活并更新 status")
     public MoliResult<OperationServerVo> checkHealth(@PathVariable Long id) {
         return MoliResult.success(operationServerService.checkHealth(id));
+    }
+
+    @GetMapping(value = "/{id}/links")
+    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
+    @ApiOperation(value = "服务器关联", notes = "查询 N:N 关联的项目与组件 ID")
+    public MoliResult<OperationServerLinksVo> links(@PathVariable Long id) {
+        return MoliResult.success(operationServerLinkService.getLinks(id));
+    }
+
+    @PutMapping(value = "/{id}/links")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_EDIT, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
+    @MoliLog(title = "保存服务器关联", businessType = BusinessTypeEnum.UPDATE)
+    @ApiOperation(value = "保存服务器关联", notes = "全量替换该服务器关联的项目与组件")
+    public MoliResult<Boolean> saveLinks(@PathVariable Long id, @RequestBody OperationServerLinksVo links) {
+        operationServerLinkService.saveLinks(id, links);
+        return MoliResult.success(Boolean.TRUE);
     }
 
     @DeleteMapping("/{ids}")

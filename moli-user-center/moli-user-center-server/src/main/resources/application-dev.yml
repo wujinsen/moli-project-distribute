@@ -64,3 +64,7 @@ minio:
 
 swagger:
   show: true
+
+ops:
+  secret:
+    key: your-local-dev-secret

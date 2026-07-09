@@ -18,8 +18,10 @@
 | **P2** | 端口矩阵校验 | `operation/project/index`、`operation/component/index` | ✅ SVR-7 | **S3** 端口校验弹窗 + 组件列 badge |
 | **P2** | 部署进程状态 | `operation/project/index` | ✅ SVR-8 | **S4** 进程状态（只读） |
 | **P2** | 驾驶舱 ops KPI | `CandlelightDragon/cockpit/index`（tab=ops） | ✅ SVR-9 | **S5** 合并 `/operation/stats` |
+| **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-10 | **S6** 拓扑弹窗内编辑关联 |
+| **P2** | 批量探活 / 部署同步 | 驾驶舱或服务器页 | ✅ SVR-11 | **S7** 手动触发 `probe-all`（可选） |
 
-**建议迭代顺序**：**S0 → S1/S2 → S3 → S4 → S5**
+**建议迭代顺序**：**S0 → S1/S2 → S3 → S4 → S5 → S6**
 
 **网关 / 联调前缀**：
 
@@ -50,7 +52,7 @@
 | `operation:secret:view` | `GET .../secret` 查看平台/组件密码明文 |
 | `operation:deploy:exec` | `POST /operation/deploy/{key}/{action}` 执行 start/stop/restart |
 
-迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`、`18_operation_health_columns.sql`、`19_operation_deploy_exec.sql`。
+迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`、`18_operation_health_columns.sql`、`19_operation_deploy_exec.sql`、`20_operation_project_deploy_columns.sql`。
 
 ---
 
@@ -224,8 +226,32 @@ export type OperationTopologyComponent = {
 |----|-----|
 | **S2-1** | 服务器行操作「拓扑」→ 弹窗展示 `server` 摘要 + 关联 `projects` / `components` 列表 |
 | **S2-2** | 组件行可带 `HealthStatusBadge`（与列表一致） |
+| **S2-3** | （可选升级 **S6**）弹窗内「编辑关联」→ 调 `GET/PUT .../links` |
 
 **种子数据 smoke**：`GET /operation/server/201/topology` 应含项目 401/406、组件 306/307/304（以库内 seed 为准）。
+
+### 5.4 N:N 关联维护（S6）
+
+```http
+GET /operation/server/{id}/links
+PUT /operation/server/{id}/links
+```
+
+**请求/响应 `OperationServerLinksVo`**：
+
+```typescript
+export type OperationServerLinks = {
+  serverId?: number | string
+  projectIds?: (number | string)[]
+  componentIds?: (number | string)[]
+}
+```
+
+| ID | UI |
+|----|-----|
+| **S6-1** | 拓扑弹窗增加「编辑关联」；多选项目/组件 ID（或名称搜索后勾选） |
+| **S6-2** | `PUT` 为**全量替换**；保存成功后刷新拓扑 |
+| **S6-3** | 无效 ID 后端返回业务错误（项目/组件不存在） |
 
 ---
 
@@ -269,7 +295,7 @@ export type OperationPortAuditItem = {
 |----|-----|
 | **S3-1** | 项目/组件页工具栏「端口校验」→ 弹窗：顶部汇总 + 矩阵表 + 明细表 |
 | **S3-2** | 组件列表可直接用行内 `portMatchStatus` / `expectedPort`（`GET list` 已 enrichment） |
-| **S3-3** | `portMatchStatus === 2` 高亮；项目列表暂无行内字段，以弹窗为准 |
+| **S3-3** | 项目列表同样返回 `portMatchStatus` / `expectedPort`（`OperationProjectVo`）；`portMatchStatus === 2` 高亮 |
 
 ### 6.2 部署进程状态（S4，只读默认）
 
@@ -303,7 +329,7 @@ export type OperationDeployStatus = {
 
 | ID | UI |
 |----|-----|
-| **S4-1** | 可映射的项目行显示「进程状态」；调 `GET .../status` |
+| **S4-1** | 可映射的项目行显示「进程状态」；优先读列表 VO 的 `deployRunning` / `lastDeployCheckTime`（定时同步）；也可手动调 `GET .../status` |
 | **S4-2** | `available === false` 时展示 `message`（Windows 开发机 / 脚本不存在等） |
 | **S4-3** | **默认不做** start/stop/restart 按钮；若做需 `operation:deploy:exec` + 二次确认 |
 
@@ -411,6 +437,34 @@ export const getOperationStatsApi = () =>
 
 export const getDeployStatusApi = (serviceKey: string) =>
   request<OperationDeployStatus>(`${OP}/deploy/${serviceKey}/status`, { method: 'GET' })
+
+export const getServerLinksApi = (id: number | string) =>
+  request<OperationServerLinks>(`${OP}/server/${id}/links`, { method: 'GET' })
+
+export const saveServerLinksApi = (id: number | string, body: OperationServerLinks) =>
+  request<boolean>(`${OP}/server/${id}/links`, { method: 'PUT', data: body })
+
+export const probeAllHealthApi = () =>
+  request<OperationHealthProbeResult>(`${OP}/health/probe-all`, { method: 'POST' })
+```
+
+`OperationProject` 列表 VO 补充字段：
+
+```typescript
+export type OperationProject = {
+  // ...原有字段
+  expectedPort?: string | null
+  portMatchStatus?: 0 | 1 | 2 | 3 | null
+  deployRunning?: boolean | null
+  lastDeployCheckTime?: string | number | null
+}
+
+export type OperationHealthProbeResult = {
+  serversProbed: number
+  componentsProbed: number
+  deployStatusesSynced: number
+  serverIdsSynced: number
+}
 ```
 
 ---
@@ -420,7 +474,7 @@ export const getDeployStatusApi = (serviceKey: string) =>
 | 步骤 | 检查 |
 |------|------|
 | 1 | user-center 启动（`:8888`），`OPS_SECRET_KEY` 已配置（P0 加密） |
-| 2 | DB 已执行 `17_*`、`18_*`；需要部署按钮权限时执行 `19_*` |
+| 2 | DB 已执行 `17_*`～`20_*`；需要部署按钮权限时执行 `19_*` |
 | 3 | meiling-ui proxy `/operation` → `8888`；登录角色含 `operation:*:list` |
 | 4 | 平台/组件：列表只见 mask；reveal 需 `operation:secret:view` |
 | 5 | 服务器/组件：探测后 `status` / `lastCheckTime` 更新 |
@@ -440,6 +494,7 @@ export const getDeployStatusApi = (serviceKey: string) =>
 | S3 | 端口 | 弹窗汇总与明细正确；组件列 badge 与 audit 一致 |
 | S4 | 部署 | status 只读可查；不可用时 message 可读 |
 | S5 | 驾驶舱 | ops KPI 使用真实 stats，非纯 Mock |
+| S6 | 关联 | links GET/PUT 可维护拓扑；保存后拓扑刷新 |
 
 ---
 

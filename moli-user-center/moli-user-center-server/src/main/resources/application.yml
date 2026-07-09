@@ -27,6 +27,9 @@ sso:
 ops:
   secret:
     key: ${OPS_SECRET_KEY:}
+  health:
+    probe-enabled: ${OPS_HEALTH_PROBE_ENABLED:true}
+    probe-cron: ${OPS_HEALTH_PROBE_CRON:0 0/15 * * * ?}
   deploy:
     enabled: ${OPS_DEPLOY_ENABLED:false}
     deploy-root: ${OPS_DEPLOY_ROOT:/opt/moli-project-distribute}

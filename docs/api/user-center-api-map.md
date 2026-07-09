@@ -156,7 +156,7 @@
 - `GET /operation/platform/{id}`：`operation:platform:list`；返回 VO
 - `GET /operation/platform/{id}/secret`：`operation:secret:view`；返回 `{ password }` 明文（记审计日志）
 
-### 服务器管理 `OperationServerController`（前缀 `/operation/server`，7个）
+### 服务器管理 `OperationServerController`（前缀 `/operation/server`，9个）
 
 - `GET /operation/server/list`：`operation:server:list`；返回 `OperationServerVo`（含 `status` / `lastCheckTime`）
 - `POST /operation/server`：`operation:server:add` + `list`
@@ -165,14 +165,16 @@
 - `DELETE /operation/server/{ids}`：`operation:server:remove` + `list`
 - `GET /operation/server/{id}/topology`：`operation:server:list`；返回 `OperationServerTopologyVo`（server + projects + components）
 - `POST /operation/server/{id}/check`：`operation:server:list`；TCP 探活，更新并返回 `OperationServerVo`
+- `GET /operation/server/{id}/links`：`operation:server:list`；返回 `OperationServerLinksVo`（`projectIds` / `componentIds`）
+- `PUT /operation/server/{id}/links`：`operation:server:edit` + `list`；全量替换 N:N 关联
 
 ### 项目管理 `OperationProjectController`（前缀 `/operation/project`，5个）
 
-- `GET /operation/project/list`
-- `POST /operation/project`
-- `PUT /operation/project`
-- `GET /operation/project/{id}`
-- `DELETE /operation/project/{ids}`
+- `GET /operation/project/list`：`operation:project:list`；返回 `OperationProjectVo`（含 `expectedPort` / `portMatchStatus` / `deployRunning`）
+- `POST /operation/project`：`operation:project:add` + `list`；保存时按 `serverIp` 自动回填 `serverId`
+- `PUT /operation/project`：`operation:project:edit` + `list`
+- `GET /operation/project/{id}`：`operation:project:list`；返回 VO
+- `DELETE /operation/project/{ids}`：`operation:project:remove` + `list`
 
 ### 组件管理 `OperationComponentController`（前缀 `/operation/component`，7个）
 
@@ -198,6 +200,10 @@
 
 - `GET /operation/deploy/{serviceKey}/status`：`operation:server:list`；只读调用 `moli-service.sh status`（user-center/gateway/knowledge）
 - `POST /operation/deploy/{serviceKey}/{action}`：`operation:deploy:exec` + `operation:server:list`；`status`/`logs` 只读；`start`/`stop`/`restart` 需 `ops.deploy.enabled=true`
+
+### 运维健康 `OperationHealthController`（前缀 `/operation/health`，1个）
+
+- `POST /operation/health/probe-all`：`operation:server:list`；批量 TCP 探活 + 项目 `serverId` 回填 + 可映射项目的 `deployRunning` 同步；定时任务默认每 15 分钟（`ops.health.probe-enabled` / `ops.health.probe-cron`）
 
 ## 5. 当前可见接口风险（用于迭代排期）
 

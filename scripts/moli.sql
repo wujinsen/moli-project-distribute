@@ -101,6 +101,8 @@ CREATE TABLE `operation_project_deploy_info`  (
   `port` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '端口',
   `environment` int NULL DEFAULT NULL COMMENT '环境',
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `deploy_running` tinyint(1) NULL DEFAULT NULL COMMENT '部署进程是否运行（定时同步）',
+  `last_deploy_check_time` datetime NULL DEFAULT NULL COMMENT '最近部署状态同步时间',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_operation_project_deploy_server_id`(`server_id` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '项目部署信息' ROW_FORMAT = Dynamic;
