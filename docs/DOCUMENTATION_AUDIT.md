@@ -4,23 +4,6 @@
 > **范围**：PRD / 设计 / API / 测试 / 运维 / SQL / 模块 README / wiki 成品 / 架构图  
 > **约定**：[`README.md`](README.md) · [`AGENTS.md`](../AGENTS.md) · [`docs/diagrams/README.md`](diagrams/README.md)
 
-## draw.io 主图巡检（2026-07-09）
-
-**规则**（[`AGENTS.md`](../AGENTS.md) §3）：架构 / 调用链 / ER / 业务流程 → **PNG 主图 + `.drawio` 链接**；ASCII / Mermaid 仅放 `<details>` 备查。
-
-| 文档 | 状态 | 主图 |
-|------|------|------|
-| `docs/zh-CN/RBAC.md`（及 en/ja） | ✅ | rbac-model · auth-flow · rbac-menu-query · user-center-position |
-| `docs/zh-CN/ARCHITECTURE.md`（及 en/ja） | ✅ | container-architecture · auth-flow · auth-layers · gateway-routes · seckill · deploy-topology |
-| `docs/design/user-center-detailed-design.md` | ✅ | auth-flow（§3.1 登录） |
-| `moli-knowledge/README.md` | ✅ | kb-architecture |
-| `moli-distribute-common/README.md` | ✅ | container-architecture（依赖简图备查） |
-| `wiki-moli/develop/*概要设计` | 🔄 | 网关/用户中心/订单/知识库/LLM/导入等 → 见子 agent 批次 |
-| `docs/design/user-center-detailed-design.md` §1 分层 | 🔵 | 目录树 ASCII，非架构主图，保留 |
-| `docs/api/KNOWLEDGE_API.md` | 🔵 | 已有 category-flow PNG；其余为 JSON 示例非主图 |
-
-**仍可选**：`wiki-moli/develop/BI模块-概要设计.md` 等少量 ASCII 简图；`docs/design/archive/` 历史稿不强制。
-
 ## 总览
 
 | 维度 | 状态 | 说明 |
@@ -54,6 +37,7 @@
 | 项 | 动作 |
 |----|------|
 | draw.io 主图 | RBAC / ARCHITECTURE（三语）/ user-center 详设 / knowledge README / common README |
+| wiki-moli develop | 网关·用户中心·订单秒杀·知识库模块·LLM·双入口导入·三操作·ES 同步 — PNG 嵌入 + ASCII/Mermaid → `<details>` |
 | 新增图 | `moli-rbac-menu-query.drawio` · `moli-auth-layers.drawio` |
 | 巡检页 | 本文件 §draw.io 主图巡检 |
 
@@ -76,6 +60,49 @@
 | raw/design 外部稿 | 有评审 PDF 时再投喂 |
 | Meilisearch 生产接入 | 规划已入库，代码 v2+ |
 | `docs/design/archive/` | 历史稿保留备查，非冗余 |
+
+## draw.io 主图巡检 (2026-07-09)
+
+**规则**：架构 / 部署 / 调用链 / ER / 业务流程类图 → **PNG 主展示** + 链到 `.drawio` 源文件；ASCII / Mermaid **仅**放在 `<details>` 备查。相对路径从各 Markdown 文件指向 `docs/diagrams/png/`。
+
+### 本轮已完成（wiki-moli develop）
+
+| 文件 | draw.io 图 |
+|------|------------|
+| `kb/wiki-moli/develop/API网关-概要设计.md` | `moli-deploy-topology` · `moli-gateway-routes` |
+| `kb/wiki-moli/develop/用户中心-概要设计.md` | `moli-user-center-position` · `moli-rbac-model` · `moli-deploy-topology` |
+| `kb/wiki-moli/develop/订单秒杀-概要设计.md` | `moli-seckill-flow` |
+| `kb/wiki-moli/develop/知识库LLM平台设置.md` | `moli-kb-llm-settings-flow` |
+| `kb/wiki-moli/develop/知识库双入口导入设计.md` | `moli-kb-import-entry` · `moli-kb-import-entry-api`（并修复 §1.3 / §4.4 表格损坏） |
+| `kb/wiki-moli/develop/kb-wiki到es同步流水线.md` | `moli-kb-meilisearch` |
+| `kb/wiki-moli/develop/知识库三操作.md` | `moli-kb-functional-flows` |
+| `kb/wiki-moli/develop/知识库模块-概要设计.md` | §2 `moli-kb-architecture` · `moli-kb-raw-pipeline`；§5 `moli-knowledge-sync`（修正 `../../../../docs/` 路径） |
+
+### 本轮已完成（docs · 并行批次）
+
+| 文件 | 说明 |
+|------|------|
+| `docs/zh-CN/ARCHITECTURE.md` · `docs/en/ARCHITECTURE.md` · `docs/ja/ARCHITECTURE.md` | 容器 / 鉴权 / 网关 / 秒杀 / 用户中心 / 部署 PNG；Mermaid → `<details>` |
+| `docs/zh-CN/RBAC.md` · `docs/en/RBAC.md` · `docs/ja/RBAC.md` | RBAC / 菜单查询 / 用户中心 PNG |
+| `docs/design/user-center-detailed-design.md` | §3.1 登录 → `moli-auth-flow` PNG |
+
+### 仍待迁移（主图缺口）
+
+| 区域 | 文件 | 问题 | 建议 PNG |
+|------|------|------|----------|
+| `docs/design/` | `gateway-design.md` · `order-seckill-design.md` · `user-center-overview.md` | §2/§3 ASCII 仍作主图 | 已有对应 PNG |
+| `docs/design/` | `knowledge-module-overview.md` · `kb-import-entry-design.md` · `kb-llm-platform-settings.md` | PNG 已嵌但 ASCII 未收进 `<details>` | 同上 |
+| `docs/design/` | `bi-module-overview.md` · `kb-ops-roadmap.md` 等 | 部分仍 ASCII / 纯文本图引用 | 按需补 draw.io |
+| `wiki-moli/develop/` | `BI模块-概要设计.md` · `技术方案与架构索引.md` · `知识库-meilisearch接入规划.md` · `Wiki治理工作台产品方案.md` | 仍为「请在仓库打开 PNG」文本占位 | 各页对应 PNG 已存在 |
+| `wiki-moli/develop/` | `用户中心-详细设计.md` | §3.1 Mermaid 作主图 | `moli-auth-flow` |
+| `wiki-moli/develop/` | `bi服务.md` | §架构 Mermaid 作主图 | `moli-container-architecture` 或新建 BI 定位图 |
+| `wiki-moli/develop/outputs/` | `茉莉微服务全链路一张图.md` · `秒杀全链路与压测要点汇总.md` · `茉莉登录与鉴权故障根因汇总.md` | Mermaid 作主图 | 已有全链路 / 秒杀 / 鉴权 PNG |
+| `wiki-moli/guides/` | `查询与体检指南.md` §5 | Mermaid 工作流作主图 | `moli-kb-functional-flows` 或新建 |
+| `moli-*/README.md` | `moli-knowledge` · `moli-user-center` · `moli-order` 等 | 箭头字符在正文（多为列表非主图） | 低优先级，按需 |
+
+**PNG 清单**：`docs/diagrams/png/` 共 22 张（含 `moli-kb-meilisearch` · `moli-kb-functional-flows`）；源文件见 [`docs/diagrams/README.md`](diagrams/README.md)。
+
+---
 
 ## 维护节奏
 

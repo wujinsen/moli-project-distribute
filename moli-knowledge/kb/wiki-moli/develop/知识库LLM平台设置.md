@@ -11,7 +11,7 @@ related:
   - 知识库服务
   - 技术方案与架构索引
 created: 2026-07-06
-updated: 2026-07-06
+updated: 2026-07-09
 ---
 
 > **浏览镜像**：工程契约权威仍在 `docs/design/kb-llm-platform-settings.md`；改设计请先改契约再重新运行本脚本或 Tab3 导入。
@@ -59,6 +59,13 @@ updated: 2026-07-06
 
 ## 2. 架构决策：放企业知识库，不放 moli-ai
 
+![知识库 LLM 平台配置流程](../../../../docs/diagrams/png/moli-kb-llm-settings-flow.png)
+
+> 可编辑源文件：[moli-kb-llm-settings-flow.drawio](../../../../docs/diagrams/moli-kb-llm-settings-flow.drawio)
+
+<details>
+<summary>ASCII 备查</summary>
+
 ```
 meiling-ui  系统管理 → 知识库 LLM
        │  GET/PUT /kb/platform/llm-config
@@ -74,6 +81,8 @@ moli-knowledge-server :8090
        ▼
 OpenAI 兼容 API（DeepSeek / Qwen / GLM …）
 ```
+
+</details>
 
 **理由**：
 
@@ -298,11 +307,9 @@ kbAclService.assertPlatformLlmManage();
 
 ## 8. 流程图
 
+![知识库 LLM 平台配置流程](../../../../docs/diagrams/png/moli-kb-llm-settings-flow.png)
 
-> **知识库 LLM 平台配置流程**：`docs/diagrams/png/moli-kb-llm-settings-flow.png`（请在仓库中打开 PNG；源文件见同目录 `.drawio`）
-
-
-源文件：`docs/diagrams/moli-kb-llm-settings-flow.drawio`
+> 可编辑源文件：[moli-kb-llm-settings-flow.drawio](../../../../docs/diagrams/moli-kb-llm-settings-flow.drawio)
 
 ---
 

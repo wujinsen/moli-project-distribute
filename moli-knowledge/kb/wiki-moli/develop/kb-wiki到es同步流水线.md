@@ -8,7 +8,7 @@ sources:
   - wiki/guides/wiki同步指南.md
 related: [wiki同步指南, 知识库-meilisearch接入规划, 知识库设计哲学-docs-as-code, 知识库服务]
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-09
 ---
 
 # Wiki 到 ES 同步流水线
@@ -19,12 +19,21 @@ updated: 2026-06-21
 
 ## 1. 目标架构
 
+![Meilisearch 接入规划](../../../../docs/diagrams/png/moli-kb-meilisearch.png)
+
+> 可编辑源文件：[moli-kb-meilisearch.drawio](../../../../docs/diagrams/moli-kb-meilisearch.drawio)
+
+<details>
+<summary>ASCII 备查</summary>
+
 ```
 wiki/*.md ──sync_to_db.py──▶ MySQL kb_document
          ──(规划) indexer──▶ Elasticsearch kb_index
                 ▲
          Canal / 定时 job / ingest 钩子
 ```
+
+</details>
 
 ## 2. 索引文档模型
 
