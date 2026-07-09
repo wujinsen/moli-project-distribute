@@ -20,7 +20,8 @@ updated: 2026-06-20
 
 | 文档 | 说明 |
 |------|------|
-| `README.zh-CN.md` | 中文入口 |
+| `README.md` | 中文入口（默认） |
+| `README.zh-CN.md` | 中文别名（同 README.md） |
 | `README.en.md` | English |
 | `README.ja.md` | 日本語 |
 | `docs/README.md` | 五类文档总导航 |

@@ -1,6 +1,8 @@
 # 茉莉项目微服务（moli-project-distribute）
 
-**Languages / 语言 / 言語**: [中文](README.zh-CN.md) | [English](README.en.md) | [日本語](README.ja.md)
+**Languages / 语言 / 言語**: **中文** | [English](README.en.md) | [日本語](README.ja.md)
+
+> 仓库首页 [`README.md`](README.md) 默认显示本文档（中文完整版）。
 
 [![Java](https://img.shields.io/badge/Java-1.8-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.3.12-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -233,6 +235,7 @@ http://localhost:21000/KnowledgeServer/...
 
 ## 相关文档
 
+- **文档语言**：与 [`README.md`](README.md) 相同；首页默认显示中文。
 - [文档总览（PRD / 方案 / API / 测试 / 运维）](docs/README.md)
 - **[v1.0 发布范围](docs/product/moli-v1-release-scope.md)**
 - [架构 / 调用 / 鉴权设计](docs/zh-CN/ARCHITECTURE.md)

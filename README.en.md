@@ -1,6 +1,6 @@
 # Moli Microservices (moli-project-distribute)
 
-**Languages / 语言 / 言語**: [中文](README.zh-CN.md) | [English](README.en.md) | [日本語](README.ja.md)
+**Languages / 语言 / 言語**: [中文](README.md) | [English](README.en.md) | [日本語](README.ja.md)
 
 [![Java](https://img.shields.io/badge/Java-1.8-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.3.12-brightgreen.svg)](https://spring.io/projects/spring-boot)

@@ -41,3 +41,7 @@ Thumbs.db
 **/conf/moli-*.env
 !deploy/application-pro/*.yml.example
 !deploy/linux/*.env.example
+
+# Certify サーティファイ 考试语料（本地维护，不推送 GitHub）
+moli-knowledge/kb/raw/school/certify/
+moli-knowledge/kb/wiki-jp-exam/certify/

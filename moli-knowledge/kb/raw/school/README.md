@@ -11,6 +11,10 @@
 | **`school/ap/`** | 応用情報技術者（AP）语料（暂无文件时先建目录） | `wiki-jp-exam/ap/` 等 |
 | **`school/certify/`** | Certify（サーティファイ）IT 基础 Moodle 模拟题、中文解析、片假名词汇 | **`wiki-jp-exam/certify/`** |
 
+### Certify 中文解析流水线（本地语料，不入 GitHub）
+
+语料目录 `school/certify/` 与成品 `wiki-jp-exam/certify/` 已加入根目录 `.gitignore`，仅在本地维护。流水线见本地 wiki `Certifyサーティファイ` §中文题干维护。
+
 ## 命名建议
 
 - 科目 B 样题：`fe_kamoku_b_set_sample_qs.md` / `_ans.md`
