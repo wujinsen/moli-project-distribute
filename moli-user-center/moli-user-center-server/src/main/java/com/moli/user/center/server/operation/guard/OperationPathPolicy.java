@@ -63,15 +63,18 @@ public final class OperationPathPolicy {
                                                    OperationUploadProperties uploadProperties) {
         Set<String> roots = new LinkedHashSet<>();
         if (uploadProperties != null) {
-            uploadProperties.getAllowedPaths().stream()
-                    .map(String::trim)
-                    .filter(StringUtils::isNotBlank)
-                    .forEach(roots::add);
-            uploadProperties.getAllowAnyUnder().stream()
-                    .map(String::trim)
-                    .filter(StringUtils::isNotBlank)
-                    .map(p -> p.endsWith("/") ? p : p + "/")
-                    .forEach(roots::add);
+            for (String path : safeList(uploadProperties.getAllowedPaths())) {
+                String trimmed = path.trim();
+                if (StringUtils.isNotBlank(trimmed)) {
+                    roots.add(trimmed);
+                }
+            }
+            for (String path : safeList(uploadProperties.getAllowAnyUnder())) {
+                String trimmed = path.trim();
+                if (StringUtils.isNotBlank(trimmed)) {
+                    roots.add(trimmed.endsWith("/") ? trimmed : trimmed + "/");
+                }
+            }
         }
         if (server != null && StringUtils.isNotBlank(server.getUploadAllowedRoots())) {
             for (String part : server.getUploadAllowedRoots().split("[,;\\n]")) {
@@ -82,6 +85,10 @@ public final class OperationPathPolicy {
             }
         }
         return new ArrayList<>(roots);
+    }
+
+    private static List<String> safeList(List<String> list) {
+        return list == null ? java.util.Collections.emptyList() : list;
     }
 
     public static List<String> pathPresets(OperationServerInfo server,

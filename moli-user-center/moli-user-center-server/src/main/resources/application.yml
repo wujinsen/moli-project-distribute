@@ -54,6 +54,7 @@ ops:
     temp-dir: ${OPS_UPLOAD_TEMP_DIR:}
     max-bytes: ${OPS_UPLOAD_MAX_BYTES:209715200}
     allowed-paths: ${OPS_UPLOAD_ALLOWED_PATHS:/opt/moli/frontend/,/opt/moli-project-distribute/}
+    allow-any-under: ${OPS_UPLOAD_ALLOW_ANY_UNDER:/opt/,/home/ubuntu/}
   command:
     enabled: ${OPS_COMMAND_ENABLED:false}
     max-chars: ${OPS_COMMAND_MAX_CHARS:8192}

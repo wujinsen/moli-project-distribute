@@ -31,4 +31,12 @@ public class OperationUploadProperties {
 
     /** 更宽但仍受限的根目录（路径须在其下），如 /opt,/home/ubuntu */
     private List<String> allowAnyUnder = new ArrayList<>(Arrays.asList("/opt/", "/home/ubuntu/"));
+
+    public void setAllowedPaths(List<String> allowedPaths) {
+        this.allowedPaths = allowedPaths == null ? new ArrayList<>() : allowedPaths;
+    }
+
+    public void setAllowAnyUnder(List<String> allowAnyUnder) {
+        this.allowAnyUnder = allowAnyUnder == null ? new ArrayList<>() : allowAnyUnder;
+    }
 }
