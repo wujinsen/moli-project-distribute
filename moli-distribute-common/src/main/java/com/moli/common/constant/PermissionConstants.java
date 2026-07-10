@@ -71,6 +71,10 @@ public final class PermissionConstants {
     public static final String OPERATION_SECRET_VIEW = "operation:secret:view";
     /** 执行部署脚本 start/stop/restart（status/logs 仅需 list） */
     public static final String OPERATION_DEPLOY_EXEC = "operation:deploy:exec";
+    /** 管理服务器 SSH 凭据（上传私钥/密码、测试连接）（SVR-13） */
+    public static final String OPERATION_SSH_MANAGE = "operation:ssh:manage";
+    /** 通过系统上传文件到远程服务器并执行后置动作（SVR-16） */
+    public static final String OPERATION_FILE_UPLOAD = "operation:file:upload";
 
     /** 企业知识库 · 空间管理（C 菜单 perms） */
     public static final String KB_SPACE_ADMIN = "kb:space:admin";

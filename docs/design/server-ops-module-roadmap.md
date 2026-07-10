@@ -99,15 +99,25 @@
 | **SVR-11** | N:N 关联 CRUD：`GET/PUT /operation/server/{id}/links` 维护 `operation_server_project` / `operation_server_component` | ✅ |
 | **SVR-12** | 定时探活 + 部署状态同步：`OperationHealthProbeScheduler` + `POST /operation/health/probe-all`；配置 `ops.health.*`；迁移 `20_operation_project_deploy_columns.sql` | ✅ |
 
+### P3 —— 远程部署自动化（SVR-13 ~ SVR-16，2026-07-11）
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| **SVR-13** | 服务器 SSH 凭据：JSch、`PUT /operation/server/{id}/ssh`、`POST .../ssh/test`；AES-GCM 只写不读；内网 IP 优先 | ✅ |
+| **SVR-14** | 异步任务：`operation_task` 表、`GET /operation/task/{id}` 轮询进度/增量日志、`GET /operation/task/list` | ✅ |
+| **SVR-15** | 远程启停：`POST /operation/deploy/{key}/{action}/task?serverId=`；SSH 执行 `moli-service.sh`；脚本自动就位 | ✅ |
+| **SVR-16** | 文件发布：`POST /operation/file/upload`；SFTP 进度；路径白名单 + `postAction` 枚举（nginxReload/unzipToDist/restartService） | ✅ |
+| **SVR-17** | 前端部署中心 + 服务器 SSH 配置弹窗（meiling-ui `DeployCenterView`） | ✅ |
+
 ---
 
 ## 6. 表与权限增量（规划）
 
 | 类型 | 增量 |
 |------|------|
-| 字段 | `operation_server_info` / `operation_component_deploy_info` 增 `status`、`last_check_time`（SVR-4）—— 迁移 `docs/sql/18_operation_health_columns.sql`；`operation_project_deploy_info` 增 `deploy_running`、`last_deploy_check_time`（SVR-12）—— 迁移 `docs/sql/20_operation_project_deploy_columns.sql` |
-| 权限 | 新增 `operation:secret:view`（SVR-3）；`operation:deploy:exec`（SVR-8 变更动作）；探测/拓扑/审计/关联/批量探活沿用 `*:list` 或 `server:edit` |
-| 配置 | `ops.deploy.enabled`（默认 false）、`OPS_DEPLOY_ROOT`；迁移 `docs/sql/19_operation_deploy_exec.sql`；`ops.health.probe-enabled` / `ops.health.probe-cron`（默认定时 15 分钟） |
+| 字段 | `operation_server_info` / `operation_component_deploy_info` 增 `status`、`last_check_time`（SVR-4）—— 迁移 `docs/sql/18_operation_health_columns.sql`；`operation_project_deploy_info` 增 `deploy_running`、`last_deploy_check_time`（SVR-12）—— 迁移 `docs/sql/20_operation_project_deploy_columns.sql`；**SVR-13~16** SSH 字段 + `operation_task` 表 —— 迁移 `docs/sql/21_operation_ssh_deploy.sql` |
+| 权限 | 新增 `operation:secret:view`（SVR-3）；`operation:deploy:exec`（SVR-8）；**`operation:ssh:manage`**（SVR-13）；**`operation:file:upload`**（SVR-16）；菜单 **部署中心** id=405 |
+| 配置 | `ops.deploy.enabled`（默认 false）、`OPS_DEPLOY_ROOT`；迁移 `docs/sql/19_operation_deploy_exec.sql`；`ops.health.probe-enabled` / `ops.health.probe-cron`（默认定时 15 分钟）；**`ops.upload.enabled`**（默认 false）、`ops.upload.allowed-paths`；**`OPS_SECRET_KEY`**（SSH/凭据加解密） |
 | 加密 | 复用 `KB_LLM_CONFIG_SECRET` 思路，建议独立 `OPS_SECRET_KEY`，避免跨域共享密钥 |
 
 ---

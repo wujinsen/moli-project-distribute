@@ -41,4 +41,4 @@
 
 ## [2026-07-10] maintenance | lint-strict 收口 → 删除 T20/E2E 验收页（guides/x、guides/t20f-wiki-144730、wiki/database/e2e-import）；index 运维链修正；fix_moli_orphans 无 orphan 时跳过
 
-## [2026-07-11] enrich | 腾讯云上线流程 → 默认系统用户 ubuntu（替代自建 moli 用户）；区分 OS ubuntu 与 MySQL moli
+## [2026-07-11] enrich | 远程部署自动化 SVR-13~17 → 前端部署中心/SSH 弹窗 + docs/sql/21 + operation-frontend §11 + wiki/腾讯云文档

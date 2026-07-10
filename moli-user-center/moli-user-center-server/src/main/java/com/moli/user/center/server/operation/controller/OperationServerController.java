@@ -7,8 +7,10 @@ import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
 import com.moli.user.center.common.domain.vo.OperationServerLinksVo;
+import com.moli.user.center.common.domain.vo.OperationServerSshVo;
 import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
+import com.moli.user.center.common.domain.vo.OperationSshTestVo;
 import com.moli.common.page.PageRes;
 import com.moli.user.center.server.operation.service.OperationServerLinkService;
 import com.moli.user.center.server.operation.service.OperationServerService;
@@ -93,6 +95,23 @@ public class OperationServerController {
     public MoliResult<Boolean> saveLinks(@PathVariable Long id, @RequestBody OperationServerLinksVo links) {
         operationServerLinkService.saveLinks(id, links);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    @PutMapping(value = "/{id}/ssh")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_SSH_MANAGE, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
+    @MoliLog(title = "配置服务器SSH凭据", businessType = BusinessTypeEnum.UPDATE, isSaveRequestData = false)
+    @ApiOperation(value = "配置 SSH 凭据", notes = "上传私钥/密码（加密存储、只写不读）；留空表示不修改")
+    public MoliResult<Boolean> saveSsh(@PathVariable Long id, @RequestBody OperationServerSshVo form) {
+        operationServerService.saveSsh(id, form);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @PostMapping(value = "/{id}/ssh/test")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_SSH_MANAGE, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
+    @MoliLog(title = "测试服务器SSH连接", businessType = BusinessTypeEnum.OTHER, isSaveResponseData = false)
+    @ApiOperation(value = "测试 SSH 连接", notes = "使用已保存凭据连接并执行 whoami")
+    public MoliResult<OperationSshTestVo> testSsh(@PathVariable Long id) {
+        return MoliResult.success(operationServerService.testSsh(id));
     }
 
     @DeleteMapping("/{ids}")

@@ -11,6 +11,10 @@ spring:
     timeout-per-shutdown-phase: 30s
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: ${OPS_UPLOAD_MAX_FILE_SIZE:200MB}
+      max-request-size: ${OPS_UPLOAD_MAX_REQUEST_SIZE:210MB}
 
 captcha:
   enabled: false
@@ -35,3 +39,18 @@ ops:
     deploy-root: ${OPS_DEPLOY_ROOT:/opt/moli-project-distribute}
     script-path: ${OPS_DEPLOY_SCRIPT:}
     timeout-seconds: 15
+  ssh:
+    connect-timeout-ms: ${OPS_SSH_CONNECT_TIMEOUT_MS:5000}
+    command-timeout-seconds: ${OPS_SSH_COMMAND_TIMEOUT:120}
+    default-port: ${OPS_SSH_DEFAULT_PORT:22}
+    default-user: ${OPS_SSH_DEFAULT_USER:ubuntu}
+    strict-host-key-checking: ${OPS_SSH_STRICT_HOST_KEY:false}
+  task:
+    pool-size: ${OPS_TASK_POOL_SIZE:2}
+    log-max-chars: ${OPS_TASK_LOG_MAX_CHARS:1000000}
+    retention-days: ${OPS_TASK_RETENTION_DAYS:7}
+  upload:
+    enabled: ${OPS_UPLOAD_ENABLED:false}
+    temp-dir: ${OPS_UPLOAD_TEMP_DIR:}
+    max-bytes: ${OPS_UPLOAD_MAX_BYTES:209715200}
+    allowed-paths: ${OPS_UPLOAD_ALLOWED_PATHS:/opt/moli/frontend/,/opt/moli-project-distribute/}

@@ -273,7 +273,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
     @Test
     public void GET_operation_deploy_status() {
         when(operationDeployService.status("user-center")).thenReturn(new OperationDeployStatusVo());
-        ControllerTestSupport.assertSuccess(deployController.status("user-center"));
+        ControllerTestSupport.assertSuccess(deployController.status("user-center", null));
     }
 
     @Test
@@ -281,7 +281,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
         OperationDeployStatusVo vo = new OperationDeployStatusVo();
         vo.setRunning(true);
         when(operationDeployService.execute("user-center", "restart", null)).thenReturn(vo);
-        ControllerTestSupport.assertSuccess(deployController.execute("user-center", "restart", null));
+        ControllerTestSupport.assertSuccess(deployController.execute("user-center", "restart", null, null));
     }
 
     @Test

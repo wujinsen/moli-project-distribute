@@ -24,4 +24,19 @@ public class OperationServerVo {
     @ApiModelProperty("健康状态 0未知 1可达 2不可达 3跳过")
     private Integer status;
     private Date lastCheckTime;
+
+    @ApiModelProperty("SSH 端口")
+    private Integer sshPort;
+
+    @ApiModelProperty("SSH 登录用户")
+    private String sshUser;
+
+    @ApiModelProperty("SSH 认证方式：1 私钥 2 密码")
+    private Integer sshAuthType;
+
+    @ApiModelProperty("连接偏好：auto/inner/public")
+    private String connPref;
+
+    @ApiModelProperty("是否已配置 SSH 凭据（私钥/密码不回显）")
+    private Boolean sshConfigured;
 }

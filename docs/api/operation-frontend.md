@@ -20,8 +20,10 @@
 | **P2** | 驾驶舱 ops KPI | `CandlelightDragon/cockpit/index`（tab=ops） | ✅ SVR-9 | **S5** 合并 `/operation/stats` |
 | **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-11 | **S6** 拓扑弹窗内编辑关联 |
 | **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 手动触发 `probe-all` |
+| **P3** | SSH 凭据 | `operation/server/index` | ✅ SVR-13 | **S8** SSH 配置弹窗 + 测试连接 |
+| **P3** | 部署中心 | `operation/deploy/index` | ✅ SVR-14~16 | **S9** 远程启停 + 上传 + 任务轮询 |
 
-**建议迭代顺序**：**S0 → S1/S2 → S3 → S4 → S5 → S6**
+**建议迭代顺序**：**S0 → S1/S2 → S3 → S4 → S5 → S6 → S8 → S9**
 
 **网关 / 联调前缀**：
 
@@ -474,13 +476,15 @@ export type OperationHealthProbeResult = {
 | 步骤 | 检查 |
 |------|------|
 | 1 | user-center 启动（`:8888`），`OPS_SECRET_KEY` 已配置（P0 加密） |
-| 2 | DB 已执行 `17_*`～`20_*`；需要部署按钮权限时执行 `19_*` |
+| 2 | DB 已执行 `17_*`～`21_*`；远程部署需 `ops.deploy.enabled` + `ops.upload.enabled` |
 | 3 | meiling-ui proxy `/operation` → `8888`；登录角色含 `operation:*:list` |
 | 4 | 平台/组件：列表只见 mask；reveal 需 `operation:secret:view` |
 | 5 | 服务器/组件：探测后 `status` / `lastCheckTime` 更新 |
 | 6 | 服务器 id=201：拓扑含关联项目与组件 |
 | 7 | 端口校验：`mismatched >= 1`（种子 moli-server 9080） |
 | 8 | 驾驶舱 ops：`/operation/stats` 计数与库内台账一致 |
+| 9 | 部署中心：SSH 已配置 → 启停返回 taskId → 日志轮询成功 |
+| 10 | 文件上传：jar 到 `moli-*/` + `restartService` 后置动作 |
 
 ---
 
@@ -496,6 +500,68 @@ export type OperationHealthProbeResult = {
 | S5 | 驾驶舱 | ops KPI 使用真实 stats，非纯 Mock |
 | S6 | 关联 | links GET/PUT 可维护拓扑；保存后拓扑刷新 | ✅ |
 | S7 | 批量探活 | probe-all 触发后列表状态更新 | ✅ |
+| S8 | SSH | 配置私钥后 `sshConfigured=true`；测试连接返回 whoami | ✅ |
+| S9 | 部署中心 | 选服务器 → 启停三件套返回 taskId；轮询进度/日志；上传 jar/zip | ✅ |
+
+---
+
+## 11. P3 · 部署中心 / SSH（S8 / S9）
+
+### 11.1 菜单与权限
+
+| 菜单 | component | perms（菜单） | 动作权限 |
+|------|-----------|---------------|----------|
+| 部署中心 | `operation/deploy/index` | `operation:server:list` | `operation:deploy:exec`、`operation:file:upload` |
+| SSH 配置（服务器行内） | — | — | `operation:ssh:manage` |
+
+迁移：`docs/sql/21_operation_ssh_deploy.sql`
+
+### 11.2 API（meiling-ui `src/api/operation.ts`）
+
+| 函数 | 方法 | 路径 | 说明 |
+|------|------|------|------|
+| `saveServerSshApi` | PUT | `/operation/server/{id}/ssh` | 私钥/用户/端口；只写不读 |
+| `testServerSshApi` | POST | `/operation/server/{id}/ssh/test` | 测试 SSH |
+| `getDeployStatusApi` | GET | `/operation/deploy/{key}/status?serverId=` | 远程/本机进程状态 |
+| `createDeployTaskApi` | POST | `/operation/deploy/{key}/{action}/task?serverId=` | 异步启停，返回 `taskId` |
+| `getTaskApi` | GET | `/operation/task/{id}?logOffset=` | 轮询进度 + 增量日志 |
+| `uploadFileApi` | POST multipart | `/operation/file/upload` | `file, serverId, targetPath, postAction` |
+
+**serviceKey 白名单**：`user-center` · `gateway` · `knowledge`
+
+**postAction 枚举**：`none` · `nginxReload` · `unzipToDist` · `restartService:{key}`
+
+**默认上传路径白名单**（与后端 `ops.upload.allowed-paths` 一致）：
+
+- `/opt/moli/frontend/dist/`
+- `/opt/moli-project-distribute/moli-user-center/`
+- `/opt/moli-project-distribute/moli-gateway/`
+- `/opt/moli-project-distribute/moli-knowledge/`
+
+### 11.3 前端页面
+
+| 文件 | 说明 |
+|------|------|
+| `views/operation/DeployCenterView.vue` | 选服务器 · 三件套启停 · 文件上传 |
+| `components/operation/ServerSshModal.vue` | 服务器 SSH 配置 |
+| `components/operation/DeployTaskDrawer.vue` | 任务进度条 + 日志终端 |
+| `composables/useOperationTaskPoll.ts` | 1.5s 轮询 `getTaskApi` |
+
+### 11.4 服务端配置（生产必开）
+
+```yaml
+ops:
+  deploy:
+    enabled: true
+  upload:
+    enabled: true
+  secret:
+    key: ${OPS_SECRET_KEY}   # SSH/凭据 AES
+```
+
+CVM 上 `ubuntu` 用户需能 `sudo nginx -s reload`（见 `deploy/腾讯云上线流程.md` §14）。
+
+手测用例：[`docs/test/operation-deploy-center-acceptance.md`](../../test/operation-deploy-center-acceptance.md)。
 
 ---
 

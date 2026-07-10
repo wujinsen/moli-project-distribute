@@ -20,6 +20,11 @@
 | `SsoControllerApiTest` | SSO Ticket |
 | `LogControllerApiTest` | 日志查询 |
 | `OperationControllersApiTest` | 运维资产 CRUD |
+| `OperationRemoteDeployControllersApiTest` | SSH / 任务轮询 / 部署任务 / 文件上传 API |
+| `OperationSshClientTest` | SSH shellQuote |
+| `OperationTaskServiceImplTest` | 任务轮询 logOffset |
+| `OperationRemoteDeployServiceImplTest` | 远程启停校验与白名单 |
+| `OperationFileUploadServiceImplTest` | 上传路径与 postAction 校验 |
 | `PermissionServiceImplTest` | 权限合并逻辑 |
 | `SysSystemServiceImplTest` | 门户上下文 |
 | `LoadtestLoginControllerTest` | loadtest Profile |

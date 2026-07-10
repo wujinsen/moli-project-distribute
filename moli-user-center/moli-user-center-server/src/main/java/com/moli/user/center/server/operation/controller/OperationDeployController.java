@@ -6,6 +6,7 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
 import com.moli.user.center.server.operation.service.OperationDeployService;
+import com.moli.user.center.server.operation.service.OperationRemoteDeployService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +29,19 @@ public class OperationDeployController {
 
     @Resource
     private OperationDeployService operationDeployService;
+    @Resource
+    private OperationRemoteDeployService operationRemoteDeployService;
 
     @GetMapping("/{serviceKey}/status")
     @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
-    @ApiOperation(value = "查询服务进程状态", notes = "只读调用 deploy/linux/moli-service.sh status")
-    public MoliResult<OperationDeployStatusVo> status(@PathVariable String serviceKey) {
+    @ApiOperation(value = "查询服务进程状态", notes = "只读调用 moli-service.sh status；serverId 非空时 SSH 远程执行")
+    public MoliResult<OperationDeployStatusVo> status(
+            @PathVariable String serviceKey,
+            @RequestParam(required = false) Long serverId) {
+        if (serverId != null) {
+            return MoliResult.success(
+                    operationRemoteDeployService.executeRemoteReadOnly(serverId, serviceKey, "status", null));
+        }
         return MoliResult.success(operationDeployService.status(serviceKey));
     }
 
@@ -40,11 +49,28 @@ public class OperationDeployController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_DEPLOY_EXEC, PermissionConstants.OPERATION_SERVER_LIST},
             logical = Logical.AND)
     @MoliLog(title = "部署脚本动作", businessType = BusinessTypeEnum.OTHER)
-    @ApiOperation(value = "执行部署脚本", notes = "status/logs 只读；start/stop/restart 需 ops.deploy.enabled=true")
+    @ApiOperation(value = "执行部署脚本（同步）", notes = "status/logs 只读；start/stop/restart 需 ops.deploy.enabled=true；serverId 非空时仅支持 status/logs 远程同步")
     public MoliResult<OperationDeployStatusVo> execute(
             @PathVariable String serviceKey,
             @PathVariable String action,
-            @RequestParam(required = false) String arg) {
+            @RequestParam(required = false) String arg,
+            @RequestParam(required = false) Long serverId) {
+        if (serverId != null) {
+            return MoliResult.success(
+                    operationRemoteDeployService.executeRemoteReadOnly(serverId, serviceKey, action, arg));
+        }
         return MoliResult.success(operationDeployService.execute(serviceKey, action, arg));
+    }
+
+    @PostMapping("/{serviceKey}/{action}/task")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_DEPLOY_EXEC, PermissionConstants.OPERATION_SERVER_LIST},
+            logical = Logical.AND)
+    @MoliLog(title = "创建部署任务", businessType = BusinessTypeEnum.OTHER)
+    @ApiOperation(value = "创建异步启停任务", notes = "start/stop/restart；serverId 为空本机执行，否则 SSH 远程执行；返回 taskId 供轮询")
+    public MoliResult<Long> createTask(
+            @PathVariable String serviceKey,
+            @PathVariable String action,
+            @RequestParam(required = false) Long serverId) {
+        return MoliResult.success(operationRemoteDeployService.createDeployTask(serverId, serviceKey, action));
     }
 }

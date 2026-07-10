@@ -37,6 +37,7 @@
 | 12 | `11_kb_wiki_govern_menu.sql` | Wiki 治理菜单 |
 | 13 | `11_kb_platform_llm_config.sql` | LLM 配置表 |
 | 14 | `12_kb_platform_llm_menu.sql` | LLM 设置菜单 |
+| 15 | `17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql` | 运维 SSH/远程部署 |
 
 ---
 

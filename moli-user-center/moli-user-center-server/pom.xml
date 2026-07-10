@@ -209,6 +209,12 @@
             <artifactId>minio</artifactId>
         </dependency>
 
+        <!-- SSH/SFTP 远程运维（SVR-13~16） -->
+        <dependency>
+            <groupId>com.github.mwiede</groupId>
+            <artifactId>jsch</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
