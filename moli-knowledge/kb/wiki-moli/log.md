@@ -40,3 +40,5 @@
 ## [2026-07-10] maintenance | #moli-link-governance-20260710 wiki-moli 断链治理 → 修复 180 文件（enterprise 路径 + moli 内链）
 
 ## [2026-07-10] maintenance | lint-strict 收口 → 删除 T20/E2E 验收页（guides/x、guides/t20f-wiki-144730、wiki/database/e2e-import）；index 运维链修正；fix_moli_orphans 无 orphan 时跳过
+
+## [2026-07-11] enrich | 腾讯云上线流程 → 默认系统用户 ubuntu（替代自建 moli 用户）；区分 OS ubuntu 与 MySQL moli
