@@ -56,19 +56,24 @@ Authorization: {token}  # 后续请求
 | 402 | 服务器管理 | `operation/server/index` | ServerManageView | `operation:server:list` | `/operation/server` + `topology` / `links` / `check` |
 | 403 | 平台管理 | `operation/platform/index` | PlatformManageView | `operation:platform:list` | `/operation/platform` + `secret` |
 | 404 | 组件管理 | `operation/component/index` | ComponentManageView | `operation:component:list` | `/operation/component` + `check` / `secret` |
+| 405 | 部署中心 | `operation/deploy/index` | DeployCenterView | `operation:server:list` | `/operation/deploy/*`、`/operation/file/upload`、`/operation/command/*`、`/operation/task/*` |
 
-**跨域权限**：`operation:secret:view`（明文 reveal）、`operation:deploy:exec`（部署 start/stop/restart）。
+**跨域权限**：`operation:secret:view`（明文 reveal）、`operation:deploy:exec`（启停）、`operation:file:upload`（上传）、`operation:command:exec`（远程命令 / custom 后置）、`operation:ssh:manage`（SSH 配置）。
 
-**辅助 API**（驾驶舱 / 工具栏）：
+**辅助 API**（驾驶舱 / 工具栏 / 部署中心）：
 
 | 端点 | 用途 | 权限 |
 |------|------|------|
 | `GET /operation/audit/port-matrix` | 端口矩阵校验 | `operation:project:list` |
 | `GET /operation/stats` | 驾驶舱 ops KPI | `operation:project:list` |
-| `GET/POST /operation/deploy/{serviceKey}/...` | 部署进程状态/执行 | list / `deploy:exec` |
+| `GET /operation/deploy/presets` | 上传路径/后置预设 | `operation:server:list` |
+| `GET/POST /operation/deploy/{serviceKey}/...` | 部署进程状态/启停任务 | list / `deploy:exec` |
+| `POST /operation/file/upload` | SFTP 上传发布 | `file:upload` + list |
+| `POST /operation/command/exec/task` | 远程 shell | `command:exec` + list |
+| `GET /operation/task/{id}` | 任务日志轮询 | `operation:server:list` |
 | `POST /operation/health/probe-all` | 批量探活 | `operation:server:list` |
 
-**前端对接文档**：[operation-frontend.md](operation-frontend.md)
+**前端对接**：[operation-frontend.md](operation-frontend.md) · **HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)
 
 ---
 

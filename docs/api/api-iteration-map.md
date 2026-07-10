@@ -25,6 +25,7 @@
 |----|------|------|
 | 登录 / 会话 / RBAC | [user-center-api-map.md](user-center-api-map.md) | **v1 稳定** |
 | 门户 / SSO / 系统切换 | 同上 | **v1 稳定** |
+| 运维台账 + 部署中心 | [operation-deploy-api.md](operation-deploy-api.md) | **v1 稳定**（SVR-13~20） |
 | Dubbo 鉴权三方法 | [user-center-dubbo.md](user-center-dubbo.md) | **v1 稳定** |
 
 ## 订单 · `order-server` :8087

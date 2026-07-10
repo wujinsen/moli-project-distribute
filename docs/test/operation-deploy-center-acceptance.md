@@ -88,7 +88,7 @@
 
 | ID | 场景 | 步骤 | 期望 |
 |----|------|------|------|
-| PRE-1 | 拉预设 | `GET /operation/deploy/presets?serverId={CVM}` | 返回 pathPresets + actionPresets（含 custom 项） |
+| PRE-1 | 拉预设 | `GET /operation/deploy/presets?serverId={CVM}` | 返回 `pathPresets` + `actionPresets`（快捷后置；custom 由前端单独模式） |
 | PRE-2 | 前端 | 部署中心加载 | 路径文本框 + 常用下拉填充；后置三模式 |
 
 ---

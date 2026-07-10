@@ -9,7 +9,7 @@
 | [bi-smoke.md](bi-smoke.md) | BI 骨架冒烟（v1 占位） |
 | [order-seckill.md](order-seckill.md) | 秒杀手测 |
 | [user-center.md](user-center.md) | 用户中心 ApiTest |
-| **[operation-deploy-center-acceptance.md](operation-deploy-center-acceptance.md)** | **运维部署中心 SVR-13~17 验收** |
+| **[operation-deploy-center-acceptance.md](operation-deploy-center-acceptance.md)** | **运维部署中心 SVR-13~20 验收** |
 
 ## 知识库
 

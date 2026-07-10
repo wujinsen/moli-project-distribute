@@ -21,7 +21,7 @@
 | **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-11 | **S6** 拓扑弹窗内编辑关联 |
 | **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 手动触发 `probe-all` |
 | **P3** | SSH 凭据 | `operation/server/index` | ✅ SVR-13 | **S8** SSH 配置弹窗 + 测试连接 |
-| **P3** | 部署中心 | `operation/deploy/index` | ✅ SVR-14~16 | **S9** 远程启停 + 上传 + 任务轮询 |
+| **P3** | 部署中心 | `operation/deploy/index` | ✅ SVR-14~20 | **S9** 远程启停 + 灵活上传 + 远程命令 + 任务轮询 |
 
 **建议迭代顺序**：**S0 → S1/S2 → S3 → S4 → S5 → S6 → S8 → S9**
 
@@ -52,9 +52,12 @@
 | perm | 用途 |
 |------|------|
 | `operation:secret:view` | `GET .../secret` 查看平台/组件密码明文 |
-| `operation:deploy:exec` | `POST /operation/deploy/{key}/{action}` 执行 start/stop/restart |
+| `operation:deploy:exec` | `POST /operation/deploy/{key}/{action}/task` 异步启停 |
+| `operation:file:upload` | `POST /operation/file/upload` 文件 SFTP 发布 |
+| `operation:command:exec` | `POST /operation/command/exec/task` 远程 shell；上传 `postAction=custom` |
+| `operation:ssh:manage` | `PUT /operation/server/{id}/ssh` SSH 凭据与 `uploadAllowedRoots` |
 
-迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`、`18_operation_health_columns.sql`、`19_operation_deploy_exec.sql`、`20_operation_project_deploy_columns.sql`。
+迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**。
 
 ---
 
@@ -505,7 +508,9 @@ export type OperationHealthProbeResult = {
 
 ---
 
-## 11. P3 · 部署中心 / SSH（S8 / S9）
+## 11. P3 · 部署中心 / SSH（S8 / S9 / SVR-18~20）
+
+> **HTTP 请求/响应、路径白名单、Shell 守卫、配置项权威说明** → **[operation-deploy-api.md](operation-deploy-api.md)**
 
 ### 11.1 菜单与权限
 
@@ -516,11 +521,13 @@ export type OperationHealthProbeResult = {
 
 迁移：`docs/sql/21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**（灵活路径/远程命令）
 
-### 11.2 API（meiling-ui `src/api/operation.ts`）
+### 11.2 API 索引（meiling-ui 封装见 `src/api/operation.ts`）
+
+完整字段与示例见 **[operation-deploy-api.md](operation-deploy-api.md)**。下表为路由速查：
 
 | 函数 | 方法 | 路径 | 说明 |
 |------|------|------|------|
-| `saveServerSshApi` | PUT | `/operation/server/{id}/ssh` | 私钥/用户/端口；只写不读 |
+| `saveServerSshApi` | PUT | `/operation/server/{id}/ssh` | 私钥/用户/端口/`uploadAllowedRoots`；只写不读 |
 | `testServerSshApi` | POST | `/operation/server/{id}/ssh/test` | 测试 SSH |
 | `getDeployStatusApi` | GET | `/operation/deploy/{key}/status?serverId=` | 远程/本机进程状态 |
 | `createDeployTaskApi` | POST | `/operation/deploy/{key}/{action}/task?serverId=` | 异步启停，返回 `taskId` |
@@ -564,7 +571,9 @@ CVM 上 `ubuntu` 用户需能 `sudo nginx -s reload`（见 `deploy/腾讯云上�
 
 ---
 
-## 11. 相关
+## 12. 相关
+
+- **部署中心 HTTP 契约（后端）**：[operation-deploy-api.md](operation-deploy-api.md)
 
 - 后端路线图：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md)
 - API 全量列表：[user-center-api-map.md](user-center-api-map.md) §4

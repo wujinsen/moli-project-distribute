@@ -156,7 +156,7 @@
 - `GET /operation/platform/{id}`：`operation:platform:list`；返回 VO
 - `GET /operation/platform/{id}/secret`：`operation:secret:view`；返回 `{ password }` 明文（记审计日志）
 
-### 服务器管理 `OperationServerController`（前缀 `/operation/server`，9个）
+### 服务器管理 `OperationServerController`（前缀 `/operation/server`，11个）
 
 - `GET /operation/server/list`：`operation:server:list`；返回 `OperationServerVo`（含 `status` / `lastCheckTime`）
 - `POST /operation/server`：`operation:server:add` + `list`
@@ -167,6 +167,8 @@
 - `POST /operation/server/{id}/check`：`operation:server:list`；TCP 探活，更新并返回 `OperationServerVo`
 - `GET /operation/server/{id}/links`：`operation:server:list`；返回 `OperationServerLinksVo`（`projectIds` / `componentIds`）
 - `PUT /operation/server/{id}/links`：`operation:server:edit` + `list`；全量替换 N:N 关联
+- `PUT /operation/server/{id}/ssh`：`operation:ssh:manage`；保存 SSH 凭据 + `uploadAllowedRoots`（只写不读）
+- `POST /operation/server/{id}/ssh/test`：`operation:ssh:manage`；测试 SSH，返回 `OperationSshTestVo`
 
 ### 项目管理 `OperationProjectController`（前缀 `/operation/project`，5个）
 
@@ -186,7 +188,8 @@
 - `DELETE /operation/component/{ids}`：`operation:component:remove` + `list`
 - `POST /operation/component/{id}/check`：`operation:component:list`；TCP 探活，更新并返回 `OperationComponentVo`
 
-> **前端对接专稿**：[operation-frontend.md](operation-frontend.md)（枚举、TypeScript、验收 S0–S5）
+> **前端对接专稿**：[operation-frontend.md](operation-frontend.md)（枚举、TypeScript、验收 S0–S9）  
+> **部署中心 HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)（SVR-13~20）
 
 ### 运维审计 `OperationAuditController`（前缀 `/operation/audit`，1个）
 
@@ -196,10 +199,29 @@
 
 - `GET /operation/stats`：`operation:project:list`；台账计数 + 端口不符数 + 健康 DOWN 数（驾驶舱 ops 用）
 
-### 部署脚本 `OperationDeployController`（前缀 `/operation/deploy`，2个）
+### 部署与发布 `OperationDeployController` / `OperationFileController` / `OperationCommandController` / `OperationTaskController`
 
-- `GET /operation/deploy/{serviceKey}/status`：`operation:server:list`；只读调用 `moli-service.sh status`（user-center/gateway/knowledge）
-- `POST /operation/deploy/{serviceKey}/{action}`：`operation:deploy:exec` + `operation:server:list`；`status`/`logs` 只读；`start`/`stop`/`restart` 需 `ops.deploy.enabled=true`
+> 字段级说明见 **[operation-deploy-api.md](operation-deploy-api.md)**。
+
+**`OperationDeployController`**（`/operation/deploy`）
+
+- `GET /operation/deploy/presets?serverId=`：`operation:server:list`；常用上传路径 + 快捷后置动作
+- `GET /operation/deploy/{serviceKey}/status?serverId=`：`operation:server:list`；本机或 SSH 只读 status
+- `POST /operation/deploy/{serviceKey}/{action}`：`operation:deploy:exec` + `list`；同步执行（少用）
+- `POST /operation/deploy/{serviceKey}/{action}/task?serverId=`：`operation:deploy:exec` + `list`；异步启停，返回 `taskId`
+
+**`OperationFileController`**（`/operation/file`）
+
+- `POST /operation/file/upload`：`operation:file:upload` + `list`；multipart：`file, serverId, targetPath, postAction?, postCommand?`；`custom` 需 `operation:command:exec`
+
+**`OperationCommandController`**（`/operation/command`）
+
+- `POST /operation/command/exec/task`：`operation:command:exec` + `list`；JSON `{ serverId, command, workDir? }` → `taskId`
+
+**`OperationTaskController`**（`/operation/task`）
+
+- `GET /operation/task/{id}?logOffset=`：`operation:server:list`；轮询进度与增量日志
+- `GET /operation/task/list`：`operation:server:list`；分页历史（不含大段 log）
 
 ### 运维健康 `OperationHealthController`（前缀 `/operation/health`，1个）
 
@@ -232,6 +254,15 @@
 - 返回结构变更: `insertUserRole` / `addUserRole` / `removeUsers` 成功时 `msg` 含刷新提示
 - 前端联调影响: 无权限时 `code=10009`；角色授权成功需展示 `msg` 并建议用户刷新
 - 回归验证: 非授权角色访问管理接口应被拒绝；授权后刷新可见新菜单
+
+### 2026-07-11 部署中心灵活化（SVR-18~20）
+
+- 新增接口: `GET /operation/deploy/presets`、`POST /operation/command/exec/task`；`POST /operation/file/upload` 增 `postCommand`
+- 变更接口: `PUT /operation/server/{id}/ssh` 增 `uploadAllowedRoots`；上传 `targetPath` 改手输 + 三层路径白名单
+- 鉴权变更: 新增 `operation:command:exec`（`22_operation_command_flex.sql`）
+- 配置变更: `ops.command.enabled`、`ops.upload.allow-any-under`
+- 契约文档: [operation-deploy-api.md](operation-deploy-api.md)
+- 前端联调影响: 部署中心路径/后置/远程命令改 API 驱动；详见 [operation-frontend.md](operation-frontend.md) §11
 
 ### [日期-迭代号]
 

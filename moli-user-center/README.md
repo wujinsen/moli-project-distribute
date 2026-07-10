@@ -30,7 +30,8 @@
 | 多系统门户 | `/system`, `/auth/capabilities` | 系统注册、进入/切换、权限快照 |
 | RBAC | `/user`, `/role`, `/menu`, `/dept`, `/post`, `/dict`, `/action` | 用户/角色/菜单/部门/岗位/字典/动作 |
 | 审计 | `/log` | 登录日志、操作日志 |
-| 运维资产 | `/operation/platform|server|project|component` | 平台/服务器/项目/组件（历史域） |
+| 运维资产 | `/operation/platform|server|project|component` | 平台/服务器/项目/组件台账 |
+| 部署中心 | `/operation/deploy`、`/operation/file`、`/operation/command`、`/operation/task` | 远程启停、SFTP 上传、受控 shell（见 [`docs/api/operation-deploy-api.md`](../docs/api/operation-deploy-api.md)） |
 | 压测 | `/loadtest/login` | 仅 `spring.profiles.active=loadtest` |
 | Dubbo | — | `getInfoByUserName` / `getUserById` / `getPermissionsByUserId` |
 
