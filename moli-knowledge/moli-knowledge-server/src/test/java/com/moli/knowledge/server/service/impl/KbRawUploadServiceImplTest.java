@@ -95,6 +95,13 @@ public class KbRawUploadServiceImplTest {
     }
 
     @Test(expected = BaseException.class)
+    public void uploadZip_rejectsNonZipExtension() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "bundle.tar", "application/octet-stream", "x".getBytes(StandardCharsets.UTF_8));
+        service.uploadZip(SPACE_ID, "test-walkthrough", file, "SKIP");
+    }
+
+    @Test(expected = BaseException.class)
     public void upload_rejectsTraversalPrefix() {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "demo.md", "text/plain", "x".getBytes(StandardCharsets.UTF_8));

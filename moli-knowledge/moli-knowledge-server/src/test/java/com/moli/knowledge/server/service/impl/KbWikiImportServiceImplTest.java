@@ -244,6 +244,27 @@ public class KbWikiImportServiceImplTest {
     }
 
     @Test
+    public void importBatch_partialFailureStillSyncsSuccesses() throws Exception {
+        SyncTriggerVo trigger = new SyncTriggerVo();
+        trigger.setSuccess(true);
+        trigger.setSpaceId(SPACE_ID);
+        when(kbSyncService.triggerAfterEdit(SPACE_ID)).thenReturn(trigger);
+
+        MockMultipartFile ok = new MockMultipartFile(
+                "file", "ok.md", "text/plain", "# OK\n".getBytes(StandardCharsets.UTF_8));
+        MockMultipartFile bad = new MockMultipartFile(
+                "file", "bad.pdf", "application/pdf", "x".getBytes(StandardCharsets.UTF_8));
+
+        WikiImportBatchResultVo batch = service.importBatch(
+                SPACE_ID, CATEGORY_ID, Arrays.asList(ok, bad), null, "FAIL", false, true);
+
+        Assert.assertEquals(1, batch.getImported().size());
+        Assert.assertEquals(1, batch.getFailed().size());
+        Assert.assertTrue(batch.getSync().isTriggered());
+        verify(kbSyncService).triggerAfterEdit(SPACE_ID);
+    }
+
+    @Test
     public void importBatch_triggersSyncOnce() throws Exception {
         SyncTriggerVo trigger = new SyncTriggerVo();
         trigger.setSuccess(true);

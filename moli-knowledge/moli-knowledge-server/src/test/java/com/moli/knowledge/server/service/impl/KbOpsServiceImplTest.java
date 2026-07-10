@@ -83,6 +83,19 @@ public class KbOpsServiceImplTest {
     }
 
     @Test
+    public void dashboard_includesDriftSummary() {
+        KbOpsDriftSummaryVo drift = new KbOpsDriftSummaryVo();
+        drift.setDrifted(true);
+        drift.setWikiOnlyTotal(3);
+        when(kbDriftService.driftSummary(null, 5)).thenReturn(drift);
+
+        KbOpsDashboardVo vo = service.dashboard(null, 7);
+        Assert.assertNotNull(vo.getDriftSummary());
+        Assert.assertTrue(vo.getDriftSummary().isDrifted());
+        Assert.assertEquals(3, vo.getDriftSummary().getWikiOnlyTotal());
+    }
+
+    @Test
     public void dashboard_returnsTrendDaysAndLlmStats() {
         KbSyncLog log = new KbSyncLog();
         log.setBatchNo("b1");

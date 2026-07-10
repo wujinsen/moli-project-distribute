@@ -54,6 +54,50 @@ public class KbDriftServiceImplTest {
     }
 
     @Test
+    public void drift_detectsWikiOnly() {
+        Map<String, WikiPageSnapshot> wiki = new LinkedHashMap<>();
+        wiki.put("guides/new-only", new WikiPageSnapshot("guides/new-only", "hash-w", "wiki/guides/new-only.md"));
+
+        when(wikiDriftScanner.scanWikiDir("wiki")).thenReturn(wiki);
+        when(kbDocumentMapper.selectList(any())).thenReturn(Collections.emptyList());
+
+        KbDriftReportVo report = service.drift(SPACE_ID, 10);
+        Assert.assertTrue(report.isDrifted());
+        Assert.assertEquals(1, report.getWikiOnlyCount());
+        Assert.assertEquals(0, report.getDbOnlyCount());
+    }
+
+    @Test
+    public void drift_detectsDbOnly() {
+        when(wikiDriftScanner.scanWikiDir("wiki")).thenReturn(Collections.emptyMap());
+
+        KbDocument doc = new KbDocument();
+        doc.setSlug("guides/db-only");
+        doc.setTitle("DB only");
+        doc.setContentHash("hash-d");
+        when(kbDocumentMapper.selectList(any())).thenReturn(Collections.singletonList(doc));
+
+        KbDriftReportVo report = service.drift(SPACE_ID, 10);
+        Assert.assertEquals(1, report.getDbOnlyCount());
+        Assert.assertEquals(1, report.getDbOnly().size());
+    }
+
+    @Test
+    public void drift_sampleLimitTruncatesDetails() {
+        Map<String, WikiPageSnapshot> wiki = new LinkedHashMap<>();
+        for (int i = 0; i < 5; i++) {
+            wiki.put("guides/w" + i, new WikiPageSnapshot("guides/w" + i, "h" + i, "wiki/guides/w" + i + ".md"));
+        }
+        when(wikiDriftScanner.scanWikiDir("wiki")).thenReturn(wiki);
+        when(kbDocumentMapper.selectList(any())).thenReturn(Collections.emptyList());
+
+        KbDriftReportVo report = service.drift(SPACE_ID, 2);
+        Assert.assertEquals(5, report.getWikiOnlyCount());
+        Assert.assertEquals(2, report.getWikiOnly().size());
+        Assert.assertEquals(2, report.getSampleLimit());
+    }
+
+    @Test
     public void drift_detectsHashMismatch() {
         String content = "---\ntitle: A\n---\nbody";
         String hash = KbContentHashUtil.sha256(content);

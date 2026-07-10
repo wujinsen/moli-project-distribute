@@ -81,6 +81,25 @@ public class KbLintIssueDetectorTest {
     }
 
     @Test
+    public void detectFrontmatterIssues_flagsBadType() {
+        KbDocument doc = doc(2L, "guides/bad-type", "Bad");
+        doc.setContent("---\ntitle: Bad\ntype: not_a_real_type\nsources:\n - a.md\ncreated: 2026-01-01\nupdated: 2026-01-02\n---\n");
+        LintVo vo = new LintVo();
+        KbLintIssueDetector.detectFrontmatterIssues(Collections.singletonList(doc), vo);
+        Assert.assertEquals(1, vo.getBadTypes().size());
+        Assert.assertTrue(vo.getBadTypes().get(0).getDetail().contains("not_a_real_type"));
+    }
+
+    @Test
+    public void detectFrontmatterIssues_skipsMetaPages() {
+        KbDocument index = doc(3L, "index", "Index");
+        index.setContent("---\n---\n");
+        LintVo vo = new LintVo();
+        KbLintIssueDetector.detectFrontmatterIssues(Collections.singletonList(index), vo);
+        Assert.assertTrue(vo.getMissingSources().isEmpty());
+    }
+
+    @Test
     public void detectFrontmatterIssues_flagsMissingSourceAndSlugMismatch() {
         KbDocument doc = doc(1L, "guides/page", "Page");
         doc.setContent("---\ntitle: Page\nslug: other\n type: guide\nupdated: 2026-01-01\n---\n## body");
