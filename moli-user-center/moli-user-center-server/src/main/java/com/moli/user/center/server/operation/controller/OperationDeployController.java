@@ -4,7 +4,9 @@ import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
+import com.moli.user.center.common.domain.vo.OperationDeployPresetsVo;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
+import com.moli.user.center.server.operation.service.OperationDeployPresetService;
 import com.moli.user.center.server.operation.service.OperationDeployService;
 import com.moli.user.center.server.operation.service.OperationRemoteDeployService;
 import io.swagger.annotations.Api;
@@ -31,6 +33,15 @@ public class OperationDeployController {
     private OperationDeployService operationDeployService;
     @Resource
     private OperationRemoteDeployService operationRemoteDeployService;
+    @Resource
+    private OperationDeployPresetService operationDeployPresetService;
+
+    @GetMapping("/presets")
+    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
+    @ApiOperation(value = "部署中心预设", notes = "常用上传路径与快捷后置动作")
+    public MoliResult<OperationDeployPresetsVo> presets(@RequestParam(required = false) Long serverId) {
+        return MoliResult.success(operationDeployPresetService.getPresets(serverId));
+    }
 
     @GetMapping("/{serviceKey}/status")
     @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)

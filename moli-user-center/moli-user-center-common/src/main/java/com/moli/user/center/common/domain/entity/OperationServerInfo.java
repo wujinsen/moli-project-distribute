@@ -48,4 +48,7 @@ public class OperationServerInfo extends BaseEntity {
 
     @ApiModelProperty("连接偏好：auto 内网优先 / inner 仅内网 / public 仅公网")
     private String connPref;
+
+    @ApiModelProperty("该服务器允许上传的路径前缀，逗号或换行分隔")
+    private String uploadAllowedRoots;
 }

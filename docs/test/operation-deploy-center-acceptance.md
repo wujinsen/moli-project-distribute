@@ -1,16 +1,16 @@
-# 运营管理 · 部署中心验收用例（SVR-13 ~ SVR-16）
+# 运营管理 · 部署中心验收用例（SVR-13 ~ SVR-20）
 
 > 模块：`moli-user-center-server` + `meiling-ui`  
 > 契约：[`docs/api/operation-frontend.md`](../api/operation-frontend.md) §11  
-> 自动化：`mvn -Dtest=Operation*Remote*,Operation*Task*,Operation*Upload*,OperationSsh* test`（user-center-server）
+> 自动化：`mvn -Dtest=Operation*Remote*,Operation*Task*,Operation*Upload*,OperationSsh*,OperationShellGuard* test`（user-center-server）
 
 ## 0. 前置条件
 
 | # | 项 | 期望 |
 |---|-----|------|
-| P0 | DB 已执行 `docs/sql/17_*`～`21_operation_ssh_deploy.sql` | `operation_task` 表存在；菜单 405「部署中心」可见 |
-| P1 | user-center 配置 | `OPS_SECRET_KEY` 已设；`OPS_DEPLOY_ENABLED=true`；`OPS_UPLOAD_ENABLED=true` |
-| P2 | 角色权限 | `operation:ssh:manage`、`operation:deploy:exec`、`operation:file:upload`、`operation:server:list` |
+| P0 | DB 已执行 `docs/sql/17_*`～`22_operation_command_flex.sql` | `operation_task` 表存在；菜单 405「部署中心」可见 |
+| P1 | user-center 配置 | `OPS_SECRET_KEY` 已设；`OPS_DEPLOY_ENABLED=true`；`OPS_UPLOAD_ENABLED=true`；**`OPS_COMMAND_ENABLED=true`**（测远程命令/custom 后置） |
+| P2 | 角色权限 | `operation:ssh:manage`、`operation:deploy:exec`、`operation:file:upload`、**`operation:command:exec`**、`operation:server:list` |
 | P3 | 腾讯云 CVM | OS 用户 `ubuntu`；`sudo nginx -s reload` 已配 NOPASSWD（若测 nginxReload） |
 | P4 | 服务器台账 | 目标 CVM 已录入；SSH 私钥已配置且测试连接成功 |
 
@@ -66,28 +66,54 @@
 | UPL-6 | upload 开关关闭 | `ops.upload.enabled=false` | 拒绝上传 |
 | UPL-7 | 超大文件 | 上传 > `ops.upload.max-bytes` | 拒绝并提示 MB 上限 |
 | UPL-8 | 非法后置动作 | postAction=`rm -rf /` | 拒绝：不支持的后置动作 |
+| UPL-9 | 手输合法路径 | targetPath=`/opt/moli/custom/app.jar`（在 allow-any-under 下） | 接受并上传 |
+| UPL-10 | 自定义后置 | postAction=`custom` + postCommand=`ls -la` | 需 command 权限；ShellGuard 通过后执行 |
+| UPL-11 | 服务器路径前缀 | SSH 配置 `upload_allowed_roots=/home/ubuntu/app/` → 上传到该路径下 | 接受 |
 
 ---
 
-## 5. 前端页面（SVR-17）
+## 5. 远程命令（SVR-18）
+
+| ID | 场景 | 步骤 | 期望 |
+|----|------|------|------|
+| CMD-1 | 执行命令 | `POST /operation/command/exec/task` body `{ serverId, command: "whoami" }` | 返回 taskId；日志含 whoami 输出 |
+| CMD-2 | 工作目录 | workDir=`/opt/moli-project-distribute` + `ls deploy/linux` | `cd` 后执行 |
+| CMD-3 | 高危拦截 | command=`rm -rf /` | 拒绝：高危操作 |
+| CMD-4 | 开关关闭 | `ops.command.enabled=false` | 拒绝 |
+| CMD-5 | 无权限 | 无 `operation:command:exec` | 403 |
+
+---
+
+## 6. 预设 API（SVR-20）
+
+| ID | 场景 | 步骤 | 期望 |
+|----|------|------|------|
+| PRE-1 | 拉预设 | `GET /operation/deploy/presets?serverId={CVM}` | 返回 pathPresets + actionPresets（含 custom 项） |
+| PRE-2 | 前端 | 部署中心加载 | 路径文本框 + 常用下拉填充；后置三模式 |
+
+---
+
+## 7. 前端页面（SVR-17 ~ SVR-20）
 
 | ID | 场景 | 步骤 | 期望 |
 |----|------|------|------|
 | FE-1 | 菜单 | 重新登录 → 运营管理 | 可见「部署中心」 |
 | FE-2 | 服务器列表 | 部署中心左侧 | 显示 SSH 已配置标识 |
 | FE-3 | 服务卡片 | 选 CVM → 三件套卡片 | 显示运行状态；start/stop/restart 需 `operation:deploy:exec` |
-| FE-4 | 文件面板 | 拖拽 jar → 选路径/后置动作 → 上传 | 打开任务抽屉；见 TASK-5 |
-| FE-5 | i18n | 切换 zh/en/ja | 部署中心、SSH、任务状态文案正确 |
+| FE-4 | 文件面板 | 手输路径 → 选后置（预设/自定义）→ 上传 | 打开任务抽屉；见 TASK-5 |
+| FE-5 | 远程命令 | 填写命令 → 二次确认 → 执行 | 任务抽屉日志 |
+| FE-6 | SSH 路径前缀 | 服务器 SSH 弹窗配置 upload_allowed_roots | 保存后上传可用该前缀 |
+| FE-7 | i18n | 切换 zh/en/ja | 部署中心、SSH、任务状态文案正确 |
 
 ---
 
-## 6. 自动化测试（CI / 本地）
+## 8. 自动化测试（CI / 本地）
 
 ### 后端（Mock，无需 MySQL/SSH）
 
 ```bash
 cd moli-user-center/moli-user-center-server
-mvn -Dtest=OperationSshClientTest,OperationTaskServiceImplTest,OperationRemoteDeployServiceImplTest,OperationFileUploadServiceImplTest,OperationRemoteDeployControllersApiTest test
+mvn -Dtest=OperationSshClientTest,OperationTaskServiceImplTest,OperationRemoteDeployServiceImplTest,OperationFileUploadServiceImplTest,OperationRemoteDeployControllersApiTest,OperationShellGuardTest test
 ```
 
 | 测试类 | 覆盖点 |
@@ -96,7 +122,8 @@ mvn -Dtest=OperationSshClientTest,OperationTaskServiceImplTest,OperationRemoteDe
 | `OperationTaskServiceImplTest` | 轮询 logOffset 截取 |
 | `OperationRemoteDeployServiceImplTest` | deploy 开关、白名单、taskId |
 | `OperationFileUploadServiceImplTest` | 路径白名单、postAction 枚举 |
-| `OperationRemoteDeployControllersApiTest` | SSH/任务/上传 Controller 200 |
+| `OperationRemoteDeployControllersApiTest` | SSH/任务/上传/命令/预设 Controller 200 |
+| `OperationShellGuardTest` | 高危命令拦截、组合命令允许 |
 
 ### 前端
 
@@ -107,7 +134,7 @@ npm test -- src/composables/useOperationTaskPoll.spec.ts
 
 ---
 
-## 7. 相关
+## 9. 相关
 
 - 用户中心测试索引：[`user-center.md`](user-center.md)
 - 上线冒烟：[`release-smoke-checklist.md`](release-smoke-checklist.md)

@@ -142,6 +142,11 @@ public class OperationServerServiceImpl implements OperationServerService {
         row.setSshUser(StringUtils.isNotBlank(form.getSshUser()) ? form.getSshUser().trim() : "ubuntu");
         row.setSshAuthType(form.getSshAuthType() != null ? form.getSshAuthType() : OperationSshAuthType.PRIVATE_KEY);
         row.setConnPref(StringUtils.isNotBlank(form.getConnPref()) ? form.getConnPref().trim() : "auto");
+        if (form.getUploadAllowedRoots() != null) {
+            row.setUploadAllowedRoots(StringUtils.trimToNull(form.getUploadAllowedRoots()));
+        } else {
+            row.setUploadAllowedRoots(existing.getUploadAllowedRoots());
+        }
         // 私钥/密码留空表示不修改，沿用旧密文
         if (StringUtils.isNotBlank(form.getPrivateKey())) {
             row.setSshPrivateKey(secretSupport.encryptForStorage(form.getPrivateKey().trim()));

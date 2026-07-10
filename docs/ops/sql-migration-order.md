@@ -38,6 +38,7 @@
 | 13 | `11_kb_platform_llm_config.sql` | LLM 配置表 |
 | 14 | `12_kb_platform_llm_menu.sql` | LLM 设置菜单 |
 | 15 | `17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql` | 运维 SSH/远程部署 |
+| 16 | `22_operation_command_flex.sql` | 灵活路径、远程命令权限、`upload_allowed_roots` |
 
 ---
 

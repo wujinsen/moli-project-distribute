@@ -31,16 +31,18 @@ public class OperationFileController {
     private OperationFileUploadService operationFileUploadService;
 
     @PostMapping("/upload")
-    @RequiresPermissions(value = {PermissionConstants.OPERATION_FILE_UPLOAD, PermissionConstants.OPERATION_SERVER_LIST},
-            logical = Logical.AND)
+    @RequiresPermissions(value = {
+            PermissionConstants.OPERATION_FILE_UPLOAD,
+            PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @MoliLog(title = "上传文件到远程服务器", businessType = BusinessTypeEnum.OTHER, isSaveRequestData = false)
-    @ApiOperation(value = "上传文件发布", notes = "SFTP 上传到白名单路径 + 后置动作（none/nginxReload/unzipToDist/restartService:{key}）；返回 taskId 供轮询")
+    @ApiOperation(value = "上传文件发布", notes = "SFTP 上传 + 后置（预设或 postAction=custom + postCommand）；返回 taskId")
     public MoliResult<Long> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam Long serverId,
             @RequestParam String targetPath,
-            @RequestParam(required = false, defaultValue = "none") String postAction) {
+            @RequestParam(required = false, defaultValue = "none") String postAction,
+            @RequestParam(required = false) String postCommand) {
         return MoliResult.success(
-                operationFileUploadService.createUploadTask(file, serverId, targetPath, postAction));
+                operationFileUploadService.createUploadTask(file, serverId, targetPath, postAction, postCommand));
     }
 }

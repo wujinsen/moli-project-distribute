@@ -39,4 +39,7 @@ public class OperationServerVo {
 
     @ApiModelProperty("是否已配置 SSH 凭据（私钥/密码不回显）")
     private Boolean sshConfigured;
+
+    @ApiModelProperty("该服务器允许上传的路径前缀")
+    private String uploadAllowedRoots;
 }

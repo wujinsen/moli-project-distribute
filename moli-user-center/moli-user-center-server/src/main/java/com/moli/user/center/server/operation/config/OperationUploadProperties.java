@@ -28,4 +28,7 @@ public class OperationUploadProperties {
     /** 远端目标路径白名单前缀（逗号分隔注入）。 */
     private List<String> allowedPaths = new ArrayList<>(Arrays.asList(
             "/opt/moli/frontend/", "/opt/moli-project-distribute/"));
+
+    /** 更宽但仍受限的根目录（路径须在其下），如 /opt,/home/ubuntu */
+    private List<String> allowAnyUnder = new ArrayList<>(Arrays.asList("/opt/", "/home/ubuntu/"));
 }

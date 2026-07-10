@@ -26,4 +26,7 @@ public class OperationServerSshVo {
 
     @ApiModelProperty("连接偏好：auto/inner/public")
     private String connPref;
+
+    @ApiModelProperty("允许上传的路径前缀，逗号或换行分隔")
+    private String uploadAllowedRoots;
 }

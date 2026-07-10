@@ -1,11 +1,15 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.jcraft.jsch.SftpProgressMonitor;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.common.exception.BaseException;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.entity.OperationTask;
+import com.moli.user.center.server.operation.config.OperationCommandProperties;
 import com.moli.user.center.server.operation.config.OperationDeployProperties;
 import com.moli.user.center.server.operation.config.OperationUploadProperties;
+import com.moli.user.center.server.operation.guard.OperationPathPolicy;
+import com.moli.user.center.server.operation.guard.OperationShellGuard;
 import com.moli.user.center.server.operation.service.OperationFileUploadService;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import com.moli.user.center.server.operation.service.OperationTaskService;
@@ -14,6 +18,7 @@ import com.moli.user.center.server.operation.ssh.OperationSshCommandResult;
 import com.moli.user.center.server.operation.ssh.OperationSshSession;
 import com.moli.user.center.server.operation.task.OperationTaskContext;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,20 +33,20 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * 文件上传发布实现（SVR-16）：
- * 本地暂存 → SFTP 上传（进度回写）→ 白名单后置动作（nginxReload / unzipToDist / restartService:{key}）。
+ * 文件上传发布（SVR-16/19）：SFTP + 快捷预设或自定义 shell 后置。
  */
 @Service
 public class OperationFileUploadServiceImpl implements OperationFileUploadService {
 
     private static final Set<String> SERVICE_KEYS = new HashSet<>(Arrays.asList("user-center", "gateway", "knowledge"));
-    /** SFTP 上传占任务进度的区间上限，剩余留给后置动作。 */
     private static final int UPLOAD_PROGRESS_CAP = 80;
 
     @Resource
     private OperationUploadProperties uploadProperties;
     @Resource
     private OperationDeployProperties deployProperties;
+    @Resource
+    private OperationCommandProperties commandProperties;
     @Resource
     private OperationServerService operationServerService;
     @Resource
@@ -50,7 +55,8 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
     private OperationSshClient sshClient;
 
     @Override
-    public Long createUploadTask(MultipartFile file, Long serverId, String targetPath, String postAction) {
+    public Long createUploadTask(MultipartFile file, Long serverId, String targetPath,
+                                 String postAction, String postCommand) {
         if (!uploadProperties.isEnabled()) {
             throw new BaseException("文件上传发布未启用，请配置 ops.upload.enabled=true");
         }
@@ -64,19 +70,19 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
             throw new BaseException("serverId 不能为空");
         }
         OperationServerInfo server = operationServerService.requireEntity(serverId);
-        String remotePath = resolveRemotePath(targetPath, file.getOriginalFilename());
-        String action = normalizePostAction(postAction, remotePath);
+        String remotePath = OperationPathPolicy.resolveRemotePath(targetPath, file.getOriginalFilename(),
+                server, uploadProperties);
+        PostActionSpec spec = normalizePostAction(postAction, postCommand, remotePath);
 
-        // 请求线程内暂存到本地，异步线程读不到 Multipart 流
         Path temp = saveToTemp(file);
         long size = file.getSize();
 
-        OperationTask task = operationTaskService.create("upload", serverId, null, action,
+        OperationTask task = operationTaskService.create("upload", serverId, null, spec.actionLabel,
                 remotePath + " (" + humanSize(size) + ")");
         String lockKey = "upload:" + serverId + ":" + remotePath;
         try {
             operationTaskService.submit(task.getId(), lockKey, context ->
-                    runUpload(context, server, temp, size, remotePath, action));
+                    runUpload(context, server, temp, size, remotePath, spec));
         } catch (Exception e) {
             deleteQuietly(temp);
             throw e;
@@ -85,7 +91,7 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
     }
 
     private void runUpload(OperationTaskContext context, OperationServerInfo server,
-                           Path temp, long size, String remotePath, String action) throws Exception {
+                           Path temp, long size, String remotePath, PostActionSpec spec) throws Exception {
         try {
             context.appendLine("[SSH] 连接 " + server.getServerName() + " ...");
             try (OperationSshSession session = sshClient.connect(server)) {
@@ -96,7 +102,7 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
                 }
                 context.setProgress(UPLOAD_PROGRESS_CAP);
                 context.appendLine("[SFTP] 上传完成");
-                executePostAction(context, session, remotePath, action);
+                executePostAction(context, session, remotePath, spec);
             }
         } finally {
             deleteQuietly(temp);
@@ -104,35 +110,21 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
     }
 
     private void executePostAction(OperationTaskContext context, OperationSshSession session,
-                                   String remotePath, String action) {
-        if ("none".equals(action)) {
+                                   String remotePath, PostActionSpec spec) {
+        if ("none".equals(spec.actionLabel)) {
             context.setProgress(100);
             return;
         }
-        context.appendLine("[POST] 执行后置动作: " + action);
-        String command;
-        if ("nginxReload".equals(action)) {
-            command = "sudo nginx -t && sudo nginx -s reload";
-        } else if ("unzipToDist".equals(action)) {
-            command = buildUnzipToDistCommand(remotePath);
-        } else if (action.startsWith("restartService:")) {
-            String serviceKey = action.substring("restartService:".length());
-            String script = deployProperties.getDeployRoot() + "/deploy/linux/moli-service.sh";
-            command = "bash " + OperationSshClient.shellQuote(script) + " " + serviceKey + " restart";
-        } else {
-            throw new BaseException("不支持的后置动作: " + action);
-        }
+        context.appendLine("[POST] 执行后置: " + spec.actionLabel);
+        String command = spec.remoteCommand;
         OperationSshCommandResult result = sshClient.exec(session, command, context::appendLine);
         if (!result.isSuccess()) {
-            throw new BaseException("后置动作失败（退出码 " + result.getExitCode() + "）: " + action);
+            throw new BaseException("后置动作失败（退出码 " + result.getExitCode() + "）");
         }
         context.setProgress(100);
         context.appendLine("[POST] 后置动作完成");
     }
 
-    /**
-     * 解压 zip 到同目录 dist/：先解到临时目录，备份旧 dist 后原子切换。
-     */
     private String buildUnzipToDistCommand(String remoteZipPath) {
         if (!remoteZipPath.toLowerCase(Locale.ROOT).endsWith(".zip")) {
             throw new BaseException("unzipToDist 仅支持 .zip 文件");
@@ -150,47 +142,19 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
                 + "echo 'dist 已切换，旧版本已备份为 dist.bak.*'";
     }
 
-    /**
-     * 目标路径规范化 + 白名单前缀校验。
-     */
-    private String resolveRemotePath(String targetPath, String originalFilename) {
-        if (StringUtils.isBlank(targetPath)) {
-            throw new BaseException("targetPath 不能为空");
-        }
-        String path = targetPath.trim().replace('\\', '/');
-        if (!path.startsWith("/")) {
-            throw new BaseException("targetPath 必须为绝对路径");
-        }
-        if (path.contains("..")) {
-            throw new BaseException("targetPath 不允许包含 ..");
-        }
-        if (path.endsWith("/")) {
-            String name = StringUtils.isNotBlank(originalFilename)
-                    ? Paths.get(originalFilename.replace('\\', '/')).getFileName().toString()
-                    : "upload.bin";
-            path = path + name;
-        }
-        final String candidate = path;
-        boolean allowed = uploadProperties.getAllowedPaths().stream()
-                .map(String::trim)
-                .filter(StringUtils::isNotBlank)
-                .anyMatch(candidate::startsWith);
-        if (!allowed) {
-            throw new BaseException("targetPath 不在白名单内，允许前缀: " + uploadProperties.getAllowedPaths());
-        }
-        return path;
-    }
-
-    private String normalizePostAction(String postAction, String remotePath) {
+    private PostActionSpec normalizePostAction(String postAction, String postCommand, String remotePath) {
         String action = StringUtils.defaultIfBlank(postAction, "none").trim();
-        if ("none".equals(action) || "nginxReload".equals(action)) {
-            return action;
+        if ("none".equals(action)) {
+            return new PostActionSpec("none", null);
+        }
+        if ("nginxReload".equals(action)) {
+            return new PostActionSpec(action, "sudo nginx -t && sudo nginx -s reload");
         }
         if ("unzipToDist".equals(action)) {
             if (!remotePath.toLowerCase(Locale.ROOT).endsWith(".zip")) {
                 throw new BaseException("unzipToDist 仅支持 .zip 文件");
             }
-            return action;
+            return new PostActionSpec(action, buildUnzipToDistCommand(remotePath));
         }
         if (action.startsWith("restartService:")) {
             String serviceKey = action.substring("restartService:".length()).trim().toLowerCase(Locale.ROOT);
@@ -200,7 +164,22 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
             if (!deployProperties.isEnabled()) {
                 throw new BaseException("重启服务需 ops.deploy.enabled=true");
             }
-            return "restartService:" + serviceKey;
+            String script = deployProperties.getDeployRoot() + "/deploy/linux/moli-service.sh";
+            return new PostActionSpec(action,
+                    "bash " + OperationSshClient.shellQuote(script) + " " + serviceKey + " restart");
+        }
+        if ("custom".equals(action)) {
+            if (!SecurityUtils.getSubject().isPermitted(PermissionConstants.OPERATION_COMMAND_EXEC)) {
+                throw new BaseException("自定义后置命令需 operation:command:exec 权限");
+            }
+            if (!commandProperties.isEnabled()) {
+                throw new BaseException("自定义命令需 ops.command.enabled=true 及 operation:command:exec 权限");
+            }
+            if (StringUtils.isBlank(postCommand)) {
+                throw new BaseException("postAction=custom 时 postCommand 不能为空");
+            }
+            String cmd = OperationShellGuard.validateCommand(postCommand, commandProperties.getMaxChars());
+            return new PostActionSpec("custom", cmd);
         }
         throw new BaseException("不支持的后置动作: " + postAction);
     }
@@ -226,7 +205,6 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
         try {
             Files.deleteIfExists(path);
         } catch (Exception ignored) {
-            // 临时文件清理失败不影响任务结果
         }
     }
 
@@ -240,11 +218,17 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
         return bytes + "B";
     }
 
-    /**
-     * SFTP 字节进度 → 任务进度（0 ~ UPLOAD_PROGRESS_CAP）。
-     */
-    private static class TaskProgressMonitor implements SftpProgressMonitor {
+    private static final class PostActionSpec {
+        private final String actionLabel;
+        private final String remoteCommand;
 
+        private PostActionSpec(String actionLabel, String remoteCommand) {
+            this.actionLabel = actionLabel;
+            this.remoteCommand = remoteCommand;
+        }
+    }
+
+    private static class TaskProgressMonitor implements SftpProgressMonitor {
         private final OperationTaskContext context;
         private final long total;
         private long transferred;

@@ -40,14 +40,14 @@ public class OperationFileUploadServiceImplTest {
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_when_upload_disabled() {
         uploadProperties.setEnabled(false);
-        fileUploadService.createUploadTask(sampleFile(), 204L, "/opt/moli-project-distribute/moli-user-center/", "none");
+        fileUploadService.createUploadTask(sampleFile(), 204L, "/opt/moli-project-distribute/moli-user-center/", "none", null);
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_empty_file() {
         uploadProperties.setEnabled(true);
         fileUploadService.createUploadTask(new MockMultipartFile("file", new byte[0]), 204L,
-                "/opt/moli-project-distribute/moli-user-center/", "none");
+                "/opt/moli-project-distribute/moli-user-center/", "none", null);
     }
 
     @Test(expected = BaseException.class)
@@ -55,14 +55,14 @@ public class OperationFileUploadServiceImplTest {
         uploadProperties.setEnabled(true);
         stubServer(204L);
         fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/../etc/passwd", "none");
+                "/opt/moli-project-distribute/../etc/passwd", "none", null);
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_path_outside_whitelist() {
         uploadProperties.setEnabled(true);
         stubServer(204L);
-        fileUploadService.createUploadTask(sampleFile(), 204L, "/tmp/evil.jar", "none");
+        fileUploadService.createUploadTask(sampleFile(), 204L, "/tmp/evil.jar", "none", null);
     }
 
     @Test(expected = BaseException.class)
@@ -70,7 +70,7 @@ public class OperationFileUploadServiceImplTest {
         uploadProperties.setEnabled(true);
         stubServer(204L);
         fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli/frontend/dist/app.jar", "unzipToDist");
+                "/opt/moli/frontend/dist/app.jar", "unzipToDist", null);
     }
 
     @Test(expected = BaseException.class)
@@ -79,7 +79,7 @@ public class OperationFileUploadServiceImplTest {
         deployProperties.setEnabled(false);
         stubServer(204L);
         fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:user-center");
+                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:user-center", null);
     }
 
     @Test(expected = BaseException.class)
@@ -87,7 +87,7 @@ public class OperationFileUploadServiceImplTest {
         uploadProperties.setEnabled(true);
         stubServer(204L);
         fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/moli-user-center/app.jar", "rm -rf /");
+                "/opt/moli-project-distribute/moli-user-center/app.jar", "rm -rf /", null);
     }
 
     @Test(expected = BaseException.class)
@@ -96,7 +96,7 @@ public class OperationFileUploadServiceImplTest {
         deployProperties.setEnabled(true);
         stubServer(204L);
         fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:order");
+                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:order", null);
     }
 
     private void stubServer(Long id) {

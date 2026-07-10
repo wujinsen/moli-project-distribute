@@ -75,6 +75,8 @@ public final class PermissionConstants {
     public static final String OPERATION_SSH_MANAGE = "operation:ssh:manage";
     /** 通过系统上传文件到远程服务器并执行后置动作（SVR-16） */
     public static final String OPERATION_FILE_UPLOAD = "operation:file:upload";
+    /** 远程执行受控 shell 命令（SVR-18） */
+    public static final String OPERATION_COMMAND_EXEC = "operation:command:exec";
 
     /** 企业知识库 · 空间管理（C 菜单 perms） */
     public static final String KB_SPACE_ADMIN = "kb:space:admin";

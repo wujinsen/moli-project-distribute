@@ -511,10 +511,10 @@ export type OperationHealthProbeResult = {
 
 | 菜单 | component | perms（菜单） | 动作权限 |
 |------|-----------|---------------|----------|
-| 部署中心 | `operation/deploy/index` | `operation:server:list` | `operation:deploy:exec`、`operation:file:upload` |
+| 部署中心 | `operation/deploy/index` | `operation:server:list` | `operation:deploy:exec`、`operation:file:upload`、**`operation:command:exec`** |
 | SSH 配置（服务器行内） | — | — | `operation:ssh:manage` |
 
-迁移：`docs/sql/21_operation_ssh_deploy.sql`
+迁移：`docs/sql/21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**（灵活路径/远程命令）
 
 ### 11.2 API（meiling-ui `src/api/operation.ts`）
 
@@ -525,25 +525,22 @@ export type OperationHealthProbeResult = {
 | `getDeployStatusApi` | GET | `/operation/deploy/{key}/status?serverId=` | 远程/本机进程状态 |
 | `createDeployTaskApi` | POST | `/operation/deploy/{key}/{action}/task?serverId=` | 异步启停，返回 `taskId` |
 | `getTaskApi` | GET | `/operation/task/{id}?logOffset=` | 轮询进度 + 增量日志 |
-| `uploadFileApi` | POST multipart | `/operation/file/upload` | `file, serverId, targetPath, postAction` |
+| `getDeployPresetsApi` | GET | `/operation/deploy/presets?serverId=` | 常用路径 + 快捷后置动作（替代前端硬编码） |
+| `createCommandTaskApi` | POST JSON | `/operation/command/exec/task` | 远程 shell；body `{ serverId, command, workDir? }` → `taskId` |
+| `uploadFileApi` | POST multipart | `/operation/file/upload` | `file, serverId, targetPath, postAction, postCommand?` |
 
 **serviceKey 白名单**：`user-center` · `gateway` · `knowledge`
 
-**postAction 枚举**：`none` · `nginxReload` · `unzipToDist` · `restartService:{key}`
+**postAction**：`none` · `nginxReload` · `unzipToDist` · `restartService:{key}` · **`custom`**（需 `postCommand` + `operation:command:exec`）
 
-**默认上传路径白名单**（与后端 `ops.upload.allowed-paths` 一致）：
-
-- `/opt/moli/frontend/dist/`
-- `/opt/moli-project-distribute/moli-user-center/`
-- `/opt/moli-project-distribute/moli-gateway/`
-- `/opt/moli-project-distribute/moli-knowledge/`
+**目标路径**：手输绝对路径；白名单三层 OR — `ops.upload.allowed-paths`、`ops.upload.allow-any-under`（默认 `/opt/`、`/home/ubuntu/`）、服务器 `upload_allowed_roots`
 
 ### 11.3 前端页面
 
 | 文件 | 说明 |
 |------|------|
-| `views/operation/DeployCenterView.vue` | 选服务器 · 三件套启停 · 文件上传 |
-| `components/operation/ServerSshModal.vue` | 服务器 SSH 配置 |
+| `views/operation/DeployCenterView.vue` | 选服务器 · 三件套启停 · **手输路径上传** · **远程命令** |
+| `components/operation/ServerSshModal.vue` | SSH 凭据 + **upload_allowed_roots** |
 | `components/operation/DeployTaskDrawer.vue` | 任务进度条 + 日志终端 |
 | `composables/useOperationTaskPoll.ts` | 1.5s 轮询 `getTaskApi` |
 
@@ -555,6 +552,8 @@ ops:
     enabled: true
   upload:
     enabled: true
+  command:
+    enabled: true   # 远程命令 + 上传 custom 后置
   secret:
     key: ${OPS_SECRET_KEY}   # SSH/凭据 AES
 ```
