@@ -12,6 +12,7 @@ TOOLS="$(cd "${HERE}/.." && pwd)"
 REPO_ROOT="$(cd "${TOOLS}/../../.." && pwd)"
 SCHEMA="${REPO_ROOT}/docs/sql/03_knowledge_schema.sql"
 SYNC_PY="${TOOLS}/sync_to_db.py"
+DRIFT_PY="${TOOLS}/detect_wiki_db_drift.py"
 LINT_PY="${TOOLS}/lint.py"
 ENRICH_PY="${TOOLS}/enrich.py"
 
@@ -212,8 +213,40 @@ case "${MODE}" in
         --space "${space_code}"
     done
     ;;
+  drift)
+    "${PYTHON}" "${DRIFT_PY}" \
+      --wiki-dir "${KB_SYNC_WIKI_DIR:-wiki}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --space "${KB_SYNC_SPACE}" \
+      --fail-on-drift
+    ;;
+  drift-all)
+    echo "[ci] drift check all wiki spaces ..."
+    fail=0
+    for entry in "${KB_SPACES[@]}"; do
+      wiki_dir="${entry%%:*}"
+      space_code="${entry##*:}"
+      echo "[ci] drift --wiki-dir ${wiki_dir} --space ${space_code} ..."
+      if ! "${PYTHON}" "${DRIFT_PY}" \
+        --wiki-dir "${wiki_dir}" \
+        --host "${KB_SYNC_HOST}" \
+        --port "${KB_SYNC_PORT}" \
+        --user "${KB_SYNC_USER}" \
+        --password "${KB_SYNC_PASSWORD}" \
+        --db "${KB_SYNC_DB}" \
+        --space "${space_code}" \
+        --fail-on-drift; then
+        fail=1
+      fi
+    done
+    exit "${fail}"
+    ;;
   *)
-    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | enrich | init-schema | sync | sync-all | purge-raw-archive | purge-manual-web | purge-manual-web-all | purge-manual-web-dry-run | verify | verify-all)" >&2
+    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | enrich | init-schema | sync | sync-all | drift | drift-all | purge-raw-archive | purge-manual-web | purge-manual-web-all | purge-manual-web-dry-run | verify | verify-all)" >&2
     exit 1
     ;;
 esac

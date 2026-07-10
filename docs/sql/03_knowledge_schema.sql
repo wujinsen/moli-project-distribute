@@ -231,7 +231,8 @@ CREATE TABLE IF NOT EXISTS `kb_relation` (
 
 -- -------------------------------------------------------------
 -- 11. 体检问题（Lint 结果持久化 + 处理状态）
---     issue_type：broken_link/orphan/no_summary/duplicate/stale/conflict
+--     issue_type：broken_link/orphan/no_summary/duplicate/stale/conflict/
+--                missing_source/bad_type/missing_title/slug_mismatch/missing_dates/missing_concept
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `kb_lint_issue` (
   `id` bigint NOT NULL COMMENT '主键',

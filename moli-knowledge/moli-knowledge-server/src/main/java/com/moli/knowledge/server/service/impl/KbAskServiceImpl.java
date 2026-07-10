@@ -18,6 +18,7 @@ import com.moli.knowledge.server.mapper.KbQaLogMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbAskService;
 import com.moli.knowledge.server.service.KbLlmClient;
+import com.moli.knowledge.server.support.KbLlmCallScenes;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -154,7 +155,9 @@ public class KbAskServiceImpl implements KbAskService {
         if (shouldUseLlm(request) && !citations.isEmpty()) {
             try {
                 String ctx = buildContext(scored, topK);
-                String answer = kbLlmClient.chat(SYSTEM_PROMPT,
+                Long askSpaceId = request.getSpaceId() != null ? request.getSpaceId()
+                        : (scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null);
+                String answer = kbLlmClient.chat(KbLlmCallScenes.ASK, askSpaceId, SYSTEM_PROMPT,
                         "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + ctx);
                 resp.setAnswer(answer);
                 resp.setMode("generative");

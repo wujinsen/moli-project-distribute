@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbWikiProperties;
 import com.moli.knowledge.server.dto.SyncTriggerVo;
+import com.moli.knowledge.server.dto.WikiImportBatchResultVo;
 import com.moli.knowledge.server.dto.WikiImportResultVo;
 import com.moli.knowledge.server.dto.WikiLintPreviewVo;
 import com.moli.knowledge.server.dto.WikiPageVo;
@@ -29,6 +30,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -239,6 +241,28 @@ public class KbWikiImportServiceImplTest {
         WikiImportResultVo result = service.importPage(
                 SPACE_ID, CATEGORY_ID, file, null, null, "FAIL", true, false, null);
         Assert.assertTrue(result.getLintWarnings().get(0).contains("broken_link"));
+    }
+
+    @Test
+    public void importBatch_triggersSyncOnce() throws Exception {
+        SyncTriggerVo trigger = new SyncTriggerVo();
+        trigger.setSuccess(true);
+        trigger.setSpaceId(SPACE_ID);
+        when(kbSyncService.triggerAfterEdit(SPACE_ID)).thenReturn(trigger);
+
+        MockMultipartFile file1 = new MockMultipartFile(
+                "file", "batch-a.md", "text/plain", "# A\n".getBytes(StandardCharsets.UTF_8));
+        MockMultipartFile file2 = new MockMultipartFile(
+                "file", "batch-b.md", "text/plain", "# B\n".getBytes(StandardCharsets.UTF_8));
+
+        WikiImportBatchResultVo batch = service.importBatch(
+                SPACE_ID, CATEGORY_ID, Arrays.asList(file1, file2), null, "FAIL", false, true);
+
+        Assert.assertEquals(2, batch.getImported().size());
+        Assert.assertTrue(batch.getFailed().isEmpty());
+        Assert.assertTrue(batch.getSync().isTriggered());
+        Assert.assertTrue(batch.getSync().isSuccess());
+        verify(kbSyncService).triggerAfterEdit(SPACE_ID);
     }
 
     @Test(expected = BaseException.class)

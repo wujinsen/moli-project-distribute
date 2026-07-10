@@ -1,6 +1,7 @@
 package com.moli.knowledge.server.service;
 
 import com.moli.knowledge.server.dto.GraphVo;
+import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.entity.KbLintIssue;
@@ -51,6 +52,9 @@ public interface KbInsightService {
 
     /** 指派处理人 / 调整优先级（KBOPS-8）。 */
     void assignIssue(Long id, Long assigneeId, Integer priority);
+
+    /** 批量指派处理人 / 优先级（KBOPS-8）。 */
+    int batchAssignIssues(LintIssueBatchAssignRequest request);
 
     /** 定时任务调用 scan（无 ACL，仅调度器）。 */
     void scanScheduled(Long spaceId);

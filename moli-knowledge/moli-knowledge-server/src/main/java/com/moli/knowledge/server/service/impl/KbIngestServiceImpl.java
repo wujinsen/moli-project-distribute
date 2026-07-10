@@ -48,6 +48,7 @@ import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbIngestService;
 import com.moli.knowledge.server.service.KbLlmClient;
+import com.moli.knowledge.server.support.KbLlmCallScenes;
 import com.moli.knowledge.server.service.KbRawCoverageService;
 import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiFileService;
@@ -381,7 +382,7 @@ public class KbIngestServiceImpl implements KbIngestService {
 
         if (llmClient.usable()) {
             String userPrompt = buildPlanUserPrompt(job, space, rawPaths);
-            String raw = llmClient.chat(PLAN_SYSTEM_PROMPT, userPrompt);
+            String raw = llmClient.chat(KbLlmCallScenes.INGEST_PLAN, space.getId(), PLAN_SYSTEM_PROMPT, userPrompt);
             JSONObject obj = parsePlanJson(raw);
             obj.put("batchNo", job.getBatchNo());
             obj.put("topic", job.getTopic());
@@ -842,7 +843,8 @@ public class KbIngestServiceImpl implements KbIngestService {
             userPrompt.append("已知 slug 列表（正文 [[..]] 互链可用，勿整批写入 related）：\n")
                     .append(bulletList(limit(linkCandidates, MAX_LINK_CANDIDATES))).append('\n');
             userPrompt.append("\nraw 源内容（已截断）：\n").append(readSources(sources));
-            content = stripFence(llmClient.chat(PAGE_WRITER_PROMPT, userPrompt.toString()));
+            content = stripFence(llmClient.chat(KbLlmCallScenes.INGEST_GENERATE, space.getId(),
+                    PAGE_WRITER_PROMPT, userPrompt.toString()));
             content = sanitizeRelatedFrontmatter(content, bareSlug(bare), batchBareSlugs, planRelated);
         } else {
             String title = StringUtils.defaultIfBlank(item.getString("title"), bare);
@@ -883,7 +885,8 @@ public class KbIngestServiceImpl implements KbIngestService {
                     + "已知 slug 列表（互链可用，勿写入 related）：\n" + bulletList(limit(knownSlugs, MAX_LINK_CANDIDATES))
                     + "\n\n已有页当前全文：\n"
                     + (baseline.isEmpty() ? "（页不存在，请作为新页主体内容输出一个章节）" : baseline);
-            section = stripFence(llmClient.chat(ENRICH_WRITER_PROMPT, userPrompt));
+            section = stripFence(llmClient.chat(KbLlmCallScenes.INGEST_ENRICH, space.getId(),
+                    ENRICH_WRITER_PROMPT, userPrompt));
         } else {
             section = KbIngestTemplateWriter.buildEnrichPatch(reason, readRawBodyForTemplate(sources));
         }

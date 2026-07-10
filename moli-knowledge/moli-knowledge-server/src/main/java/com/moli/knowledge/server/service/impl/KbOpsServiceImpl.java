@@ -2,6 +2,7 @@ package com.moli.knowledge.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
+import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.dto.KbLlmConfigVo;
 import com.moli.knowledge.server.dto.KbOpsDashboardVo;
 import com.moli.knowledge.server.dto.KbOpsLintSummaryVo;
@@ -13,7 +14,11 @@ import com.moli.knowledge.server.entity.KbSyncLog;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
 import com.moli.knowledge.server.mapper.KbSyncLogMapper;
+import com.moli.knowledge.server.llm.KbLlmConfigSource;
+import com.moli.knowledge.server.llm.KbLlmRuntime;
 import com.moli.knowledge.server.service.KbAclService;
+import com.moli.knowledge.server.service.KbDriftService;
+import com.moli.knowledge.server.service.KbLlmCallLogService;
 import com.moli.knowledge.server.service.KbLlmConfigService;
 import com.moli.knowledge.server.service.KbOpsService;
 import org.springframework.stereotype.Service;
@@ -48,6 +53,16 @@ public class KbOpsServiceImpl implements KbOpsService {
     private KbRelationMapper kbRelationMapper;
     @Resource
     private KbLlmConfigService kbLlmConfigService;
+    @Resource
+    private KbLlmCallLogService kbLlmCallLogService;
+    @Resource
+    private KbLlmProperties kbLlmProperties;
+    @Resource
+    private KbLlmRuntime kbLlmRuntime;
+    @Resource
+    private KbDriftService kbDriftService;
+
+    private static final int DRIFT_DASHBOARD_SAMPLE = 5;
 
     @Override
     public KbOpsDashboardVo dashboard(Long spaceId, Integer trendDays) {
@@ -60,7 +75,8 @@ public class KbOpsServiceImpl implements KbOpsService {
         vo.setSyncTrend(buildSyncTrend(scope, days));
         vo.setLintSummary(buildLintSummary(scope));
         vo.setUnresolvedRelationCount(countUnresolvedRelations(scope));
-        vo.setLlm(buildLlmSummary());
+        vo.setLlm(buildLlmSummary(scope, spaceId, days));
+        vo.setDriftSummary(kbDriftService.driftSummary(spaceId, DRIFT_DASHBOARD_SAMPLE));
         return vo;
     }
 
@@ -190,8 +206,10 @@ public class KbOpsServiceImpl implements KbOpsService {
         return count == null ? 0 : count.longValue();
     }
 
-    private KbOpsLlmSummaryVo buildLlmSummary() {
+    private KbOpsLlmSummaryVo buildLlmSummary(List<Long> scope, Long filterSpaceId, int trendDays) {
         KbOpsLlmSummaryVo llm = new KbOpsLlmSummaryVo();
+        llm.setCallLogEnabled(kbLlmProperties.isCallLogEnabled());
+        llm.setTrendDays(trendDays);
         try {
             KbLlmConfigVo cfg = kbLlmConfigService.getConfig();
             if (cfg != null) {
@@ -200,9 +218,28 @@ public class KbOpsServiceImpl implements KbOpsService {
                 llm.setProvider(cfg.getProvider());
                 llm.setModel(cfg.getModel());
             }
+            KbLlmConfigSource source = kbLlmRuntime.getSource();
+            if (source != null) {
+                llm.setSource(source.name().toLowerCase());
+            }
         } catch (Exception ignored) {
             llm.setAvailable(false);
         }
+
+        if (!kbLlmProperties.isCallLogEnabled()) {
+            return llm;
+        }
+        boolean includeGlobal = filterSpaceId == null;
+        KbLlmCallLogService.LlmCallStats stats = kbLlmCallLogService.aggregate(scope, includeGlobal, trendDays);
+        llm.setTotalCalls(stats.getTotalCalls());
+        llm.setSuccessCalls(stats.getSuccessCalls());
+        llm.setFailCalls(stats.getFailCalls());
+        if (stats.getTotalCalls() > 0) {
+            llm.setSuccessRate(stats.getSuccessCalls() * 1.0 / stats.getTotalCalls());
+            llm.setFailRate(stats.getFailCalls() * 1.0 / stats.getTotalCalls());
+        }
+        llm.setCallsByScene(stats.getCallsByScene());
+        llm.setCallTrend(stats.getCallTrend());
         return llm;
     }
 }

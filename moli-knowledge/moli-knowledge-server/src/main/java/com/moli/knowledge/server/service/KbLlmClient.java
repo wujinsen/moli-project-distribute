@@ -6,7 +6,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.llm.KbLlmEffectiveConfig;
 import com.moli.knowledge.server.llm.KbLlmRuntime;
+import com.moli.knowledge.server.support.KbLlmCallScenes;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,6 +33,8 @@ public class KbLlmClient {
 
     @Resource
     private KbLlmRuntime llm;
+    @Resource
+    private KbLlmCallLogService callLogService;
 
     public boolean usable() {
         return llm.usable();
@@ -51,17 +55,33 @@ public class KbLlmClient {
     }
 
     public String chat(String systemPrompt, String userPrompt) {
-        return chat(systemPrompt, userPrompt, null);
+        return chat(null, null, systemPrompt, userPrompt, null);
     }
 
     public String chat(String systemPrompt, String userPrompt, String modelOverride) {
+        return chat(null, null, systemPrompt, userPrompt, modelOverride);
+    }
+
+    public String chat(String scene, Long spaceId, String systemPrompt, String userPrompt) {
+        return chat(scene, spaceId, systemPrompt, userPrompt, null);
+    }
+
+    /** 带 scene/space 的调用（写入 kb_llm_call_log）。 */
+    public String chat(String scene, Long spaceId, String systemPrompt, String userPrompt, String modelOverride) {
         assertUsable();
+        long start = System.currentTimeMillis();
+        String provider = getProvider();
+        String model = resolveModel(modelOverride);
         try {
-            return chatWithConfig(llm.current(), systemPrompt, userPrompt, modelOverride);
+            String result = doChat(llm.current(), systemPrompt, userPrompt, modelOverride);
+            callLogService.recordSuccess(scene, spaceId, provider, model, elapsed(start));
+            return result;
         } catch (BaseException e) {
+            callLogService.recordFail(scene, spaceId, provider, model, elapsed(start), e.getMessage());
             throw e;
         } catch (Exception e) {
             log.warn("LLM 调用失败: {}", e.getMessage());
+            callLogService.recordFail(scene, spaceId, provider, model, elapsed(start), e.getMessage());
             throw new BaseException("LLM 调用失败：" + e.getMessage());
         }
     }
@@ -69,15 +89,33 @@ public class KbLlmClient {
     /** 使用指定配置调用（连通性测试等），不依赖 Runtime 快照。 */
     public String chatWithConfig(KbLlmEffectiveConfig cfg, String systemPrompt, String userPrompt, String modelOverride)
             throws Exception {
+        return chatWithConfig(cfg, KbLlmCallScenes.LLM_TEST, null, systemPrompt, userPrompt, modelOverride);
+    }
+
+    public String chatWithConfig(KbLlmEffectiveConfig cfg, String scene, Long spaceId,
+                                 String systemPrompt, String userPrompt, String modelOverride) throws Exception {
         if (cfg == null || !cfg.usable()) {
             throw new BaseException("LLM 未配置或已禁用");
         }
-        return doChat(cfg, systemPrompt, userPrompt, modelOverride);
+        long start = System.currentTimeMillis();
+        String provider = cfg.getProvider();
+        String model = resolveModel(modelOverride, cfg.getModel());
+        try {
+            String result = doChat(cfg, systemPrompt, userPrompt, modelOverride);
+            callLogService.recordSuccess(scene, spaceId, provider, model, elapsed(start));
+            return result;
+        } catch (BaseException e) {
+            callLogService.recordFail(scene, spaceId, provider, model, elapsed(start), e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            callLogService.recordFail(scene, spaceId, provider, model, elapsed(start), e.getMessage());
+            throw e;
+        }
     }
 
     public String testPing(KbLlmEffectiveConfig cfg, String userMessage) throws Exception {
         String msg = userMessage == null || userMessage.trim().isEmpty() ? "ping" : userMessage.trim();
-        return chatWithConfig(cfg, DEFAULT_TEST_SYSTEM, msg, null);
+        return chatWithConfig(cfg, KbLlmCallScenes.LLM_TEST, null, DEFAULT_TEST_SYSTEM, msg, null);
     }
 
     private String doChat(KbLlmEffectiveConfig cfg, String systemPrompt, String userPrompt, String modelOverride)
@@ -140,5 +178,17 @@ public class KbLlmClient {
             }
         }
         return sb.toString();
+    }
+
+    private static long elapsed(long start) {
+        return System.currentTimeMillis() - start;
+    }
+
+    private String resolveModel(String modelOverride) {
+        return resolveModel(modelOverride, getModel());
+    }
+
+    private static String resolveModel(String modelOverride, String defaultModel) {
+        return StringUtils.isNotBlank(modelOverride) ? modelOverride.trim() : defaultModel;
     }
 }

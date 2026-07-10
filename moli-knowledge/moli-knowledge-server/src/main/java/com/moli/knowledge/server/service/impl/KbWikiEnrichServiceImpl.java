@@ -19,6 +19,7 @@ import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbLlmClient;
+import com.moli.knowledge.server.support.KbLlmCallScenes;
 import com.moli.knowledge.server.service.KbSyncService;
 import com.moli.knowledge.server.service.KbWikiEnrichService;
 import com.moli.knowledge.server.service.KbWikiFileService;
@@ -113,7 +114,7 @@ public class KbWikiEnrichServiceImpl implements KbWikiEnrichService {
                     throw new BaseException("wiki 页不存在: " + task.getSlug());
                 }
                 String baseline = page.getContent();
-                String patch = resolvePatch(task, page.getSlug(), baseline, knownSlugs);
+                String patch = resolvePatch(task, page.getSlug(), baseline, knownSlugs, spaceId);
                 itemVo.setPatch(patch);
                 String merged = mergeEnrich(baseline, patch);
                 itemVo.setMergedPreview(tail(merged, 4000));
@@ -197,7 +198,7 @@ public class KbWikiEnrichServiceImpl implements KbWikiEnrichService {
     }
 
     private String resolvePatch(WikiEnrichItemDto task, String slug, String baseline,
-                              List<String> knownSlugs) {
+                              List<String> knownSlugs, Long spaceId) {
         if (StringUtils.isNotBlank(task.getPatch())) {
             return stripCodeFence(task.getPatch().trim());
         }
@@ -208,7 +209,7 @@ public class KbWikiEnrichServiceImpl implements KbWikiEnrichService {
                     + "已知 slug 列表：\n" + bulletList(knownSlugs, 60)
                     + "\n\n已有页当前全文：\n" + baseline
                     + "\n\nraw 源：\n" + readRawSnippets(task.getRawPaths());
-            String raw = kbLlmClient.chat(ENRICH_WRITER_PROMPT, user);
+            String raw = kbLlmClient.chat(KbLlmCallScenes.WIKI_ENRICH, spaceId, ENRICH_WRITER_PROMPT, user);
             String patch = stripCodeFence(raw);
             if (!patch.trim().startsWith("##")) {
                 patch = "## 补充\n\n" + patch;

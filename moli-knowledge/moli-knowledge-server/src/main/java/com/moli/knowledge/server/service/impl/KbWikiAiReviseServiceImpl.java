@@ -12,6 +12,7 @@ import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbLlmClient;
+import com.moli.knowledge.server.support.KbLlmCallScenes;
 import com.moli.knowledge.server.service.KbWikiAiReviseService;
 import com.moli.knowledge.server.service.KbWikiFileService;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,7 @@ public class KbWikiAiReviseServiceImpl implements KbWikiAiReviseService {
                 request.getIssueContext(), knownSlugs);
 
         String model = resolveModel(request);
-        String raw = kbLlmClient.chat(SYSTEM_PROMPT, userPrompt, model);
+        String raw = kbLlmClient.chat(KbLlmCallScenes.WIKI_REVISE, spaceId, SYSTEM_PROMPT, userPrompt, model);
         String suggested = stripCodeFence(raw);
 
         WikiAiReviseResultVo vo = new WikiAiReviseResultVo();

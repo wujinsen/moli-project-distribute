@@ -130,4 +130,53 @@ public final class KbWikiFrontmatterUtil {
         }
         return t;
     }
+
+    /** 提取 frontmatter 块（含首尾 ---）；无 frontmatter 返回 null。 */
+    public static String extractFrontmatter(String markdown) {
+        if (StringUtils.isBlank(markdown) || !markdown.startsWith("---")) {
+            return null;
+        }
+        int end = markdown.indexOf("\n---", 3);
+        if (end < 0) {
+            return null;
+        }
+        return markdown.substring(0, end + 4);
+    }
+
+    /** 读取 frontmatter 单行字段（如 slug / created / updated / type）。 */
+    public static String readField(String markdown, String key) {
+        String fm = extractFrontmatter(markdown);
+        if (fm == null || StringUtils.isBlank(key)) {
+            return null;
+        }
+        String prefix = key + ":";
+        for (String line : fm.split("\n", -1)) {
+            if (line.startsWith(prefix)) {
+                String val = line.substring(prefix.length()).trim();
+                return StringUtils.isBlank(val) ? null : unquote(val);
+            }
+        }
+        return null;
+    }
+
+    /** 正文是否存在 H1（`# 标题`，非 `##`）。 */
+    public static boolean hasH1(String markdown) {
+        if (StringUtils.isBlank(markdown)) {
+            return false;
+        }
+        String body = markdown;
+        if (markdown.startsWith("---")) {
+            int end = markdown.indexOf("\n---", 3);
+            if (end >= 0) {
+                body = markdown.substring(end + 4);
+            }
+        }
+        for (String line : body.split("\n", -1)) {
+            String t = line.trim();
+            if (t.startsWith("# ") && !t.startsWith("##")) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

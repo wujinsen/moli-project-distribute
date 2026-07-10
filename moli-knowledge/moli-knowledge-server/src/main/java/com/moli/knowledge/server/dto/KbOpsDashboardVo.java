@@ -25,4 +25,7 @@ public class KbOpsDashboardVo {
 
     @ApiModelProperty("LLM 运行时可用性摘要")
     private KbOpsLlmSummaryVo llm = new KbOpsLlmSummaryVo();
+
+    @ApiModelProperty("wiki↔DB 漂移摘要（KBOPS-A3）")
+    private KbOpsDriftSummaryVo driftSummary = new KbOpsDriftSummaryVo();
 }

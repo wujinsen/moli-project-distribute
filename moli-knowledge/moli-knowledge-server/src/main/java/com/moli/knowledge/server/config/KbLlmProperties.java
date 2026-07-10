@@ -37,6 +37,9 @@ public class KbLlmProperties {
     /** 调用超时（秒）。 */
     private Integer timeoutSeconds = 90;
 
+    /** 是否写入 kb_llm_call_log（KBOPS-9 Dashboard 调用率）。 */
+    private boolean callLogEnabled = true;
+
     /**
      * 平台 DB 中 api-key 的 AES 密钥（32 字节 Base64 或任意字符串 SHA-256）。
      * 环境变量 {@code KB_LLM_CONFIG_SECRET}。

@@ -94,7 +94,7 @@ Tab2 `IngestRawPanel` 收到后：刷新 `GET /kb/ingest/raw-tree`，展开 pref
 | 6 | Tab3 | POST | `/kb/wiki/page/lint-preview` | ✅ 已有（可选） |
 | 7 | Tab3 | POST | `/kb/sync/trigger` | ✅ 已有（import 内嵌或手动） |
 
-P1（本期可不接）：`POST /kb/ingest/raw-upload/zip`、`POST /kb/wiki/page/import/batch`。
+P1（可选增强 UI）：`POST /kb/ingest/raw-upload/zip` ✅、`POST /kb/wiki/page/import/batch` ✅。
 
 ---
 

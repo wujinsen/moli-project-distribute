@@ -3,7 +3,9 @@ package com.moli.knowledge.server.controller;
 import com.moli.common.core.MoliResult;
 import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintVo;
+import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.support.KbLintIssueTypes;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.service.KbInsightService;
 import io.swagger.annotations.Api;
@@ -47,7 +49,7 @@ public class KbInsightController {
     }
 
     @GetMapping("/lint")
-    @ApiOperation("体检（断链 / 孤儿页 / 缺摘要）——只算不落库")
+    @ApiOperation("体检（对齐 lint.py：断链/孤儿/frontmatter/duplicate/stale/conflict 等）——只算不落库")
     public MoliResult<LintVo> lint(@RequestParam(required = false) Long spaceId) {
         return MoliResult.success(kbInsightService.lint(spaceId));
     }
@@ -72,6 +74,18 @@ public class KbInsightController {
     @ApiOperation("KBOPS-8 · 批量更新体检问题状态")
     public MoliResult<Integer> batchUpdateIssueStatus(@RequestBody LintIssueBatchStatusRequest request) {
         return MoliResult.success(kbInsightService.batchUpdateIssueStatus(request));
+    }
+
+    @PutMapping("/lint/issues/batch-assign")
+    @ApiOperation("KBOPS-8 · 批量指派处理人 / 调整优先级")
+    public MoliResult<Integer> batchAssignIssues(@RequestBody LintIssueBatchAssignRequest request) {
+        return MoliResult.success(kbInsightService.batchAssignIssues(request));
+    }
+
+    @GetMapping("/lint/issue-types")
+    @ApiOperation("KBOPS-8 · 支持的体检问题类型")
+    public MoliResult<List<String>> issueTypes() {
+        return MoliResult.success(KbLintIssueTypes.all());
     }
 
     @PutMapping("/lint/issue/{id}/assign")

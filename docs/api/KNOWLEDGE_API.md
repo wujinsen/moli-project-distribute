@@ -1683,7 +1683,7 @@ Plan JSON 示例：`moli-knowledge/kb/tools/enrich-plan.example.json`。
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/kb/wiki/page/import` | multipart 单文件成品 md → 写 wiki 磁盘 |
-| POST | `/kb/wiki/page/import/batch` | P1 · 多文件 + 一次 Sync |
+| POST | `/kb/wiki/page/import/batch` | ✅ T20c · 多文件 + 一次 Sync |
 
 Controller：`KbWikiController`（与 §8.1 `/kb/wiki/page` 同基路径；文档中 `/kb/wiki-moli/page` 为历史别名表述）。
 
@@ -1734,7 +1734,7 @@ Controller：`KbWikiController`（与 §8.1 `/kb/wiki/page` 同基路径；文�
 > 产品方案：[`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md)；契约 `kb/AGENTS.md` §4。  
 > **前端对接** → **[ingest-workbench-frontend.md](ingest-workbench-frontend.md)**（Express、模板模式、nextSteps）· **T20 Tab1/Tab3** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)**  
 > **红线**：禁止 raw→DB、禁止无 plan 生成、禁止无 diff commit（§5）。  
-> **状态**：T15a–e、**T18**、**T19**、**T20a/T20b** 已全部实现（§9.10、§8.8）。
+> **状态**：T15a–e、**T18**、**T19**、**T20a–e/c/d** 已全部实现（§9.10、§8.8）。
 
 统一前缀 **`/kb/ingest`**，返回 `MoliResult<T>`。经网关示例：`POST {VITE_API_BASE_URL}/KnowledgeServer/kb/ingest/jobs`。
 
@@ -2454,7 +2454,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/kb/ingest/raw-upload` | multipart：`prefix` + 多 `file` |
-| POST | `/kb/ingest/raw-upload/zip` | P1 · zip 解压到 prefix |
+| POST | `/kb/ingest/raw-upload/zip` | ✅ T20c · zip 解压到 prefix |
 | GET | `/kb/ingest/raw-prefixes` | P1 · 已有 prefix 下拉 |
 
 #### `POST /kb/ingest/raw-upload`

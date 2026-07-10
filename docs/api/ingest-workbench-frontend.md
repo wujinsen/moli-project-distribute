@@ -1,6 +1,6 @@
 # Ingest 工作台 · 前端对接说明（meiling-ui）
 
-> **读者**：meiling-ui 前端。后端 **T15a–e + T18 + T19 ✅**；**T20 导入入口 🔵 契约已定、后端并行开发**。  
+> **读者**：meiling-ui 前端。后端 **T15a–e + T18 + T19 + T20a–e/c/d ✅**；**T20f 三 Tab UI 🔵 待 meiling-ui**。  
 > **总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
 > **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §9 · **T20 Tab1/Tab3** → **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)**  
 > **产品方案**：[Ingest工作台产品方案.md](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md) · **T20 PRD**：[knowledge-import-entry-prd.md](../product/knowledge-import-entry-prd.md)

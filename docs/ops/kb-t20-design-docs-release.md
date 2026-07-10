@@ -19,7 +19,7 @@
 **本批不包含**
 
 - meiling-ui **T20f** 三 Tab 界面（仍用 Swagger 或后续前端发版）
-- T20c 批量 import、T20d Controller Shiro 注解（P1）
+- T20c zip/batch、T20d `assertCanRawUpload` **后端 ✅**（2026-07-11）
 - 架构图 PNG 内嵌展示（正文为 `` `docs/diagrams/png/...` `` 路径，Sync 不上传 png）
 
 ---

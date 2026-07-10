@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.config.KbLintScanProperties;
+import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintVo;
@@ -20,6 +22,8 @@ import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbInsightService;
+import com.moli.knowledge.server.support.KbLintIssueDetector;
+import com.moli.knowledge.server.support.KbLintIssueTypes;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +61,8 @@ public class KbInsightServiceImpl implements KbInsightService {
     private KbLintIssueMapper kbLintIssueMapper;
     @Resource
     private KbAclService kbAclService;
+    @Resource
+    private KbLintScanProperties kbLintScanProperties;
 
     /** 图谱默认最多返回节点数（按度数降序保留），避免一次性把全库推给前端。 */
     private static final int GRAPH_DEFAULT_MAX_NODES = 300;
@@ -346,24 +352,7 @@ public class KbInsightServiceImpl implements KbInsightService {
     @Override
     public LintVo lint(Long spaceId) {
         assertSpaceReadable(spaceId);
-        Ctx ctx = build(spaceId);
-        LintVo vo = new LintVo();
-        vo.setBroken(ctx.broken);
-        for (KbDocument d : ctx.docs) {
-            Set<Long> in = ctx.inbound.get(d.getId());
-            if (in == null || in.isEmpty()) {
-                vo.getOrphans().add(new LintVo.Ref(String.valueOf(d.getId()), d.getTitle()));
-            }
-            if (StringUtils.isBlank(d.getSummary())) {
-                vo.getNoSummary().add(new LintVo.Ref(String.valueOf(d.getId()), d.getTitle()));
-            }
-        }
-        Map<String, Integer> counts = vo.getCounts();
-        counts.put("pages", ctx.docs.size());
-        counts.put("broken", ctx.broken.size());
-        counts.put("orphans", vo.getOrphans().size());
-        counts.put("noSummary", vo.getNoSummary().size());
-        return vo;
+        return buildLintVo(spaceId);
     }
 
     @Override
@@ -381,6 +370,10 @@ public class KbInsightServiceImpl implements KbInsightService {
     }
 
     private LintVo lintInternal(Long spaceId) {
+        return buildLintVo(spaceId);
+    }
+
+    private LintVo buildLintVo(Long spaceId) {
         Ctx ctx = build(spaceId);
         LintVo vo = new LintVo();
         vo.setBroken(ctx.broken);
@@ -393,12 +386,77 @@ public class KbInsightServiceImpl implements KbInsightService {
                 vo.getNoSummary().add(new LintVo.Ref(String.valueOf(d.getId()), d.getTitle()));
             }
         }
+        applyExtendedLint(vo, ctx.docs, spaceId);
+        applyMissingConcepts(vo, ctx);
+        fillCounts(vo, ctx.docs.size());
+        return vo;
+    }
+
+    private void applyExtendedLint(LintVo vo, List<KbDocument> docs, Long spaceId) {
+        if (kbLintScanProperties.isDuplicateEnabled()) {
+            vo.setDuplicates(KbLintIssueDetector.detectDuplicateSlugs(docs));
+        }
+        Map<Long, KbDocument> byId = new HashMap<>();
+        for (KbDocument d : docs) {
+            byId.put(d.getId(), d);
+        }
+        Map<Long, LintVo.Stale> staleByDoc = new LinkedHashMap<>();
+        if (kbLintScanProperties.getStaleDays() > 0) {
+            for (LintVo.Stale s : KbLintIssueDetector.detectStaleByAge(docs, kbLintScanProperties.getStaleDays())) {
+                staleByDoc.putIfAbsent(parseLong(s.getSlug()), s);
+            }
+        }
+        if (kbLintScanProperties.isStaleBySupersedes()) {
+            List<KbRelation> relations = loadSupersedesRelations(spaceId, byId.keySet());
+            for (LintVo.Stale s : KbLintIssueDetector.detectSupersededActive(relations, byId)) {
+                staleByDoc.putIfAbsent(parseLong(s.getSlug()), s);
+            }
+        }
+        vo.setStale(new ArrayList<>(staleByDoc.values()));
+        if (kbLintScanProperties.isConflictEnabled()) {
+            vo.setConflicts(KbLintIssueDetector.detectContentHashDuplicates(docs));
+        }
+        if (kbLintScanProperties.isFrontmatterEnabled()) {
+            KbLintIssueDetector.detectFrontmatterIssues(docs, vo);
+        }
+    }
+
+    private void applyMissingConcepts(LintVo vo, Ctx ctx) {
+        if (kbLintScanProperties.getMissingConceptMin() > 0 && ctx.brokenByTarget != null) {
+            vo.setMissingConcepts(KbLintIssueDetector.detectMissingConcepts(
+                    ctx.brokenByTarget, kbLintScanProperties.getMissingConceptMin()));
+        }
+    }
+
+    private List<KbRelation> loadSupersedesRelations(Long spaceId, Set<Long> docIds) {
+        if (docIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<KbRelation> w = new LambdaQueryWrapper<KbRelation>()
+                .eq(KbRelation::getIsDelete, CommonConstant.UN_DELETE)
+                .eq(KbRelation::getRelationType, "supersedes")
+                .in(KbRelation::getTargetDocId, docIds);
+        if (spaceId != null) {
+            w.eq(KbRelation::getSpaceId, spaceId);
+        }
+        return kbRelationMapper.selectList(w);
+    }
+
+    private void fillCounts(LintVo vo, int pages) {
         Map<String, Integer> counts = vo.getCounts();
-        counts.put("pages", ctx.docs.size());
-        counts.put("broken", ctx.broken.size());
+        counts.put("pages", pages);
+        counts.put("broken", vo.getBroken().size());
         counts.put("orphans", vo.getOrphans().size());
         counts.put("noSummary", vo.getNoSummary().size());
-        return vo;
+        counts.put("duplicates", vo.getDuplicates().size());
+        counts.put("stale", vo.getStale().size());
+        counts.put("conflicts", vo.getConflicts().size());
+        counts.put("missingSources", vo.getMissingSources().size());
+        counts.put("badTypes", vo.getBadTypes().size());
+        counts.put("missingTitles", vo.getMissingTitles().size());
+        counts.put("slugMismatches", vo.getSlugMismatches().size());
+        counts.put("missingDates", vo.getMissingDates().size());
+        counts.put("missingConcepts", vo.getMissingConcepts().size());
     }
 
     private void persistScanResults(Long spaceId, LintVo vo) {
@@ -412,14 +470,42 @@ public class KbInsightServiceImpl implements KbInsightService {
         kbLintIssueMapper.delete(del);
 
         for (LintVo.Broken b : vo.getBroken()) {
-            insertIssue(spaceId, parseLong(b.getPage()), "broken_link",
+            insertIssue(spaceId, parseLong(b.getPage()), KbLintIssueTypes.BROKEN_LINK,
                     b.getTitle() + " -> [[" + b.getTarget() + "]]", now);
         }
         for (LintVo.Ref r : vo.getOrphans()) {
-            insertIssue(spaceId, parseLong(r.getSlug()), "orphan", r.getTitle(), now);
+            insertIssue(spaceId, parseLong(r.getSlug()), KbLintIssueTypes.ORPHAN, r.getTitle(), now);
         }
         for (LintVo.Ref r : vo.getNoSummary()) {
-            insertIssue(spaceId, parseLong(r.getSlug()), "no_summary", r.getTitle(), now);
+            insertIssue(spaceId, parseLong(r.getSlug()), KbLintIssueTypes.NO_SUMMARY, r.getTitle(), now);
+        }
+        for (LintVo.Duplicate d : vo.getDuplicates()) {
+            String detail = "stem=" + d.getStem() + " slugs=" + String.join(", ", d.getSlugs());
+            insertIssue(spaceId, parseLong(d.getPage()), KbLintIssueTypes.DUPLICATE, detail, now);
+        }
+        for (LintVo.Stale s : vo.getStale()) {
+            insertIssue(spaceId, parseLong(s.getSlug()), KbLintIssueTypes.STALE,
+                    s.getTitle() + ": " + s.getReason(), now);
+        }
+        for (LintVo.Conflict c : vo.getConflicts()) {
+            insertIssue(spaceId, parseLong(c.getPage()), KbLintIssueTypes.CONFLICT,
+                    c.getDetail() != null ? c.getDetail() : String.join(", ", c.getSlugs()), now);
+        }
+        persistIssueItems(spaceId, vo.getMissingSources(), KbLintIssueTypes.MISSING_SOURCE, now);
+        persistIssueItems(spaceId, vo.getBadTypes(), KbLintIssueTypes.BAD_TYPE, now);
+        persistIssueItems(spaceId, vo.getMissingTitles(), KbLintIssueTypes.MISSING_TITLE, now);
+        persistIssueItems(spaceId, vo.getSlugMismatches(), KbLintIssueTypes.SLUG_MISMATCH, now);
+        persistIssueItems(spaceId, vo.getMissingDates(), KbLintIssueTypes.MISSING_DATES, now);
+        for (LintVo.IssueItem item : vo.getMissingConcepts()) {
+            insertIssue(spaceId, parseLong(item.getPage()), KbLintIssueTypes.MISSING_CONCEPT,
+                    item.getTitle() + ": " + item.getDetail(), now);
+        }
+    }
+
+    private void persistIssueItems(Long spaceId, List<LintVo.IssueItem> items, String type, Date now) {
+        for (LintVo.IssueItem item : items) {
+            String detail = StringUtils.isNotBlank(item.getDetail()) ? item.getDetail() : item.getTitle();
+            insertIssue(spaceId, parseLong(item.getPage()), type, detail, now);
         }
     }
 
@@ -515,6 +601,42 @@ public class KbInsightServiceImpl implements KbInsightService {
         kbLintIssueMapper.updateById(issue);
     }
 
+    @Override
+    public int batchAssignIssues(LintIssueBatchAssignRequest request) {
+        if (request == null || request.getIds() == null || request.getIds().isEmpty()) {
+            throw new BaseException("ids 不能为空");
+        }
+        if (request.getAssigneeId() == null && request.getPriority() == null) {
+            throw new BaseException("assigneeId 与 priority 至少填一项");
+        }
+        if (request.getPriority() != null && (request.getPriority() < 0 || request.getPriority() > 2)) {
+            throw new BaseException("priority 非法（0普通/1高/2紧急）");
+        }
+        int updated = 0;
+        Date now = new Date();
+        for (Long id : request.getIds()) {
+            KbLintIssue issue = kbLintIssueMapper.selectById(id);
+            if (issue == null) {
+                continue;
+            }
+            if (issue.getSpaceId() != null) {
+                kbAclService.assertCanEdit(issue.getSpaceId());
+            } else if (!kbAclService.isAdmin()) {
+                throw new BaseException("无权处理该体检问题");
+            }
+            if (request.getAssigneeId() != null) {
+                issue.setAssigneeId(request.getAssigneeId());
+            }
+            if (request.getPriority() != null) {
+                issue.setPriority(request.getPriority());
+            }
+            issue.setUpdateTime(now);
+            kbLintIssueMapper.updateById(issue);
+            updated++;
+        }
+        return updated;
+    }
+
     private void insertIssue(Long spaceId, Long docId, String type, String detail, Date now) {
         KbLintIssue issue = new KbLintIssue();
         issue.setId(IdGenerator.getId());
@@ -585,6 +707,10 @@ public class KbInsightServiceImpl implements KbInsightService {
                 Long tid = resolveWikilinkTarget(target, titleIndex, slugIndex);
                 if (tid == null) {
                     ctx.broken.add(new LintVo.Broken(String.valueOf(d.getId()), d.getTitle(), target));
+                    if (StringUtils.isNotBlank(d.getSlug())) {
+                        ctx.brokenByTarget.computeIfAbsent(target.trim(), k -> new HashSet<>())
+                                .add(d.getSlug());
+                    }
                 } else if (!tid.equals(d.getId()) && seen.add(tid)) {
                     addLink(ctx, d.getId(), tid, "links_to");
                     ctx.inbound.computeIfAbsent(tid, k -> new HashSet<>()).add(d.getId());
@@ -688,5 +814,7 @@ public class KbInsightServiceImpl implements KbInsightService {
         List<LintVo.Broken> broken = new ArrayList<>();
         Map<Long, Set<Long>> inbound = new HashMap<>();
         Map<Long, Integer> degree = new LinkedHashMap<>();
+        /** 断链目标 → 引用方 slug 集合（missing_concept）。 */
+        Map<String, Set<String>> brokenByTarget = new HashMap<>();
     }
 }

@@ -11,7 +11,7 @@
 | 优先级 | 页面 | 路由 | 后端 | 前端 | 对接文档 |
 |--------|------|------|------|------|----------|
 | **P0** | **健康体检 · Sync 区** | `knowledge/lint/index` | 🔵 KBOPS-1 | 🔵 **O1–O4** | **[knowledge-ops-frontend.md §3](knowledge-ops-frontend.md#3-p0--健康体检页-sync-增强o1o4)** |
-| **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19 · 🔵 **T20 待后端** | 🔵 **Spec 已定**（Tab2 §10.1；**T20 三 Tab** 见下） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) · **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** |
+| **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19+**T20a–e/c/d 后端** | 🔵 **T20f 三 Tab UI**（Tab2 §10.1；Tab1/3 见下） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) · **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** |
 | **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | 🔵 **Spec 已定**（见 §10.2；当前 MVP 仅 Lint+AI） | [wiki-govern-frontend.md](wiki-govern-frontend.md) · **[knowledge-ops-frontend.md §4](knowledge-ops-frontend.md#4-p0--wiki-治理t16f--kbops-6)** |
 | P1 | 平台 LLM 设置 | `system/kb-llm` | ✅ T19 | 🔵 T19d | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) |
 | P1 | Wiki 编辑 | `knowledge/wiki/edit` | ✅ T14 | ✅ 已有 | KNOWLEDGE_API §8 |
@@ -188,7 +188,7 @@ export interface KbWorkflowHintVo {
 
 | 模块 | 后端 | 前端 UI | 缺口摘要 |
 |------|------|---------|----------|
-| **Ingest** | ✅ T15+T18+T19 · 🔵 T20 契约 | 🔵 Spec ✅ | Tab2：§10.1 nextSteps + raw 冲突；**Tab1/3**：[kb-import-entry-frontend.md](kb-import-entry-frontend.md) |
+| **Ingest** | ✅ T15+T18+T19+T20 后端 | 🔵 **T20f UI** | Tab2：§10.1 nextSteps + raw 冲突；**Tab1/3**：[kb-import-entry-frontend.md](kb-import-entry-frontend.md) |
 | **Wiki 治理** | ✅ T16a/e/g | 🔵 MVP 两步 | §10.2：script/auto/merge-hint 四步闭环 |
 | **共享** | ✅ `nextSteps` 字段 | 🔵 | `KbWorkflowNextSteps.vue` 复用（§10.1） |
 

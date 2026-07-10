@@ -102,7 +102,7 @@
 |------|------|------|------|
 | **KBOPS-A1** | CI **lint-strict 硬门禁**：PR `dry-run-all` + `lint-strict-all` blocking | `.github/workflows/kb-sync.yml` | ✅ |
 | **KBOPS-A2** | Sync **失败 Runbook** | `docs/ops/kb-sync-failure-runbook.md` | ✅ |
-| **KBOPS-A3** | wiki↔DB **漂移检测** | 脚本或 Dashboard 前置 | 📋 |
+| **KBOPS-A3** | wiki↔DB **漂移检测** | 脚本 + `GET /kb/sync/drift` + Dashboard `driftSummary` | ✅ |
 
 ---
 

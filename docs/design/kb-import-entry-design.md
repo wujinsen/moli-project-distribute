@@ -17,8 +17,8 @@
 | raw 目录树（只读） | ✅ `GET /kb/ingest/raw-tree` | ✅ Ingest Tab2 | — |
 | Ingest Plan / commit / Sync | ✅ T15+T18 | ✅ 部分 | — |
 | Wiki 单篇编辑写盘 | ✅ `PUT /kb/wiki/page` | ✅ Wiki 编辑 | 无批量/向导 |
-| **Web 上传 raw** | ❌ 待 T20a | ❌ | **目标**：Tab1 浏览器上传 → 服务写 Linux 磁盘 `kb/raw/` |
-| **Web 成品 wiki 导入** | ❌ 待 T20b | ❌ | **目标**：Tab3 浏览器上传 → 直写 `kb/wiki*/` + Sync |
+| **Web 上传 raw** | ✅ T20a/c | 🔵 Tab1 UI | Tab1 浏览器上传 / zip → 服务写 `kb/raw/` |
+| **Web 成品 wiki 导入** | ✅ T20b/c/e | 🔵 Tab3 UI | Tab3 浏览器上传 → 直写 `kb/wiki*/` + Sync |
 | 文档管理「新建」 | ✅ PUT（T14） | ⚠️ T14e 未全量部署 | 与 Tab3 复用落盘规则 |
 
 用户心智与 PRD 一致：**两条正路**——待加工走 raw + Ingest；终稿 md 直写 wiki + Sync。
@@ -37,7 +37,7 @@
 | pdf/docx → 正文 | Tab3 仅 `.md`；pdf 走 Sync 后 Wiki 编辑页 MinIO |
 | 导入包内插图自动回迁 | MVP 只写 md 文本；含 `![](` 相对路径时 lint 告警，T22 `.assets` 批量复制放 P1 |
 | 替代 Agent 厚 Ingest | CLI/Cursor 批量仍保留 |
-| zip raw 投喂 | P1（T20c） |
+| zip raw 投喂 | ✅ T20c 后端 · 🔵 Tab1 zip UI |
 | **SSH / SFTP / rsync 直写磁盘** | **运维域**（`docs/ops/`、`deploy/`）；**不属于 T20 用户功能**，Editor 操作手册不写 |
 
 ### 1.4 Editor 路径 vs 运维兜底（必读）
@@ -437,8 +437,8 @@ Web 上传 **不自动 commit Git**；运维若用 `git pull` 部署，需约定
 |------|------|------|------|
 | **T20a P0** | `raw-upload` + 单测 | Tab1 + 跳 Tab2 | 上传 md → Tab2 可见 → 模板 Ingest → Sync → 浏览 |
 | **T20b P0** | `page/import` + frontmatter | Tab3 单文件 | 成品 md 进 wiki、不进 raw → Sync → 搜索可见 |
-| **T20c P1** | zip raw、import/batch | Tab1 zip、Tab3 多文件 | 10 篇 ≤1 次 Sync |
-| **T20d P1** | SQL 权限、nextSteps 对齐 | 决策树文案、权限隐藏 | editor 无 rawUpload 时 Tab1 只读提示 |
+| **T20c P1** | zip raw、import/batch | Tab1 zip、Tab3 多文件 | ✅ 后端 · 🔵 UI |
+| **T20d P1** | SQL 权限、`assertCanRawUpload` | 决策树文案、权限隐藏 | ✅ 后端 · 🔵 Tab1 v-if |
 | **T20e P2** | import 附带 `assetsZip` | Tab3 资产包 | ✅ 后端 · 🔵 UI |
 
 ### 8.2 测试要点

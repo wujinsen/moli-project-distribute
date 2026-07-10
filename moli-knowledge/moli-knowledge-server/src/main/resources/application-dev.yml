@@ -82,6 +82,7 @@ kb:
     timeout-seconds: 90
     # T19 · 平台 DB 存 api-key 时的 AES 密钥（32 字节 Base64 或任意字符串 SHA-256）
     config-secret: ${KB_LLM_CONFIG_SECRET:}
+    call-log-enabled: true
   search:
     # fulltext：用 kb_document 上 ngram 全文索引 ftx_kb_document（MATCH AGAINST）；like：旧三字段 LIKE
     mode: fulltext
@@ -153,6 +154,12 @@ kb:
   lint:
     schedule-enabled: false
     schedule-cron: "0 0 3 ? * MON"
+    stale-days: 180
+    stale-by-supersedes: true
+    duplicate-enabled: true
+    conflict-enabled: true
+    frontmatter-enabled: true
+    missing-concept-min: 3
   browse:
     # 浏览与管理统一按分类（= wiki 一级目录）；groupBy=type 已废弃
     default-group-by: category
