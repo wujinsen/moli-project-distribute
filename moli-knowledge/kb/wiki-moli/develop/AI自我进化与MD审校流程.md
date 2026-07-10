@@ -1,4 +1,6 @@
 ---
+
+
 title: AI 自我进化与 MD 审校流程
 slug: AI自我进化与MD审校流程
 type: guide
@@ -8,7 +10,7 @@ sources:
   - moli-knowledge/kb/AGENTS.md
   - moli-knowledge/kb/tools/lint.py
   - moli-knowledge/kb/tools/sync_to_db.py
-related: [知识库三操作, 增量ingest与raw投喂指南, 项目文档总览, 项目文档总览, 项目文档总览, Wiki在线编辑与AI协助改稿, 查询与体检指南]
+related: [知识库三操作, 增量ingest与raw投喂指南, 项目文档总览, Wiki在线编辑与AI协助改稿, 查询与体检指南]
 created: 2026-06-24
 updated: 2026-06-27
 ---

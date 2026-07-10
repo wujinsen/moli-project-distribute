@@ -1,4 +1,6 @@
 ---
+
+
 title: BI服务产品说明
 slug: BI服务产品说明
 type: guide
@@ -8,7 +10,7 @@ sources:
   - docs/product/moli-v1-release-scope.md
   - docs/design/bi-module-overview.md
   - moli-ai/README.md
-related: [bi服务, bi报表服务演进路线, 网关]
+related: [bi服务, 茉莉-bi-报表规划, 网关]
 created: 2026-06-20
 updated: 2026-06-20
 ---
@@ -36,7 +38,7 @@ v1 仅验证 **网关 + 注册 + Shiro 骨架**；`GET /demo/test` 探针。
 
 ## v2 展望
 
-见 [[bi报表服务演进路线]] 与 `docs/design/bi-module-overview.md` §6。
+见 [[茉莉-bi-报表规划]] 与 `docs/design/bi-module-overview.md` §6。
 
 ## 相关
 

@@ -1,4 +1,6 @@
 ---
+
+
 title: Wiki 在线编辑与 AI 协助改稿（产品方案）
 slug: Wiki在线编辑与AI协助改稿
 type: guide
@@ -10,7 +12,7 @@ sources:
   - moli-knowledge/kb/wiki-moli/develop/AI自我进化与MD审校流程.md
   - moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/impl/KbAskServiceImpl.java
   - meiling-ui/src/views/knowledge/KnowledgeWikiEditView.vue
-related: [AI自我进化与MD审校流程, 项目文档总览, 项目文档总览, 项目文档总览]
+related: [AI自我进化与MD审校流程, 项目文档总览]
 created: 2026-06-24
 updated: 2026-06-24
 ---

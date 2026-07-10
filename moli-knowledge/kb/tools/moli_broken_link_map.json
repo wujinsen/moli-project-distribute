@@ -1,0 +1,904 @@
+{
+  "api-向后兼容策略": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "middleware/api-向后兼容策略",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/api-向后兼容策略"
+    }
+  },
+  "api-接口安全设计": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉安全与合规要点汇总"
+    ],
+    "enterprise": "security/api-接口安全设计",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "security/api-接口安全设计"
+    }
+  },
+  "arthas-在线诊断": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "java/arthas-在线诊断",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/arthas-在线诊断"
+    }
+  },
+  "bcrypt-密码哈希与加盐": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉安全与合规要点汇总"
+    ],
+    "enterprise": "security/bcrypt-密码哈希与加盐",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "security/bcrypt-密码哈希与加盐"
+    }
+  },
+  "cache-aside与缓存更新模式": {
+    "count": 2,
+    "refs": [
+      "develop/outputs/茉莉数据层设计要点汇总",
+      "develop/outputs/茉莉高并发架构模式汇总"
+    ],
+    "enterprise": "cache/cache-aside与缓存更新模式",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "cache/cache-aside与缓存更新模式"
+    }
+  },
+  "caffeine-本地缓存实践": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "cache/caffeine-本地缓存实践",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "cache/caffeine-本地缓存实践"
+    }
+  },
+  "ci-知识库同步门禁": {
+    "count": 1,
+    "refs": [
+      "develop/kb-wiki到es同步流水线"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "completablefuture-异步编排": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "java/completablefuture-异步编排",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/completablefuture-异步编排"
+    }
+  },
+  "csrf与xss防护": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉安全与合规要点汇总"
+    ],
+    "enterprise": "security/csrf与xss防护",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "security/csrf与xss防护"
+    }
+  },
+  "druid-连接池泄漏排查": {
+    "count": 2,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总",
+      "guides/事故复盘-postmortem"
+    ],
+    "enterprise": "database/druid-连接池泄漏排查",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "database/druid-连接池泄漏排查"
+    }
+  },
+  "dubbo-调用原理与分层": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "middleware/dubbo-调用原理与分层",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/dubbo-调用原理与分层"
+    }
+  },
+  "dubbo-超时链路传递": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "middleware/dubbo-超时链路传递",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/dubbo-超时链路传递"
+    }
+  },
+  "elasticsearch-ik分词与分析器": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉知识库检索与存储全链路汇总"
+    ],
+    "enterprise": "search/elasticsearch-ik分词与分析器",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "search/elasticsearch-ik分词与分析器"
+    }
+  },
+  "gateway-接入-sentinel规划": {
+    "count": 1,
+    "refs": [
+      "develop/茉莉微服务演进路线-2026"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "gateway-超时与重试配置": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "middleware/gateway-超时与重试配置",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/gateway-超时与重试配置"
+    }
+  },
+  "gateway-路由与过滤器": {
+    "count": 2,
+    "refs": [
+      "develop/网关",
+      "test/秒杀压测指南"
+    ],
+    "enterprise": "middleware/gateway-路由与过滤器",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/gateway-路由与过滤器"
+    }
+  },
+  "git-分支与发布策略": {
+    "count": 1,
+    "refs": [
+      "guides/代码审查-checklist"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "https与-tls基础": {
+    "count": 2,
+    "refs": [
+      "develop/outputs/茉莉安全与合规要点汇总",
+      "ops/nginx反向代理与前端部署指南"
+    ],
+    "enterprise": "security/https与-tls基础",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "security/https与-tls基础"
+    }
+  },
+  "java-并发": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "java/java-并发",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/java-并发"
+    }
+  },
+  "java-虚拟线程": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "jenkins-ci入门": {
+    "count": 1,
+    "refs": [
+      "guides/git协作指南"
+    ],
+    "enterprise": "ops/jenkins-ci入门",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "ops/jenkins-ci入门"
+    }
+  },
+  "juc-并发工具类": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "java/juc-并发工具类",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/juc-并发工具类"
+    }
+  },
+  "jvm-gc调优实战": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "java/jvm-gc调优实战",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/jvm-gc调优实战"
+    }
+  },
+  "jvm-oom与排查入门": {
+    "count": 1,
+    "refs": [
+      "ops/故障排查指南"
+    ],
+    "enterprise": "java/jvm-oom与排查入门",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/jvm-oom与排查入门"
+    }
+  },
+  "k8s入门与容器编排": {
+    "count": 1,
+    "refs": [
+      "guides/git协作指南"
+    ],
+    "enterprise": "ops/k8s入门与容器编排",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "ops/k8s入门与容器编排"
+    }
+  },
+  "linux-运维基础": {
+    "count": 2,
+    "refs": [
+      "ops/nginx反向代理与前端部署指南",
+      "ops/生产部署拓扑备忘"
+    ],
+    "enterprise": "ops/linux-运维基础",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "ops/linux-运维基础"
+    }
+  },
+  "logback-日志配置": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉可观测性与运维体系汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "mdc-日志链路上下文": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "java/mdc-日志链路上下文",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/mdc-日志链路上下文"
+    }
+  },
+  "micrometer-与指标暴露": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉可观测性与运维体系汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "mybatis-与-druid持久层": {
+    "count": 2,
+    "refs": [
+      "develop/bi服务",
+      "develop/技术栈与版本"
+    ],
+    "enterprise": "database/mybatis-与-druid持久层",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "database/mybatis-与-druid持久层"
+    }
+  },
+  "mysql-binlog与canal同步": {
+    "count": 2,
+    "refs": [
+      "develop/kb-wiki到es同步流水线",
+      "develop/outputs/茉莉知识库检索与存储全链路汇总"
+    ],
+    "enterprise": "database/mysql-binlog与canal同步",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "database/mysql-binlog与canal同步"
+    }
+  },
+  "mysql-explain-执行计划进阶": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉数据层设计要点汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "mysql-slow-log慢查询分析": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "database/mysql-slow-log慢查询分析",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "database/mysql-slow-log慢查询分析"
+    }
+  },
+  "nacos-config动态配置实践": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉中间件与依赖选型速查"
+    ],
+    "enterprise": "middleware/nacos-config动态配置实践",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/nacos-config动态配置实践"
+    }
+  },
+  "netty-reactor与线程模型": {
+    "count": 1,
+    "refs": [
+      "test/压测报告解读指南"
+    ],
+    "enterprise": "middleware/netty-reactor与线程模型",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/netty-reactor与线程模型"
+    }
+  },
+  "oauth2-与开放接口": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉安全与合规要点汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "prometheus-告警规则设计": {
+    "count": 2,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总",
+      "guides/事故复盘-postmortem"
+    ],
+    "enterprise": "ops/prometheus-告警规则设计",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "ops/prometheus-告警规则设计"
+    }
+  },
+  "redis分布式锁实现": {
+    "count": 2,
+    "refs": [
+      "develop/outputs/茉莉中间件与依赖选型速查",
+      "develop/秒杀设计"
+    ],
+    "enterprise": "cache/redis分布式锁实现",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "cache/redis分布式锁实现"
+    }
+  },
+  "rocketmq-架构与实战": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉中间件集成实践汇总"
+    ],
+    "enterprise": "middleware/rocketmq-架构与实战",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/rocketmq-架构与实战"
+    }
+  },
+  "rocketmq-消息堆积排查": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "middleware/rocketmq-消息堆积排查",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/rocketmq-消息堆积排查"
+    }
+  },
+  "rpc-超时重试与链路": {
+    "count": 1,
+    "refs": [
+      "test/压测报告解读指南"
+    ],
+    "enterprise": "middleware/rpc-超时重试与链路",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/rpc-超时重试与链路"
+    }
+  },
+  "skywalking-链路追踪": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉可观测性与运维体系汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "spring-async与线程池": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "spring/spring-async与线程池",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "spring/spring-async与线程池"
+    }
+  },
+  "spring-cache-注解缓存": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "spring/spring-cache-注解缓存",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "spring/spring-cache-注解缓存"
+    }
+  },
+  "threadlocal-与上下文传递": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "security/threadlocal-与上下文传递",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "security/threadlocal-与上下文传递"
+    }
+  },
+  "tomcat-连接器调优": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "transmittable-thread-local跨线程": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "java/transmittable-thread-local跨线程",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/transmittable-thread-local跨线程"
+    }
+  },
+  "zookeeper-与协调服务": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉中间件与依赖选型速查"
+    ],
+    "enterprise": "middleware/zookeeper-与协调服务",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "middleware/zookeeper-与协调服务"
+    }
+  },
+  "优惠券-高并发领取": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉高并发架构模式汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "分布式id生成": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉数据层设计要点汇总"
+    ],
+    "enterprise": "database/分布式id生成",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "database/分布式id生成"
+    }
+  },
+  "分布式锁": {
+    "count": 1,
+    "refs": [
+      "develop/秒杀设计"
+    ],
+    "enterprise": "cache/分布式锁",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "cache/分布式锁"
+    }
+  },
+  "分布式限流实现": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉高并发架构模式汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "前端技术栈": {
+    "count": 2,
+    "refs": [
+      "guides/前端开发与联调指南",
+      "ops/nginx反向代理与前端部署指南"
+    ],
+    "enterprise": "frontend/前端技术栈",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "frontend/前端技术栈"
+    }
+  },
+  "双链": {
+    "count": 1,
+    "refs": [
+      "develop/wiki-ingest-质量规范"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "商品-sku与spu设计": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉电商交易链路汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "字段级数据权限设计": {
+    "count": 2,
+    "refs": [
+      "develop/bi服务",
+      "develop/rbac-权限模型"
+    ],
+    "enterprise": "security/字段级数据权限设计",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "security/字段级数据权限设计"
+    }
+  },
+  "容器与-docker": {
+    "count": 1,
+    "refs": [
+      "ops/docker部署指南"
+    ],
+    "enterprise": "ops/容器与-docker",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "ops/容器与-docker"
+    }
+  },
+  "容量规划与水平扩展": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "ops/容量规划与水平扩展",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "ops/容量规划与水平扩展"
+    }
+  },
+  "库存-超卖防护": {
+    "count": 2,
+    "refs": [
+      "develop/outputs/茉莉电商交易链路汇总",
+      "develop/outputs/茉莉高并发架构模式汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "异步编程面试题": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": "java/异步编程面试题",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "java/异步编程面试题"
+    }
+  },
+  "技术债-管理": {
+    "count": 1,
+    "refs": [
+      "guides/事故复盘-postmortem"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "支付回调与安全验签": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉电商交易链路汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "日志脱敏规范": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉安全与合规要点汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "架构决策-adr": {
+    "count": 1,
+    "refs": [
+      "guides/事故复盘-postmortem"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "混沌工程入门": {
+    "count": 1,
+    "refs": [
+      "guides/事故复盘-postmortem"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "用户中心-扩展能力规划": {
+    "count": 1,
+    "refs": [
+      "develop/茉莉微服务演进路线-2026"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "知识库-混合检索规划": {
+    "count": 2,
+    "refs": [
+      "develop/kb-wiki到es同步流水线",
+      "develop/outputs/茉莉知识库检索与存储全链路汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "秒杀-库存对账校正": {
+    "count": 1,
+    "refs": [
+      "guides/事故复盘-postmortem"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "线程池-实战调优": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "缓存双写与一致性策略": {
+    "count": 2,
+    "refs": [
+      "develop/outputs/茉莉异步与线程模型要点汇总",
+      "develop/outputs/茉莉数据层设计要点汇总"
+    ],
+    "enterprise": "cache/缓存双写与一致性策略",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "cache/缓存双写与一致性策略"
+    }
+  },
+  "蓝绿与滚动发布": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉稳定性与故障排查要点汇总"
+    ],
+    "enterprise": "ops/蓝绿与滚动发布",
+    "moli": null,
+    "fix": {
+      "type": "enterprise_slug",
+      "value": "ops/蓝绿与滚动发布"
+    }
+  },
+  "订单-对账与补偿": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉电商交易链路汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "订单-状态机设计": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉电商交易链路汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  },
+  "购物车-设计与缓存": {
+    "count": 1,
+    "refs": [
+      "develop/outputs/茉莉电商交易链路汇总"
+    ],
+    "enterprise": null,
+    "moli": null,
+    "fix": {
+      "type": "unresolved",
+      "value": null
+    }
+  }
+}

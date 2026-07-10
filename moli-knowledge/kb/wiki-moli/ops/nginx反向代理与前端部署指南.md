@@ -1,4 +1,6 @@
 ---
+
+
 title: Nginx 反向代理与前端部署指南
 slug: nginx反向代理与前端部署指南
 type: guide
@@ -7,7 +9,7 @@ tags: [Nginx, 部署, 前端, 反向代理]
 sources:
   - raw/wujinsen_markdown/架构/DevOps/nginx/moli nginx配置文件.note.md
   - raw/wujinsen_markdown/架构/DevOps/nginx/使用nginx部署多个前端项目.note.md
-related: [前端开发与联调指南, 跨域与前后端分离, linux-运维基础, spring-cloud-gateway, https与-tls基础]
+related: [前端开发与联调指南, 茉莉-gateway-cors, 网关]
 created: 2026-06-22
 updated: 2026-06-22
 ---
@@ -61,7 +63,7 @@ Nginx 同域部署时，浏览器访问 `https://moli.example.com` 调 `/UserCen
 
 ## 5. HTTPS
 
-对外 TLS 在 Nginx 终结，证书配置见 [[https与-tls基础]]；后端可仍走 HTTP 内网。
+对外 TLS 在 Nginx 终结，证书配置见 `moli-knowledge/kb/wiki/security/https与-tls基础.md`；后端可仍走 HTTP 内网。
 
 ## 6. 运维命令
 
@@ -70,8 +72,8 @@ nginx -t                    # 检查配置
 nginx -s reload           # 平滑重载
 ```
 
-更多 Linux 习惯见 [[linux-运维基础]]。
+更多 Linux 习惯见 `moli-knowledge/kb/wiki/ops/linux-运维基础.md`。
 
 ## 相关
 
-[[前端技术栈]] · [[生产部署拓扑备忘]] · [[docker部署指南]]
+`moli-knowledge/kb/wiki/frontend/前端技术栈.md` · [[生产部署拓扑备忘]] · [[docker部署指南]]

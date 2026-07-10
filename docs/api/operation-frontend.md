@@ -18,8 +18,8 @@
 | **P2** | 端口矩阵校验 | `operation/project/index`、`operation/component/index` | ✅ SVR-7 | **S3** 端口校验弹窗 + 组件列 badge |
 | **P2** | 部署进程状态 | `operation/project/index` | ✅ SVR-8 | **S4** 进程状态（只读） |
 | **P2** | 驾驶舱 ops KPI | `CandlelightDragon/cockpit/index`（tab=ops） | ✅ SVR-9 | **S5** 合并 `/operation/stats` |
-| **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-10 | **S6** 拓扑弹窗内编辑关联 |
-| **P2** | 批量探活 / 部署同步 | 驾驶舱或服务器页 | ✅ SVR-11 | **S7** 手动触发 `probe-all`（可选） |
+| **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-11 | **S6** 拓扑弹窗内编辑关联 |
+| **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 手动触发 `probe-all` |
 
 **建议迭代顺序**：**S0 → S1/S2 → S3 → S4 → S5 → S6**
 
@@ -494,7 +494,8 @@ export type OperationHealthProbeResult = {
 | S3 | 端口 | 弹窗汇总与明细正确；组件列 badge 与 audit 一致 |
 | S4 | 部署 | status 只读可查；不可用时 message 可读 |
 | S5 | 驾驶舱 | ops KPI 使用真实 stats，非纯 Mock |
-| S6 | 关联 | links GET/PUT 可维护拓扑；保存后拓扑刷新 |
+| S6 | 关联 | links GET/PUT 可维护拓扑；保存后拓扑刷新 | ✅ |
+| S7 | 批量探活 | probe-all 触发后列表状态更新 | ✅ |
 
 ---
 

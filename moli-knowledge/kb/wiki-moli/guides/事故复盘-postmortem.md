@@ -1,4 +1,6 @@
 ---
+
+
 title: 事故复盘（Postmortem）
 slug: 事故复盘-postmortem
 type: guide
@@ -6,14 +8,14 @@ status: active
 tags: [运维, 质量, 协作]
 sources:
   - raw/wujinsen_markdown/
-related: [项目文档总览, 代码审查-checklist, 技术债-管理]
+related: [项目文档总览, 代码审查-checklist, 茉莉-规范-adr]
 created: 2026-06-21
 updated: 2026-06-21
 ---
 
 # 事故复盘（Postmortem）
 
-> 排查 [[项目文档总览]]；CR [[代码审查-checklist]]；技术债 [[技术债-管理]]。
+> 排查 [[项目文档总览]]；CR [[代码审查-checklist]]；技术债 [[茉莉-规范-adr]]。
 
 ## 1. 模板
 
@@ -24,15 +26,15 @@ updated: 2026-06-21
 
 ## 2. 示例场景
 
-- 秒杀超卖 / 库存不一致 → [[秒杀-库存对账校正]]
+- 秒杀超卖 / 库存不一致 → [[茉莉-库存-对账]]
 - 全站登录失败 → [[茉莉登录与鉴权故障根因汇总]]
-- 连接池耗尽 → [[druid-连接池泄漏排查]]
+- 连接池耗尽 → `moli-knowledge/kb/wiki/database/druid-连接池泄漏排查.md`
 
 ## 3. 文化
 
 - Blameless：改进系统而非追责
-- ADR 记录重大决策 [[架构决策-adr]]
+- ADR 记录重大决策 [[茉莉-规范-adr]]
 
 ## 相关
 
-[[混沌工程入门]] · [[prometheus-告警规则设计]]
+`moli-knowledge/kb/wiki/ops/蓝绿与滚动发布.md` · `moli-knowledge/kb/wiki/ops/prometheus-告警规则设计.md`

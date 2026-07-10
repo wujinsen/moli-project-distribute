@@ -1,4 +1,6 @@
 ---
+
+
 title: 茉莉新人上手 checklist
 slug: 茉莉新人上手checklist
 type: output
@@ -14,7 +16,7 @@ sources:
   - wiki-moli/guides/知识库使用指南.md
   - wiki-moli/guides/故障排查指南.md
   - wiki-moli/develop/outputs/茉莉微服务全链路一张图.md
-related: [项目文档总览, 项目文档总览, 茉莉微服务全链路一张图, 项目文档总览, 项目文档总览, 项目文档总览, 项目文档总览]
+related: [项目文档总览, 茉莉微服务全链路一张图]
 created: 2026-06-22
 updated: 2026-06-22
 ---
@@ -78,7 +80,7 @@ Redis 不一致 → 跨服务 **401**，见 [[茉莉登录与鉴权故障根因�
 | 3 | 请求业务接口时加 `Authorization: <token>` | |
 | 4 | 或用 Swagger：`http://localhost:8888/swagger-ui.html` 等 | [[项目文档总览]] |
 
-项目文档总览 **不验 token**，鉴权在业务服务 Shiro 层 [[spring-cloud-gateway]]。
+项目文档总览 **不验 token**，鉴权在业务服务 Shiro 层 [[网关]]。
 
 ---
 
@@ -86,7 +88,7 @@ Redis 不一致 → 跨服务 **401**，见 [[茉莉登录与鉴权故障根因�
 
 -  Node 14+，`npm install && npm run dev`
 -  `vue.config.js` proxy 指向 `21000` 或配网关 CORS
-- 见 [[项目文档总览]]、[[跨域与前后端分离]]
+- 见 [[项目文档总览]]、[[茉莉-gateway-cors]]
 
 ---
 
@@ -108,7 +110,7 @@ Redis 不一致 → 跨服务 **401**，见 [[茉莉登录与鉴权故障根因�
 | 登录 500 | Redis 未起 / 连错 [[项目文档总览]] |
 | 401 跨服务 | Redis database 不一致 [[茉莉登录与鉴权故障根因汇总]] |
 | Dubbo No provider | Nacos、启动顺序 [[项目文档总览]] |
-| 浏览器 CORS | 项目文档总览 CORS 或 devServer proxy [[跨域与前后端分离]] |
+| 浏览器 CORS | 项目文档总览 CORS 或 devServer proxy [[茉莉-gateway-cors]] |
 
 ---
 

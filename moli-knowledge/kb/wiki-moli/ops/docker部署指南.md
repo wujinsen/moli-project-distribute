@@ -1,4 +1,6 @@
 ---
+
+
 title: Docker 部署指南
 slug: docker部署指南
 type: guide
@@ -8,14 +10,14 @@ sources:
   - raw/wujinsen_markdown/架构/容器/Docker/docker安装.note.md
   - raw/wujinsen_markdown/架构/容器/Docker/docker 部署 java 项目.note.md
   - moli-knowledge/kb/wiki-moli/ops/minio-附件存储指南.md
-related: [容器与-docker, 本地启动指南, minio-附件存储指南, 生产环境服务启停脚本]
+related: [本地启动指南, minio-附件存储指南]
 created: 2026-06-22
 updated: 2026-06-22
 ---
 
 # Docker 部署指南
 
-> 概念 [[容器与-docker]]；本机 Jar 启动 [[本地启动指南]]；MinIO 示例 [[minio-附件存储指南]]。
+> 概念 `moli-knowledge/kb/wiki/ops/容器与-docker.md`；本机 Jar 启动 [[本地启动指南]]；MinIO 示例 [[minio-附件存储指南]]。
 
 面向「用 Docker 跑中间件或打包 Java 服务」的操作摘要。茉莉 **dev 不强制 Docker**，但 MinIO/监控栈常用容器。
 
@@ -64,12 +66,12 @@ ENTRYPOINT ["java","-jar","app.jar","--spring.profiles.active=prod"]
 | 注意 | 说明 |
 |------|------|
 | 时区 | `-Duser.timezone=Asia/Shanghai` |
-| 内存 | `-Xms/-Xmx` 见 [[production-jvm启动参数]] |
+| 内存 | `-Xms/-Xmx` 见 `moli-knowledge/kb/wiki/java/production-jvm启动参数.md` |
 | 注册中心 | 容器内 Nacos 地址用服务名非 127.0.0.1 |
 
 ## 5. docker-compose（多中间件）
 
-适合一次起 MySQL + Redis + Nacos（本地 dev）。项目 `load-test/docker/` 有监控 compose 参考 [[压测监控与prometheus]]。
+适合一次起 MySQL + Redis + Nacos（本地 dev）。项目 `load-test/docker/` 有监控 compose 参考 [[茉莉-prometheus-大盘]]。
 
 ## 6. 启动方式选择
 

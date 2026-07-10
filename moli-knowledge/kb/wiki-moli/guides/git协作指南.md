@@ -1,4 +1,6 @@
 ---
+
+
 title: Git 协作指南
 slug: git协作指南
 type: guide
@@ -7,7 +9,7 @@ tags: [Git, 协作, DevOps]
 sources:
   - raw/wujinsen_markdown/架构/Git/You have not concluded your merge (MERGE_HEAD exists) git拉取失败.note.md
   - raw/wujinsen_markdown/架构/Git/git拒绝push.note.md
-related: [jenkins-ci入门, 项目文档总览, 项目文档总览]
+related: [项目文档总览]
 created: 2026-06-22
 updated: 2026-06-22
 ---
@@ -49,7 +51,7 @@ git push -u origin feature/xxx
 
 ## 4. 与 CI 配合
 
-推送触发 [[jenkins-ci入门]] Pipeline：编译 `mvn clean package`、可选 Sonar、打 jar 部署。
+推送触发 `moli-knowledge/kb/wiki/ops/jenkins-ci入门.md` Pipeline：编译 `mvn clean package`、可选 Sonar、打 jar 部署。
 
 ## 5. 知识库 wiki 维护
 
@@ -57,4 +59,4 @@ Ingest 只改 `wiki/**`，`raw/` 只读；变更通过 Git 审查，见 [[项目
 
 ## 相关
 
-[[jenkins-ci入门]] · [[k8s入门与容器编排]]
+`moli-knowledge/kb/wiki/ops/jenkins-ci入门.md` · `moli-knowledge/kb/wiki/ops/k8s入门与容器编排.md`

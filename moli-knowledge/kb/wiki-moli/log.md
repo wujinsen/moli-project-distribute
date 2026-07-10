@@ -32,3 +32,9 @@
 ## [2026-07-05] maintenance | 全项目文档巡检第三轮：修正 enterprise-kb↔wiki/ 映射 · deploy/README · api-iteration-map 路径 · T22 测试索引 · 删除 kb/tools 临时产物 → enrich 项目文档总览/文档健康度巡检/API契约索引/测试文档索引
 
 ## [2026-07-06] ingest | docs/design → wiki-moli/develop 概要设计 11 页（用户中心/API网关/知识库/BI 等）+ enrich 技术方案与架构索引 · 脚本 `tools/import_design_to_wiki.py`
+
+## [2026-07-10] enrich | 运营管理收尾 → enrich 服务器运维模块规划（P0–P2 + SVR-10/11/12 已落地；meiling-ui S6/S7 前端补齐）
+
+## [2026-07-10] maintenance | #moli-link-governance-20260710 wiki-moli 断链治理 → 修复 178 文件（enterprise 路径 + moli 内链）
+
+## [2026-07-10] maintenance | #moli-link-governance-20260710 wiki-moli 断链治理 → 修复 180 文件（enterprise 路径 + moli 内链）

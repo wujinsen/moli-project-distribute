@@ -1,4 +1,6 @@
 ---
+
+
 title: SQL与数据字典索引
 slug: SQL与数据字典索引
 type: guide

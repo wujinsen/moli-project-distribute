@@ -1,4 +1,6 @@
 ---
+
+
 title: wiki 同步指南
 slug: wiki同步指南
 type: guide
@@ -45,7 +47,7 @@ updated: 2026-07-01
 
 ## 3. slug 与分类（moli-ops-manual）
 
-slug = wiki 相对路径去扩展名，与 `[[双链]]`、`graph/edges.jsonl` 节点名一致。
+slug = wiki 相对路径去扩展名，与 `[[知识库设计哲学-docs-as-code]]`、`graph/edges.jsonl` 节点名一致。
 
 **moli-ops-manual 分类=目录**（Web「分类管理」与 markdown 一级目录绑定；sync 按 slug 首段回填 `category_id`）：
 

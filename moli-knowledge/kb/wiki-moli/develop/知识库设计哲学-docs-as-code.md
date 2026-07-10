@@ -1,4 +1,6 @@
 ---
+
+
 title: 知识库设计哲学 · Docs as Code
 slug: 知识库设计哲学-docs-as-code
 type: concept
@@ -62,7 +64,7 @@ updated: 2026-07-01
 | 需求 | 纯静态 | 茉莉 + DB 镜像 |
 |------|--------|----------------|
 | 登录与空间 ACL | 难（或靠 CDN/网关） | Shiro + `kb_space_member` |
-| 与 user-center / 门户 SSO | 需自建 | 已集成 [[sso与系统门户]] |
+| 与 user-center / 门户 SSO | 需自建 | 已集成 [[认证与会话机制]] |
 | `/kb/ask` 检索 + LLM | 需外部搜索服务 | MySQL ngram + 可选 LLM |
 | Agent 直接读 MD | ✅ | ✅（`kb/` 仍在磁盘/Git） |
 

@@ -1,4 +1,6 @@
 ---
+
+
 title: 增量 Ingest 与 raw 投喂指南
 slug: 增量ingest与raw投喂指南
 type: guide
@@ -43,7 +45,7 @@ kb/raw/
 - 主题：{如 Redis 哨兵}
 - 产出：concepts 枢纽 + articles 1 篇 + interview 可选
 - 只改 wiki/**，更新 index/log/edges
-- 与已有 [[redis-缓存]] 合并，勿重复 slug
+- 与已有 [[茉莉-缓存-多级]] 合并，勿重复 slug
 ```
 
 Agent 必读：`kb/AGENTS.md`、`wiki/index.md`。

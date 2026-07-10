@@ -47,7 +47,32 @@ Authorization: {token}  # 后续请求
 
 ---
 
-## 4. 前端对接文档
+## 4. 运营管理菜单（sys_menu 400 段）
+
+| menu_id | 名称 | 路由 path | component | perms | 后端 API 域 |
+|---------|------|-----------|-----------|-------|-------------|
+| 400 | 运营管理 | `operation` | Layout | — | — |
+| 401 | 项目管理 | `operation/project/index` | ProjectManageView | `operation:project:list` | `/operation/project` |
+| 402 | 服务器管理 | `operation/server/index` | ServerManageView | `operation:server:list` | `/operation/server` + `topology` / `links` / `check` |
+| 403 | 平台管理 | `operation/platform/index` | PlatformManageView | `operation:platform:list` | `/operation/platform` + `secret` |
+| 404 | 组件管理 | `operation/component/index` | ComponentManageView | `operation:component:list` | `/operation/component` + `check` / `secret` |
+
+**跨域权限**：`operation:secret:view`（明文 reveal）、`operation:deploy:exec`（部署 start/stop/restart）。
+
+**辅助 API**（驾驶舱 / 工具栏）：
+
+| 端点 | 用途 | 权限 |
+|------|------|------|
+| `GET /operation/audit/port-matrix` | 端口矩阵校验 | `operation:project:list` |
+| `GET /operation/stats` | 驾驶舱 ops KPI | `operation:project:list` |
+| `GET/POST /operation/deploy/{serviceKey}/...` | 部署进程状态/执行 | list / `deploy:exec` |
+| `POST /operation/health/probe-all` | 批量探活 | `operation:server:list` |
+
+**前端对接文档**：[operation-frontend.md](operation-frontend.md)
+
+---
+
+## 5. 前端对接文档
 
 | 页面 | 文档 |
 |------|------|
@@ -55,10 +80,11 @@ Authorization: {token}  # 后续请求
 | Wiki 治理 | [wiki-govern-frontend.md](wiki-govern-frontend.md) |
 | 总览 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) |
 | LLM 设置 | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) |
+| 运营管理 | [operation-frontend.md](operation-frontend.md) |
 
 ---
 
-## 5. v1 前端完成度（后端视角）
+## 6. v1 前端完成度（后端视角）
 
 | 页面 | 后端 | 前端 |
 |------|------|------|
@@ -67,10 +93,11 @@ Authorization: {token}  # 后续请求
 | Wiki 编辑 | ✅ | ✅ |
 | Wiki 治理 | ✅ | ⚠️ T16f 部分 |
 | LLM 设置 | ✅ | 🔵 T19d |
+| 运营管理四页 | ✅ | ✅ |
 
 ---
 
-## 6. 相关
+## 7. 相关
 
 - [gateway-routes.md](gateway-routes.md)
 - [moli-v1-release-scope.md](../product/moli-v1-release-scope.md) §4

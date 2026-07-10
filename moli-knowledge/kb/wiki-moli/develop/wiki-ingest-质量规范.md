@@ -1,4 +1,6 @@
 ---
+
+
 title: Wiki Ingest 质量规范
 slug: wiki-ingest-质量规范
 type: article
@@ -15,6 +17,6 @@ updated: 2026-06-22
 
 ## 检查
 
-- frontmatter/sources/[[双链]]
+- frontmatter/sources/[[知识库设计哲学-docs-as-code]]
 - 每批更新 index/log/edges
 - 去重合并不 1:1 raw

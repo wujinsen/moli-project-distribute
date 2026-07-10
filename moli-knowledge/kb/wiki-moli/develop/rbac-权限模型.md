@@ -1,4 +1,6 @@
 ---
+
+
 title: RBAC 权限模型
 slug: rbac-权限模型
 type: concept
@@ -8,7 +10,7 @@ sources:
   - docs/zh-CN/RBAC.md
   - docs/api/user-center-api-map.md
   - moli-user-center/moli-user-center-server/
-related: [用户中心, 认证与会话机制, 权限管理操作指南, 字段级数据权限设计]
+related: [用户中心, 认证与会话机制, 权限管理操作指南]
 created: 2026-06-22
 updated: 2026-06-22
 ---
@@ -62,7 +64,7 @@ updated: 2026-06-22
 
 授权变更后清 `shiro:cache` 缓存（`PermissionAuthUtils.clearUserAuthorizationCache`）。
 
-> 列级/字段级数据权限**未实现**；BI 扩展思路见 [[字段级数据权限设计]]。
+> 列级/字段级数据权限**未实现**；BI 扩展思路见 `moli-knowledge/kb/wiki/security/字段级数据权限设计.md`。
 
 ## 相关
 

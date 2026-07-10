@@ -1,4 +1,6 @@
 ---
+
+
 title: MinIO 附件存储指南
 slug: minio-附件存储指南
 type: guide
