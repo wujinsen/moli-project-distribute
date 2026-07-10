@@ -5,6 +5,9 @@ import com.moli.common.constant.CommonConstant;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbWikiProperties;
 import com.moli.knowledge.server.dto.SyncTriggerVo;
+import com.moli.knowledge.server.dto.WikiImportBatchFailVo;
+import com.moli.knowledge.server.dto.WikiImportBatchItemVo;
+import com.moli.knowledge.server.dto.WikiImportBatchResultVo;
 import com.moli.knowledge.server.dto.WikiImportResultVo;
 import com.moli.knowledge.server.dto.WikiImportSyncVo;
 import com.moli.knowledge.server.dto.WikiLintPreviewRequest;
@@ -207,6 +210,88 @@ public class KbWikiImportServiceImpl implements KbWikiImportService {
             result.setNextSteps(KbWorkflowHints.afterWikiWrite(spaceId));
         }
         return result;
+    }
+
+    @Override
+    public WikiImportBatchResultVo importBatch(Long spaceId,
+                                               Long categoryId,
+                                               List<MultipartFile> files,
+                                               List<WikiImportBatchItemVo> items,
+                                               String onConflict,
+                                               boolean lintPreview,
+                                               boolean sync) {
+        assertEnabled();
+        if (spaceId == null) {
+            throw new BaseException("spaceId 不能为空");
+        }
+        if (files == null || files.isEmpty()) {
+            throw new BaseException("请至少上传一个 .md 文件");
+        }
+        if (files.size() > 50) {
+            throw new BaseException("单次批量导入最多 50 个文件");
+        }
+        kbAclService.assertCanEdit(spaceId);
+
+        WikiImportBatchResultVo batch = new WikiImportBatchResultVo();
+        String defaultConflict = normalizeOnConflict(onConflict);
+
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            WikiImportBatchItemVo meta = findItem(items, i);
+            Long itemCategoryId = meta != null && meta.getCategoryId() != null
+                    ? meta.getCategoryId() : categoryId;
+            if (itemCategoryId == null) {
+                WikiImportBatchFailVo fail = new WikiImportBatchFailVo();
+                fail.setFileName(file == null ? "file-" + i : file.getOriginalFilename());
+                fail.setReason("缺少 categoryId");
+                batch.getFailed().add(fail);
+                continue;
+            }
+            String itemSlug = meta == null ? null : meta.getSlug();
+            String itemTitle = meta == null ? null : meta.getTitle();
+            String itemConflict = meta != null && StringUtils.isNotBlank(meta.getOnConflict())
+                    ? normalizeOnConflict(meta.getOnConflict()) : defaultConflict;
+            try {
+                WikiImportResultVo one = importPage(
+                        spaceId, itemCategoryId, file, itemSlug, itemTitle,
+                        itemConflict, lintPreview, false, null);
+                batch.getImported().add(one);
+            } catch (Exception e) {
+                WikiImportBatchFailVo fail = new WikiImportBatchFailVo();
+                fail.setFileName(file == null ? "file-" + i : file.getOriginalFilename());
+                fail.setReason(e.getMessage());
+                batch.getFailed().add(fail);
+            }
+        }
+
+        WikiImportSyncVo syncVo = new WikiImportSyncVo();
+        syncVo.setTriggered(sync);
+        if (sync && !batch.getImported().isEmpty()) {
+            SyncTriggerVo trigger = kbSyncService.triggerAfterEdit(spaceId);
+            syncVo.setSuccess(trigger.isSuccess());
+            syncVo.setMessage(trigger.isSuccess() ? null
+                    : StringUtils.defaultIfBlank(trigger.getOutputTail(), "Sync 失败"));
+        } else if (!sync) {
+            syncVo.setSuccess(false);
+            syncVo.setMessage("未触发 Sync");
+        } else {
+            syncVo.setSuccess(false);
+            syncVo.setMessage("无成功导入项，跳过 Sync");
+        }
+        batch.setSync(syncVo);
+        return batch;
+    }
+
+    private WikiImportBatchItemVo findItem(List<WikiImportBatchItemVo> items, int index) {
+        if (items == null) {
+            return null;
+        }
+        for (WikiImportBatchItemVo item : items) {
+            if (item != null && item.getFileIndex() != null && item.getFileIndex() == index) {
+                return item;
+            }
+        }
+        return items.size() > index ? items.get(index) : null;
     }
 
     private KbSpace loadSpace(Long spaceId) {

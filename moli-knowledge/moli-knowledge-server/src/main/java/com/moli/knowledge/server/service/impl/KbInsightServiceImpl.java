@@ -3,6 +3,8 @@ package com.moli.knowledge.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.IdGenerator;
+import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.entity.KbCategory;
@@ -367,10 +369,41 @@ public class KbInsightServiceImpl implements KbInsightService {
     @Override
     public LintVo scan(Long spaceId) {
         kbAclService.assertCanLintScan(spaceId);
-        LintVo vo = lint(spaceId);
+        LintVo vo = lintInternal(spaceId);
+        persistScanResults(spaceId, vo);
+        return vo;
+    }
+
+    @Override
+    public void scanScheduled(Long spaceId) {
+        LintVo vo = lintInternal(spaceId);
+        persistScanResults(spaceId, vo);
+    }
+
+    private LintVo lintInternal(Long spaceId) {
+        Ctx ctx = build(spaceId);
+        LintVo vo = new LintVo();
+        vo.setBroken(ctx.broken);
+        for (KbDocument d : ctx.docs) {
+            Set<Long> in = ctx.inbound.get(d.getId());
+            if (in == null || in.isEmpty()) {
+                vo.getOrphans().add(new LintVo.Ref(String.valueOf(d.getId()), d.getTitle()));
+            }
+            if (StringUtils.isBlank(d.getSummary())) {
+                vo.getNoSummary().add(new LintVo.Ref(String.valueOf(d.getId()), d.getTitle()));
+            }
+        }
+        Map<String, Integer> counts = vo.getCounts();
+        counts.put("pages", ctx.docs.size());
+        counts.put("broken", ctx.broken.size());
+        counts.put("orphans", vo.getOrphans().size());
+        counts.put("noSummary", vo.getNoSummary().size());
+        return vo;
+    }
+
+    private void persistScanResults(Long spaceId, LintVo vo) {
         Date now = new Date();
 
-        // 清掉本空间「待处理」旧项后重建（保留已忽略/已修复的人工决定）
         LambdaQueryWrapper<KbLintIssue> del = new LambdaQueryWrapper<KbLintIssue>()
                 .eq(KbLintIssue::getStatus, 0);
         if (spaceId != null) {
@@ -388,11 +421,11 @@ public class KbInsightServiceImpl implements KbInsightService {
         for (LintVo.Ref r : vo.getNoSummary()) {
             insertIssue(spaceId, parseLong(r.getSlug()), "no_summary", r.getTitle(), now);
         }
-        return vo;
     }
 
     @Override
-    public List<KbLintIssue> issues(Long spaceId, Integer status) {
+    public List<KbLintIssue> issues(Long spaceId, Integer status, String issueType,
+                                    Long assigneeId, Integer priority) {
         assertSpaceReadable(spaceId);
         LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<>();
         if (spaceId != null) {
@@ -401,7 +434,17 @@ public class KbInsightServiceImpl implements KbInsightService {
         if (status != null) {
             w.eq(KbLintIssue::getStatus, status);
         }
-        w.orderByDesc(KbLintIssue::getScanTime);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(issueType)) {
+            w.eq(KbLintIssue::getIssueType, issueType.trim());
+        }
+        if (assigneeId != null) {
+            w.eq(KbLintIssue::getAssigneeId, assigneeId);
+        }
+        if (priority != null) {
+            w.eq(KbLintIssue::getPriority, priority);
+        }
+        w.orderByDesc(KbLintIssue::getPriority)
+                .orderByDesc(KbLintIssue::getScanTime);
         return kbLintIssueMapper.selectList(w);
     }
 
@@ -420,6 +463,58 @@ public class KbInsightServiceImpl implements KbInsightService {
         }
     }
 
+    @Override
+    public int batchUpdateIssueStatus(LintIssueBatchStatusRequest request) {
+        if (request == null || request.getIds() == null || request.getIds().isEmpty()) {
+            throw new BaseException("ids 不能为空");
+        }
+        if (request.getStatus() == null) {
+            throw new BaseException("status 不能为空");
+        }
+        int updated = 0;
+        Date now = new Date();
+        for (Long id : request.getIds()) {
+            KbLintIssue issue = kbLintIssueMapper.selectById(id);
+            if (issue == null) {
+                continue;
+            }
+            if (issue.getSpaceId() != null) {
+                kbAclService.assertCanEdit(issue.getSpaceId());
+            } else if (!kbAclService.isAdmin()) {
+                throw new BaseException("无权处理该体检问题");
+            }
+            issue.setStatus(request.getStatus());
+            issue.setUpdateTime(now);
+            kbLintIssueMapper.updateById(issue);
+            updated++;
+        }
+        return updated;
+    }
+
+    @Override
+    public void assignIssue(Long id, Long assigneeId, Integer priority) {
+        KbLintIssue issue = kbLintIssueMapper.selectById(id);
+        if (issue == null) {
+            throw new BaseException("体检问题不存在");
+        }
+        if (issue.getSpaceId() != null) {
+            kbAclService.assertCanEdit(issue.getSpaceId());
+        } else if (!kbAclService.isAdmin()) {
+            throw new BaseException("无权处理该体检问题");
+        }
+        if (assigneeId != null) {
+            issue.setAssigneeId(assigneeId);
+        }
+        if (priority != null) {
+            if (priority < 0 || priority > 2) {
+                throw new BaseException("priority 非法（0普通/1高/2紧急）");
+            }
+            issue.setPriority(priority);
+        }
+        issue.setUpdateTime(new Date());
+        kbLintIssueMapper.updateById(issue);
+    }
+
     private void insertIssue(Long spaceId, Long docId, String type, String detail, Date now) {
         KbLintIssue issue = new KbLintIssue();
         issue.setId(IdGenerator.getId());
@@ -428,6 +523,7 @@ public class KbInsightServiceImpl implements KbInsightService {
         issue.setIssueType(type);
         issue.setDetail(detail == null ? "" : detail.substring(0, Math.min(500, detail.length())));
         issue.setStatus(0);
+        issue.setPriority(0);
         issue.setScanTime(now);
         issue.setCreateTime(now);
         issue.setUpdateTime(now);

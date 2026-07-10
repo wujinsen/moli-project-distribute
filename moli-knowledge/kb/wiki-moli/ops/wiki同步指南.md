@@ -73,7 +73,7 @@ API 请求示例：`GET /kb/page?slug=guides/本地启动指南&spaceId=90000000
 2. 三空间种子已导入：`03_knowledge_schema.sql` + 按需 `04_kb_space_jp_exam.sql`、`07_kb_space_ops_manual.sql`
 3. Python 3 + `pip install pymysql`（仅真正写库时需要）
 
-CI / 本地统一入口：`moli-knowledge/kb/tools/ci/run_sync.sh`（`lint-strict` · `sync-all` · `init-schema`）。
+CI / 本地统一入口：`moli-knowledge/kb/tools/ci/run_sync.sh`（`lint-strict-all` · `sync-all` · `init-schema`）。**PR 合并前须过** `dry-run-all` + `lint-strict-all`（KBOPS-A1）。
 
 ## 5. 推荐流程
 
@@ -180,6 +180,7 @@ Agent 完成 **Ingest**（见 [[知识库三操作]]）后：
 | 关系为空 | 是否跑过 sync；wiki 正文是否有 `[[slug]]` |
 | 部分页 skip | 正常，内容 hash 未变 |
 | pymysql 缺失 | `pip install pymysql` |
+| **Sync 失败 / exitCode≠0 / CI 红灯** | [`docs/ops/kb-sync-failure-runbook.md`](../../../../docs/ops/kb-sync-failure-runbook.md) |
 | 中文 slug / 空间名乱码（`?`） | **客户端** `--default-character-set=utf8mb4` + 脚本 `SET NAMES utf8mb4`；**禁止** PowerShell `Get-Content \| mysql`；见 [[数据库初始化指南]] §0 |
 
 ## 9. 相关

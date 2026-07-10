@@ -78,13 +78,22 @@ public class KbIngestController {
     }
 
     @PostMapping("/raw-upload")
-    @ApiOperation("T20a · 浏览器上传 raw 语料到 kb/raw/（需空间 editor）")
+    @ApiOperation("T20a · 浏览器上传 raw 语料到 kb/raw/（需 kb:ingest:rawUpload + 空间 editor）")
     public MoliResult<RawUploadResultVo> rawUpload(@RequestParam Long spaceId,
                                                    @RequestParam String prefix,
                                                    @RequestParam("file") MultipartFile[] files,
                                                    @RequestParam(required = false, defaultValue = "SKIP") String onConflict) {
         List<MultipartFile> list = files == null ? java.util.Collections.emptyList() : Arrays.asList(files);
         return MoliResult.success(kbRawUploadService.upload(spaceId, prefix, list, onConflict));
+    }
+
+    @PostMapping("/raw-upload/zip")
+    @ApiOperation("T20c · zip 解压投喂 raw（需 kb:ingest:rawUpload + 空间 editor）")
+    public MoliResult<RawUploadResultVo> rawUploadZip(@RequestParam Long spaceId,
+                                                      @RequestParam String prefix,
+                                                      @RequestParam MultipartFile file,
+                                                      @RequestParam(required = false, defaultValue = "SKIP") String onConflict) {
+        return MoliResult.success(kbRawUploadService.uploadZip(spaceId, prefix, file, onConflict));
     }
 
     @PostMapping("/jobs")

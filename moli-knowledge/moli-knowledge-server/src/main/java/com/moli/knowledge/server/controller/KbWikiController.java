@@ -5,6 +5,8 @@ import com.moli.knowledge.server.dto.WikiEnrichRequest;
 import com.moli.knowledge.server.dto.WikiEnrichResultVo;
 import com.moli.knowledge.server.dto.WikiAiReviseRequest;
 import com.moli.knowledge.server.dto.WikiAiReviseResultVo;
+import com.moli.knowledge.server.dto.WikiImportBatchItemVo;
+import com.moli.knowledge.server.dto.WikiImportBatchResultVo;
 import com.moli.knowledge.server.dto.WikiImportResultVo;
 import com.moli.knowledge.server.dto.WikiLintPreviewRequest;
 import com.moli.knowledge.server.dto.WikiLintPreviewVo;
@@ -40,6 +42,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 
 @RestController
 @RequestMapping("/kb/wiki")
@@ -58,6 +67,8 @@ public class KbWikiController {
     private KbWikiGovernService kbWikiGovernService;
     @Resource
     private KbWikiImportService kbWikiImportService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping("/page")
     @ApiOperation("读 wiki 文件全文（frontmatter+正文）；需空间 editor。文件不存在返回 exists=false")
@@ -85,6 +96,25 @@ public class KbWikiController {
                                                      @RequestParam(required = false) MultipartFile assetsZip) {
         return MoliResult.success(kbWikiImportService.importPage(
                 spaceId, categoryId, file, slug, title, onConflict, lintPreview, sync, assetsZip));
+    }
+
+    @PostMapping("/page/import/batch")
+    @ApiOperation("T20c · 批量导入成品 wiki md（整批完成后一次 Sync）")
+    public MoliResult<WikiImportBatchResultVo> importBatch(@RequestParam Long spaceId,
+                                                           @RequestParam(required = false) Long categoryId,
+                                                           @RequestParam("file") MultipartFile[] files,
+                                                           @RequestParam(required = false) String items,
+                                                           @RequestParam(required = false, defaultValue = "FAIL") String onConflict,
+                                                           @RequestParam(required = false, defaultValue = "false") boolean lintPreview,
+                                                           @RequestParam(required = false, defaultValue = "true") boolean sync) throws Exception {
+        List<MultipartFile> fileList = files == null ? Collections.emptyList() : Arrays.asList(files);
+        List<WikiImportBatchItemVo> itemList = null;
+        if (StringUtils.isNotBlank(items)) {
+            itemList = objectMapper.readValue(items, new TypeReference<List<WikiImportBatchItemVo>>() {
+            });
+        }
+        return MoliResult.success(kbWikiImportService.importBatch(
+                spaceId, categoryId, fileList, itemList, onConflict, lintPreview, sync));
     }
 
     @PostMapping("/ai-revise")

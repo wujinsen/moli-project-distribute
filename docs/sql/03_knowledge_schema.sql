@@ -240,6 +240,8 @@ CREATE TABLE IF NOT EXISTS `kb_lint_issue` (
   `issue_type` varchar(32) NOT NULL COMMENT '问题类型',
   `detail` varchar(512) DEFAULT NULL COMMENT '问题详情',
   `status` tinyint DEFAULT 0 COMMENT '0待处理 1已忽略 2已修复',
+  `assignee_id` bigint DEFAULT NULL COMMENT '处理人用户ID',
+  `priority` tinyint DEFAULT 0 COMMENT '0普通 1高 2紧急',
   `scan_time` datetime DEFAULT NULL COMMENT '扫描时间',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',

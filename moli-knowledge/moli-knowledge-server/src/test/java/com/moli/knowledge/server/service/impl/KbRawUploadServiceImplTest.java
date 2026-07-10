@@ -52,7 +52,7 @@ public class KbRawUploadServiceImplTest {
         RawUploadResultVo result = service.upload(SPACE_ID, "test-walkthrough", java.util.Collections.singletonList(file), "SKIP");
         Assert.assertEquals(1, result.getUploaded().size());
         Assert.assertEquals("test-walkthrough/demo.md", result.getUploaded().get(0).getPath());
-        verify(kbAclService).assertCanEdit(SPACE_ID);
+        verify(kbAclService).assertCanRawUpload(SPACE_ID);
     }
 
     @Test

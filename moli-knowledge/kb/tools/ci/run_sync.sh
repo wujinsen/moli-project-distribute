@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# CI / 本地统一入口：dry-run、初始化 schema、写库同步。
+# CI / 本地统一入口：dry-run、lint-strict、初始化 schema、写库同步。
+# PR 硬门禁（KBOPS-A1）：dry-run-all + lint-strict-all — 见 docs/ops/kb-sync-failure-runbook.md §7
 # 用法：
 #   bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 #   bash moli-knowledge/kb/tools/ci/run_sync.sh init-schema

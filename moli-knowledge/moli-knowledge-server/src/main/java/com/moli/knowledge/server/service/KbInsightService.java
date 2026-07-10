@@ -1,6 +1,7 @@
 package com.moli.knowledge.server.service;
 
 import com.moli.knowledge.server.dto.GraphVo;
+import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.entity.KbLintIssue;
 
@@ -40,8 +41,17 @@ public interface KbInsightService {
     LintVo scan(Long spaceId);
 
     /** 查询已落库的体检问题（status 可空：0待处理/1已忽略/2已修复）。 */
-    List<KbLintIssue> issues(Long spaceId, Integer status);
+    List<KbLintIssue> issues(Long spaceId, Integer status, String issueType, Long assigneeId, Integer priority);
 
     /** 更新某条体检问题的处理状态。 */
     void updateIssueStatus(Long id, Integer status);
+
+    /** 批量更新体检问题状态（KBOPS-8）。 */
+    int batchUpdateIssueStatus(LintIssueBatchStatusRequest request);
+
+    /** 指派处理人 / 调整优先级（KBOPS-8）。 */
+    void assignIssue(Long id, Long assigneeId, Integer priority);
+
+    /** 定时任务调用 scan（无 ACL，仅调度器）。 */
+    void scanScheduled(Long spaceId);
 }

@@ -109,4 +109,14 @@ public interface KbAclService {
      * {@code spaceId=null} 表示全库扫描，需超管或 {@code kb:lint:scan}。
      */
     void assertCanLintScan(Long spaceId);
+
+    /**
+     * Raw 浏览器投喂：平台超管、{@code kb:ingest:rawUpload}，且具备空间 editor（T20d）。
+     */
+    void assertCanRawUpload(Long spaceId);
+
+    /**
+     * 运维 Dashboard：平台超管、{@code kb:ops:dashboard}，或具备 Sync 查看权限的空间范围。
+     */
+    void assertCanOpsDashboard(Long spaceId);
 }

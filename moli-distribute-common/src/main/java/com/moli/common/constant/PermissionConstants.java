@@ -84,6 +84,10 @@ public final class PermissionConstants {
     public static final String KB_LINT_SCAN = "kb:lint:scan";
     /** 企业知识库 · 触发 Wiki→MySQL 同步（KBOPS-3） */
     public static final String KB_SYNC_TRIGGER = "kb:sync:trigger";
+    /** 企业知识库 · 运维 Dashboard（KBOPS-9） */
+    public static final String KB_OPS_DASHBOARD = "kb:ops:dashboard";
+    /** 企业知识库 · Ingest Raw 浏览器投喂（T20d） */
+    public static final String KB_INGEST_RAW_UPLOAD = "kb:ingest:rawUpload";
 
     public static final String ROLE_ASSIGN_REFRESH_MSG = "角色授权已更新，请通知相关用户刷新页面后查看新菜单";
 }

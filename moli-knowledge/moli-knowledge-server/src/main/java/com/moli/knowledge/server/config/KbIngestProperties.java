@@ -57,4 +57,10 @@ public class KbIngestProperties {
 
     /** T20a · 单次 raw 上传最多文件数。 */
     private int rawUploadMaxFiles = 20;
+
+    /** T20c · zip 投喂大小上限（字节）。 */
+    private long rawUploadZipMaxBytes = 50L * 1024 * 1024;
+
+    /** T20c · zip 内最多解压文件数。 */
+    private int rawUploadZipMaxEntries = 200;
 }

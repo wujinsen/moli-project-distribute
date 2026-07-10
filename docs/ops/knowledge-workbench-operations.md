@@ -419,6 +419,8 @@ POST /kb/sync/trigger
 | Sync | 健康体检页 · Wiki 同步 Tab | `POST /kb/sync/trigger` |
 | DB 体检 | 健康体检 → 扫描并落库 | `POST /kb/lint/scan` |
 
+**Sync 失败**（exitCode≠0、webhook 告警、CI 红灯）：见 **[kb-sync-failure-runbook.md](kb-sync-failure-runbook.md)**（查 `kb_sync_log`、重跑 `sync-all`、verify-all）。
+
 ---
 
 ## 5. 总验收清单
@@ -464,6 +466,7 @@ POST /kb/sync/trigger
 | 角色 | 文档 |
 |------|------|
 | **操作（本文）** | 本文件 |
+| **Sync 失败 Runbook** | [`docs/ops/kb-sync-failure-runbook.md`](kb-sync-failure-runbook.md) |
 | 产品 / 决策 | [`docs/product/knowledge-workbench-requirements.md`](../product/knowledge-workbench-requirements.md) |
 | Ingest 产品方案 | [`kb/wiki-moli/develop/Ingest工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Ingest工作台产品方案.md) |
 | Wiki 治理产品方案 | [`kb/wiki-moli/develop/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md) |
@@ -500,6 +503,7 @@ Web 抽检：[`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-10 | §4 链至 KBOPS-A2 Sync 失败 Runbook |
 | 2026-07-06 | §2.7 T20：Editor 浏览器上传、SSH 仅运维兜底 |
 | 2026-07-06 | §8 对齐生产：raw-asset-bundle + deploy 脚本；Sync 与插图分包 |
 | 2026-07-05 | §8 T22 插图回迁运维；§1.3 修正 enterprise-kb 磁盘路径 |

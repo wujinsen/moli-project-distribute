@@ -3,6 +3,7 @@ package com.moli.knowledge.server.controller;
 import com.moli.common.core.MoliResult;
 import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintVo;
+import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.service.KbInsightService;
 import io.swagger.annotations.Api;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,10 +59,28 @@ public class KbInsightController {
     }
 
     @GetMapping("/lint/issues")
-    @ApiOperation("查询已落库的体检问题（status 可空：0待处理/1已忽略/2已修复）")
+    @ApiOperation("查询已落库的体检问题（支持 type/assignee/priority 筛选）")
     public MoliResult<List<KbLintIssue>> issues(@RequestParam(required = false) Long spaceId,
-                                                @RequestParam(required = false) Integer status) {
-        return MoliResult.success(kbInsightService.issues(spaceId, status));
+                                                @RequestParam(required = false) Integer status,
+                                                @RequestParam(required = false) String issueType,
+                                                @RequestParam(required = false) Long assigneeId,
+                                                @RequestParam(required = false) Integer priority) {
+        return MoliResult.success(kbInsightService.issues(spaceId, status, issueType, assigneeId, priority));
+    }
+
+    @PutMapping("/lint/issues/batch-status")
+    @ApiOperation("KBOPS-8 · 批量更新体检问题状态")
+    public MoliResult<Integer> batchUpdateIssueStatus(@RequestBody LintIssueBatchStatusRequest request) {
+        return MoliResult.success(kbInsightService.batchUpdateIssueStatus(request));
+    }
+
+    @PutMapping("/lint/issue/{id}/assign")
+    @ApiOperation("KBOPS-8 · 指派处理人 / 调整优先级")
+    public MoliResult<Boolean> assignIssue(@PathVariable Long id,
+                                           @RequestParam(required = false) Long assigneeId,
+                                           @RequestParam(required = false) Integer priority) {
+        kbInsightService.assignIssue(id, assigneeId, priority);
+        return MoliResult.success(Boolean.TRUE);
     }
 
     @PutMapping("/lint/issue/{id}")

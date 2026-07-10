@@ -8,7 +8,7 @@
 
 ## 1. 发布前检查
 
-1. 代码已合并目标分支，CI 通过（含 knowledge `lint-strict` 若启用）
+1. 代码已合并目标分支，CI 通过（含 **KB Wiki Sync**：`dry-run-all` + **`lint-strict-all`** 硬门禁，见 [kb-sync-failure-runbook.md](kb-sync-failure-runbook.md) §7）
 2. 完成 [production-checklist.md](production-checklist.md)
 3. 确认发布窗口与回滚联系人
 

@@ -96,6 +96,14 @@
 
 关键接口见 `docs/api/KNOWLEDGE_API.md` §3.5（LLM）、§4（体检/Sync）、§8.6（治理）。
 
+### 工程补充
+
+| 任务 | 内容 | 涉及 | 状态 |
+|------|------|------|------|
+| **KBOPS-A1** | CI **lint-strict 硬门禁**：PR `dry-run-all` + `lint-strict-all` blocking | `.github/workflows/kb-sync.yml` | ✅ |
+| **KBOPS-A2** | Sync **失败 Runbook** | `docs/ops/kb-sync-failure-runbook.md` | ✅ |
+| **KBOPS-A3** | wiki↔DB **漂移检测** | 脚本或 Dashboard 前置 | 📋 |
+
 ---
 
 ## 7. 边界（不做）
@@ -110,6 +118,6 @@
 
 - 任务跟踪：`moli-knowledge/TASKS.md`（T16f / T19d / 本 KBOPS 系列）
 - Roadmap：`moli-knowledge/kb/ROADMAP.md`
-- 运维 SOP：`docs/ops/knowledge-workbench-operations.md`
+- 运维 SOP：`docs/ops/knowledge-workbench-operations.md` · Sync 失败：[`kb-sync-failure-runbook.md`](../ops/kb-sync-failure-runbook.md)
 - 前端对接：`docs/api/wiki-govern-frontend.md`、`docs/api/kb-llm-platform-frontend.md`
 - LLM 设计：[`kb-llm-platform-settings.md`](kb-llm-platform-settings.md)

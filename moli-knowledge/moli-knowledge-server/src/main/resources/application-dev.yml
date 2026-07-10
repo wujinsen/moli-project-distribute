@@ -148,6 +148,11 @@ kb:
     # T20a · Raw 浏览器投喂
     raw-upload-max-bytes: 5242880
     raw-upload-max-files: 20
+    raw-upload-zip-max-bytes: 52428800
+    raw-upload-zip-max-entries: 200
+  lint:
+    schedule-enabled: false
+    schedule-cron: "0 0 3 ? * MON"
   browse:
     # 浏览与管理统一按分类（= wiki 一级目录）；groupBy=type 已废弃
     default-group-by: category

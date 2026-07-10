@@ -284,6 +284,43 @@ public class KbAclServiceImpl implements KbAclService {
     }
 
     @Override
+    public void assertCanRawUpload(Long spaceId) {
+        if (spaceId == null) {
+            throw new BaseException("spaceId 不能为空");
+        }
+        if (isAdmin()) {
+            assertCanEdit(spaceId);
+            return;
+        }
+        if (!isPermitted(PermissionConstants.KB_INGEST_RAW_UPLOAD)) {
+            throw new BaseException("无权 Raw 投喂上传（需 kb:ingest:rawUpload）");
+        }
+        assertCanEdit(spaceId);
+    }
+
+    @Override
+    public void assertCanOpsDashboard(Long spaceId) {
+        if (isAdmin()) {
+            return;
+        }
+        if (isPermitted(PermissionConstants.KB_OPS_DASHBOARD)) {
+            if (spaceId != null) {
+                assertCanRead(spaceId);
+            }
+            return;
+        }
+        if (isPermitted(PermissionConstants.KB_SYNC_TRIGGER)) {
+            if (spaceId != null) {
+                assertCanRead(spaceId);
+            } else if (accessibleSpaceIds().isEmpty()) {
+                throw new BaseException("无权查看运维 Dashboard");
+            }
+            return;
+        }
+        throw new BaseException("无权查看运维 Dashboard（需 kb:ops:dashboard 或 kb:sync:trigger）");
+    }
+
+    @Override
     public List<Long> resolveReadableSpaceIds(Long spaceId, List<Long> spaceIds) {
         if (spaceIds != null && !spaceIds.isEmpty()) {
             Set<Long> distinct = spaceIds.stream()
