@@ -45,6 +45,12 @@ public class OperationCrudSupport {
         }
     }
 
+    public void assertRowsUpdated(int rows, String entityLabel, Long id) {
+        if (rows <= 0) {
+            throw OperationBizException.notFound(entityLabel, id);
+        }
+    }
+
     public void deleteEach(Long[] ids, Consumer<Long> beforeDelete, Consumer<Long> deleteAction) {
         if (ids == null) {
             return;

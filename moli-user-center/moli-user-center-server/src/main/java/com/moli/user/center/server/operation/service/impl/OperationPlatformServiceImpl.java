@@ -59,7 +59,9 @@ public class OperationPlatformServiceImpl implements OperationPlatformService {
         OperationPlatformInfo existing = requireRow(request.getId());
         OperationPlatformInfo row = OperationSaveRequestMapper.toEntity(request);
         row.setPassword(secretCrudSupport.mergeOnUpdate(request.getPassword(), existing.getPassword()));
-        operationPlatformMapper.updateById(row);
+        row.setCreateId(existing.getCreateId());
+        row.setCreateTime(existing.getCreateTime());
+        crudSupport.assertRowsUpdated(operationPlatformMapper.updateById(row), "运维平台", request.getId());
     }
 
     @Override

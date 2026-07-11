@@ -96,6 +96,16 @@ public class OperationCrudSupportTest {
     }
 
     @Test
+    public void assertRowsUpdated_rejects_zero_rows() {
+        try {
+            crudSupport.assertRowsUpdated(0, "平台", 101L);
+            fail("expected not found");
+        } catch (BaseException ex) {
+            assertEquals(Integer.valueOf(OperationBizException.CODE_ENTITY_NOT_FOUND), ex.getErrorCode());
+        }
+    }
+
+    @Test
     public void deleteEach_skips_when_ids_null() {
         crudSupport.deleteEach(null, id -> fail("should not run"), id -> fail("should not run"));
     }
