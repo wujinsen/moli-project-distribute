@@ -693,6 +693,27 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 
 响应结构同 `/kb/graph`（含 `nodes/links/meta`，`meta.mode=ego`）。
 
+#### 4.1.2 Wiki 文件直读图谱 `GET /kb/wiki/graph`
+
+> **前端「Wiki 文件」数据源**（`KnowledgeGraphView` · `dataSource=wikiFile`）：从磁盘 wiki 目录构建图谱，对齐 `kb/tools/serve.py` `/api/graph`。  
+> 与 §4.1 `GET /kb/graph`（读 `kb_relation` 落库边）互补：未 Sync 或需看 `[[wikilink]]` / `graph/edges.jsonl` 时用本接口。
+
+| 参数 | 位置 | 必填 | 默认 | 说明 |
+|------|------|------|------|------|
+| `spaceId` | query | **是** | — | 单空间（按 `kb.wiki.space-dirs` 解析磁盘目录） |
+| `mode` | query | 否 | `full` | `full` / `summary`（Top 枢纽） |
+| `maxNodes` | query | 否 | `full`=300 / `summary`=50 | 按度数降序裁剪，上限 2000 |
+| `minDeg` | query | 否 | 0 | 仅保留度数 ≥ minDeg 的节点 |
+
+响应 `data` 结构同 §4.1，差异：
+
+- 节点 `id` = **wiki slug**（如 `guides/本地启动指南`），非文档数字 ID
+- 边来源：正文 `[[wikilink]]`（`links_to`）+ frontmatter `related`（`relates_to`）+ `graph/edges.jsonl` 显式边
+- `meta.source` = `wiki_file`
+- Wiki 文件模式**不支持** §4.1.1 `ego`（点击节点用 slug 打开预览，不增量拉邻域）
+
+权限：需空间 **viewer**（`KbAclService.assertCanRead`）。
+
 ### 4.2 体检（只算不落库）`GET /kb/lint`
 
 > **数据源（KBOPS-10）**：扫描 **MySQL `kb_document`** 快照（`dataSource=db_snapshot`），**不读**磁盘 `kb/wiki*`。  

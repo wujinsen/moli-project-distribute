@@ -15,9 +15,11 @@ import com.moli.knowledge.server.dto.WikiSaveRequest;
 import com.moli.knowledge.server.dto.WikiSaveResultVo;
 import com.moli.knowledge.server.dto.WikiSpaceLintRequest;
 import com.moli.knowledge.server.dto.WikiSpaceLintVo;
+import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.service.KbWikiAiReviseService;
 import com.moli.knowledge.server.service.KbWikiEnrichService;
 import com.moli.knowledge.server.service.KbWikiFileService;
+import com.moli.knowledge.server.service.KbWikiGraphService;
 import com.moli.knowledge.server.dto.WikiGovernAiBatchFixRequest;
 import com.moli.knowledge.server.dto.WikiGovernAiBatchFixResultVo;
 import com.moli.knowledge.server.dto.WikiGovernAutoFixRequest;
@@ -67,8 +69,19 @@ public class KbWikiController {
     private KbWikiGovernService kbWikiGovernService;
     @Resource
     private KbWikiImportService kbWikiImportService;
+    @Resource
+    private KbWikiGraphService kbWikiGraphService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @GetMapping("/graph")
+    @ApiOperation("Wiki 文件直读图谱（wikilink + related + graph/edges.jsonl；对齐 serve.py /api/graph）")
+    public MoliResult<GraphVo> wikiGraph(@RequestParam Long spaceId,
+                                         @RequestParam(required = false, defaultValue = "full") String mode,
+                                         @RequestParam(required = false) Integer maxNodes,
+                                         @RequestParam(required = false) Integer minDeg) {
+        return MoliResult.success(kbWikiGraphService.graph(spaceId, mode, maxNodes, minDeg));
+    }
 
     @GetMapping("/page")
     @ApiOperation("读 wiki 文件全文（frontmatter+正文）；需空间 editor。文件不存在返回 exists=false")
