@@ -104,13 +104,14 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 | **KBOPS-5** | Sync **失败告警** | 夜间失败有人知 | webhook 可开关 |
 | **KBOPS-6** | **Wiki 治理全链路 UI**（T16f） | 不用 Swagger 修 wiki | W1–W8 见 [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) |
 | **KBOPS-7** | **平台 LLM 设置页**（T19d） | 管 Key、测连通 | 见 [kb-llm-platform-frontend.md](../api/kb-llm-platform-frontend.md) |
+| **KBOPS-8f** | **体检工单 UI**（O5–O8） | 类型筛选、指派、批量 | 见 [knowledge-ops-frontend.md](../api/knowledge-ops-frontend.md) §3.7 · 后端 ✅ KBOPS-8 |
 | **（关联）T20f** | Ingest **三 Tab** | raw 上传 + 成品导入 | [kb-import-entry-frontend.md](../api/kb-import-entry-frontend.md) |
 
 ### P2 — 增强（按需）
 
 | ID | 需求 | 说明 |
 |----|------|------|
-| **KBOPS-8** | 体检工单增强 | issue_type 扩展、assignee、批量、定时 scan | ✅ 后端 · 验收见 [knowledge-lint-ops-acceptance.md](../test/knowledge-lint-ops-acceptance.md) |
+| **KBOPS-8** | 体检工单增强 | issue_type 扩展、assignee、批量、定时 scan | ✅ 后端 · 前端 **KBOPS-8f（O5–O8）** 📋 · 验收见 [knowledge-lint-ops-acceptance.md](../test/knowledge-lint-ops-acceptance.md) |
 | **KBOPS-9** | 运维 Dashboard | Sync 趋势、Lint 工单、LLM 调用率 | ✅ 后端 |
 | **KBOPS-10** | Web 体检对齐 lint.py | `issue-types` 对照 + DB/文件分工文档 | ✅ |
 

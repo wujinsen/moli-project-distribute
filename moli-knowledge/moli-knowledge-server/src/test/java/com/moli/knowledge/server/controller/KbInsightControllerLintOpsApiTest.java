@@ -79,4 +79,17 @@ public class KbInsightControllerLintOpsApiTest {
         ControllerTestSupport.assertSuccess(result);
         verify(kbInsightService).updateIssueStatus(1L, 2);
     }
+
+    @Test
+    public void GET_kb_lint_scan_status() {
+        com.moli.knowledge.server.dto.LintScanStatusVo status = new com.moli.knowledge.server.dto.LintScanStatusVo();
+        status.setScheduleEnabled(true);
+        when(kbInsightService.scanStatus(100L)).thenReturn(status);
+
+        MoliResult<com.moli.knowledge.server.dto.LintScanStatusVo> result = controller.scanStatus(100L);
+
+        ControllerTestSupport.assertSuccess(result);
+        Assert.assertTrue(result.getData().isScheduleEnabled());
+        verify(kbInsightService).scanStatus(100L);
+    }
 }

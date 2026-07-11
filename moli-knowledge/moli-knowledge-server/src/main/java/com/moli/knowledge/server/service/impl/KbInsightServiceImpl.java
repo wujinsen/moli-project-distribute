@@ -8,23 +8,27 @@ import com.moli.knowledge.server.config.KbLintScanProperties;
 import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.dto.GraphVo;
+import com.moli.knowledge.server.dto.LintScanStatusVo;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbDocumentTag;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.entity.KbRelation;
+import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.enums.DocumentStatus;
 import com.moli.knowledge.server.mapper.KbCategoryMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
+import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbInsightService;
 import com.moli.knowledge.server.support.KbLintIssueDetector;
 import com.moli.knowledge.server.support.KbLintIssueTypes;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -49,6 +53,8 @@ public class KbInsightServiceImpl implements KbInsightService {
     /** 匹配 [[目标]] 或 [[目标|显示文本]]，取第一段为目标。 */
     private static final Pattern WIKILINK = Pattern.compile("\\[\\[([^\\]]+)\\]\\]");
 
+    private static final String LINT_LAST_SCAN_PREFIX = "kb:lint:last-scan:";
+
     @Resource
     private KbDocumentMapper kbDocumentMapper;
     @Resource
@@ -60,9 +66,13 @@ public class KbInsightServiceImpl implements KbInsightService {
     @Resource
     private KbLintIssueMapper kbLintIssueMapper;
     @Resource
+    private KbSpaceMapper kbSpaceMapper;
+    @Resource
     private KbAclService kbAclService;
     @Resource
     private KbLintScanProperties kbLintScanProperties;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /** 图谱默认最多返回节点数（按度数降序保留），避免一次性把全库推给前端。 */
     private static final int GRAPH_DEFAULT_MAX_NODES = 300;
@@ -369,6 +379,81 @@ public class KbInsightServiceImpl implements KbInsightService {
         persistScanResults(spaceId, vo);
     }
 
+    @Override
+    public LintScanStatusVo scanStatus(Long spaceId) {
+        assertSpaceReadable(spaceId);
+        if (spaceId == null && !kbAclService.isAdmin()) {
+            throw new BaseException("无权查看全库体检 scan 状态");
+        }
+
+        KbSpace space = spaceId != null ? kbSpaceMapper.selectById(spaceId) : null;
+
+        LintScanStatusVo vo = new LintScanStatusVo();
+        vo.setSpaceId(spaceId);
+        vo.setSpaceCode(space != null ? space.getSpaceCode() : null);
+        vo.setScheduleEnabled(kbLintScanProperties.isScheduleEnabled());
+        vo.setScheduleCron(kbLintScanProperties.getScheduleCron());
+        vo.setLastScanTime(resolveLastScanTime(spaceId));
+        vo.setOpenIssueCount(countOpenIssues(spaceId));
+        return vo;
+    }
+
+    private int countOpenIssues(Long spaceId) {
+        LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<KbLintIssue>()
+                .eq(KbLintIssue::getStatus, 0);
+        if (spaceId != null) {
+            w.eq(KbLintIssue::getSpaceId, spaceId);
+        }
+        Integer count = kbLintIssueMapper.selectCount(w);
+        return count == null ? 0 : count;
+    }
+
+    private Date resolveLastScanTime(Long spaceId) {
+        Date fromRedis = readLastScanFromRedis(spaceId);
+        if (fromRedis != null) {
+            return fromRedis;
+        }
+        LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<>();
+        if (spaceId != null) {
+            w.eq(KbLintIssue::getSpaceId, spaceId);
+        }
+        w.isNotNull(KbLintIssue::getScanTime)
+                .orderByDesc(KbLintIssue::getScanTime)
+                .last("limit 1");
+        KbLintIssue latest = kbLintIssueMapper.selectOne(w);
+        return latest != null ? latest.getScanTime() : null;
+    }
+
+    private Date readLastScanFromRedis(Long spaceId) {
+        if (stringRedisTemplate == null) {
+            return null;
+        }
+        try {
+            String raw = stringRedisTemplate.opsForValue().get(lintLastScanKey(spaceId));
+            if (StringUtils.isBlank(raw)) {
+                return null;
+            }
+            return new Date(Long.parseLong(raw.trim()));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private void recordLastScanTime(Long spaceId, Date when) {
+        if (stringRedisTemplate == null || when == null) {
+            return;
+        }
+        try {
+            stringRedisTemplate.opsForValue().set(lintLastScanKey(spaceId), String.valueOf(when.getTime()));
+        } catch (Exception ignored) {
+            // best effort
+        }
+    }
+
+    private static String lintLastScanKey(Long spaceId) {
+        return LINT_LAST_SCAN_PREFIX + (spaceId != null ? spaceId : "global");
+    }
+
     private LintVo lintInternal(Long spaceId) {
         return buildLintVo(spaceId);
     }
@@ -500,6 +585,7 @@ public class KbInsightServiceImpl implements KbInsightService {
             insertIssue(spaceId, parseLong(item.getPage()), KbLintIssueTypes.MISSING_CONCEPT,
                     item.getTitle() + ": " + item.getDetail(), now);
         }
+        recordLastScanTime(spaceId, now);
     }
 
     private void persistIssueItems(Long spaceId, List<LintVo.IssueItem> items, String type, Date now) {

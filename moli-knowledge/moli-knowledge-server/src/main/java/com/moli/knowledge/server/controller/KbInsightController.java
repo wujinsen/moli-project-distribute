@@ -7,6 +7,7 @@ import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.dto.LintIssueTypeVo;
 import com.moli.knowledge.server.support.KbLintIssueTypes;
+import com.moli.knowledge.server.dto.LintScanStatusVo;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.service.KbInsightService;
 import io.swagger.annotations.Api;
@@ -59,6 +60,12 @@ public class KbInsightController {
     @ApiOperation("体检并落库 kb_lint_issue（清旧待处理项后重建）")
     public MoliResult<LintVo> scan(@RequestParam(required = false) Long spaceId) {
         return MoliResult.success(kbInsightService.scan(spaceId));
+    }
+
+    @GetMapping("/lint/scan/status")
+    @ApiOperation("DB 体检 scan 状态：定时是否开启 + 最近 scan 时间（只读）")
+    public MoliResult<LintScanStatusVo> scanStatus(@RequestParam(required = false) Long spaceId) {
+        return MoliResult.success(kbInsightService.scanStatus(spaceId));
     }
 
     @GetMapping("/lint/issues")

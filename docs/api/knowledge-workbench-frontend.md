@@ -10,7 +10,8 @@
 
 | 优先级 | 页面 | 路由 | 后端 | 前端 | 对接文档 |
 |--------|------|------|------|------|----------|
-| **P0** | **健康体检 · Sync 区** | `knowledge/lint/index` | 🔵 KBOPS-1 | 🔵 **O1–O4** | **[knowledge-ops-frontend.md §3](knowledge-ops-frontend.md#3-p0--健康体检页-sync-增强o1o4)** |
+| **P0** | **健康体检 · Sync 区** | `knowledge/lint/index` | 🔵 KBOPS-1 | 🔵 **O1–O4** · **O9** | **[knowledge-ops-frontend.md §3](knowledge-ops-frontend.md#3-p0--健康体检页-sync-增强o1o4)** |
+| **P1** | **健康体检 · 工单区** | `knowledge/lint/index` | ✅ KBOPS-8/10 | 🔵 **O5–O8**（**KBOPS-8f**） | **[knowledge-ops-frontend.md §3.7](knowledge-ops-frontend.md#37-p1--体检工单增强o5o8--kbops-810)** |
 | **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19+**T20a–e/c/d 后端** | 🔵 **T20f 三 Tab UI**（Tab2 §10.1；Tab1/3 见下） | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) · **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** |
 | **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | 🔵 **Spec 已定**（见 §10.2；当前 MVP 仅 Lint+AI） | [wiki-govern-frontend.md](wiki-govern-frontend.md) · **[knowledge-ops-frontend.md §4](knowledge-ops-frontend.md#4-p0--wiki-治理t16f--kbops-6)** |
 | P1 | 平台 LLM 设置 | `system/kb-llm` | ✅ T19 | 🔵 T19d | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) |

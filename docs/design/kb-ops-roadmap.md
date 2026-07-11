@@ -41,8 +41,8 @@
 | K-P3 | ~~Sync 无失败告警~~ | ✅ KBOPS-5 | `KbSyncAlertService` + `kb.sync.alert.*`（默认关，配 webhook 启用） |
 | K-P4 | **定时同步默认关闭**：`schedule-enabled=false`；开启后 `resolveScheduleSpaceCodes()` 已支持三空间 / 配置列表 | 🟡 低 | `KbSyncScheduler` · 生产按需开 cron |
 | K-P5 | ~~权限码未 enforce~~ | ✅ KBOPS-3 | `KbAclService.assertCanSyncTrigger` / `assertCanLintScan` |
-| K-P6 | **DB 体检 issue_type 不全**：仅 `broken_link` / `orphan` / `no_summary`；DDL 注释里的 duplicate/stale/conflict 未实现；工单无 assignee/优先级/批量状态变更 | 🟢 低 | `KbInsightServiceImpl` |
-| K-P7 | **前端缺口**：T16f 治理全按钮、T19d LLM 设置页（后端均已就绪） | 🟡 中 | meiling-ui |
+| K-P6 | ~~DB 体检 issue_type 不全、工单无 assignee/批量~~ | ✅ KBOPS-8 | 后端 · 前端 **KBOPS-8f（O5–O8）** 📋 |
+| K-P7 | **前端缺口**：T16f 治理全按钮、T19d LLM 设置页、**KBOPS-8f 体检工单 O5–O8**（后端均已就绪） | 🟡 中 | meiling-ui |
 | K-P8 | Web 健康体检检查项**少于** `lint.py`（missing_source/bad_type/dup_slug/outdated 等未覆盖） | 🟢 低 | 设计差异 |
 
 ---

@@ -758,6 +758,24 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 
 **定时任务（KBOPS-8）**：`kb.lint.schedule-enabled=true` 时按 `kb.lint.schedule-cron`（默认每周一 03:00）对配置空间自动 `scan` 落库。
 
+### 4.3.1 Scan 状态（只读）`GET /kb/lint/scan/status`
+
+权限：与 `GET /kb/lint/issues` 相同（空间可读；全库需 admin）。
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `spaceId` | query | 否 | 不传=全库（admin） |
+
+响应 `data`：`LintScanStatusVo`
+
+| 字段 | 说明 |
+|------|------|
+| `scheduleEnabled` | `kb.lint.schedule-enabled`（**只读**，Web 不可改） |
+| `scheduleCron` | `kb.lint.schedule-cron`（只读，enabled 时可展示） |
+| `lastScanTime` | 最近 scan 落库时间（手动或定时；Redis 记录，回退 `kb_lint_issue.scan_time` MAX） |
+| `openIssueCount` | 当前待处理工单数（status=0） |
+| `spaceId` / `spaceCode` | 与 query 一致 |
+
 ### 4.4 体检问题列表 `GET /kb/lint/issues`
 
 | 参数 | 位置 | 必填 | 说明 |

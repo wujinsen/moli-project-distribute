@@ -18,6 +18,7 @@
 | 单条指派 | `PUT /kb/lint/issue/{id}/assign` | `assigneeId` / `priority` |
 | 批量指派 | `PUT /kb/lint/issues/batch-assign` | KBOPS-8 |
 | 类型对照 | `GET /kb/lint/issue-types` | KBOPS-10 · Web ↔ lint.py |
+| **Scan 状态（只读）** | `GET /kb/lint/scan/status` | `scheduleEnabled` / `lastScanTime` / `openIssueCount`（O9） |
 | 定时 scan | `KbLintScanScheduler` | `kb.lint.schedule-enabled`（默认关） |
 
 **不在本验收**：`POST /kb/wiki-moli/lint-space`（文件真值）→ 见 [knowledge-wiki-lint-space.md](knowledge-wiki-lint-space.md)。
@@ -60,7 +61,7 @@
 | 8 | `batchUpdateIssueStatus_rejectsNullStatus` | `BaseException` |
 | 9 | `batchUpdateIssueStatus_rejectsEmptyIds` | `BaseException` |
 
-### 2.4 `KbInsightControllerLintOpsApiTest`（5）
+### 2.4 `KbInsightControllerLintOpsApiTest`（6）
 
 | # | 方法 | 预期 |
 |---|------|------|
@@ -69,6 +70,14 @@
 | 3 | `PUT_kb_lint_issues_batch_status` | 批量状态 API 契约 |
 | 4 | `PUT_kb_lint_issue_assign` | 单条指派委托 Service |
 | 5 | `PUT_kb_lint_issue_status` | 单条状态委托 Service |
+| 6 | `GET_kb_lint_scan_status` | 返回 `scheduleEnabled` 等字段 |
+
+### 2.4.1 `KbInsightServiceImplLintScanStatusTest`（2）
+
+| # | 方法 | 预期 |
+|---|------|------|
+| 1 | `scanStatus_readsScheduleConfigAndRedisLastScan` | yml 配置 + Redis 最近 scan 时间 |
+| 2 | `scanStatus_globalRequiresAdmin` | 全库 status 需 admin |
 
 ### 2.5 `KbLintScanSchedulerTest`（3）
 

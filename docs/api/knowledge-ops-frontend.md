@@ -12,13 +12,14 @@
 
 | 优先级 | 模块 | 路由 | 文档 | 后端 | 前端 |
 |--------|------|------|------|------|------|
-| **P0** | 健康体检 · Sync 增强 | `knowledge/lint/index` | **本文 §3** | ✅ KBOPS-1/2 + O1 字段 | 🔵 **O1–O4** |
+| **P0** | 健康体检 · Sync 增强 | `knowledge/lint/index` | **本文 §3** | ✅ KBOPS-1/2 + O1 + **O9** | 🔵 **O1–O4** · **O9** |
+| **P1** | **体检工单增强** | `knowledge/lint/index` | **本文 §3.7** | ✅ KBOPS-8/10 | 🔵 **O5–O8**（**KBOPS-8f**） |
 | **P0** | Wiki 治理全链路 | `knowledge/wiki-govern/index` | [wiki-govern-frontend.md](wiki-govern-frontend.md) | ✅ | 🔵 **W2/W4/W5/W7** |
 | **P1** | 平台 LLM 设置 | `system/kb-llm` | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | ✅ T19 | 🔵 **T19d** |
 | **P1** | Ingest 三 Tab | `knowledge/ingest/index` | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | ✅ T20a/b/e | 🔵 **T20f** |
 | **P2** | 运维 Dashboard | `knowledge/ops/dashboard` | **本文 §8** | ✅ KBOPS-9 | 📋 规划 |
 
-**建议迭代顺序**：**O1–O4（Sync 可见）→ W2/W4/W5/W7（治理闭环）→ T19d → T20f Tab1/3 → Dashboard**
+**建议迭代顺序**：**O1–O4 + O9（Sync/Scan 可见）→ O5–O8（工单批量）→ W2/W4/W5/W7（治理闭环）→ T19d → T20f Tab1/3 → Dashboard**
 
 **网关前缀**：`{VITE_API_BASE_URL}/KnowledgeServer`
 
@@ -52,6 +53,7 @@ KnowledgeLintView.vue
 ├─ LintSummaryPanel          # 现有：GET /kb/lint
 ├─ LintIssueTable            # 现有：GET /kb/lint/issues
 ├─ KbSyncOpsPanel  （新增）   # §3.2
+├─ KbLintScanStatusBar（新增） # §3.5 · O9
 └─ ScanActions               # 现有：POST /kb/lint/scan
 ```
 
@@ -118,7 +120,37 @@ export const listSyncLogs = (params: { spaceId: string; pageNum?: number; pageSi
   request.get<{ rows: KbSyncLogVo[]; total: number }>(`${KB}/sync/logs`, { params })
 ```
 
-### 3.5 权限与错误
+### 3.5 Scan 状态条（O9 · 只读）
+
+> **后端** ✅ `GET /kb/lint/scan/status` · **前端** 🔵
+
+| ID | 功能 | API | UI |
+|----|------|-----|-----|
+| **O9** | 定时 scan 状态 | `GET /kb/lint/scan/status?spaceId=` | 信息条：`scheduleEnabled` 徽章 + `lastScanTime` + 可选 `openIssueCount` |
+
+**交互**：
+
+- `scheduleEnabled=true` → 绿色「定时 scan 已开启」+ Tooltip 展示 `scheduleCron`
+- `scheduleEnabled=false` → 灰色「定时 scan 未开启（运维 yml）」
+- `lastScanTime` 为空 → 「尚未 scan 落库」
+- **不提供** Web 开关改 yml；手动 scan 仍用 `POST /kb/lint/scan`
+- 选空间 / 手动 scan 成功后刷新 status
+
+```typescript
+export type LintScanStatusVo = {
+  spaceId?: string
+  spaceCode?: string
+  scheduleEnabled: boolean
+  scheduleCron?: string
+  lastScanTime?: string
+  openIssueCount?: number
+}
+
+export const getLintScanStatus = (spaceId: string) =>
+  request.get<LintScanStatusVo>(`${KB}/lint/scan/status`, { params: { spaceId } })
+```
+
+### 3.6 权限与错误
 
 | 场景 | 处理 |
 |------|------|
@@ -126,12 +158,13 @@ export const listSyncLogs = (params: { spaceId: string; pageNum?: number; pageSi
 | KBOPS-2 并发锁 | HTTP 200 + 业务码「同步进行中」→ 禁用按钮 + 轮询 status |
 | 脚本失败 KBOPS-1 | 展示 `message` / `stdoutTail`（若有）；勿覆盖为 success |
 
-### 3.6 验收 O1–O4
+### 3.7 验收 O1–O4 / O9
 
 - [ ] 选空间后加载 status + 最近 10 条 log  
 - [ ] trigger 成功 → status 刷新、log 新增 success 行  
 - [ ] trigger 失败（运维配合制造）→ fail 行可见、Toast  
 - [ ] running 时不能重复 trigger  
+- [ ] **O9**：展示定时 scan 开关状态 + 最近 scan 时间（只读）
 
 ---
 
@@ -171,6 +204,14 @@ export type LintIssueTypeVo = {
 ```
 
 **分工提示（KBOPS-10）**：列表页角标说明「DB 快照体检」；Sync 前引导用户去 **Wiki 治理** 跑 `lint-space`（文件真值）。
+
+### 3.7.1 DoD（KBOPS-8f · meiling-ui）
+
+- [ ] 扫描落库后工单列表支持 `issueType` / `assigneeId` / `priority` / `status` 筛选  
+- [ ] `GET /kb/lint/issue-types` 驱动类型下拉（展示 `webOnly` / `lintPyOnly` 提示）  
+- [ ] 行内改 `assigneeId`、`priority`（O6）  
+- [ ] 多选批量改 status（O7）、批量指派（O8）  
+- [ ] 页头说明：DB 快照 ≠ 磁盘 lint.py；修 wiki 走治理页  
 
 ---
 
@@ -253,6 +294,7 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 |------|------|----------|
 | `kb.ingest.commit-auto-sync` | `true` | publish 后可能已 Sync，O1 仍要展示最后批次 |
 | `kb.sync.schedule-enabled` | `false` | 定时 Sync 默认关 |
+| `kb.lint.schedule-enabled` | `false` | 定时 DB scan 落库默认关；**Web 只读展示**（O9），改 yml/Nacos |
 | `kb.sync.space-code` | 单空间 | KBOPS-4 后可能变多空间 |
 
 详表见 PRD §6、运维 `wiki同步指南`。
@@ -267,6 +309,11 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 | O2 | Sync | 触发按钮 + 锁 | P0 |
 | O3 | Sync | 日志列表 | P0 |
 | O4 | Sync | 失败展示 | P0 |
+| O9 | 体检 Scan | 定时状态 + 最近 scan 时间（只读） | P0 |
+| O5 | 体检工单 | 类型筛选 | P1 |
+| O6 | 体检工单 | 行内指派/优先级 | P1 |
+| O7 | 体检工单 | 批量改状态 | P1 |
+| O8 | 体检工单 | 批量指派 | P1 |
 | W1–W8 | 治理 | 见 wiki-govern §13 | P0 |
 | T19d | LLM | 见 kb-llm-platform | P1 |
 | T20f | Ingest | 见 kb-import-entry §10 | P1 |
@@ -281,7 +328,11 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 | `src/api/knowledge/kbSync.ts` | §3.4 Sync API |
 | `src/types/knowledge/kbSync.ts` | §3.3 类型 |
 | `src/components/knowledge/KbSyncOpsPanel.vue` | §3.2 可复用 Sync 区 |
-| `src/views/knowledge/lint/index.vue` | 嵌入 KbSyncOpsPanel |
+| `src/components/knowledge/KbLintIssueTable.vue` | §3.7 工单表（O5–O8） |
+| `src/api/knowledge/kbLint.ts` | issue-types / issues / batch-* / assign / **scan/status** |
+| `src/types/knowledge/kbLint.ts` | `KbLintIssue` · `LintIssueTypeVo` · **`LintScanStatusVo`** |
+| `src/components/knowledge/KbLintScanStatusBar.vue` | §3.5 O9 |
+| `src/views/knowledge/lint/index.vue` | 嵌入 KbSyncOpsPanel + KbLintIssueTable |
 | `src/views/knowledge/wiki-govern/` | 见 wiki-govern §14 |
 | `src/views/system/kb-llm/index.vue` | T19d |
 
@@ -314,5 +365,7 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-12 | §3.5 增 O9 · `GET /kb/lint/scan/status`（定时 scan 只读展示） |
+| 2026-07-12 | §1/§10/§11 增 KBOPS-8f · O5–O8 工单 UI 排期与 DoD |
 | 2026-07-09 | 初稿：O1–O4 Sync UI、排期、Dashboard 规划、与 T16f/T19d/T20f 交叉引用 |
 | 2026-06-28 | 治理细节见 wiki-govern-frontend.md |

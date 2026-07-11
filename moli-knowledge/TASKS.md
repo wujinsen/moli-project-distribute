@@ -18,7 +18,7 @@
 | 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
 | kb 知识 | ✅ wiki + wiki-moli + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
 | 后端工作台 | ✅ T14…T19 · **T20a–e + T20c/d P1** | — |
-| 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理全链路 · **T19d** LLM 设置 UI · **T20f** 导入 Tab · 空间 CRUD（二期） |
+| 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理 · **KBOPS-8f** O5–O8 · **O9** scan 状态 · **T19d** LLM · **T20f** 导入 Tab |
 
 ---
 
@@ -637,11 +637,66 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | ✅ 后端 · 配 URL |
 | **KBOPS-6** | 前端 T16f Wiki 治理全按钮（同 T16f） | P1 | 📋 |
 | **KBOPS-7** | 前端 T19d 平台 LLM 设置页（同 T19d） | P1 | 📋 |
-| **KBOPS-8** | 体检工单增强：issue_type 扩展 + assignee/优先级 + 批量 + 可选定时 scan | P2 | ✅ |
+| **KBOPS-8** | 体检工单增强：issue_type 扩展 + assignee/优先级 + 批量 + 可选定时 scan | P2 | ✅ 后端 |
+| **KBOPS-8f** | meiling-ui 体检工单 UI（**O5–O8**） | P1 | 📋 |
 | **KBOPS-9** | 知识库运维 Dashboard（`GET /kb/ops/dashboard`） | P2 | ✅ 后端 · 前端 O4 📋 |
 | **KBOPS-10** | Web 体检检查项对齐 `lint.py`（或明确分工文档） | P2 | ✅ |
 
-**建议起手**：前端 Tab1 接 `raw-prefixes` / O2 `async=true` 轮询；运维 E2E 见 `kb/tools/ci/run_govern_e2e.sh`。
+**建议起手**：前端 **O5–O8**（KBOPS-8f）· Tab1 接 `raw-prefixes` / O2 `async=true` 轮询；运维 E2E 见 `kb/tools/ci/run_govern_e2e.sh`。
+
+---
+
+## KBOPS-8f · 健康体检工单 UI（meiling-ui · O5–O8）
+
+> **后端** ✅ KBOPS-8/10 · **前端** 📋 待 meiling-ui  
+> 权威对接：[docs/api/knowledge-ops-frontend.md](../docs/api/knowledge-ops-frontend.md) §3.7  
+> 验收：[docs/test/knowledge-lint-ops-acceptance.md](../docs/test/knowledge-lint-ops-acceptance.md)
+
+**目标**：在 **`knowledge/lint/index`**（`KnowledgeLintView`）扩展 **DB 体检工单**筛选与批量操作；与 O1–O4 Sync 区同页。
+
+| 子任务 | API | UI | 状态 |
+|--------|-----|-----|------|
+| **O5** | `GET /kb/lint/issues?issueType=` · `GET /kb/lint/issue-types` | 工单表类型筛选下拉 | 📋 |
+| **O6** | `PUT /kb/lint/issue/{id}/assign` | 行内处理人 + 优先级（0/1/2） | 📋 |
+| **O7** | `PUT /kb/lint/issues/batch-status` | 多选 → 已忽略/已修复 | 📋 |
+| **O8** | `PUT /kb/lint/issues/batch-assign` | 多选 → 统一指派/优先级 | 📋 |
+
+---
+
+## O9 · Scan 状态条（meiling-ui · 只读）
+
+> **后端** ✅ `GET /kb/lint/scan/status` · **前端** 📋  
+> 对接：[docs/api/knowledge-ops-frontend.md](../docs/api/knowledge-ops-frontend.md) §3.5
+
+**目标**：健康体检页展示 **定时 scan 是否开启** + **上次 scan 落库时间**（只读，不改 yml）。
+
+| 子任务 | API | UI | 状态 |
+|--------|-----|-----|------|
+| **O9** | `GET /kb/lint/scan/status?spaceId=` | `scheduleEnabled` 徽章 + `lastScanTime` + 可选 `openIssueCount` | 📋 |
+
+**开工提示词**：
+
+```
+实现 O9 健康体检 Scan 状态条（meiling-ui）：
+- 读 docs/api/knowledge-ops-frontend.md §3.5
+- GET /kb/lint/scan/status?spaceId=，组件 KbLintScanStatusBar
+- 定时开关只读展示；手动 scan 成功后 refresh
+```
+
+---
+
+**开工提示词（KBOPS-8f）**：
+
+```
+实现 KBOPS-8f 健康体检工单 UI（meiling-ui）：
+- 先读 docs/api/knowledge-ops-frontend.md §3.7（O5–O8）
+- 页面：knowledge/lint/index，扩展 LintIssueTable（Scan 落库后的 kb_lint_issue 列表）
+- API：GET issue-types、GET issues（issueType/assigneeId/priority/status）
+- 单条：PUT issue/{id}/assign、PUT issue/{id}?status=
+- 批量：PUT issues/batch-status、PUT issues/batch-assign
+- 角标文案：「DB 快照体检」；修文件引导 Wiki 治理 lint-space（KBOPS-10）
+- types/api：src/types/knowledge/kbLint.ts、src/api/knowledge/kbLint.ts（或扩 knowledge.ts）
+```
 
 ---
 

@@ -85,6 +85,7 @@ Authorization: {token}  # 后续请求
 | Ingest | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) |
 | Wiki 治理 | [wiki-govern-frontend.md](wiki-govern-frontend.md) |
 | 总览 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) |
+| **健康体检 / Sync / 工单** | [knowledge-ops-frontend.md](knowledge-ops-frontend.md)（O1–O8 · **KBOPS-8f**） |
 | LLM 设置 | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) |
 | 运营管理 | [operation-frontend.md](operation-frontend.md) |
 
@@ -94,7 +95,8 @@ Authorization: {token}  # 后续请求
 
 | 页面 | 后端 | 前端 |
 |------|------|------|
-| 浏览/问答/图谱/体检 | ✅ | ✅ |
+| 浏览/问答/图谱 | ✅ | ✅ |
+| 健康体检 | ✅ KBOPS-8/10 + **O9 scan/status** | 🔵 **O1–O4/O9** Sync+Scan · **O5–O8** 工单（KBOPS-8f） |
 | Ingest | ✅ | ⚠️ nextSteps / conflicts UI |
 | Wiki 编辑 | ✅ | ✅ |
 | Wiki 治理 | ✅ | ⚠️ T16f 部分 |

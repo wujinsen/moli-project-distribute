@@ -3,6 +3,7 @@ package com.moli.knowledge.server.service;
 import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.dto.LintScanStatusVo;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.entity.KbLintIssue;
 
@@ -58,4 +59,7 @@ public interface KbInsightService {
 
     /** 定时任务调用 scan（无 ACL，仅调度器）。 */
     void scanScheduled(Long spaceId);
+
+    /** DB 体检 scan 状态：定时开关（只读）+ 最近 scan 时间。 */
+    LintScanStatusVo scanStatus(Long spaceId);
 }
