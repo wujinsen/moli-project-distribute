@@ -155,7 +155,8 @@ moli-knowledge-server/
 | GET | `/lint?spaceId=` | 体检（只算不落库）：断链 / 孤儿页 / 缺摘要，返回 `LintVo{broken,orphans,noSummary,counts}` |
 | POST | `/lint/scan?spaceId=` | 体检并落库 `kb_lint_issue`（清旧待处理项后重建），返回同 `LintVo` |
 | GET | `/lint/scan/status?spaceId=` | 定时 scan 是否开启 + 最近 scan 时间（只读） |
-| GET | `/lint/issues?spaceId=&status=` | 查询已落库体检问题（status：0待处理/1已忽略/2已修复），返回 `KbLintIssue[]` |
+| GET | `/lint/issues?spaceId=&status=&pageNum=&pageSize=` | 查询已落库体检问题（**分页** Page），支持 `resolved`/`unassignedOnly` |
+| PUT | `/lint/issues/batch` | 统一批量更新 status/assignee/priority（O7/O8） |
 | PUT | `/lint/issue/{id}?status=` | 更新某条体检问题状态 |
 
 ### 问答 Query `/kb`（T2）

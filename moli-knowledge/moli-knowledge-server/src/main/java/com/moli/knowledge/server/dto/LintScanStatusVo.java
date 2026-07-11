@@ -1,5 +1,6 @@
 package com.moli.knowledge.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -19,10 +20,11 @@ public class LintScanStatusVo {
     @ApiModelProperty("是否启用定时 scan 落库（kb.lint.schedule-enabled，只读）")
     private boolean scheduleEnabled;
 
-    @ApiModelProperty("定时 cron 表达式（kb.lint.schedule-cron，只读）")
+    @ApiModelProperty("定时 cron 表达式（kb.lint.schedule-cron，只读；未配置时返回默认）")
     private String scheduleCron;
 
-    @ApiModelProperty("最近一次 scan 落库时间（手动或定时）")
+    @ApiModelProperty("最近一次 scan 落库时间（手动或定时；无记录时为 null）")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date lastScanTime;
 
     @ApiModelProperty("当前待处理工单数（status=0）")

@@ -2,7 +2,9 @@ package com.moli.knowledge.server.service.impl;
 
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.dto.LintIssuePageQuery;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.service.KbAclService;
@@ -127,6 +129,37 @@ public class KbInsightServiceImplLintOpsTest {
         LintIssueBatchStatusRequest request = new LintIssueBatchStatusRequest();
         request.setStatus(1);
         service.batchUpdateIssueStatus(request);
+    }
+
+    @Test
+    public void batchUpdateIssues_updatesStatusOnly() {
+        KbLintIssue issue = openIssue();
+        when(kbLintIssueMapper.selectById(ISSUE_ID)).thenReturn(issue);
+
+        LintIssueBatchRequest request = new LintIssueBatchRequest();
+        request.setIds(Collections.singletonList(ISSUE_ID));
+        request.setStatus(1);
+
+        int updated = service.batchUpdateIssues(request);
+
+        Assert.assertEquals(1, updated);
+        ArgumentCaptor<KbLintIssue> captor = ArgumentCaptor.forClass(KbLintIssue.class);
+        verify(kbLintIssueMapper).updateById(captor.capture());
+        Assert.assertEquals(Integer.valueOf(1), captor.getValue().getStatus());
+    }
+
+    @Test
+    public void patchIssue_clearsAssigneeWhenRequested() {
+        KbLintIssue issue = openIssue();
+        issue.setAssigneeId(ASSIGNEE_ID);
+        when(kbLintIssueMapper.selectById(ISSUE_ID)).thenReturn(issue);
+
+        service.patchIssue(ISSUE_ID, 0, null, true, null);
+
+        ArgumentCaptor<KbLintIssue> captor = ArgumentCaptor.forClass(KbLintIssue.class);
+        verify(kbLintIssueMapper).updateById(captor.capture());
+        Assert.assertNull(captor.getValue().getAssigneeId());
+        Assert.assertEquals(Integer.valueOf(0), captor.getValue().getStatus());
     }
 
     private static KbLintIssue openIssue() {

@@ -2,6 +2,7 @@ package com.moli.knowledge.server.controller;
 
 import com.moli.common.core.MoliResult;
 import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.dto.LintIssueTypeVo;
 import com.moli.knowledge.server.service.KbInsightService;
@@ -75,21 +76,36 @@ public class KbInsightControllerLintOpsApiTest {
 
     @Test
     public void PUT_kb_lint_issue_status() {
-        MoliResult<Boolean> result = controller.updateIssue(1L, 2);
+        MoliResult<Boolean> result = controller.updateIssue(1L, 2, null, null);
         ControllerTestSupport.assertSuccess(result);
-        verify(kbInsightService).updateIssueStatus(1L, 2);
+        verify(kbInsightService).patchIssue(1L, 2, null, false, null);
     }
 
     @Test
     public void GET_kb_lint_scan_status() {
         com.moli.knowledge.server.dto.LintScanStatusVo status = new com.moli.knowledge.server.dto.LintScanStatusVo();
         status.setScheduleEnabled(true);
+        status.setScheduleCron("0 0 3 ? * MON");
         when(kbInsightService.scanStatus(100L)).thenReturn(status);
 
         MoliResult<com.moli.knowledge.server.dto.LintScanStatusVo> result = controller.scanStatus(100L);
 
         ControllerTestSupport.assertSuccess(result);
         Assert.assertTrue(result.getData().isScheduleEnabled());
+        Assert.assertEquals("0 0 3 ? * MON", result.getData().getScheduleCron());
         verify(kbInsightService).scanStatus(100L);
+    }
+
+    @Test
+    public void PUT_kb_lint_issues_batch() {
+        LintIssueBatchRequest request = new LintIssueBatchRequest();
+        request.setIds(java.util.Collections.singletonList(1L));
+        request.setStatus(1);
+        when(kbInsightService.batchUpdateIssues(request)).thenReturn(0);
+
+        MoliResult<Integer> result = controller.batchUpdateIssues(request);
+
+        ControllerTestSupport.assertSuccess(result);
+        Assert.assertEquals(Integer.valueOf(0), result.getData());
     }
 }

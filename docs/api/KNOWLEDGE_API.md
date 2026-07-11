@@ -782,22 +782,38 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 |------|------|------|------|
 | `spaceId` | query | 否 | |
 | `status` | query | 否 | `0`待处理 `1`已忽略 `2`已修复 |
+| `resolved` | query | 否 | 与 `status` 同义（meiling-ui 兼容别名） |
 | `issueType` | query | 否 | 见 §4.8 |
 | `assigneeId` | query | 否 | 处理人用户 ID |
 | `priority` | query | 否 | `0`普通 `1`高 `2`紧急 |
+| `unassignedOnly` | query | 否 | `true` 时仅未指派 |
+| `pageNum` | query | 否 | 默认 `1` |
+| `pageSize` | query | 否 | 默认 `20`，最大 `200` |
 
-响应 `data`：`KbLintIssue[]`，元素含 `id/spaceId/documentId/issueType/detail/status/assigneeId/priority/scanTime`。
+响应 `data`：MyBatis `Page<KbLintIssue>`（`records`/`total`/`current`/`size`），元素含 `id/spaceId/documentId/issueType/detail/status/assigneeId/priority/scanTime`。
 
-### 4.5 更新问题状态 `PUT /kb/lint/issue/{id}?status=`
+### 4.5 更新问题 `PUT /kb/lint/issue/{id}`
 
 | 参数 | 位置 | 必填 | 说明 |
 |------|------|------|------|
 | `id` | path | 是 | 问题 ID |
-| `status` | query | 是 | `0`/`1`/`2` |
+| `status` | query | 否 | `0`/`1`/`2` |
+| `assigneeId` | query | 否 | 处理人；**空字符串**表示清空 |
+| `priority` | query | 否 | `0`/`1`/`2` |
 
-需空间 **editor** 或超管。
+至少提供 `status`、`assigneeId`（含清空）或 `priority` 之一。需空间 **editor** 或超管。
 
-### 4.5.1 批量更新状态 `PUT /kb/lint/issues/batch-status`（KBOPS-8）
+### 4.5.1 统一批量更新 `PUT /kb/lint/issues/batch`（O7/O8）
+
+请求体 `LintIssueBatchRequest`：
+
+```json
+{ "ids": [9001, 9002], "status": 2, "assigneeId": 42, "priority": 1, "clearAssignee": false }
+```
+
+`status`、`assigneeId`、`clearAssignee`、`priority` 至少填一项。响应 `data`：更新条数 `int`。
+
+### 4.5.2 批量更新状态 `PUT /kb/lint/issues/batch-status`（KBOPS-8 · 兼容）
 
 请求体 `LintIssueBatchStatusRequest`：
 

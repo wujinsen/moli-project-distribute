@@ -176,7 +176,7 @@ export const getLintScanStatus = (spaceId: string) =>
 |----|------|-----|-----|
 | **O5** | 类型筛选 | `GET /kb/lint/issues?issueType=` | 下拉；数据源 `GET /kb/lint/issue-types` |
 | **O6** | 指派 / 优先级 | `PUT /kb/lint/issue/{id}/assign` | 行内选择处理人、优先级 |
-| **O7** | 批量状态 | `PUT /kb/lint/issues/batch-status` | 多选 → 已忽略/已修复 |
+| **O7** | 批量状态 | `PUT /kb/lint/issues/batch` | 多选 → 已忽略/已修复（兼容 `batch-status`） |
 | **O8** | 批量指派 | `PUT /kb/lint/issues/batch-assign` | 多选 → 统一处理人/优先级 |
 
 **TypeScript 建议**：

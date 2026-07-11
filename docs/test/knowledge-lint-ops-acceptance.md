@@ -12,9 +12,10 @@
 |------|-----|------|
 | DB 体检（不落库） | `GET /kb/lint` | `LintVo` 含 12 类检查 + `dataSource=db_snapshot` |
 | 扫描落库 | `POST /kb/lint/scan` | 写 `kb_lint_issue`；清旧 `status=0` |
-| 工单列表 | `GET /kb/lint/issues` | 支持 `issueType` / `assigneeId` / `priority` / `status` |
+| 工单列表 | `GET /kb/lint/issues` | 分页 `pageNum/pageSize`；`resolved`/`unassignedOnly` |
 | 单条状态 | `PUT /kb/lint/issue/{id}?status=` | 0待处理 / 1已忽略 / 2已修复 |
-| 批量状态 | `PUT /kb/lint/issues/batch-status` | KBOPS-8 |
+| 批量状态 | `PUT /kb/lint/issues/batch` | O7 统一批量（status/assignee/priority） |
+| 批量状态（兼容） | `PUT /kb/lint/issues/batch-status` | KBOPS-8 |
 | 单条指派 | `PUT /kb/lint/issue/{id}/assign` | `assigneeId` / `priority` |
 | 批量指派 | `PUT /kb/lint/issues/batch-assign` | KBOPS-8 |
 | 类型对照 | `GET /kb/lint/issue-types` | KBOPS-10 · Web ↔ lint.py |

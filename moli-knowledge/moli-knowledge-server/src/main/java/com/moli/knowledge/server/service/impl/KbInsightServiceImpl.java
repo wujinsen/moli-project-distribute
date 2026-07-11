@@ -1,12 +1,15 @@
 package com.moli.knowledge.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbLintScanProperties;
 import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.dto.LintIssuePageQuery;
 import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintScanStatusVo;
 import com.moli.knowledge.server.dto.LintVo;
@@ -54,6 +57,8 @@ public class KbInsightServiceImpl implements KbInsightService {
     private static final Pattern WIKILINK = Pattern.compile("\\[\\[([^\\]]+)\\]\\]");
 
     private static final String LINT_LAST_SCAN_PREFIX = "kb:lint:last-scan:";
+    private static final String DEFAULT_LINT_SCAN_CRON = "0 0 3 ? * MON";
+    private static final int LINT_ISSUE_PAGE_SIZE_MAX = 200;
 
     @Resource
     private KbDocumentMapper kbDocumentMapper;
@@ -392,7 +397,8 @@ public class KbInsightServiceImpl implements KbInsightService {
         vo.setSpaceId(spaceId);
         vo.setSpaceCode(space != null ? space.getSpaceCode() : null);
         vo.setScheduleEnabled(kbLintScanProperties.isScheduleEnabled());
-        vo.setScheduleCron(kbLintScanProperties.getScheduleCron());
+        String cron = kbLintScanProperties.getScheduleCron();
+        vo.setScheduleCron(StringUtils.isNotBlank(cron) ? cron.trim() : DEFAULT_LINT_SCAN_CRON);
         vo.setLastScanTime(resolveLastScanTime(spaceId));
         vo.setOpenIssueCount(countOpenIssues(spaceId));
         return vo;
@@ -596,43 +602,123 @@ public class KbInsightServiceImpl implements KbInsightService {
     }
 
     @Override
-    public List<KbLintIssue> issues(Long spaceId, Integer status, String issueType,
-                                    Long assigneeId, Integer priority) {
-        assertSpaceReadable(spaceId);
-        LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<>();
-        if (spaceId != null) {
-            w.eq(KbLintIssue::getSpaceId, spaceId);
+    public Page<KbLintIssue> issuesPage(LintIssuePageQuery query) {
+        LintIssuePageQuery q = query != null ? query : new LintIssuePageQuery();
+        assertSpaceReadable(q.getSpaceId());
+
+        int pageNum = q.getPageNum() < 1 ? 1 : q.getPageNum();
+        int pageSize = q.getPageSize() < 1 ? 20 : q.getPageSize();
+        if (pageSize > LINT_ISSUE_PAGE_SIZE_MAX) {
+            pageSize = LINT_ISSUE_PAGE_SIZE_MAX;
         }
-        if (status != null) {
-            w.eq(KbLintIssue::getStatus, status);
-        }
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(issueType)) {
-            w.eq(KbLintIssue::getIssueType, issueType.trim());
-        }
-        if (assigneeId != null) {
-            w.eq(KbLintIssue::getAssigneeId, assigneeId);
-        }
-        if (priority != null) {
-            w.eq(KbLintIssue::getPriority, priority);
-        }
+
+        LambdaQueryWrapper<KbLintIssue> w = buildIssueQueryWrapper(q);
         w.orderByDesc(KbLintIssue::getPriority)
                 .orderByDesc(KbLintIssue::getScanTime);
-        return kbLintIssueMapper.selectList(w);
+        return kbLintIssueMapper.selectPage(new Page<>(pageNum, pageSize), w);
+    }
+
+    private LambdaQueryWrapper<KbLintIssue> buildIssueQueryWrapper(LintIssuePageQuery q) {
+        LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<>();
+        if (q.getSpaceId() != null) {
+            w.eq(KbLintIssue::getSpaceId, q.getSpaceId());
+        }
+        if (q.getStatus() != null) {
+            w.eq(KbLintIssue::getStatus, q.getStatus());
+        }
+        if (StringUtils.isNotBlank(q.getIssueType())) {
+            w.eq(KbLintIssue::getIssueType, q.getIssueType().trim());
+        }
+        if (q.isUnassignedOnly()) {
+            w.isNull(KbLintIssue::getAssigneeId);
+        } else if (q.getAssigneeId() != null) {
+            w.eq(KbLintIssue::getAssigneeId, q.getAssigneeId());
+        }
+        if (q.getPriority() != null) {
+            w.eq(KbLintIssue::getPriority, q.getPriority());
+        }
+        return w;
+    }
+
+    @Override
+    public void patchIssue(Long id, Integer status, Long assigneeId, boolean clearAssignee, Integer priority) {
+        if (status == null && assigneeId == null && !clearAssignee && priority == null) {
+            throw new BaseException("至少提供 status、assigneeId 或 priority 之一");
+        }
+        KbLintIssue issue = kbLintIssueMapper.selectById(id);
+        if (issue == null) {
+            throw new BaseException("体检问题不存在");
+        }
+        assertCanEditIssue(issue);
+        if (status != null) {
+            issue.setStatus(status);
+        }
+        if (clearAssignee) {
+            issue.setAssigneeId(null);
+        } else if (assigneeId != null) {
+            issue.setAssigneeId(assigneeId);
+        }
+        if (priority != null) {
+            if (priority < 0 || priority > 2) {
+                throw new BaseException("priority 非法（0普通/1高/2紧急）");
+            }
+            issue.setPriority(priority);
+        }
+        issue.setUpdateTime(new Date());
+        kbLintIssueMapper.updateById(issue);
+    }
+
+    private void assertCanEditIssue(KbLintIssue issue) {
+        if (issue.getSpaceId() != null) {
+            kbAclService.assertCanEdit(issue.getSpaceId());
+        } else if (!kbAclService.isAdmin()) {
+            throw new BaseException("无权处理该体检问题");
+        }
+    }
+
+    @Override
+    public int batchUpdateIssues(LintIssueBatchRequest request) {
+        if (request == null || request.getIds() == null || request.getIds().isEmpty()) {
+            throw new BaseException("ids 不能为空");
+        }
+        boolean clearAssignee = Boolean.TRUE.equals(request.getClearAssignee());
+        if (request.getStatus() == null && request.getAssigneeId() == null && !clearAssignee
+                && request.getPriority() == null) {
+            throw new BaseException("status、assigneeId、clearAssignee、priority 至少填一项");
+        }
+        if (request.getPriority() != null && (request.getPriority() < 0 || request.getPriority() > 2)) {
+            throw new BaseException("priority 非法（0普通/1高/2紧急）");
+        }
+
+        int updated = 0;
+        Date now = new Date();
+        for (Long id : request.getIds()) {
+            KbLintIssue issue = kbLintIssueMapper.selectById(id);
+            if (issue == null) {
+                continue;
+            }
+            assertCanEditIssue(issue);
+            if (request.getStatus() != null) {
+                issue.setStatus(request.getStatus());
+            }
+            if (clearAssignee) {
+                issue.setAssigneeId(null);
+            } else if (request.getAssigneeId() != null) {
+                issue.setAssigneeId(request.getAssigneeId());
+            }
+            if (request.getPriority() != null) {
+                issue.setPriority(request.getPriority());
+            }
+            issue.setUpdateTime(now);
+            kbLintIssueMapper.updateById(issue);
+            updated++;
+        }
+        return updated;
     }
 
     @Override
     public void updateIssueStatus(Long id, Integer status) {
-        KbLintIssue issue = kbLintIssueMapper.selectById(id);
-        if (issue != null) {
-            if (issue.getSpaceId() != null) {
-                kbAclService.assertCanEdit(issue.getSpaceId());
-            } else if (!kbAclService.isAdmin()) {
-                throw new com.moli.common.exception.BaseException("无权处理该体检问题");
-            }
-            issue.setStatus(status);
-            issue.setUpdateTime(new Date());
-            kbLintIssueMapper.updateById(issue);
-        }
+        patchIssue(id, status, null, false, null);
     }
 
     @Override
