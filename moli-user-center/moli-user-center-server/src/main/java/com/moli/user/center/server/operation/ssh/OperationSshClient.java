@@ -8,6 +8,7 @@ import com.jcraft.jsch.SftpProgressMonitor;
 import com.moli.common.exception.BaseException;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.server.operation.config.OperationSshProperties;
+import com.moli.user.center.server.operation.support.OperationBizException;
 import com.moli.user.center.server.operation.support.OperationSecretSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class OperationSshClient {
      */
     public OperationSshSession connect(OperationServerInfo server) {
         if (server.getSshAuthType() == null) {
-            throw new BaseException("服务器未配置 SSH 认证方式，请先在「SSH 配置」中上传私钥或密码");
+            throw OperationBizException.sshNotConfigured(server.getId());
         }
         List<String> hosts = resolveHosts(server);
         if (hosts.isEmpty()) {

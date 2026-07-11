@@ -16,4 +16,7 @@ public class OperationDeployPresetsVo {
 
     @ApiModelProperty("快捷后置动作")
     private List<OperationDeployPresetItemVo> actionPresets;
+
+    @ApiModelProperty("可部署服务（与 ops.deploy.services 一致）")
+    private List<OperationDeployServiceOptionVo> serviceKeys;
 }

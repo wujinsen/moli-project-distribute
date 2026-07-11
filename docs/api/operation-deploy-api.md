@@ -41,6 +41,29 @@ ops:
   deploy:
     enabled: ${OPS_DEPLOY_ENABLED:false}
     deploy-root: ${OPS_DEPLOY_ROOT:/opt/moli-project-distribute}
+    status-sync-mode: ${OPS_DEPLOY_STATUS_SYNC_MODE:ssh}   # local | ssh | off（定时 deploy_running 同步）
+    allow-local: ${OPS_DEPLOY_ALLOW_LOCAL:false}           # serverId 为空时是否允许本机 moli-service.sh
+    services:                          # serviceKey 注册表（见 §6 presets.serviceKeys）
+      - key: user-center
+        label: 用户中心
+        aliases: [user-center, moli-user-center, user-center-server, moli-server]
+      - key: gateway
+        label: 网关
+        aliases: [gateway, moli-gateway]
+      - key: knowledge
+        label: 知识库
+        aliases: [knowledge, moli-knowledge, knowledge-server]
+      - key: order
+        label: 订单服务
+        aliases: [order, moli-order]
+      - key: bi
+        label: BI 服务
+        aliases: [bi, moli-bi]
+  health:
+    probe-enabled: ${OPS_HEALTH_PROBE_ENABLED:false}
+    probe-cron: ${OPS_HEALTH_PROBE_CRON:0 */15 * * * ?}
+    probe-parallelism: ${OPS_HEALTH_PROBE_PARALLELISM:8}
+    probe-timeout-seconds: ${OPS_HEALTH_PROBE_TIMEOUT_SECONDS:120}
   upload:
     enabled: ${OPS_UPLOAD_ENABLED:false}
     allowed-paths: ${OPS_UPLOAD_ALLOWED_PATHS:/opt/moli/frontend/,/opt/moli-project-distribute/}
@@ -51,11 +74,18 @@ ops:
     default-work-dir: ${OPS_COMMAND_DEFAULT_WORK_DIR:/opt/moli-project-distribute}
 ```
 
+**serviceKey 说明**：`order` / `bi` 与端口矩阵别名一致，会出现在 `GET .../presets` 的 `serviceKeys`；远程 **启停** 仍依赖目标机 `deploy/linux/moli-service.sh` 是否实现该 key（当前脚本仅 `user-center` · `gateway` · `knowledge`）。
+
 | 开关 | 影响 |
 |------|------|
 | `ops.deploy.enabled=false` | 拒绝 `start`/`stop`/`restart` 及上传后置 `restartService:*` |
+| `ops.deploy.allow-local=false`（**默认**） | `serverId` 为空时拒绝 status/execute/task 本机回退，返回 **10109** |
+| `ops.deploy.status-sync-mode=ssh` | 定时探活同步 `deploy_running` 时走 SSH（推荐生产） |
+| `ops.deploy.status-sync-mode=local` | 同步时走本机脚本（仅 Linux 开发机） |
+| `ops.deploy.status-sync-mode=off` | 不同步 `deploy_running` |
 | `ops.upload.enabled=false` | 拒绝文件上传 |
 | `ops.command.enabled=false` | 拒绝远程命令、上传 `postAction=custom` |
+| `ops.health.probe-enabled=false` | 关闭定时批量探活调度器 |
 
 ---
 
@@ -107,6 +137,8 @@ ops:
 
 | 字段 | 说明 |
 |------|------|
+| `serverId` | 目标服务器 |
+| `projectId` | 关联项目（deploy 可选） |
 | `status` | `pending` / `running` / `success` / `failed` |
 | `progress` | 0–100 |
 | `logChunk` | 自 `logOffset` 起的增量日志 |
@@ -116,8 +148,29 @@ ops:
 ### `GET /operation/task/list`
 
 - **权限**：`operation:server:list`
-- **查询**：`taskType`（`deploy`/`upload`/`command`）、`serverId`、`pageNum`、`pageSize`
+- **查询**：`taskType`（`deploy`/`upload`/`command`/`health_probe`）、`serverId`、**`projectId`**、`pageNum`、`pageSize`
 - **说明**：列表**不含** `task_log` 大字段
+
+### `GET /operation/task/{id}/poll?logOffset={n}`
+
+- **权限**：`operation:server:list`
+- **说明**：与 `GET /operation/task/{id}` 等价别名，供前端轮询习惯使用
+
+---
+
+## 4.1 批量探活（SVR-12 · Phase R3 异步）
+
+### `POST /operation/health/probe-all`
+
+- **权限**：`operation:server:list`
+- **行为（Breaking）**：**不再**同步返回探活统计；创建 `taskType=health_probe` 任务后立即返回 `taskId`
+- **响应**：`data: taskId`（Long）
+- **轮询**：`GET /operation/task/{taskId}?logOffset=0`（或 `/poll`），直至 `finished=true`
+- **任务日志**：含并行 TCP 探活、批量写库、`deploy_running` SSH 同步摘要
+
+定时调度器仍内部调用同步 `probeAll()`；仅 HTTP 入口异步化。
+
+配置：`ops.health.probe-parallelism`（默认 8）、`ops.health.probe-timeout-seconds`（默认 120）。
 
 ---
 
@@ -126,15 +179,21 @@ ops:
 ### `GET /operation/deploy/{serviceKey}/status?serverId=`
 
 - **权限**：`operation:server:list`
-- **serviceKey**：`user-center` · `gateway` · `knowledge`
-- **serverId 空**：本机执行 `moli-service.sh status`；**非空**：SSH 远程只读
+- **serviceKey**：见 `ops.deploy.services` / `GET .../presets` 的 `serviceKeys`（默认 `user-center` · `gateway` · `knowledge`）
+- **serverId 非空**：SSH 远程只读；脚本缺失时自动 SFTP 上传（与异步 deploy 一致）
+- **serverId 空**：仅当 `ops.deploy.allow-local=true` 时本机执行 `moli-service.sh status`；否则 **10109**
 
-### `POST /operation/deploy/{serviceKey}/{action}/task?serverId=`
+### `POST /operation/deploy/{serviceKey}/{action}?serverId=&arg=`
+
+- **权限**：`operation:deploy:exec` + `operation:server:list`（同步执行，少用）
+- **serverId 规则**：同 status
+
+### `POST /operation/deploy/{serviceKey}/{action}/task?serverId=&projectId=`
 
 - **权限**：`operation:deploy:exec` + `operation:server:list`
 - **action**：`start` · `stop` · `restart`
-- **响应**：`data: taskId`（Long）
-- **要求**：`ops.deploy.enabled=true`；同一 `serverId+serviceKey` 互斥
+- **projectId**（可选）：关联 `operation_project_deploy_info.id`；须与 `serviceKey` 映射一致；若项目已绑 `serverId` 则自动回填/校验
+- **响应**：`data: taskId`（Long）；任务表写入 `project_id`
 
 ---
 
@@ -160,11 +219,17 @@ ops:
     { "value": "restartService:user-center", "label": "重启 user-center" },
     { "value": "restartService:gateway", "label": "重启 gateway" },
     { "value": "restartService:knowledge", "label": "重启 knowledge" }
+  ],
+  "serviceKeys": [
+    { "key": "user-center", "label": "用户中心" },
+    { "key": "gateway", "label": "网关" },
+    { "key": "knowledge", "label": "知识库" }
   ]
 }
 ```
 
 - `pathPresets`：默认四条 + 全局 `allowed-paths` / `allow-any-under` + 该服务器 `upload_allowed_roots` 合并去重排序
+- **`serviceKeys`**：与 `ops.deploy.services` 一致；**前端部署中心应用此列表渲染启停下拉**，勿硬编码 `MOLI_DEPLOY_SERVICES`
 - **自定义命令**：不在 `actionPresets` 中；前端用 `postAction=custom` 或独立命令 API
 
 ---
@@ -240,19 +305,41 @@ ops:
 
 ---
 
-## 9. 典型错误
+## 9. 业务错误码（Phase R2）
+
+`MoliResult.code` 非 200 时，`msg` 含可读说明；下列为运维模块稳定业务码（`BaseException.errorCode`）：
+
+| code | 常量 | 场景 | 前端建议 |
+|------|------|------|----------|
+| 10101 | `OPERATION_DUPLICATE_IP` | 同环境下 IP 重复 | Toast + 高亮 IP 字段 |
+| 10102 | `OPERATION_SERVER_NOT_FOUND` | serverId 不存在 | Toast |
+| 10103 | `OPERATION_ENTITY_NOT_FOUND` | 平台/项目/组件不存在 | Toast |
+| 10104 | `OPERATION_MISSING_ID` | 更新缺 id | 表单校验 |
+| 10105 | `OPERATION_SSH_NOT_CONFIGURED` | SSH 未配置 | 引导打开 SSH 弹窗 |
+| 10106 | `OPERATION_DEPLOY_DISABLED` | `ops.deploy.enabled=false` | 说明需运维开开关 |
+| 10107 | `OPERATION_SERVER_TASK_RUNNING` | 删服务器时有 running/pending 任务 | Toast + 链到任务列表 |
+| 10108 | `OPERATION_UPLOAD_DISABLED` | 上传开关关 | 同 10106 |
+| 10109 | `OPERATION_LOCAL_DEPLOY_DISABLED` | 未传 serverId 且 `allow-local=false` | **必须传 serverId** 或提示仅 dev 可用 |
+
+Bean Validation（`@Valid` SaveRequest）失败通常返回通用参数错误码，见网关/全局异常处理。
+
+---
+
+## 10. 典型错误（msg 示例）
 
 | 场景 | msg 示例 |
 |------|----------|
+| 本机部署禁用 | OPERATION_LOCAL_DEPLOY_DISABLED: 本机部署未启用，请指定 serverId 或配置 ops.deploy.allow-local=true |
 | 上传未开 | 文件上传发布未启用，请配置 ops.upload.enabled=true |
 | 路径越权 | targetPath 不在允许范围内… |
 | 命令未开 | 远程命令执行未启用，请配置 ops.command.enabled=true |
 | 高危命令 | 命令包含高危操作，已被拦截 |
 | 任务互斥 | 已有任务在执行（同 server+service 或 upload/command 锁） |
+| 删服务器有任务 | OPERATION_SERVER_TASK_RUNNING: 服务器 {id} 仍有进行中的运维任务 |
 
 ---
 
-## 10. 相关
+## 11. 相关
 
 - 路线图：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) P3 / P3+
 - SQL 顺序：[sql-migration-order.md](../ops/sql-migration-order.md)

@@ -17,6 +17,8 @@
 
 ## 2. 网络与端口
 
+> **运行时权威（SVR-21 后）**：运维台「端口矩阵」菜单维护的 DB 表 `operation_port_matrix`；本表为发布前人工核对清单，变更后请同步核对运维台配置。设计：[`operation-port-matrix-config.md`](../design/operation-port-matrix-config.md)。
+
 | 服务 | 端口 | 对外暴露 |
 |------|------|----------|
 | gateway | 21000 | ✅ 唯一 HTTP 入口（推荐） |

@@ -50,16 +50,21 @@
 | `sys_login_log` | 登录成功/失败 |
 | `sys_operation_log` | 操作审计（模块、方法、参数、耗时） |
 
-### 2.3 运维资产（6）
+### 2.3 运维资产（9）
 
 | 表 | 说明 |
 |----|------|
 | `operation_platform_info` | 平台 |
 | `operation_server_info` | 服务器 |
-| `operation_server_project` | 服务器—项目 |
+| `operation_server_project` | 服务器—项目 N:N |
 | `operation_project_deploy_info` | 项目部署信息 |
-| `operation_server_component` | 服务器组件 |
-| `operation_component_deploy_info` | 组件部署信息 |
+| `operation_server_component` | 服务器—组件 N:N |
+| `operation_component_deploy_info` | 组件部署信息（含 `server_id`） |
+| `operation_task` | 运维异步任务（deploy/upload/command/health_probe）；含可选 `project_id` |
+| `operation_port_matrix` | 端口矩阵主表（SVR-21） |
+| `operation_port_matrix_alias` | 端口矩阵别名（全局唯一） |
+
+> 迁移：端口矩阵见 [`24_operation_port_matrix.sql`](24_operation_port_matrix.sql)。
 
 ---
 
@@ -127,7 +132,7 @@ operation_platform_info ──► operation_server_info ──► operation_serv
 | **新环境** | `scripts/init-db.ps1` 或导入 `scripts/moli.sql` |
 | **秒杀表** | 追加 `docs/sql/02_seckill_schema.sql` |
 | **知识库表** | 追加 `docs/sql/03_knowledge_schema.sql` |
-| **历史 patch** | 已合并进 `moli.sql`，无需单独执行 `patch_*.sql` |
+| **历史 patch** | 已合并进 `moli.sql`（含 21/22 部署中心 + 23 组件 `server_id`）；老库按 [`sql-migration-order.md`](../ops/sql-migration-order.md) 追 17→23 |
 
 ---
 

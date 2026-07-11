@@ -4,6 +4,7 @@ import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
+import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
 import com.moli.user.center.common.domain.vo.OperationServerLinksVo;
@@ -22,6 +23,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/operation/server")
@@ -45,8 +47,8 @@ public class OperationServerController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_ADD, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @MoliLog(title = "添加服务器", businessType = BusinessTypeEnum.INSERT)
     @ApiOperation(value = "添加服务器", notes = "添加服务器")
-    public MoliResult<Boolean> insert(@RequestBody OperationServerInfo operationServerInfo) {
-        operationServerService.create(operationServerInfo);
+    public MoliResult<Boolean> insert(@Valid @RequestBody OperationServerSaveRequest request) {
+        operationServerService.create(request);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -54,8 +56,8 @@ public class OperationServerController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_EDIT, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @MoliLog(title = "更新服务器", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "更新服务器", notes = "更新服务器")
-    public MoliResult<Boolean> update(@RequestBody OperationServerInfo operationServerInfo) {
-        operationServerService.update(operationServerInfo);
+    public MoliResult<Boolean> update(@Valid @RequestBody OperationServerSaveRequest request) {
+        operationServerService.update(request);
         return MoliResult.success(Boolean.TRUE);
     }
 

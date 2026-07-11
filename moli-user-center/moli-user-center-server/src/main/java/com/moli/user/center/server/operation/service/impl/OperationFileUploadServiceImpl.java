@@ -3,11 +3,13 @@ package com.moli.user.center.server.operation.service.impl;
 import com.jcraft.jsch.SftpProgressMonitor;
 import com.moli.common.constant.PermissionConstants;
 import com.moli.common.exception.BaseException;
+import com.moli.user.center.common.domain.dto.operation.OperationFileUploadRequest;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.entity.OperationTask;
 import com.moli.user.center.server.operation.config.OperationCommandProperties;
 import com.moli.user.center.server.operation.config.OperationDeployProperties;
 import com.moli.user.center.server.operation.config.OperationUploadProperties;
+import com.moli.user.center.server.operation.deploy.OperationDeployServiceRegistry;
 import com.moli.user.center.server.operation.guard.OperationPathPolicy;
 import com.moli.user.center.server.operation.guard.OperationShellGuard;
 import com.moli.user.center.server.operation.service.OperationFileUploadService;
@@ -16,6 +18,7 @@ import com.moli.user.center.server.operation.service.OperationTaskService;
 import com.moli.user.center.server.operation.ssh.OperationSshClient;
 import com.moli.user.center.server.operation.ssh.OperationSshCommandResult;
 import com.moli.user.center.server.operation.ssh.OperationSshSession;
+import com.moli.user.center.server.operation.support.OperationBizException;
 import com.moli.user.center.server.operation.task.OperationTaskContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -27,10 +30,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * 文件上传发布（SVR-16/19）：SFTP + 快捷预设或自定义 shell 后置。
@@ -38,7 +38,6 @@ import java.util.Set;
 @Service
 public class OperationFileUploadServiceImpl implements OperationFileUploadService {
 
-    private static final Set<String> SERVICE_KEYS = new HashSet<>(Arrays.asList("user-center", "gateway", "knowledge"));
     private static final int UPLOAD_PROGRESS_CAP = 80;
 
     @Resource
@@ -53,22 +52,24 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
     private OperationTaskService operationTaskService;
     @Resource
     private OperationSshClient sshClient;
+    @Resource
+    private OperationDeployServiceRegistry deployServiceRegistry;
 
     @Override
-    public Long createUploadTask(MultipartFile file, Long serverId, String targetPath,
-                                 String postAction, String postCommand) {
+    public Long createUploadTask(MultipartFile file, OperationFileUploadRequest request) {
         if (!uploadProperties.isEnabled()) {
-            throw new BaseException("文件上传发布未启用，请配置 ops.upload.enabled=true");
+            throw OperationBizException.uploadDisabled();
         }
         if (file == null || file.isEmpty()) {
-            throw new BaseException("上传文件不能为空");
+            throw OperationBizException.params("上传文件不能为空");
         }
         if (file.getSize() > uploadProperties.getMaxBytes()) {
-            throw new BaseException("文件超过大小上限 " + (uploadProperties.getMaxBytes() / 1024 / 1024) + "MB");
+            throw OperationBizException.params("文件超过大小上限 " + (uploadProperties.getMaxBytes() / 1024 / 1024) + "MB");
         }
-        if (serverId == null) {
-            throw new BaseException("serverId 不能为空");
-        }
+        Long serverId = request.getServerId();
+        String targetPath = request.getTargetPath();
+        String postAction = StringUtils.defaultIfBlank(request.getPostAction(), "none");
+        String postCommand = request.getPostCommand();
         OperationServerInfo server = operationServerService.requireEntity(serverId);
         String remotePath = OperationPathPolicy.resolveRemotePath(targetPath, file.getOriginalFilename(),
                 server, uploadProperties);
@@ -77,7 +78,7 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
         Path temp = saveToTemp(file);
         long size = file.getSize();
 
-        OperationTask task = operationTaskService.create("upload", serverId, null, spec.actionLabel,
+        OperationTask task = operationTaskService.create("upload", serverId, null, null, spec.actionLabel,
                 remotePath + " (" + humanSize(size) + ")");
         String lockKey = "upload:" + serverId + ":" + remotePath;
         try {
@@ -158,11 +159,11 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
         }
         if (action.startsWith("restartService:")) {
             String serviceKey = action.substring("restartService:".length()).trim().toLowerCase(Locale.ROOT);
-            if (!SERVICE_KEYS.contains(serviceKey)) {
+            if (!deployServiceRegistry.isKnownKey(serviceKey)) {
                 throw new BaseException("不支持的 serviceKey: " + serviceKey);
             }
             if (!deployProperties.isEnabled()) {
-                throw new BaseException("重启服务需 ops.deploy.enabled=true");
+                throw OperationBizException.deployDisabled();
             }
             String script = deployProperties.getDeployRoot() + "/deploy/linux/moli-service.sh";
             return new PostActionSpec(action,

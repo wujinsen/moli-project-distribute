@@ -4,6 +4,7 @@ import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
+import com.moli.user.center.common.domain.dto.operation.OperationPlatformSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
 import com.moli.user.center.common.domain.vo.OperationPlatformVo;
 import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
@@ -17,6 +18,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/operation/platform")
@@ -38,8 +40,8 @@ public class OperationPlatformController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_ADD, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
     @MoliLog(title = "添加运维平台", businessType = BusinessTypeEnum.INSERT)
     @ApiOperation(value = "添加运维平台", notes = "添加运维平台")
-    public MoliResult<Boolean> insert(@RequestBody OperationPlatformInfo operationPlatformInfo) {
-        operationPlatformService.create(operationPlatformInfo);
+    public MoliResult<Boolean> insert(@Valid @RequestBody OperationPlatformSaveRequest request) {
+        operationPlatformService.create(request);
         return MoliResult.success(Boolean.TRUE);
     }
 
@@ -47,8 +49,8 @@ public class OperationPlatformController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_EDIT, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
     @MoliLog(title = "更新运维平台", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "更新运维平台", notes = "更新运维平台")
-    public MoliResult<Boolean> update(@RequestBody OperationPlatformInfo operationPlatformInfo) {
-        operationPlatformService.update(operationPlatformInfo);
+    public MoliResult<Boolean> update(@Valid @RequestBody OperationPlatformSaveRequest request) {
+        operationPlatformService.update(request);
         return MoliResult.success(Boolean.TRUE);
     }
 

@@ -1,8 +1,10 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.moli.common.exception.BaseException;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployConstants;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
 import com.moli.user.center.server.operation.config.OperationDeployProperties;
+import com.moli.user.center.server.operation.deploy.OperationDeployServiceRegistry;
 import com.moli.user.center.server.operation.service.OperationDeployService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -14,8 +16,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -23,12 +23,13 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class OperationDeployServiceImpl implements OperationDeployService {
 
-    private static final Set<String> SERVICE_KEYS = new HashSet<>(Arrays.asList("user-center", "gateway", "knowledge"));
-    private static final Set<String> READ_ONLY_ACTIONS = new HashSet<>(Arrays.asList("status", "logs"));
-    private static final Set<String> MUTATING_ACTIONS = new HashSet<>(Arrays.asList("start", "stop", "restart"));
+    private static final Set<String> READ_ONLY_ACTIONS = OperationDeployConstants.READ_ONLY_ACTIONS;
+    private static final Set<String> MUTATING_ACTIONS = OperationDeployConstants.TASK_ACTIONS;
 
     @Resource
     private OperationDeployProperties deployProperties;
+    @Resource
+    private OperationDeployServiceRegistry deployServiceRegistry;
 
     @Override
     public OperationDeployStatusVo status(String serviceKey) {
@@ -37,7 +38,7 @@ public class OperationDeployServiceImpl implements OperationDeployService {
 
     @Override
     public OperationDeployStatusVo execute(String serviceKey, String action, String extraArg) {
-        String key = normalizeServiceKey(serviceKey);
+        String key = deployServiceRegistry.normalizeServiceKey(serviceKey);
         String act = normalizeAction(action);
         validateActionAllowed(act);
 
@@ -137,17 +138,6 @@ public class OperationDeployServiceImpl implements OperationDeployService {
             return Paths.get(deployProperties.getScriptPath());
         }
         return Paths.get(deployProperties.getDeployRoot(), "deploy", "linux", "moli-service.sh");
-    }
-
-    private String normalizeServiceKey(String serviceKey) {
-        if (StringUtils.isBlank(serviceKey)) {
-            throw new BaseException("serviceKey 不能为空");
-        }
-        String key = serviceKey.trim().toLowerCase(Locale.ROOT);
-        if (!SERVICE_KEYS.contains(key)) {
-            throw new BaseException("不支持的 serviceKey: " + serviceKey);
-        }
-        return key;
     }
 
     private String normalizeAction(String action) {

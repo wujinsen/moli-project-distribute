@@ -72,10 +72,12 @@ public class OperationTaskServiceImpl implements OperationTaskService {
     }
 
     @Override
-    public OperationTask create(String taskType, Long serverId, String serviceKey, String action, String targetName) {
+    public OperationTask create(String taskType, Long serverId, Long projectId,
+                                String serviceKey, String action, String targetName) {
         OperationTask task = new OperationTask();
         task.setTaskType(taskType);
         task.setServerId(serverId);
+        task.setProjectId(projectId);
         task.setServiceKey(serviceKey);
         task.setAction(action);
         task.setTargetName(StringUtils.abbreviate(targetName, 250));
@@ -170,6 +172,7 @@ public class OperationTaskServiceImpl implements OperationTaskService {
         vo.setId(task.getId());
         vo.setTaskType(task.getTaskType());
         vo.setServerId(task.getServerId());
+        vo.setProjectId(task.getProjectId());
         vo.setServiceKey(task.getServiceKey());
         vo.setAction(task.getAction());
         vo.setTargetName(task.getTargetName());
@@ -200,13 +203,17 @@ public class OperationTaskServiceImpl implements OperationTaskService {
     }
 
     @Override
-    public PageRes<OperationTaskVo> list(String taskType, Long serverId, Integer pageNum, Integer pageSize) {
+    public PageRes<OperationTaskVo> list(String taskType, Long serverId, Long projectId,
+                                         Integer pageNum, Integer pageSize) {
         LambdaQueryWrapper<OperationTask> wrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(taskType)) {
             wrapper.eq(OperationTask::getTaskType, taskType);
         }
         if (serverId != null) {
             wrapper.eq(OperationTask::getServerId, serverId);
+        }
+        if (projectId != null) {
+            wrapper.eq(OperationTask::getProjectId, projectId);
         }
         // 列表不携带大字段日志
         wrapper.select(OperationTask.class, f -> !"task_log".equals(f.getColumn()));
@@ -230,6 +237,7 @@ public class OperationTaskServiceImpl implements OperationTaskService {
         vo.setId(task.getId());
         vo.setTaskType(task.getTaskType());
         vo.setServerId(task.getServerId());
+        vo.setProjectId(task.getProjectId());
         vo.setServiceKey(task.getServiceKey());
         vo.setAction(task.getAction());
         vo.setTargetName(task.getTargetName());

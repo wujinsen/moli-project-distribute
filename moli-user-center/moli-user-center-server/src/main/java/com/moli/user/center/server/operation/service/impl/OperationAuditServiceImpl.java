@@ -4,9 +4,10 @@ import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.vo.OperationPortAuditItemVo;
 import com.moli.user.center.common.domain.vo.OperationPortAuditVo;
-import com.moli.user.center.common.domain.vo.OperationPortMatrixEntryVo;
 import com.moli.user.center.server.operation.audit.OperationPortMatchStatus;
-import com.moli.user.center.server.operation.audit.OperationPortMatrix;
+import com.moli.user.center.server.operation.audit.OperationPortMatrixNormalizer;
+import com.moli.user.center.server.operation.audit.OperationPortMatrixPortCheck;
+import com.moli.user.center.server.operation.audit.OperationPortMatrixProvider;
 import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.service.OperationAuditService;
@@ -23,6 +24,8 @@ public class OperationAuditServiceImpl implements OperationAuditService {
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Resource
     private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
+    @Resource
+    private OperationPortMatrixProvider portMatrixProvider;
 
     @Override
     public OperationPortAuditVo auditPortMatrix() {
@@ -61,26 +64,17 @@ public class OperationAuditServiceImpl implements OperationAuditService {
         vo.setMismatched(mismatched);
         vo.setUnmapped(unmapped);
         vo.setSkipped(skipped);
-
-        List<OperationPortMatrixEntryVo> matrix = new ArrayList<>();
-        for (OperationPortMatrix.Entry entry : OperationPortMatrix.entries()) {
-            OperationPortMatrixEntryVo row = new OperationPortMatrixEntryVo();
-            row.setKey(entry.key);
-            row.setExpectedPort(entry.expectedPort);
-            row.setSource("docs/ops/production-checklist.md");
-            matrix.add(row);
-        }
-        vo.setMatrix(matrix);
+        vo.setMatrix(portMatrixProvider.auditEntries());
         return vo;
     }
 
-    static OperationPortAuditItemVo toItem(String recordType, Long id, String name, String port, Integer environment) {
-        OperationPortMatrix.PortCheck check = OperationPortMatrix.check(name, port);
+    private OperationPortAuditItemVo toItem(String recordType, Long id, String name, String port, Integer environment) {
+        OperationPortMatrixPortCheck check = portMatrixProvider.check(name, port);
         OperationPortAuditItemVo item = new OperationPortAuditItemVo();
         item.setId(id);
         item.setRecordType(recordType);
         item.setName(name);
-        item.setActualPort(OperationPortMatrix.normalizePort(port));
+        item.setActualPort(OperationPortMatrixNormalizer.normalizePort(port));
         item.setExpectedPort(check.expectedPort);
         item.setMatrixKey(check.matrixKey);
         item.setPortMatchStatus(check.status);

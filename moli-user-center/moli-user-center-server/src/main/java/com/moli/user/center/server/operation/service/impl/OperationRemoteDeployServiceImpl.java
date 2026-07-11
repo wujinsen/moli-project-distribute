@@ -1,10 +1,13 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.moli.common.exception.BaseException;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployConstants;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployTaskRequest;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.entity.OperationTask;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
 import com.moli.user.center.server.operation.config.OperationDeployProperties;
+import com.moli.user.center.server.operation.deploy.OperationDeployServiceRegistry;
 import com.moli.user.center.server.operation.service.OperationDeployService;
 import com.moli.user.center.server.operation.service.OperationRemoteDeployService;
 import com.moli.user.center.server.operation.service.OperationServerService;
@@ -12,6 +15,9 @@ import com.moli.user.center.server.operation.service.OperationTaskService;
 import com.moli.user.center.server.operation.ssh.OperationSshClient;
 import com.moli.user.center.server.operation.ssh.OperationSshCommandResult;
 import com.moli.user.center.server.operation.ssh.OperationSshSession;
+import com.moli.user.center.server.operation.support.OperationBizException;
+import com.moli.user.center.server.operation.support.OperationDeployLocalPolicy;
+import com.moli.user.center.server.operation.support.OperationDeployTaskProjectSupport;
 import com.moli.user.center.server.operation.task.OperationTaskContext;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -21,23 +27,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
 /**
- * 远程启停实现（SVR-15）：SSH 执行 moli-service.sh；脚本缺失自动上传就位；serverId 为空回退本机。
+ * 远程启停实现（SVR-15）：SSH 执行 moli-service.sh；serverId 为空时仅 allow-local=true 可本机执行。
  */
 @Service
 public class OperationRemoteDeployServiceImpl implements OperationRemoteDeployService {
 
-    private static final Set<String> SERVICE_KEYS = new HashSet<>(Arrays.asList("user-center", "gateway", "knowledge"));
-    private static final Set<String> TASK_ACTIONS = new HashSet<>(Arrays.asList("start", "stop", "restart"));
-    private static final Set<String> READ_ONLY_ACTIONS = new HashSet<>(Arrays.asList("status", "logs"));
+    private static final Set<String> TASK_ACTIONS = OperationDeployConstants.TASK_ACTIONS;
+    private static final Set<String> READ_ONLY_ACTIONS = OperationDeployConstants.READ_ONLY_ACTIONS;
 
     @Resource
     private OperationDeployProperties deployProperties;
+    @Resource
+    private OperationDeployServiceRegistry deployServiceRegistry;
     @Resource
     private OperationDeployService operationDeployService;
     @Resource
@@ -46,21 +51,30 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
     private OperationTaskService operationTaskService;
     @Resource
     private OperationSshClient sshClient;
+    @Resource
+    private OperationDeployLocalPolicy deployLocalPolicy;
+    @Resource
+    private OperationDeployTaskProjectSupport deployTaskProjectSupport;
 
     @Override
-    public Long createDeployTask(Long serverId, String serviceKey, String action) {
-        String key = normalizeServiceKey(serviceKey);
-        String act = normalizeAction(action);
+    public Long createDeployTask(OperationDeployTaskRequest request) {
+        OperationDeployTaskProjectSupport.DeployTaskBinding binding =
+                deployTaskProjectSupport.resolve(request);
+        String key = binding.getServiceKey();
+        String act = normalizeAction(request.getAction());
         if (!TASK_ACTIONS.contains(act)) {
-            throw new BaseException("异步任务仅支持 start/stop/restart，当前: " + act);
+            throw OperationBizException.params("异步任务仅支持 start/stop/restart，当前: " + act);
         }
         if (!deployProperties.isEnabled()) {
-            throw new BaseException("部署变更动作未启用，请配置 ops.deploy.enabled=true");
+            throw OperationBizException.deployDisabled();
         }
+        Long serverId = binding.getServerId();
+        deployLocalPolicy.requireAllowLocalWhenNoServer(serverId);
         OperationServerInfo server = serverId != null ? operationServerService.requireEntity(serverId) : null;
 
         String target = key + " " + act + (server != null ? " @ " + server.getServerName() : " @ 本机");
-        OperationTask task = operationTaskService.create("deploy", serverId, key, act, target);
+        OperationTask task = operationTaskService.create(
+                "deploy", serverId, binding.getProjectId(), key, act, target);
         String lockKey = "deploy:" + (serverId == null ? "local" : serverId) + ":" + key;
 
         operationTaskService.submit(task.getId(), lockKey, context -> {
@@ -120,14 +134,18 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
         if (sshClient.sftpExists(session, remoteScript)) {
             return;
         }
-        context.appendLine("[SSH] 远端脚本缺失，自动上传: " + remoteScript);
+        if (context != null) {
+            context.appendLine("[SSH] 远端脚本缺失，自动上传: " + remoteScript);
+        }
         Path local = resolveLocalScript();
         if (local == null) {
             throw new BaseException("远端脚本缺失且本机无副本可上传: " + remoteScript);
         }
         String content = new String(Files.readAllBytes(local), StandardCharsets.UTF_8);
         sshClient.sftpPutText(session, content, remoteScript, true);
-        context.appendLine("[SSH] 脚本上传完成并已 chmod +x");
+        if (context != null) {
+            context.appendLine("[SSH] 脚本上传完成并已 chmod +x");
+        }
     }
 
     private Path resolveLocalScript() {
@@ -152,7 +170,7 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
 
     @Override
     public OperationDeployStatusVo executeRemoteReadOnly(Long serverId, String serviceKey, String action, String extraArg) {
-        String key = normalizeServiceKey(serviceKey);
+        String key = deployServiceRegistry.requireKnownKey(serviceKey);
         String act = normalizeAction(action);
         if (!READ_ONLY_ACTIONS.contains(act)) {
             throw new BaseException("远程同步调用仅支持 status/logs，当前: " + act);
@@ -164,12 +182,7 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
         vo.setAction(act);
         try (OperationSshSession session = sshClient.connect(server)) {
             String remoteScript = remoteScriptPath();
-            if (!sshClient.sftpExists(session, remoteScript)) {
-                vo.setAvailable(false);
-                vo.setRunning(false);
-                vo.setMessage("远端部署脚本不存在: " + remoteScript);
-                return vo;
-            }
+            ensureRemoteScript(null, session, remoteScript);
             StringBuilder command = new StringBuilder("bash ")
                     .append(OperationSshClient.shellQuote(remoteScript))
                     .append(' ').append(key).append(' ').append(act);
@@ -191,6 +204,11 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
             vo.setRunning(false);
             vo.setMessage(e.getMessage());
             return vo;
+        } catch (Exception e) {
+            vo.setAvailable(false);
+            vo.setRunning(false);
+            vo.setMessage(e.getMessage());
+            return vo;
         }
     }
 
@@ -205,21 +223,11 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
         return lower.contains("is running") || lower.contains("[ok]");
     }
 
-    private String normalizeServiceKey(String serviceKey) {
-        if (StringUtils.isBlank(serviceKey)) {
-            throw new BaseException("serviceKey 不能为空");
-        }
-        String key = serviceKey.trim().toLowerCase(Locale.ROOT);
-        if (!SERVICE_KEYS.contains(key)) {
-            throw new BaseException("不支持的 serviceKey: " + serviceKey);
-        }
-        return key;
-    }
-
     private String normalizeAction(String action) {
-        if (StringUtils.isBlank(action)) {
-            throw new BaseException("action 不能为空");
+        String act = OperationDeployConstants.normalizeAction(action);
+        if (act == null) {
+            throw OperationBizException.params("action 不能为空");
         }
-        return action.trim().toLowerCase(Locale.ROOT);
+        return act;
     }
 }

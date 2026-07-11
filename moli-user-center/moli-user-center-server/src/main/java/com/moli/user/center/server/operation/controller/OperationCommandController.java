@@ -4,7 +4,7 @@ import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
-import com.moli.user.center.common.domain.vo.OperationCommandExecVo;
+import com.moli.user.center.common.domain.dto.operation.OperationCommandExecRequest;
 import com.moli.user.center.server.operation.service.OperationCommandService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * 远程 shell 命令 API（SVR-18）。
@@ -35,7 +36,7 @@ public class OperationCommandController {
             logical = Logical.AND)
     @MoliLog(title = "远程执行命令", businessType = BusinessTypeEnum.OTHER, isSaveRequestData = false)
     @ApiOperation(value = "创建远程命令任务", notes = "受控开放 shell；返回 taskId 供轮询")
-    public MoliResult<Long> createTask(@RequestBody OperationCommandExecVo body) {
+    public MoliResult<Long> createTask(@Valid @RequestBody OperationCommandExecRequest body) {
         return MoliResult.success(operationCommandService.createCommandTask(
                 body.getServerId(), body.getCommand(), body.getWorkDir()));
     }

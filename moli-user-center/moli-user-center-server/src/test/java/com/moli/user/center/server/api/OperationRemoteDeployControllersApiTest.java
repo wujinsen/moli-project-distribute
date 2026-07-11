@@ -4,13 +4,17 @@ import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.vo.OperationServerSshVo;
 import com.moli.user.center.common.domain.vo.OperationSshTestVo;
 import com.moli.user.center.common.domain.vo.OperationTaskVo;
-import com.moli.user.center.common.domain.vo.OperationCommandExecVo;
+import com.moli.user.center.common.domain.dto.operation.OperationCommandExecRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployTaskRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationFileUploadRequest;
 import com.moli.user.center.common.domain.vo.OperationDeployPresetsVo;
 import com.moli.user.center.server.operation.controller.OperationCommandController;
 import com.moli.user.center.server.operation.controller.OperationFileController;
 import com.moli.user.center.server.operation.controller.OperationServerController;
 import com.moli.user.center.server.operation.controller.OperationTaskController;
 import com.moli.user.center.server.operation.controller.OperationDeployController;
+import com.moli.user.center.server.operation.support.OperationDeployLocalPolicy;
+import com.moli.user.center.server.operation.support.OperationDtoValidationSupport;
 import com.moli.user.center.server.operation.service.OperationCommandService;
 import com.moli.user.center.server.operation.service.OperationDeployPresetService;
 import com.moli.user.center.server.operation.service.OperationFileUploadService;
@@ -19,6 +23,7 @@ import com.moli.user.center.server.operation.service.OperationServerService;
 import com.moli.user.center.server.operation.service.OperationTaskService;
 import com.moli.user.center.server.testsupport.AbstractApiTest;
 import com.moli.user.center.server.testsupport.ControllerTestSupport;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -54,9 +59,18 @@ public class OperationRemoteDeployControllersApiTest extends AbstractApiTest {
     @Mock
     private OperationDeployPresetService operationDeployPresetService;
     @Mock
+    private OperationDtoValidationSupport dtoValidation;
+    @Mock
+    private OperationDeployLocalPolicy deployLocalPolicy;
+    @Mock
     private OperationCommandService operationCommandService;
     @Mock
     private OperationServerService operationServerService;
+
+    @Before
+    public void allowLocalByDefault() {
+        doNothing().when(deployLocalPolicy).requireAllowLocal();
+    }
 
     @Test
     public void GET_operation_task_poll() {
@@ -66,14 +80,19 @@ public class OperationRemoteDeployControllersApiTest extends AbstractApiTest {
 
     @Test
     public void GET_operation_task_list() {
-        when(operationTaskService.list(null, null, 1, 10)).thenReturn(new PageRes<>());
-        ControllerTestSupport.assertSuccess(taskController.list(null, null, 1, 10));
+        when(operationTaskService.list(null, null, null, 1, 10)).thenReturn(new PageRes<>());
+        ControllerTestSupport.assertSuccess(taskController.list(null, null, null, 1, 10));
     }
 
     @Test
     public void POST_operation_deploy_create_task() {
-        when(operationRemoteDeployService.createDeployTask(204L, "user-center", "restart")).thenReturn(42L);
-        ControllerTestSupport.assertSuccess(deployController.createTask("user-center", "restart", 204L));
+        OperationDeployTaskRequest req = new OperationDeployTaskRequest();
+        req.setServiceKey("user-center");
+        req.setAction("restart");
+        req.setServerId(204L);
+        when(dtoValidation.deployTask("user-center", "restart", 204L, null)).thenReturn(req);
+        when(operationRemoteDeployService.createDeployTask(req)).thenReturn(42L);
+        ControllerTestSupport.assertSuccess(deployController.createTask("user-center", "restart", 204L, null));
     }
 
     @Test
@@ -85,14 +104,17 @@ public class OperationRemoteDeployControllersApiTest extends AbstractApiTest {
     @Test
     public void POST_operation_file_upload() {
         MockMultipartFile file = new MockMultipartFile("file", "app.jar", "application/java-archive", "x".getBytes());
-        when(operationFileUploadService.createUploadTask(any(), eq(204L), any(), eq("none"), eq(null))).thenReturn(99L);
-        ControllerTestSupport.assertSuccess(
-                fileController.upload(file, 204L, "/opt/moli-project-distribute/moli-user-center/app.jar", "none", null));
+        OperationFileUploadRequest req = new OperationFileUploadRequest();
+        req.setServerId(204L);
+        req.setTargetPath("/opt/moli-project-distribute/moli-user-center/app.jar");
+        req.setPostAction("none");
+        when(operationFileUploadService.createUploadTask(any(), eq(req))).thenReturn(99L);
+        ControllerTestSupport.assertSuccess(fileController.upload(file, req));
     }
 
     @Test
     public void POST_operation_command_exec_task() {
-        OperationCommandExecVo body = new OperationCommandExecVo();
+        OperationCommandExecRequest body = new OperationCommandExecRequest();
         body.setServerId(204L);
         body.setCommand("ls -la");
         when(operationCommandService.createCommandTask(204L, "ls -la", null)).thenReturn(77L);

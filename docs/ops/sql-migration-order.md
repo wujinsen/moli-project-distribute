@@ -39,6 +39,9 @@
 | 14 | `12_kb_platform_llm_menu.sql` | LLM 设置菜单 |
 | 15 | `17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql` | 运维 SSH/远程部署 |
 | 16 | `22_operation_command_flex.sql` | 灵活路径、远程命令权限、`upload_allowed_roots` |
+| 17 | `23_operation_schema_hardening.sql` | 组件 `server_id`、N:N 唯一、查询索引（Phase R1） |
+| 18 | `24_operation_port_matrix.sql` | 端口矩阵表 + 种子 + 菜单 406 + `operation:port-matrix:*`（SVR-21） |
+| 19 | `25_operation_task_project_id.sql` | `operation_task.project_id` + 索引（Phase R3 P1） |
 
 ---
 

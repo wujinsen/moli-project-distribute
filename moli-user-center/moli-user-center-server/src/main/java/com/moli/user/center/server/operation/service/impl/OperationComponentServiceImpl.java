@@ -1,26 +1,29 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.moli.common.exception.BaseException;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.common.domain.dto.operation.OperationComponentSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.vo.OperationComponentVo;
 import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
-import com.moli.user.center.server.operation.audit.OperationPortMatrix;
+import com.moli.user.center.server.operation.audit.OperationPortMatrixPortCheck;
+import com.moli.user.center.server.operation.audit.OperationPortMatrixProvider;
 import com.moli.user.center.server.operation.health.OperationHealthStatus;
 import com.moli.user.center.server.operation.health.OperationTcpProbe;
 import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
 import com.moli.user.center.server.operation.service.OperationComponentService;
-import com.moli.user.center.server.operation.support.OperationSecretSupport;
+import com.moli.user.center.server.operation.support.OperationCrudSupport;
+import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
+import com.moli.user.center.server.operation.support.OperationSecretCrudSupport;
+import com.moli.user.center.server.operation.support.OperationServerBindingSupport;
+import com.moli.user.center.server.operation.support.OperationServerCascadeSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OperationComponentServiceImpl implements OperationComponentService {
@@ -28,7 +31,15 @@ public class OperationComponentServiceImpl implements OperationComponentService 
     @Resource
     private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
     @Resource
-    private OperationSecretSupport secretSupport;
+    private OperationCrudSupport crudSupport;
+    @Resource
+    private OperationSecretCrudSupport secretCrudSupport;
+    @Resource
+    private OperationServerBindingSupport serverBindingSupport;
+    @Resource
+    private OperationServerCascadeSupport serverCascadeSupport;
+    @Resource
+    private OperationPortMatrixProvider portMatrixProvider;
 
     @Override
     public PageRes<OperationComponentVo> list(OperationComponentDeployInfo query) {
@@ -39,35 +50,27 @@ public class OperationComponentServiceImpl implements OperationComponentService 
         if (StringUtils.isNotBlank(query.getServerIp())) {
             wrapper.like(OperationComponentDeployInfo::getServerIp, query.getServerIp());
         }
+        if (query.getServerId() != null) {
+            wrapper.eq(OperationComponentDeployInfo::getServerId, query.getServerId());
+        }
         if (query.getEnvironment() != null) {
             wrapper.eq(OperationComponentDeployInfo::getEnvironment, query.getEnvironment());
         }
         wrapper.orderByDesc(OperationComponentDeployInfo::getCreateTime);
-
-        Page<OperationComponentDeployInfo> page = new Page<>();
-        page.setCurrent(query.getPageNum());
-        page.setSize(query.getPageSize());
-        operationComponentDeployInfoMapper.selectPage(page, wrapper);
-
-        PageRes<OperationComponentVo> result = new PageRes<>();
-        result.setTotal((int) page.getTotal());
-        result.setPageNum(query.getPageNum());
-        result.setPageSize(query.getPageSize());
-        List<OperationComponentVo> list = page.getRecords().stream().map(this::toVo).collect(Collectors.toList());
-        result.setList(list);
-        return result;
+        return crudSupport.selectPage(operationComponentDeployInfoMapper, wrapper,
+                query.getPageNum(), query.getPageSize(), this::toVo);
     }
 
     @Override
     public OperationComponentVo getById(Long id) {
-        OperationComponentDeployInfo row = requireRow(id);
-        return toVo(row);
+        return toVo(requireRow(id));
     }
 
     @Override
-    public void create(OperationComponentDeployInfo form) {
-        OperationComponentDeployInfo row = copyWritableFields(form);
-        row.setPassword(secretSupport.encryptForStorage(form.getPassword()));
+    public void create(OperationComponentSaveRequest request) {
+        OperationComponentDeployInfo row = OperationSaveRequestMapper.toEntity(request);
+        serverBindingSupport.bindComponent(row);
+        row.setPassword(secretCrudSupport.encryptOnSave(request.getPassword()));
         if (row.getStatus() == null) {
             row.setStatus(OperationHealthStatus.UNKNOWN);
         }
@@ -75,30 +78,28 @@ public class OperationComponentServiceImpl implements OperationComponentService 
     }
 
     @Override
-    public void update(OperationComponentDeployInfo form) {
-        OperationComponentDeployInfo existing = requireRow(form.getId());
-        OperationComponentDeployInfo row = copyWritableFields(form);
-        if (StringUtils.isNotBlank(form.getPassword())) {
-            row.setPassword(secretSupport.encryptForStorage(form.getPassword()));
-        } else {
-            row.setPassword(existing.getPassword());
-        }
+    public void update(OperationComponentSaveRequest request) {
+        crudSupport.assertUpdateId(request.getId());
+        OperationComponentDeployInfo existing = requireRow(request.getId());
+        OperationComponentDeployInfo row = OperationSaveRequestMapper.toEntity(request);
+        serverBindingSupport.bindComponent(row);
+        row.setPassword(secretCrudSupport.mergeOnUpdate(request.getPassword(), existing.getPassword()));
         row.setStatus(existing.getStatus());
         row.setLastCheckTime(existing.getLastCheckTime());
         operationComponentDeployInfoMapper.updateById(row);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteByIds(Long[] ids) {
-        for (Long id : ids) {
-            operationComponentDeployInfoMapper.deleteById(id);
-        }
+        crudSupport.deleteEach(ids,
+                serverCascadeSupport::onDeleteComponent,
+                operationComponentDeployInfoMapper::deleteById);
     }
 
     @Override
     public OperationSecretRevealVo revealPassword(Long id) {
-        OperationComponentDeployInfo row = requireRow(id);
-        return new OperationSecretRevealVo(secretSupport.resolvePlain(row.getPassword()));
+        return secretCrudSupport.reveal(requireRow(id).getPassword());
     }
 
     @Override
@@ -112,35 +113,17 @@ public class OperationComponentServiceImpl implements OperationComponentService 
     }
 
     private OperationComponentDeployInfo requireRow(Long id) {
-        OperationComponentDeployInfo row = operationComponentDeployInfoMapper.selectById(id);
-        if (row == null) {
-            throw new BaseException("运维组件不存在");
-        }
-        return row;
-    }
-
-    private OperationComponentDeployInfo copyWritableFields(OperationComponentDeployInfo form) {
-        OperationComponentDeployInfo row = new OperationComponentDeployInfo();
-        row.setId(form.getId());
-        row.setComponentName(form.getComponentName());
-        row.setServerIp(form.getServerIp());
-        row.setAccount(form.getAccount());
-        row.setDeployPath(form.getDeployPath());
-        row.setPort(form.getPort());
-        row.setVersion(form.getVersion());
-        row.setEnvironment(form.getEnvironment());
-        row.setRemark(form.getRemark());
-        return row;
+        return crudSupport.requireRow(operationComponentDeployInfoMapper, id, "运维组件");
     }
 
     private OperationComponentVo toVo(OperationComponentDeployInfo row) {
         OperationComponentVo vo = new OperationComponentVo();
         BeanUtils.copyProperties(row, vo);
-        vo.setPasswordConfigured(secretSupport.hasSecret(row.getPassword()));
-        vo.setPasswordMask(secretSupport.mask(row.getPassword()));
+        vo.setPasswordConfigured(secretCrudSupport.passwordConfigured(row.getPassword()));
+        vo.setPasswordMask(secretCrudSupport.passwordMask(row.getPassword()));
         vo.setStatus(row.getStatus());
         vo.setLastCheckTime(row.getLastCheckTime());
-        OperationPortMatrix.PortCheck portCheck = OperationPortMatrix.check(row.getComponentName(), row.getPort());
+        OperationPortMatrixPortCheck portCheck = portMatrixProvider.check(row.getComponentName(), row.getPort());
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
         return vo;

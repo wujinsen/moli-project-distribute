@@ -13,6 +13,7 @@
 | [user-center-api-map.md](user-center-api-map.md) | 用户中心 ~70 HTTP |
 | **[operation-frontend.md](operation-frontend.md)** | **服务器运维 · 运营管理 · meiling-ui 对接（S0–S9）** |
 | **[operation-deploy-api.md](operation-deploy-api.md)** | **部署中心 HTTP 契约（SVR-13~20，后端权威）** |
+| **[operation-port-matrix-api.md](operation-port-matrix-api.md)** | **端口矩阵管理 HTTP 契约（SVR-21，设计稿）** |
 | [user-center-dubbo.md](user-center-dubbo.md) | Dubbo 三方法 |
 | [order-seckill-api.md](order-seckill-api.md) | 秒杀 `/seckill/*` |
 | [bi-api.md](bi-api.md) | BI 骨架 `/demo/test` |

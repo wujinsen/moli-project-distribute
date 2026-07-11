@@ -1,5 +1,6 @@
 package com.moli.user.center.server.operation.service;
 
+import com.moli.user.center.common.domain.dto.operation.OperationPlatformSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
 import com.moli.user.center.common.domain.vo.OperationPlatformVo;
 import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
@@ -11,9 +12,9 @@ public interface OperationPlatformService {
 
     OperationPlatformVo getById(Long id);
 
-    void create(OperationPlatformInfo form);
+    void create(OperationPlatformSaveRequest request);
 
-    void update(OperationPlatformInfo form);
+    void update(OperationPlatformSaveRequest request);
 
     void deleteByIds(Long[] ids);
 

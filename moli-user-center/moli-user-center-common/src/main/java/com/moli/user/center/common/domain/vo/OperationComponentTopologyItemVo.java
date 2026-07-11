@@ -10,6 +10,7 @@ public class OperationComponentTopologyItemVo {
 
     private Long id;
     private String componentName;
+    private Long serverId;
     private String serverIp;
     private String port;
     private String version;

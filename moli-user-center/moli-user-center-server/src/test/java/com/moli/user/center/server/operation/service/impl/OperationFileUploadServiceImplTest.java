@@ -1,9 +1,11 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.moli.common.exception.BaseException;
+import com.moli.user.center.common.domain.dto.operation.OperationFileUploadRequest;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.server.operation.config.OperationDeployProperties;
 import com.moli.user.center.server.operation.config.OperationUploadProperties;
+import com.moli.user.center.server.operation.deploy.OperationDeployServiceRegistry;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import com.moli.user.center.server.operation.service.OperationTaskService;
 import org.junit.Before;
@@ -27,6 +29,8 @@ public class OperationFileUploadServiceImplTest {
     private OperationServerService operationServerService;
     @Mock
     private OperationTaskService operationTaskService;
+    @Mock
+    private OperationDeployServiceRegistry deployServiceRegistry;
 
     private final OperationUploadProperties uploadProperties = new OperationUploadProperties();
     private final OperationDeployProperties deployProperties = new OperationDeployProperties();
@@ -35,42 +39,45 @@ public class OperationFileUploadServiceImplTest {
     public void setUp() {
         ReflectionTestUtils.setField(fileUploadService, "uploadProperties", uploadProperties);
         ReflectionTestUtils.setField(fileUploadService, "deployProperties", deployProperties);
+        when(deployServiceRegistry.isKnownKey(org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
+        when(deployServiceRegistry.isKnownKey("order")).thenReturn(false);
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_when_upload_disabled() {
         uploadProperties.setEnabled(false);
-        fileUploadService.createUploadTask(sampleFile(), 204L, "/opt/moli-project-distribute/moli-user-center/", "none", null);
+        fileUploadService.createUploadTask(sampleFile(), uploadRequest(204L,
+                "/opt/moli-project-distribute/moli-user-center/", "none", null));
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_empty_file() {
         uploadProperties.setEnabled(true);
-        fileUploadService.createUploadTask(new MockMultipartFile("file", new byte[0]), 204L,
-                "/opt/moli-project-distribute/moli-user-center/", "none", null);
+        fileUploadService.createUploadTask(new MockMultipartFile("file", new byte[0]),
+                uploadRequest(204L, "/opt/moli-project-distribute/moli-user-center/", "none", null));
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_path_traversal() {
         uploadProperties.setEnabled(true);
         stubServer(204L);
-        fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/../etc/passwd", "none", null);
+        fileUploadService.createUploadTask(sampleFile(), uploadRequest(204L,
+                "/opt/moli-project-distribute/../etc/passwd", "none", null));
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_path_outside_whitelist() {
         uploadProperties.setEnabled(true);
         stubServer(204L);
-        fileUploadService.createUploadTask(sampleFile(), 204L, "/tmp/evil.jar", "none", null);
+        fileUploadService.createUploadTask(sampleFile(), uploadRequest(204L, "/tmp/evil.jar", "none", null));
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_unzip_on_non_zip() {
         uploadProperties.setEnabled(true);
         stubServer(204L);
-        fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli/frontend/dist/app.jar", "unzipToDist", null);
+        fileUploadService.createUploadTask(sampleFile(), uploadRequest(204L,
+                "/opt/moli/frontend/dist/app.jar", "unzipToDist", null));
     }
 
     @Test(expected = BaseException.class)
@@ -78,16 +85,16 @@ public class OperationFileUploadServiceImplTest {
         uploadProperties.setEnabled(true);
         deployProperties.setEnabled(false);
         stubServer(204L);
-        fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:user-center", null);
+        fileUploadService.createUploadTask(sampleFile(), uploadRequest(204L,
+                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:user-center", null));
     }
 
     @Test(expected = BaseException.class)
     public void createUploadTask_rejects_unknown_post_action() {
         uploadProperties.setEnabled(true);
         stubServer(204L);
-        fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/moli-user-center/app.jar", "rm -rf /", null);
+        fileUploadService.createUploadTask(sampleFile(), uploadRequest(204L,
+                "/opt/moli-project-distribute/moli-user-center/app.jar", "rm -rf /", null));
     }
 
     @Test(expected = BaseException.class)
@@ -95,8 +102,8 @@ public class OperationFileUploadServiceImplTest {
         uploadProperties.setEnabled(true);
         deployProperties.setEnabled(true);
         stubServer(204L);
-        fileUploadService.createUploadTask(sampleFile(), 204L,
-                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:order", null);
+        fileUploadService.createUploadTask(sampleFile(), uploadRequest(204L,
+                "/opt/moli-project-distribute/moli-user-center/app.jar", "restartService:order", null));
     }
 
     private void stubServer(Long id) {
@@ -108,5 +115,15 @@ public class OperationFileUploadServiceImplTest {
 
     private static MockMultipartFile sampleFile() {
         return new MockMultipartFile("file", "app.jar", "application/java-archive", "demo".getBytes());
+    }
+
+    private static OperationFileUploadRequest uploadRequest(Long serverId, String targetPath,
+                                                            String postAction, String postCommand) {
+        OperationFileUploadRequest req = new OperationFileUploadRequest();
+        req.setServerId(serverId);
+        req.setTargetPath(targetPath);
+        req.setPostAction(postAction);
+        req.setPostCommand(postCommand);
+        return req;
     }
 }

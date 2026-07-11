@@ -2,8 +2,8 @@ package com.moli.user.center.server.operation.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.moli.common.exception.BaseException;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
@@ -14,8 +14,10 @@ import com.moli.user.center.common.domain.vo.OperationServerSshVo;
 import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.user.center.common.domain.vo.OperationSshTestVo;
+import com.moli.user.center.common.domain.entity.OperationTask;
 import com.moli.user.center.server.operation.health.OperationHealthStatus;
 import com.moli.user.center.server.operation.health.OperationTcpProbe;
+import com.moli.user.center.server.operation.mapper.OperationTaskMapper;
 import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
@@ -25,10 +27,16 @@ import com.moli.user.center.server.operation.ssh.OperationSshAuthType;
 import com.moli.user.center.server.operation.ssh.OperationSshClient;
 import com.moli.user.center.server.operation.ssh.OperationSshCommandResult;
 import com.moli.user.center.server.operation.ssh.OperationSshSession;
+import com.moli.user.center.server.operation.support.OperationBizException;
+import com.moli.user.center.server.operation.support.OperationCrudSupport;
+import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
 import com.moli.user.center.server.operation.support.OperationSecretSupport;
+import com.moli.user.center.server.operation.support.OperationServerCascadeSupport;
+import com.moli.user.center.server.operation.task.OperationTaskStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -46,6 +54,8 @@ public class OperationServerServiceImpl implements OperationServerService {
     @Resource
     private OperationServerMapper operationServerMapper;
     @Resource
+    private OperationCrudSupport crudSupport;
+    @Resource
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Resource
     private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
@@ -55,6 +65,10 @@ public class OperationServerServiceImpl implements OperationServerService {
     private OperationSecretSupport secretSupport;
     @Resource
     private OperationSshClient sshClient;
+    @Resource
+    private OperationServerCascadeSupport serverCascadeSupport;
+    @Resource
+    private OperationTaskMapper operationTaskMapper;
 
     @Override
     public PageRes<OperationServerVo> list(OperationServerInfoVo query) {
@@ -69,18 +83,8 @@ public class OperationServerServiceImpl implements OperationServerService {
             wrapper.eq(OperationServerInfo::getEnvironment, query.getEnvironment());
         }
         wrapper.orderByDesc(OperationServerInfo::getCreateTime);
-
-        Page<OperationServerInfo> page = new Page<>();
-        page.setCurrent(query.getPageNum());
-        page.setSize(query.getPageSize());
-        operationServerMapper.selectPage(page, wrapper);
-
-        PageRes<OperationServerVo> result = new PageRes<>();
-        result.setTotal((int) page.getTotal());
-        result.setPageNum(query.getPageNum());
-        result.setPageSize(query.getPageSize());
-        result.setList(page.getRecords().stream().map(this::toVo).collect(Collectors.toList()));
-        return result;
+        return crudSupport.selectPage(operationServerMapper, wrapper,
+                query.getPageNum(), query.getPageSize(), this::toVo);
     }
 
     @Override
@@ -89,8 +93,9 @@ public class OperationServerServiceImpl implements OperationServerService {
     }
 
     @Override
-    public void create(OperationServerInfo form) {
-        OperationServerInfo row = copyWritableFields(form);
+    public void create(OperationServerSaveRequest request) {
+        OperationServerInfo row = OperationSaveRequestMapper.toEntity(request);
+        assertUniqueIp(row, null);
         if (row.getStatus() == null) {
             row.setStatus(OperationHealthStatus.UNKNOWN);
         }
@@ -98,18 +103,31 @@ public class OperationServerServiceImpl implements OperationServerService {
     }
 
     @Override
-    public void update(OperationServerInfo form) {
-        OperationServerInfo existing = requireRow(form.getId());
-        OperationServerInfo row = copyWritableFields(form);
+    public void update(OperationServerSaveRequest request) {
+        crudSupport.assertUpdateId(request.getId());
+        OperationServerInfo existing = requireRow(request.getId());
+        OperationServerInfo row = OperationSaveRequestMapper.toEntity(request);
+        assertUniqueIp(row, request.getId());
         row.setStatus(existing.getStatus());
         row.setLastCheckTime(existing.getLastCheckTime());
         operationServerMapper.updateById(row);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteByIds(Long[] ids) {
-        for (Long id : ids) {
-            operationServerMapper.deleteById(id);
+        crudSupport.deleteEach(ids, id -> {
+            assertNoRunningTasks(id);
+            serverCascadeSupport.onDeleteServer(id);
+        }, operationServerMapper::deleteById);
+    }
+
+    private void assertNoRunningTasks(Long serverId) {
+        LambdaQueryWrapper<OperationTask> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OperationTask::getServerId, serverId);
+        wrapper.in(OperationTask::getStatus, OperationTaskStatus.PENDING, OperationTaskStatus.RUNNING);
+        if (operationTaskMapper.selectCount(wrapper) > 0) {
+            throw OperationBizException.serverTaskRunning(serverId);
         }
     }
 
@@ -208,13 +226,14 @@ public class OperationServerServiceImpl implements OperationServerService {
     private List<OperationComponentTopologyItemVo> loadComponents(OperationServerInfo server) {
         Set<Long> componentIds = new LinkedHashSet<>(operationServerLinkMapper.selectComponentIdsByServerId(server.getId()));
 
+        LambdaQueryWrapper<OperationComponentDeployInfo> byServerId = new LambdaQueryWrapper<>();
+        byServerId.eq(OperationComponentDeployInfo::getServerId, server.getId());
+        operationComponentDeployInfoMapper.selectList(byServerId).forEach(c -> componentIds.add(c.getId()));
+
         LambdaQueryWrapper<OperationComponentDeployInfo> byIp = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(server.getIp())) {
-            byIp.eq(OperationComponentDeployInfo::getServerIp, server.getIp());
-        } else if (StringUtils.isNotBlank(server.getInnerIp())) {
-            byIp.eq(OperationComponentDeployInfo::getServerIp, server.getInnerIp());
-        }
-        if (StringUtils.isNotBlank(server.getIp()) || StringUtils.isNotBlank(server.getInnerIp())) {
+        List<String> serverIps = collectServerIps(server);
+        if (!serverIps.isEmpty()) {
+            byIp.in(OperationComponentDeployInfo::getServerIp, serverIps);
             operationComponentDeployInfoMapper.selectList(byIp).forEach(c -> componentIds.add(c.getId()));
         }
 
@@ -226,10 +245,25 @@ public class OperationServerServiceImpl implements OperationServerService {
                 .collect(Collectors.toList());
     }
 
+    private static List<String> collectServerIps(OperationServerInfo server) {
+        List<String> ips = new ArrayList<>(2);
+        if (StringUtils.isNotBlank(server.getIp())) {
+            ips.add(server.getIp().trim());
+        }
+        if (StringUtils.isNotBlank(server.getInnerIp())) {
+            String inner = server.getInnerIp().trim();
+            if (!ips.contains(inner)) {
+                ips.add(inner);
+            }
+        }
+        return ips;
+    }
+
     private OperationComponentTopologyItemVo toComponentTopologyItem(OperationComponentDeployInfo row) {
         OperationComponentTopologyItemVo vo = new OperationComponentTopologyItemVo();
         vo.setId(row.getId());
         vo.setComponentName(row.getComponentName());
+        vo.setServerId(row.getServerId());
         vo.setServerIp(row.getServerIp());
         vo.setPort(row.getPort());
         vo.setVersion(row.getVersion());
@@ -241,23 +275,22 @@ public class OperationServerServiceImpl implements OperationServerService {
     }
 
     private OperationServerInfo requireRow(Long id) {
-        OperationServerInfo row = operationServerMapper.selectById(id);
-        if (row == null) {
-            throw new BaseException("服务器不存在");
-        }
-        return row;
+        return crudSupport.requireRow(operationServerMapper, id, "服务器");
     }
 
-    private OperationServerInfo copyWritableFields(OperationServerInfo form) {
-        OperationServerInfo row = new OperationServerInfo();
-        row.setId(form.getId());
-        row.setServerName(form.getServerName());
-        row.setIp(form.getIp());
-        row.setInnerIp(form.getInnerIp());
-        row.setPort(form.getPort());
-        row.setEnvironment(form.getEnvironment());
-        row.setRemark(form.getRemark());
-        return row;
+    private void assertUniqueIp(OperationServerInfo row, Long excludeId) {
+        if (row.getEnvironment() == null || StringUtils.isBlank(row.getIp())) {
+            return;
+        }
+        LambdaQueryWrapper<OperationServerInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OperationServerInfo::getEnvironment, row.getEnvironment());
+        wrapper.eq(OperationServerInfo::getIp, row.getIp());
+        if (excludeId != null) {
+            wrapper.ne(OperationServerInfo::getId, excludeId);
+        }
+        if (operationServerMapper.selectCount(wrapper) > 0) {
+            throw OperationBizException.duplicateIp(row.getIp(), row.getEnvironment());
+        }
     }
 
     private OperationServerVo toVo(OperationServerInfo row) {

@@ -39,12 +39,13 @@ public class OperationTaskController {
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
-    @ApiOperation(value = "任务历史", notes = "按类型/服务器过滤，不含日志大字段")
+    @ApiOperation(value = "任务历史", notes = "按类型/服务器/项目过滤，不含日志大字段")
     public MoliResult<PageRes<OperationTaskVo>> list(
             @RequestParam(required = false) String taskType,
             @RequestParam(required = false) Long serverId,
+            @RequestParam(required = false) Long projectId,
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        return MoliResult.success(operationTaskService.list(taskType, serverId, pageNum, pageSize));
+        return MoliResult.success(operationTaskService.list(taskType, serverId, projectId, pageNum, pageSize));
     }
 }

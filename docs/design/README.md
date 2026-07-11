@@ -23,6 +23,8 @@
 | **BI 模块（v1 骨架）** | [`bi-module-overview.md`](bi-module-overview.md) · [bi-api.md](../api/bi-api.md) |
 | **API 网关** | [`gateway-design.md`](gateway-design.md) · 路由 [`../api/gateway-routes.md`](../api/gateway-routes.md) |
 | **运维规划（两条独立线）** | [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md)（服务器/基础设施运维·user-center）· [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（知识库内容管道运维·moli-knowledge） |
+| **运营管理 + 部署中心改造** | [`operation-module-refactor-plan.md`](operation-module-refactor-plan.md) · 图 [`moli-operation-refactor.drawio`](../diagrams/moli-operation-refactor.drawio) |
+| **端口矩阵可配置化（SVR-21）** | [`operation-port-matrix-config.md`](operation-port-matrix-config.md) · API [`operation-port-matrix-api.md`](../api/operation-port-matrix-api.md) · 图 [`moli-operation-port-matrix.drawio`](../diagrams/moli-operation-port-matrix.drawio) |
 | 方案长文、踩坑、最佳实践 | `articles/` |
 | 微服务边界一页纸 | `services/` |
 

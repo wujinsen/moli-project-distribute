@@ -1,5 +1,6 @@
 package com.moli.user.center.server.operation.service;
 
+import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.common.page.PageRes;
@@ -10,9 +11,9 @@ public interface OperationProjectService {
 
     OperationProjectVo getById(Long id);
 
-    void create(OperationProjectDeployInfo form);
+    void create(OperationProjectSaveRequest request);
 
-    void update(OperationProjectDeployInfo form);
+    void update(OperationProjectSaveRequest request);
 
     void deleteByIds(Long[] ids);
 

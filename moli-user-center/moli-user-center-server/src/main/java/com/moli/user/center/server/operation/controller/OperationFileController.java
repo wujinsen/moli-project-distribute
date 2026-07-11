@@ -4,12 +4,14 @@ import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
+import com.moli.user.center.common.domain.dto.operation.OperationFileUploadRequest;
 import com.moli.user.center.server.operation.service.OperationFileUploadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * 文件上传发布 API（SVR-16）。
@@ -38,11 +41,7 @@ public class OperationFileController {
     @ApiOperation(value = "上传文件发布", notes = "SFTP 上传 + 后置（预设或 postAction=custom + postCommand）；返回 taskId")
     public MoliResult<Long> upload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam Long serverId,
-            @RequestParam String targetPath,
-            @RequestParam(required = false, defaultValue = "none") String postAction,
-            @RequestParam(required = false) String postCommand) {
-        return MoliResult.success(
-                operationFileUploadService.createUploadTask(file, serverId, targetPath, postAction, postCommand));
+            @Valid @ModelAttribute OperationFileUploadRequest request) {
+        return MoliResult.success(operationFileUploadService.createUploadTask(file, request));
     }
 }

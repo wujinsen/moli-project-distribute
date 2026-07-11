@@ -14,11 +14,14 @@ import java.util.Date;
 @TableName("operation_task")
 public class OperationTask extends BaseEntity {
 
-    @ApiModelProperty("任务类型：deploy / upload / command")
+    @ApiModelProperty("任务类型：deploy / upload / command / health_probe")
     private String taskType;
 
     @ApiModelProperty("目标服务器ID（本机执行时可空）")
     private Long serverId;
+
+    @ApiModelProperty("关联项目 ID（deploy 从项目页发起时）")
+    private Long projectId;
 
     @ApiModelProperty("服务标识：user-center / gateway / knowledge")
     private String serviceKey;

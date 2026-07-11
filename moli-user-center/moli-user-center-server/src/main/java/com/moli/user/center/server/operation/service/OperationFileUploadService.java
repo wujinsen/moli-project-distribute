@@ -1,5 +1,6 @@
 package com.moli.user.center.server.operation.service;
 
+import com.moli.user.center.common.domain.dto.operation.OperationFileUploadRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -13,6 +14,5 @@ public interface OperationFileUploadService {
      * @param postAction  none / nginxReload / unzipToDist / restartService:{key} / custom
      * @param postCommand postAction=custom 时的 shell 命令
      */
-    Long createUploadTask(MultipartFile file, Long serverId, String targetPath,
-                          String postAction, String postCommand);
+    Long createUploadTask(MultipartFile file, OperationFileUploadRequest request);
 }

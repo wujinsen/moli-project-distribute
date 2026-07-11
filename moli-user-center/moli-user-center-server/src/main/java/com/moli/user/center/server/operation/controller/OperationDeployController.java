@@ -6,6 +6,8 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.vo.OperationDeployPresetsVo;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
+import com.moli.user.center.server.operation.support.OperationDeployLocalPolicy;
+import com.moli.user.center.server.operation.support.OperationDtoValidationSupport;
 import com.moli.user.center.server.operation.service.OperationDeployPresetService;
 import com.moli.user.center.server.operation.service.OperationDeployService;
 import com.moli.user.center.server.operation.service.OperationRemoteDeployService;
@@ -35,6 +37,10 @@ public class OperationDeployController {
     private OperationRemoteDeployService operationRemoteDeployService;
     @Resource
     private OperationDeployPresetService operationDeployPresetService;
+    @Resource
+    private OperationDtoValidationSupport dtoValidation;
+    @Resource
+    private OperationDeployLocalPolicy deployLocalPolicy;
 
     @GetMapping("/presets")
     @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
@@ -45,7 +51,7 @@ public class OperationDeployController {
 
     @GetMapping("/{serviceKey}/status")
     @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
-    @ApiOperation(value = "查询服务进程状态", notes = "只读调用 moli-service.sh status；serverId 非空时 SSH 远程执行")
+    @ApiOperation(value = "查询服务进程状态", notes = "serverId 非空时 SSH 远程 status；为空时需 ops.deploy.allow-local=true 才查本机")
     public MoliResult<OperationDeployStatusVo> status(
             @PathVariable String serviceKey,
             @RequestParam(required = false) Long serverId) {
@@ -53,6 +59,7 @@ public class OperationDeployController {
             return MoliResult.success(
                     operationRemoteDeployService.executeRemoteReadOnly(serverId, serviceKey, "status", null));
         }
+        deployLocalPolicy.requireAllowLocal();
         return MoliResult.success(operationDeployService.status(serviceKey));
     }
 
@@ -60,7 +67,7 @@ public class OperationDeployController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_DEPLOY_EXEC, PermissionConstants.OPERATION_SERVER_LIST},
             logical = Logical.AND)
     @MoliLog(title = "部署脚本动作", businessType = BusinessTypeEnum.OTHER)
-    @ApiOperation(value = "执行部署脚本（同步）", notes = "status/logs 只读；start/stop/restart 需 ops.deploy.enabled=true；serverId 非空时仅支持 status/logs 远程同步")
+    @ApiOperation(value = "执行部署脚本（同步）", notes = "serverId 非空走 SSH 只读；为空需 allow-local=true 才本机执行")
     public MoliResult<OperationDeployStatusVo> execute(
             @PathVariable String serviceKey,
             @PathVariable String action,
@@ -70,6 +77,7 @@ public class OperationDeployController {
             return MoliResult.success(
                     operationRemoteDeployService.executeRemoteReadOnly(serverId, serviceKey, action, arg));
         }
+        deployLocalPolicy.requireAllowLocal();
         return MoliResult.success(operationDeployService.execute(serviceKey, action, arg));
     }
 
@@ -77,11 +85,13 @@ public class OperationDeployController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_DEPLOY_EXEC, PermissionConstants.OPERATION_SERVER_LIST},
             logical = Logical.AND)
     @MoliLog(title = "创建部署任务", businessType = BusinessTypeEnum.OTHER)
-    @ApiOperation(value = "创建异步启停任务", notes = "start/stop/restart；serverId 为空本机执行，否则 SSH 远程执行；返回 taskId 供轮询")
+    @ApiOperation(value = "创建异步启停任务", notes = "serverId 为空需 allow-local=true；可选 projectId 关联项目台账；返回 taskId")
     public MoliResult<Long> createTask(
             @PathVariable String serviceKey,
             @PathVariable String action,
-            @RequestParam(required = false) Long serverId) {
-        return MoliResult.success(operationRemoteDeployService.createDeployTask(serverId, serviceKey, action));
+            @RequestParam(required = false) Long serverId,
+            @RequestParam(required = false) Long projectId) {
+        return MoliResult.success(operationRemoteDeployService.createDeployTask(
+                dtoValidation.deployTask(serviceKey, action, serverId, projectId)));
     }
 }

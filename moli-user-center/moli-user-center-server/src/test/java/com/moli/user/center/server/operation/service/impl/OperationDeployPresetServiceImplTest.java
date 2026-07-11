@@ -3,6 +3,7 @@ package com.moli.user.center.server.operation.service.impl;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationDeployPresetsVo;
 import com.moli.user.center.server.operation.config.OperationUploadProperties;
+import com.moli.user.center.server.operation.deploy.OperationDeployServiceRegistry;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +14,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,12 +30,19 @@ public class OperationDeployPresetServiceImplTest {
 
     @Mock
     private OperationServerService operationServerService;
+    @Mock
+    private OperationDeployServiceRegistry deployServiceRegistry;
 
     private final OperationUploadProperties uploadProperties = new OperationUploadProperties();
 
     @Before
     public void setUp() {
         ReflectionTestUtils.setField(presetService, "uploadProperties", uploadProperties);
+        com.moli.user.center.common.domain.dto.operation.OperationDeployServiceEntry entry =
+                new com.moli.user.center.common.domain.dto.operation.OperationDeployServiceEntry();
+        entry.setKey("user-center");
+        entry.setLabel("用户中心");
+        when(deployServiceRegistry.entries()).thenReturn(Collections.singletonList(entry));
     }
 
     @Test
@@ -41,7 +51,9 @@ public class OperationDeployPresetServiceImplTest {
         assertNotNull(vo.getPathPresets());
         assertFalse(vo.getPathPresets().isEmpty());
         assertNotNull(vo.getActionPresets());
-        assertTrue(vo.getActionPresets().size() >= 6);
+        assertTrue(vo.getActionPresets().size() >= 4);
+        assertNotNull(vo.getServiceKeys());
+        assertEquals(1, vo.getServiceKeys().size());
     }
 
     @Test

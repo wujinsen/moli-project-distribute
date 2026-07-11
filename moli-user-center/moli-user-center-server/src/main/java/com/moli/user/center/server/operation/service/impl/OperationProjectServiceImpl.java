@@ -1,23 +1,24 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.moli.common.exception.BaseException;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
-import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationProjectVo;
-import com.moli.user.center.server.operation.audit.OperationPortMatrix;
+import com.moli.user.center.server.operation.audit.OperationPortMatrixPortCheck;
+import com.moli.user.center.server.operation.audit.OperationPortMatrixProvider;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
-import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import com.moli.user.center.server.operation.service.OperationProjectService;
+import com.moli.user.center.server.operation.support.OperationCrudSupport;
+import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
+import com.moli.user.center.server.operation.support.OperationServerBindingSupport;
+import com.moli.user.center.server.operation.support.OperationServerCascadeSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OperationProjectServiceImpl implements OperationProjectService {
@@ -25,7 +26,13 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     @Resource
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Resource
-    private OperationServerMapper operationServerMapper;
+    private OperationCrudSupport crudSupport;
+    @Resource
+    private OperationServerBindingSupport serverBindingSupport;
+    @Resource
+    private OperationServerCascadeSupport serverCascadeSupport;
+    @Resource
+    private OperationPortMatrixProvider portMatrixProvider;
 
     @Override
     public PageRes<OperationProjectVo> list(OperationProjectDeployInfo query) {
@@ -40,19 +47,8 @@ public class OperationProjectServiceImpl implements OperationProjectService {
             wrapper.eq(OperationProjectDeployInfo::getEnvironment, query.getEnvironment());
         }
         wrapper.orderByDesc(OperationProjectDeployInfo::getCreateTime);
-
-        Page<OperationProjectDeployInfo> page = new Page<>();
-        page.setCurrent(query.getPageNum());
-        page.setSize(query.getPageSize());
-        operationProjectDeployInfoMapper.selectPage(page, wrapper);
-
-        PageRes<OperationProjectVo> result = new PageRes<>();
-        result.setTotal((int) page.getTotal());
-        result.setPageNum(query.getPageNum());
-        result.setPageSize(query.getPageSize());
-        List<OperationProjectVo> list = page.getRecords().stream().map(this::toVo).collect(Collectors.toList());
-        result.setList(list);
-        return result;
+        return crudSupport.selectPage(operationProjectDeployInfoMapper, wrapper,
+                query.getPageNum(), query.getPageSize(), this::toVo);
     }
 
     @Override
@@ -61,72 +57,42 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     }
 
     @Override
-    public void create(OperationProjectDeployInfo form) {
-        OperationProjectDeployInfo row = copyWritableFields(form);
-        syncServerIdFromIp(row);
+    public void create(OperationProjectSaveRequest request) {
+        OperationProjectDeployInfo row = OperationSaveRequestMapper.toEntity(request);
+        serverBindingSupport.bindProject(row);
         operationProjectDeployInfoMapper.insert(row);
     }
 
     @Override
-    public void update(OperationProjectDeployInfo form) {
-        requireRow(form.getId());
-        OperationProjectDeployInfo row = copyWritableFields(form);
-        syncServerIdFromIp(row);
+    public void update(OperationProjectSaveRequest request) {
+        crudSupport.assertUpdateId(request.getId());
+        requireRow(request.getId());
+        OperationProjectDeployInfo row = OperationSaveRequestMapper.toEntity(request);
+        serverBindingSupport.bindProject(row);
         operationProjectDeployInfoMapper.updateById(row);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteByIds(Long[] ids) {
-        for (Long id : ids) {
-            operationProjectDeployInfoMapper.deleteById(id);
-        }
+        crudSupport.deleteEach(ids,
+                serverCascadeSupport::onDeleteProject,
+                operationProjectDeployInfoMapper::deleteById);
     }
 
     @Override
     public void syncServerIdFromIp(OperationProjectDeployInfo row) {
-        if (row.getServerId() != null || StringUtils.isBlank(row.getServerIp())) {
-            return;
-        }
-        LambdaQueryWrapper<OperationServerInfo> byIp = new LambdaQueryWrapper<>();
-        byIp.eq(OperationServerInfo::getIp, row.getServerIp());
-        OperationServerInfo server = operationServerMapper.selectOne(byIp);
-        if (server == null) {
-            LambdaQueryWrapper<OperationServerInfo> byInner = new LambdaQueryWrapper<>();
-            byInner.eq(OperationServerInfo::getInnerIp, row.getServerIp());
-            server = operationServerMapper.selectOne(byInner);
-        }
-        if (server != null) {
-            row.setServerId(server.getId());
-        }
+        serverBindingSupport.bindProject(row);
     }
 
     private OperationProjectDeployInfo requireRow(Long id) {
-        OperationProjectDeployInfo row = operationProjectDeployInfoMapper.selectById(id);
-        if (row == null) {
-            throw new BaseException("项目不存在");
-        }
-        return row;
-    }
-
-    private OperationProjectDeployInfo copyWritableFields(OperationProjectDeployInfo form) {
-        OperationProjectDeployInfo row = new OperationProjectDeployInfo();
-        row.setId(form.getId());
-        row.setServerId(form.getServerId());
-        row.setServerIp(form.getServerIp());
-        row.setInnerIp(form.getInnerIp());
-        row.setUrl(form.getUrl());
-        row.setProjectName(form.getProjectName());
-        row.setDeployPath(form.getDeployPath());
-        row.setPort(form.getPort());
-        row.setEnvironment(form.getEnvironment());
-        row.setRemark(form.getRemark());
-        return row;
+        return crudSupport.requireRow(operationProjectDeployInfoMapper, id, "项目");
     }
 
     private OperationProjectVo toVo(OperationProjectDeployInfo row) {
         OperationProjectVo vo = new OperationProjectVo();
         BeanUtils.copyProperties(row, vo);
-        OperationPortMatrix.PortCheck portCheck = OperationPortMatrix.check(row.getProjectName(), row.getPort());
+        OperationPortMatrixPortCheck portCheck = portMatrixProvider.check(row.getProjectName(), row.getPort());
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
         vo.setDeployRunning(row.getDeployRunning());

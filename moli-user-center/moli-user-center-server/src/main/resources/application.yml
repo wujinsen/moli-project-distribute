@@ -34,11 +34,31 @@ ops:
   health:
     probe-enabled: ${OPS_HEALTH_PROBE_ENABLED:true}
     probe-cron: ${OPS_HEALTH_PROBE_CRON:0 0/15 * * * ?}
+    probe-parallelism: ${OPS_HEALTH_PROBE_PARALLELISM:8}
+    probe-timeout-seconds: ${OPS_HEALTH_PROBE_TIMEOUT_SECONDS:120}
   deploy:
     enabled: ${OPS_DEPLOY_ENABLED:false}
     deploy-root: ${OPS_DEPLOY_ROOT:/opt/moli-project-distribute}
     script-path: ${OPS_DEPLOY_SCRIPT:}
     timeout-seconds: 15
+    status-sync-mode: ${OPS_DEPLOY_STATUS_SYNC_MODE:ssh}
+    allow-local: ${OPS_DEPLOY_ALLOW_LOCAL:false}
+    services:
+      - key: user-center
+        label: 用户中心
+        aliases: [user-center, moli-user-center, user-center-server, moli-server]
+      - key: gateway
+        label: 网关
+        aliases: [gateway, moli-gateway]
+      - key: knowledge
+        label: 知识库
+        aliases: [knowledge, moli-knowledge, knowledge-server]
+      - key: order
+        label: 订单服务
+        aliases: [order, moli-order]
+      - key: bi
+        label: BI 服务
+        aliases: [bi, moli-bi]
   ssh:
     connect-timeout-ms: ${OPS_SSH_CONNECT_TIMEOUT_MS:5000}
     command-timeout-seconds: ${OPS_SSH_COMMAND_TIMEOUT:120}

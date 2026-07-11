@@ -14,6 +14,7 @@ public class OperationTaskVo {
     private Long id;
     private String taskType;
     private Long serverId;
+    private Long projectId;
     private String serviceKey;
     private String action;
     private String targetName;

@@ -193,7 +193,17 @@
 
 ### 运维审计 `OperationAuditController`（前缀 `/operation/audit`，1个）
 
-- `GET /operation/audit/port-matrix`：`operation:project:list`；对照 production-checklist 校验项目/组件端口
+- `GET /operation/audit/port-matrix`：`operation:project:list`；对照 DB 端口矩阵校验项目/组件端口（SVR-21 后数据源为 `operation_port_matrix`）
+
+### 端口矩阵管理 `OperationPortMatrixController`（前缀 `/operation/port-matrix`，5个 · SVR-21 设计稿）
+
+- `GET /operation/port-matrix/list`：`operation:port-matrix:list`；分页列表
+- `GET /operation/port-matrix/{id}`：`operation:port-matrix:list`
+- `POST /operation/port-matrix`：`operation:port-matrix:add` + `list`
+- `PUT /operation/port-matrix`：`operation:port-matrix:edit` + `list`
+- `DELETE /operation/port-matrix/{ids}`：`operation:port-matrix:remove` + `list`
+
+> 契约：[`operation-port-matrix-api.md`](operation-port-matrix-api.md) · 设计：[`operation-port-matrix-config.md`](../design/operation-port-matrix-config.md)
 
 ### 运维统计 `OperationStatsController`（前缀 `/operation`，1个）
 
@@ -205,10 +215,10 @@
 
 **`OperationDeployController`**（`/operation/deploy`）
 
-- `GET /operation/deploy/presets?serverId=`：`operation:server:list`；常用上传路径 + 快捷后置动作
-- `GET /operation/deploy/{serviceKey}/status?serverId=`：`operation:server:list`；本机或 SSH 只读 status
+- `GET /operation/deploy/presets?serverId=`：`operation:server:list`；常用上传路径 + 快捷后置动作 + **`serviceKeys`**
+- `GET /operation/deploy/{serviceKey}/status?serverId=`：`operation:server:list`；SSH 远程或（`allow-local=true` 且 serverId 空）本机 status
 - `POST /operation/deploy/{serviceKey}/{action}`：`operation:deploy:exec` + `list`；同步执行（少用）
-- `POST /operation/deploy/{serviceKey}/{action}/task?serverId=`：`operation:deploy:exec` + `list`；异步启停，返回 `taskId`
+- `POST /operation/deploy/{serviceKey}/{action}/task?serverId=&projectId=`：`operation:deploy:exec` + `list`；异步启停，返回 `taskId`；可选 `projectId` 关联项目台账
 
 **`OperationFileController`**（`/operation/file`）
 
@@ -221,11 +231,11 @@
 **`OperationTaskController`**（`/operation/task`）
 
 - `GET /operation/task/{id}?logOffset=`：`operation:server:list`；轮询进度与增量日志
-- `GET /operation/task/list`：`operation:server:list`；分页历史（不含大段 log）
+- `GET /operation/task/list`：`operation:server:list`；分页历史（不含大段 log）；可按 `projectId` 过滤
 
 ### 运维健康 `OperationHealthController`（前缀 `/operation/health`，1个）
 
-- `POST /operation/health/probe-all`：`operation:server:list`；批量 TCP 探活 + 项目 `serverId` 回填 + 可映射项目的 `deployRunning` 同步；定时任务默认每 15 分钟（`ops.health.probe-enabled` / `ops.health.probe-cron`）
+- `POST /operation/health/probe-all`：`operation:server:list`；**异步**创建 `health_probe` 任务，返回 **`taskId`**（Breaking）；轮询 `GET /operation/task/{id}`；定时调度仍内部同步（`ops.health.probe-enabled` / `ops.health.probe-cron`）
 
 ## 5. 当前可见接口风险（用于迭代排期）
 

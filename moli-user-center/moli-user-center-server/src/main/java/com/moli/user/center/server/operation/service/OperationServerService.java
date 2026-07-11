@@ -1,5 +1,6 @@
 package com.moli.user.center.server.operation.service;
 
+import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
 import com.moli.user.center.common.domain.vo.OperationServerSshVo;
@@ -14,9 +15,9 @@ public interface OperationServerService {
 
     OperationServerVo getById(Long id);
 
-    void create(OperationServerInfo form);
+    void create(OperationServerSaveRequest request);
 
-    void update(OperationServerInfo form);
+    void update(OperationServerSaveRequest request);
 
     void deleteByIds(Long[] ids);
 

@@ -43,7 +43,7 @@ public class OperationCommandServiceImpl implements OperationCommandService {
                 work);
         String audit = OperationShellGuard.abbreviateForAudit(command, 200);
 
-        OperationTask task = operationTaskService.create("command", serverId, null, "exec",
+        OperationTask task = operationTaskService.create("command", serverId, null, null, "exec",
                 server.getServerName() + " · " + audit);
         String lockKey = "command:" + serverId;
         operationTaskService.submit(task.getId(), lockKey, context -> runCommand(context, server, remoteCommand));

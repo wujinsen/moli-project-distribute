@@ -18,4 +18,14 @@ public class OperationHealthProperties {
      * Spring cron，默认每 15 分钟。
      */
     private String probeCron = "0 0/15 * * * ?";
+
+    /**
+     * TCP 探活并行度（有界线程池大小）。
+     */
+    private int probeParallelism = 8;
+
+    /**
+     * 单次 probe-all 等待全部 TCP 探测完成的最长时间（秒）。
+     */
+    private int probeTimeoutSeconds = 120;
 }

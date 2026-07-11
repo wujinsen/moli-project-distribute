@@ -8,7 +8,8 @@ import com.moli.user.center.server.operation.task.OperationTaskJob;
 public interface OperationTaskService {
 
     /** 创建 pending 任务并落库，返回带 ID 的实体。 */
-    OperationTask create(String taskType, Long serverId, String serviceKey, String action, String targetName);
+    OperationTask create(String taskType, Long serverId, Long projectId,
+                         String serviceKey, String action, String targetName);
 
     /**
      * 提交任务到线程池异步执行；同一 serverId+serviceKey 有运行中任务时拒绝。
@@ -20,5 +21,6 @@ public interface OperationTaskService {
     OperationTaskVo poll(Long taskId, int logOffset);
 
     /** 任务历史分页。 */
-    PageRes<OperationTaskVo> list(String taskType, Long serverId, Integer pageNum, Integer pageSize);
+    PageRes<OperationTaskVo> list(String taskType, Long serverId, Long projectId,
+                                 Integer pageNum, Integer pageSize);
 }

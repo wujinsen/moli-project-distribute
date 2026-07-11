@@ -1,6 +1,6 @@
 # 服务器运维模块 · 演进规划（技术端运维）
 
-> 更新：2026-07-09 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）
+> 更新：2026-07-11 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）；**P3 部署中心已落地**（SVR-13~20）
 > 归属：`moli-user-center` · `operation_*` 表 · 菜单「运营/运维管理」(id 400)
 > 边界：**只管服务器/基础设施资产运维**；知识库内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（另一条独立路线，互不重叠）
 
@@ -117,9 +117,38 @@
 | **SVR-19** | 上传灵活化：手输 `targetPath` + 三层路径白名单；`postAction=custom` + `postCommand`；服务器 `upload_allowed_roots` | ✅ |
 | **SVR-20** | `GET /operation/deploy/presets`；前端去掉硬编码下拉，改 API 预设 + 自定义命令区 | ✅ |
 
+### P2+ —— 端口矩阵可配置化（SVR-21，设计稿 2026-07-11）
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| **SVR-21a** | 表 `operation_port_matrix` + `operation_port_matrix_alias`；种子 = 现 `OperationPortMatrix.java` | ✅ · [`24_operation_port_matrix.sql`](../sql/24_operation_port_matrix.sql) |
+| **SVR-21b** | `OperationPortMatrixProvider` 内存缓存；审计/列表改读 DB；空表回退内置默认 | ✅ |
+| **SVR-21c** | CRUD `GET/POST/PUT/DELETE /operation/port-matrix/*`；权限 `operation:port-matrix:*`；菜单 406 | ✅ · [`operation-port-matrix-api.md`](../api/operation-port-matrix-api.md) |
+| **SVR-21d** | meiling-ui 管理页 `operation/port-matrix/index`（用户方） | ⬜ |
+| **SVR-21e** | 迁移 `24_operation_port_matrix.sql` + `moli.sql` 基线合并；`production-checklist` §2 加注 DB 权威 | ✅ |
+
 ---
 
-## 6. 表与权限增量（规划）
+## 6. Phase R · 台账 + 部署中心改造（2026-07-11 规划）
+
+SVR-13~20 功能已上线，但 **Schema 漂移、组件缺 `server_id`、定时 `deploy_running` 仍走本机脚本** 等问题需在下一迭代收敛。
+
+| Phase | 内容 | 状态 |
+|-------|------|------|
+| **R0** | 合并 `moli.sql` 与 21/22 迁移；Runbook 补部署中心三开关 | ✅ 种子密码 NULL · [`deploy/上线流程.md`](../deploy/上线流程.md) §7 |
+| **R1** | 组件 `server_id`、N:N 唯一、删除级联 | ✅ |
+| **R2** | Request DTO + 部署中心入参校验 + 10101–10109 | ✅ |
+| **R3 P1** | `operation_task.project_id` + 部署 task 绑定校验 | ✅ |
+| **R3.4** | 拓扑 `server_ip IN (ip, inner_ip)` | ✅ |
+| **R4** | `OperationCrudSupport` / 测试补齐 | ✅ |
+
+架构图：[`moli-operation-refactor.drawio`](../diagrams/moli-operation-refactor.drawio)
+
+**建议起手**：R0 + R1（低风险、修 `Unknown column` 类问题），再 R3.2（部署状态远程化）。
+
+---
+
+## 7. 表与权限增量（规划）
 
 | 类型 | 增量 |
 |------|------|
@@ -130,7 +159,7 @@
 
 ---
 
-## 7. 边界（不做）
+## 8. 边界（不做）
 
 - **不含知识库运维**（Sync / Lint / wiki / LLM 配置）—— 见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)。
 - 不含业务监控大盘 / APM / 日志中心（平台级可观测性，另行规划，见 `docs/ops/monitoring-and-logs.md`）。
@@ -138,8 +167,9 @@
 
 ---
 
-## 8. 相关
+## 9. 相关
 
+- **改造方案**：[`operation-module-refactor-plan.md`](operation-module-refactor-plan.md)
 - 表结构：`docs/sql/USER_CENTER_SCHEMA.md` §2.3、`scripts/moli.sql`
 - API 地图：`docs/api/user-center-api-map.md` §4
 - **前端对接**：[`docs/api/operation-frontend.md`](../api/operation-frontend.md)

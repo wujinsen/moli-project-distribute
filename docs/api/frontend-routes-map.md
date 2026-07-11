@@ -57,6 +57,7 @@ Authorization: {token}  # 后续请求
 | 403 | 平台管理 | `operation/platform/index` | PlatformManageView | `operation:platform:list` | `/operation/platform` + `secret` |
 | 404 | 组件管理 | `operation/component/index` | ComponentManageView | `operation:component:list` | `/operation/component` + `check` / `secret` |
 | 405 | 部署中心 | `operation/deploy/index` | DeployCenterView | `operation:server:list` | `/operation/deploy/*`、`/operation/file/upload`、`/operation/command/*`、`/operation/task/*` |
+| 406 | 端口矩阵 | `operation/port-matrix/index` | PortMatrixManageView（建议） | `operation:port-matrix:list` | `/operation/port-matrix` CRUD · 设计 [operation-port-matrix-api.md](operation-port-matrix-api.md) |
 
 **跨域权限**：`operation:secret:view`（明文 reveal）、`operation:deploy:exec`（启停）、`operation:file:upload`（上传）、`operation:command:exec`（远程命令 / custom 后置）、`operation:ssh:manage`（SSH 配置）。
 

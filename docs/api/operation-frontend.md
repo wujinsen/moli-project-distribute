@@ -19,7 +19,7 @@
 | **P2** | 部署进程状态 | `operation/project/index` | ✅ SVR-8 | **S4** 进程状态（只读） |
 | **P2** | 驾驶舱 ops KPI | `CandlelightDragon/cockpit/index`（tab=ops） | ✅ SVR-9 | **S5** 合并 `/operation/stats` |
 | **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-11 | **S6** 拓扑弹窗内编辑关联 |
-| **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 手动触发 `probe-all` |
+| **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 异步 probe-all + 轮询（见 §13） |
 | **P3** | SSH 凭据 | `operation/server/index` | ✅ SVR-13 | **S8** SSH 配置弹窗 + 测试连接 |
 | **P3** | 部署中心 | `operation/deploy/index` | ✅ SVR-14~20 | **S9** 远程启停 + 灵活上传 + 远程命令 + 任务轮询 |
 
@@ -46,6 +46,8 @@
 | 服务器管理 | `operation/server/index` | `operation:server:list` | 同上 |
 | 平台管理 | `operation/platform/index` | `operation:platform:list` | 同上 |
 | 组件管理 | `operation/component/index` | `operation:component:list` | 同上 |
+| 部署中心 | `operation/deploy/index` | `operation:server:list` | `deploy:exec` / `file:upload` / `command:exec` |
+| **端口矩阵** | `operation/port-matrix/index` | `operation:port-matrix:list` | `add` / `edit` / `remove` + **list**（SVR-21） |
 
 **跨域权限**（非菜单 perms，需角色 `sys_action` 绑定）：
 
@@ -57,7 +59,7 @@
 | `operation:command:exec` | `POST /operation/command/exec/task` 远程 shell；上传 `postAction=custom` |
 | `operation:ssh:manage` | `PUT /operation/server/{id}/ssh` SSH 凭据与 `uploadAllowedRoots` |
 
-迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**。
+迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**、**`23_operation_schema_hardening.sql`**、**`24_operation_port_matrix.sql`**（SVR-21）。完整顺序见 [`sql-migration-order.md`](../ops/sql-migration-order.md)。
 
 ---
 
@@ -305,19 +307,21 @@ export type OperationPortAuditItem = {
 ### 6.2 部署进程状态（S4，只读默认）
 
 ```http
-GET  /operation/deploy/{serviceKey}/status
-POST /operation/deploy/{serviceKey}/{action}   # 变更动作见下
+GET  /operation/deploy/{serviceKey}/status?serverId=
+POST /operation/deploy/{serviceKey}/{action}?serverId=   # 变更动作见下
 ```
 
-**`serviceKey` 白名单**：`user-center` | `gateway` | `knowledge`
+**`serviceKey`**：优先从 `GET /operation/deploy/presets` 的 **`serviceKeys[]`** 读取（与 `ops.deploy.services` 一致）；勿在前端硬编码常量数组。
 
-**项目名 → serviceKey 映射（前端本地）**：
+**项目名 → serviceKey**：台账列表可本地映射作「是否可点进程状态」判断；**实际 HTTP 请求以 presets / 后端 Registry 为准**。
 
-| 台账 `projectName`（不区分大小写） | serviceKey |
-|-----------------------------------|------------|
-| `user-center`、`moli-user-center`、`user-center-server`、`moli-server` | `user-center` |
-| `gateway`、`moli-gateway` | `gateway` |
-| `knowledge`、`moli-knowledge`、`knowledge-server` | `knowledge` |
+| 台账 `projectName`（别名示例） | serviceKey |
+|--------------------------------|------------|
+| `moli-server`、`user-center-server` 等 | `user-center` |
+| `moli-gateway` | `gateway` |
+| `knowledge-server` 等 | `knowledge` |
+
+**⚠ 生产必传 `serverId`**：`ops.deploy.allow-local` 默认 **false**。未传 `serverId` 调 status/execute 将返回 **10109**。项目页手动查 status 时必须带 **`row.serverId`**；无 serverId 时禁用按钮并提示先绑定服务器。
 
 **响应 `OperationDeployStatusVo`**：
 
@@ -334,7 +338,7 @@ export type OperationDeployStatus = {
 
 | ID | UI |
 |----|-----|
-| **S4-1** | 可映射的项目行显示「进程状态」；优先读列表 VO 的 `deployRunning` / `lastDeployCheckTime`（定时同步）；也可手动调 `GET .../status` |
+| **S4-1** | 可映射的项目行显示「进程状态」；**优先**读列表 VO 的 `deployRunning` / `lastDeployCheckTime`（定时 SSH 同步）；手动刷新须 `GET .../status?serverId={row.serverId}` |
 | **S4-2** | `available === false` 时展示 `message`（Windows 开发机 / 脚本不存在等） |
 | **S4-3** | **默认不做** start/stop/restart 按钮；若做需 `operation:deploy:exec` + 二次确认 |
 
@@ -381,7 +385,7 @@ export type OperationStats = {
 
 ## 7. 端口矩阵对照表
 
-权威来源：`docs/ops/production-checklist.md` §2 + 后端 `OperationPortMatrix`。
+> **SVR-21 后**：运行时权威改为 DB + 运维台「端口矩阵」菜单（`operation/port-matrix/index`）。下表为**初始种子**；改端口请在管理页维护，无需发版。设计：[`operation-port-matrix-config.md`](../design/operation-port-matrix-config.md)。
 
 | matrixKey | 期望端口 | 匹配别名（名称归一化后） |
 |-----------|----------|--------------------------|
@@ -440,8 +444,10 @@ export const getPortAuditApi = () =>
 export const getOperationStatsApi = () =>
   request<OperationStats>(`${OP}/stats`, { method: 'GET' })
 
-export const getDeployStatusApi = (serviceKey: string) =>
-  request<OperationDeployStatus>(`${OP}/deploy/${serviceKey}/status`, { method: 'GET' })
+export const getDeployStatusApi = (serviceKey: string, serverId?: number | string | null) => {
+  const qs = serverId != null && serverId !== '' ? `?serverId=${serverId}` : ''
+  return request<OperationDeployStatus>(`${OP}/deploy/${serviceKey}/status${qs}`, { method: 'GET' })
+}
 
 export const getServerLinksApi = (id: number | string) =>
   request<OperationServerLinks>(`${OP}/server/${id}/links`, { method: 'GET' })
@@ -449,8 +455,9 @@ export const getServerLinksApi = (id: number | string) =>
 export const saveServerLinksApi = (id: number | string, body: OperationServerLinks) =>
   request<boolean>(`${OP}/server/${id}/links`, { method: 'PUT', data: body })
 
+/** Phase R3 Breaking：返回 taskId，须轮询 GET /operation/task/{id} */
 export const probeAllHealthApi = () =>
-  request<OperationHealthProbeResult>(`${OP}/health/probe-all`, { method: 'POST' })
+  request<number>(`${OP}/health/probe-all`, { method: 'POST' })
 ```
 
 `OperationProject` 列表 VO 补充字段：
@@ -458,17 +465,27 @@ export const probeAllHealthApi = () =>
 ```typescript
 export type OperationProject = {
   // ...原有字段
+  serverId?: number | string | null   // 远程 status / 启停必填（生产）
   expectedPort?: string | null
   portMatchStatus?: 0 | 1 | 2 | 3 | null
   deployRunning?: boolean | null
   lastDeployCheckTime?: string | number | null
 }
 
+/** @deprecated 同步探活统计已移除；轮询 health_probe 任务 */
 export type OperationHealthProbeResult = {
   serversProbed: number
   componentsProbed: number
   deployStatusesSynced: number
   serverIdsSynced: number
+}
+
+export type OperationDeployServiceOption = { key: string; label: string }
+
+export type OperationDeployPresets = {
+  pathPresets?: string[]
+  actionPresets?: OperationDeployPresetItem[]
+  serviceKeys?: OperationDeployServiceOption[]
 }
 ```
 
@@ -479,7 +496,7 @@ export type OperationHealthProbeResult = {
 | 步骤 | 检查 |
 |------|------|
 | 1 | user-center 启动（`:8888`），`OPS_SECRET_KEY` 已配置（P0 加密） |
-| 2 | DB 已执行 `17_*`～`21_*`；远程部署需 `ops.deploy.enabled` + `ops.upload.enabled` |
+| 2 | DB 已执行 `17_*`～`23_*`（**`23_*` 补组件 `server_id`**）；远程部署需 `ops.deploy.enabled` + `ops.upload.enabled` |
 | 3 | meiling-ui proxy `/operation` → `8888`；登录角色含 `operation:*:list` |
 | 4 | 平台/组件：列表只见 mask；reveal 需 `operation:secret:view` |
 | 5 | 服务器/组件：探测后 `status` / `lastCheckTime` 更新 |
@@ -488,6 +505,70 @@ export type OperationHealthProbeResult = {
 | 8 | 驾驶舱 ops：`/operation/stats` 计数与库内台账一致 |
 | 9 | 部署中心：SSH 已配置 → 启停返回 taskId → 日志轮询成功 |
 | 10 | 文件上传：jar 到 `moli-*/` + `restartService` 后置动作 |
+| 11 | probe-all：POST 得 taskId → 轮询至 finished → 刷新服务器/项目列表 |
+| 12 | 生产：`allow-local=false` 时所有 deploy API 必须带 `serverId` |
+
+---
+
+## 13. Phase R 改造 · 前端必改（2026-07-11）
+
+> 后端改造方案：[`operation-module-refactor-plan.md`](../design/operation-module-refactor-plan.md)  
+> HTTP 细节：[`operation-deploy-api.md`](operation-deploy-api.md)
+
+### 13.1 Breaking 清单（按优先级）
+
+| P | 任务 | 文件（meiling-ui） | 说明 |
+|---|------|-------------------|------|
+| **P0** | probe-all 异步 | `src/api/operation.ts`、`ServerManageView.vue`、`cockpit/index.vue` | `probeAllHealthApi()` 返回 **`number` taskId**；复用 `useOperationTaskPoll` 打开抽屉轮询；成功后 `listServerApi` / `listProjectApi` 刷新 |
+| **P0** | 项目 status 带 serverId | `ProjectManageView.vue` | `getDeployStatusApi(key, row.serverId)`；`serverId` 空则禁用「进程状态」 |
+| **P0** | 部署中心 serviceKeys | `DeployCenterView.vue`、`types/operation.ts` | 删除硬编码 `MOLI_DEPLOY_SERVICES`；`loadPresets()` 读 `data.serviceKeys` 渲染启停卡片 |
+| **P1** | 删服务器 409 | `ServerManageView.vue` | 捕获 **10107**，Toast「有进行中的任务」+ 可选跳转任务列表 |
+| **P1** | 错误码文案 | `types/operation.ts` 或 i18n | 10101–10109 友好提示（尤其 **10109** 本机部署禁用） |
+| **P1** | 项目页跳转启停 | `ProjectManageView.vue` | `createDeployTaskApi(key, action, row.serverId, row.id)` 传 **projectId** |
+| **P2** | orphan 标记 | 列表页 | `serverId == null` 行显示「未绑定服务器」 |
+
+### 13.2 probe-all 推荐流程（S7）
+
+```typescript
+async function probeAll() {
+  probingAll.value = true
+  try {
+    const result = await probeAllHealthApi()
+    if (result.code !== 200 || result.data == null) throw new Error(result.msg)
+    await openTask(result.data)  // useOperationTaskPoll：1.5s 轮询
+    // task.status === 'success' 后：
+    await reloadServerList()
+    await reloadProjectList()
+    showToast('success', t('operation.health.probeAllTaskDone'))
+  } finally {
+    probingAll.value = false
+  }
+}
+```
+
+i18n 建议：`probeAllOk` 改为「探活任务已提交」/ 完成后再 Toast 统计（统计在任务 `message` 或 log 中，非 HTTP 同步 body）。
+
+### 13.3 部署中心 presets 示例
+
+```typescript
+const serviceKeys = ref<OperationDeployServiceOption[]>([])
+
+async function loadPresets() {
+  const result = await getDeployPresetsApi(selectedServerId.value || undefined)
+  serviceKeys.value = result.data?.serviceKeys ?? []
+  // refreshAllStatus: serviceKeys.value.map(k => getDeployStatusApi(k.key, serverId))
+}
+```
+
+### 13.4 生产环境约定
+
+- 前端**始终**传 `serverId`（部署中心、项目 status、启停 task）
+- 仅本地 dev 后端设 `OPS_DEPLOY_ALLOW_LOCAL=true`；前端不应依赖无 serverId 的本机回退
+- `deployRunning` 列以列表 VO 为准（后端 `status-sync-mode=ssh` 定时同步）；手动刷新须 SSH 到对应机器
+
+### 13.5 后端业务码速查
+
+见 [operation-deploy-api.md §9](operation-deploy-api.md#9-业务错误码phase-r2)。
 
 ---
 
@@ -502,7 +583,7 @@ export type OperationHealthProbeResult = {
 | S4 | 部署 | status 只读可查；不可用时 message 可读 |
 | S5 | 驾驶舱 | ops KPI 使用真实 stats，非纯 Mock |
 | S6 | 关联 | links GET/PUT 可维护拓扑；保存后拓扑刷新 | ✅ |
-| S7 | 批量探活 | probe-all 触发后列表状态更新 | ✅ |
+| S7 | 批量探活 | probe-all 返回 taskId → 轮询 → 刷新列表 | 🔴 待改 |
 | S8 | SSH | 配置私钥后 `sshConfigured=true`；测试连接返回 whoami | ✅ |
 | S9 | 部署中心 | 选服务器 → 启停三件套返回 taskId；轮询进度/日志；上传 jar/zip | ✅ |
 
@@ -530,17 +611,19 @@ export type OperationHealthProbeResult = {
 | `saveServerSshApi` | PUT | `/operation/server/{id}/ssh` | 私钥/用户/端口/`uploadAllowedRoots`；只写不读 |
 | `testServerSshApi` | POST | `/operation/server/{id}/ssh/test` | 测试 SSH |
 | `getDeployStatusApi` | GET | `/operation/deploy/{key}/status?serverId=` | 远程/本机进程状态 |
-| `createDeployTaskApi` | POST | `/operation/deploy/{key}/{action}/task?serverId=` | 异步启停，返回 `taskId` |
+| `createDeployTaskApi` | POST | `/operation/deploy/{key}/{action}/task?serverId=&projectId=` | 异步启停，返回 `taskId` |
 | `getTaskApi` | GET | `/operation/task/{id}?logOffset=` | 轮询进度 + 增量日志 |
 | `getDeployPresetsApi` | GET | `/operation/deploy/presets?serverId=` | 常用路径 + 快捷后置动作（替代前端硬编码） |
 | `createCommandTaskApi` | POST JSON | `/operation/command/exec/task` | 远程 shell；body `{ serverId, command, workDir? }` → `taskId` |
 | `uploadFileApi` | POST multipart | `/operation/file/upload` | `file, serverId, targetPath, postAction, postCommand?` |
 
-**serviceKey 白名单**：`user-center` · `gateway` · `knowledge`
+**serviceKey**：来自 `GET /operation/deploy/presets` → **`serviceKeys[]`**（勿硬编码）
 
 **postAction**：`none` · `nginxReload` · `unzipToDist` · `restartService:{key}` · **`custom`**（需 `postCommand` + `operation:command:exec`）
 
 **目标路径**：手输绝对路径；白名单三层 OR — `ops.upload.allowed-paths`、`ops.upload.allow-any-under`（默认 `/opt/`、`/home/ubuntu/`）、服务器 `upload_allowed_roots`
+
+**生产**：所有 deploy/file/command API **必须**带 `serverId`（`allow-local` 默认 false）。
 
 ### 11.3 前端页面
 
@@ -557,6 +640,8 @@ export type OperationHealthProbeResult = {
 ops:
   deploy:
     enabled: true
+    allow-local: false          # 生产必须 false；仅 dev Linux 可 true
+    status-sync-mode: ssh       # deploy_running 与 SSH status 一致
   upload:
     enabled: true
   command:
@@ -571,10 +656,66 @@ CVM 上 `ubuntu` 用户需能 `sudo nginx -s reload`（见 `deploy/腾讯云上�
 
 ---
 
+## 14. 端口矩阵管理页（SVR-21 · 设计稿）
+
+> **后端契约**：[operation-port-matrix-api.md](operation-port-matrix-api.md) · **方案**：[operation-port-matrix-config.md](../design/operation-port-matrix-config.md)
+
+| 项 | 值 |
+|----|-----|
+| 菜单 id | 406（父 400） |
+| 路由 | `operation/port-matrix/index` |
+| 列表权限 | `operation:port-matrix:list` |
+| 写权限 | `add` / `edit` / `remove` + **list** |
+
+### 14.1 页面能力
+
+| 功能 | API |
+|------|-----|
+| 分页列表 | `GET /operation/port-matrix/list` |
+| 新增/编辑弹窗 | `POST` / `PUT /operation/port-matrix` |
+| 删除 | `DELETE /operation/port-matrix/{ids}` |
+| 别名编辑 | 请求体 `aliases: string[]` 全量替换；UI 用 Tag 输入 |
+
+保存成功后**无需重启** user-center；可立即调 `GET /operation/audit/port-matrix` 验证 `portMatchStatus` 变化。
+
+### 14.2 TypeScript 类型（建议）
+
+```typescript
+export interface OperationPortMatrix {
+  id: number
+  matrixKey: string
+  displayName?: string
+  expectedPort: string
+  aliases: string[]
+  sortOrder?: number
+  enabled: boolean
+  source?: string
+  remark?: string
+}
+
+export interface PortMatrixSaveRequest {
+  id?: number
+  matrixKey: string
+  displayName?: string
+  expectedPort: string
+  aliases?: string[]
+  sortOrder?: number
+  enabled?: boolean
+  source?: string
+  remark?: string
+}
+```
+
+### 14.3 与 S3 审计弹窗联动
+
+项目/组件管理页的端口审计弹窗（§6.1）增加入口「管理端口矩阵」→ 路由跳转本页。审计 API 权限仍为 `operation:project:list`，与矩阵 CRUD 权限分离。
+
+---
+
 ## 12. 相关
 
 - **部署中心 HTTP 契约（后端）**：[operation-deploy-api.md](operation-deploy-api.md)
-
+- **端口矩阵 HTTP 契约（SVR-21）**：[operation-port-matrix-api.md](operation-port-matrix-api.md)
 - 后端路线图：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md)
 - API 全量列表：[user-center-api-map.md](user-center-api-map.md) §4
 - 部署脚本：`deploy/linux/moli-service.sh`（S4 服务端调用）

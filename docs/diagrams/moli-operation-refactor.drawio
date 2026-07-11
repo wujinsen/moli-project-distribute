@@ -1,0 +1,111 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="operation-refactor" name="Operation Refactor Target">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="运营管理 + 部署中心 · 改造目标模型&#xa;台账 server_id 为枢纽 · 部署走 SSH · 长任务统一 operation_task" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="15" width="900" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="ledger" value="台账四模块（CRUD）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=28;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="75" width="520" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="platform" value="operation_platform_info&#xa;平台账号" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="ledger">
+          <mxGeometry x="20" y="45" width="140" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="server" value="operation_server_info&#xa;服务器 + SSH 凭据" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="ledger">
+          <mxGeometry x="190" y="45" width="160" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="project" value="operation_project_deploy_info&#xa;server_id · deploy_running" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="ledger">
+          <mxGeometry x="20" y="120" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="component" value="operation_component_deploy_info&#xa;+ server_id（Phase 1）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="ledger">
+          <mxGeometry x="250" y="120" width="220" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="nn" value="N:N&#xa;server_project&#xa;server_component" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;fontSize=10;" vertex="1" parent="ledger">
+          <mxGeometry x="380" y="45" width="110" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="deploy_lane" value="部署中心（菜单 405 · SVR-13~20）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=28;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="75" width="750" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="deploy_ctrl" value="/operation/deploy&#xa;presets · status · task" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="deploy_lane">
+          <mxGeometry x="20" y="45" width="150" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="file_ctrl" value="/operation/file&#xa;SFTP upload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="deploy_lane">
+          <mxGeometry x="190" y="45" width="130" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmd_ctrl" value="/operation/command&#xa;ShellGuard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="deploy_lane">
+          <mxGeometry x="340" y="45" width="130" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="task_ctrl" value="/operation/task&#xa;轮询 · 列表" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="deploy_lane">
+          <mxGeometry x="490" y="45" width="120" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="ssh_exec" value="SSH → moli-service.sh&#xa;start/stop/restart/status" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="deploy_lane">
+          <mxGeometry x="20" y="120" width="220" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="local_exec" value="本机（仅 dev + Linux）&#xa;ops.deploy.mode=local" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;fontSize=10;" vertex="1" parent="deploy_lane">
+          <mxGeometry x="260" y="120" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="flags" value="开关默认 false&#xa;deploy · upload · command" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="deploy_lane">
+          <mxGeometry x="460" y="120" width="150" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="probe_lane" value="探活与状态同步（Phase 3）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#d79b00;startSize=28;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="1300" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="tcp" value="TCP probe&#xa;server + component 端口" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="probe_lane">
+          <mxGeometry x="20" y="45" width="160" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="sync_svc" value="OperationDeployStatusSyncService&#xa;project.serverId → SSH status" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="probe_lane">
+          <mxGeometry x="210" y="45" width="260" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="probe_all" value="POST /health/probe-all&#xa;→ operation_task (health_probe)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="probe_lane">
+          <mxGeometry x="500" y="45" width="240" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="scheduler" value="OperationHealthProbeScheduler&#xa;cron ops.health.*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" vertex="1" parent="probe_lane">
+          <mxGeometry x="770" y="45" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="task_tbl" value="operation_task&#xa;deploy | upload | command | health_probe" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;size=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="580" y="460" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="phase_box" value="分期&#xa;Phase 0 Schema&#xa;Phase 1 server_id + 级联&#xa;Phase 2 DTO&#xa;Phase 3 SSH 同步 + 任务&#xa;Phase 4 Support 重构" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="460" width="220" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;endArrow=classic;" edge="1" parent="1" source="server" target="project">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1l" value="server_id FK" style="edgeLabel;html=1;align=center;fontSize=10;" vertex="1" connectable="0" parent="e1">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;endArrow=classic;" edge="1" parent="1" source="server" target="component">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#9673a6;endArrow=classic;" edge="1" parent="1" source="server" target="ssh_exec">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3l" value="SSH 凭据" style="edgeLabel;html=1;align=center;fontSize=10;" vertex="1" connectable="0" parent="e3">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;endArrow=classic;dashed=1;" edge="1" parent="1" source="project" target="sync_svc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4l" value="serviceKey" style="edgeLabel;html=1;align=center;fontSize=10;" vertex="1" connectable="0" parent="e4">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;endArrow=classic;" edge="1" parent="1" source="deploy_ctrl" target="task_tbl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;endArrow=classic;" edge="1" parent="1" source="file_ctrl" target="task_tbl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6c8ebf;endArrow=classic;" edge="1" parent="1" source="cmd_ctrl" target="task_tbl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;endArrow=classic;" edge="1" parent="1" source="probe_all" target="task_tbl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#82b366;endArrow=classic;" edge="1" parent="1" source="sync_svc" target="ssh_exec">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

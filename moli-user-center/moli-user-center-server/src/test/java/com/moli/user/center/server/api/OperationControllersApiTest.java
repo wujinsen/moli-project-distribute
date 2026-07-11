@@ -1,10 +1,13 @@
 package com.moli.user.center.server.api;
 
 import com.moli.common.page.PageRes;
+import com.moli.user.center.common.domain.dto.operation.OperationComponentSaveRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationPlatformSaveRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
-import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationComponentVo;
 import com.moli.user.center.common.domain.vo.OperationPlatformVo;
 import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
@@ -24,16 +27,18 @@ import com.moli.user.center.server.operation.controller.OperationPlatformControl
 import com.moli.user.center.server.operation.controller.OperationProjectController;
 import com.moli.user.center.server.operation.controller.OperationServerController;
 import com.moli.user.center.server.operation.controller.OperationStatsController;
-import com.moli.user.center.common.domain.vo.OperationHealthProbeResultVo;
+import com.moli.user.center.server.operation.service.OperationDeployPresetService;
+import com.moli.user.center.server.operation.service.OperationDeployService;
 import com.moli.user.center.server.operation.service.OperationHealthProbeService;
+import com.moli.user.center.server.operation.service.OperationPlatformService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
+import com.moli.user.center.server.operation.service.OperationRemoteDeployService;
 import com.moli.user.center.server.operation.service.OperationServerLinkService;
 import com.moli.user.center.server.operation.service.OperationAuditService;
 import com.moli.user.center.server.operation.service.OperationComponentService;
-import com.moli.user.center.server.operation.service.OperationDeployService;
-import com.moli.user.center.server.operation.service.OperationPlatformService;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import com.moli.user.center.server.operation.service.OperationStatsService;
+import com.moli.user.center.server.operation.support.OperationDeployLocalPolicy;
 import com.moli.user.center.server.testsupport.AbstractApiTest;
 import com.moli.user.center.server.testsupport.ControllerTestSupport;
 import org.junit.Test;
@@ -81,9 +86,20 @@ public class OperationControllersApiTest extends AbstractApiTest {
     @Mock
     private OperationDeployService operationDeployService;
     @Mock
+    private OperationRemoteDeployService operationRemoteDeployService;
+    @Mock
+    private OperationDeployPresetService operationDeployPresetService;
+    @Mock
+    private OperationDeployLocalPolicy deployLocalPolicy;
+    @Mock
     private OperationProjectService operationProjectService;
     @Mock
     private OperationHealthProbeService operationHealthProbeService;
+
+    @org.junit.Before
+    public void stubDeployLocalPolicy() {
+        doNothing().when(deployLocalPolicy).requireAllowLocal();
+    }
 
     @Test
     public void GET_operation_platform_list() {
@@ -97,13 +113,18 @@ public class OperationControllersApiTest extends AbstractApiTest {
     @Test
     public void POST_operation_platform_insert() {
         doNothing().when(operationPlatformService).create(any());
-        ControllerTestSupport.assertSuccess(platformController.insert(new OperationPlatformInfo()));
+        OperationPlatformSaveRequest req = new OperationPlatformSaveRequest();
+        req.setPlatformName("AWS");
+        ControllerTestSupport.assertSuccess(platformController.insert(req));
     }
 
     @Test
     public void PUT_operation_platform_update() {
         doNothing().when(operationPlatformService).update(any());
-        ControllerTestSupport.assertSuccess(platformController.update(new OperationPlatformInfo()));
+        OperationPlatformSaveRequest req = new OperationPlatformSaveRequest();
+        req.setId(1L);
+        req.setPlatformName("AWS");
+        ControllerTestSupport.assertSuccess(platformController.update(req));
     }
 
     @Test
@@ -136,13 +157,20 @@ public class OperationControllersApiTest extends AbstractApiTest {
     @Test
     public void POST_operation_server_insert() {
         doNothing().when(operationServerService).create(any());
-        ControllerTestSupport.assertSuccess(serverController.insert(new OperationServerInfo()));
+        OperationServerSaveRequest req = new OperationServerSaveRequest();
+        req.setServerName("dev");
+        req.setIp("127.0.0.1");
+        ControllerTestSupport.assertSuccess(serverController.insert(req));
     }
 
     @Test
     public void PUT_operation_server_update() {
         doNothing().when(operationServerService).update(any());
-        ControllerTestSupport.assertSuccess(serverController.update(new OperationServerInfo()));
+        OperationServerSaveRequest req = new OperationServerSaveRequest();
+        req.setId(1L);
+        req.setServerName("dev");
+        req.setIp("127.0.0.1");
+        ControllerTestSupport.assertSuccess(serverController.update(req));
     }
 
     @Test
@@ -193,13 +221,20 @@ public class OperationControllersApiTest extends AbstractApiTest {
     @Test
     public void POST_operation_project_insert() {
         doNothing().when(operationProjectService).create(any());
-        ControllerTestSupport.assertSuccess(projectController.insert(new OperationProjectDeployInfo()));
+        OperationProjectSaveRequest req = new OperationProjectSaveRequest();
+        req.setProjectName("moli-server");
+        req.setServerId(201L);
+        ControllerTestSupport.assertSuccess(projectController.insert(req));
     }
 
     @Test
     public void PUT_operation_project_update() {
         doNothing().when(operationProjectService).update(any());
-        ControllerTestSupport.assertSuccess(projectController.update(new OperationProjectDeployInfo()));
+        OperationProjectSaveRequest req = new OperationProjectSaveRequest();
+        req.setId(1L);
+        req.setProjectName("moli-server");
+        req.setServerId(201L);
+        ControllerTestSupport.assertSuccess(projectController.update(req));
     }
 
     @Test
@@ -225,13 +260,20 @@ public class OperationControllersApiTest extends AbstractApiTest {
     @Test
     public void POST_operation_component_insert() {
         doNothing().when(operationComponentService).create(any());
-        ControllerTestSupport.assertSuccess(componentController.insert(new OperationComponentDeployInfo()));
+        OperationComponentSaveRequest req = new OperationComponentSaveRequest();
+        req.setComponentName("Redis");
+        req.setServerId(201L);
+        ControllerTestSupport.assertSuccess(componentController.insert(req));
     }
 
     @Test
     public void PUT_operation_component_update() {
         doNothing().when(operationComponentService).update(any());
-        ControllerTestSupport.assertSuccess(componentController.update(new OperationComponentDeployInfo()));
+        OperationComponentSaveRequest req = new OperationComponentSaveRequest();
+        req.setId(1L);
+        req.setComponentName("Redis");
+        req.setServerId(201L);
+        ControllerTestSupport.assertSuccess(componentController.update(req));
     }
 
     @Test
@@ -286,7 +328,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_health_probe_all() {
-        when(operationHealthProbeService.probeAll()).thenReturn(new OperationHealthProbeResultVo());
+        when(operationHealthProbeService.createProbeAllTask()).thenReturn(88L);
         ControllerTestSupport.assertSuccess(healthController.probeAll());
     }
 }

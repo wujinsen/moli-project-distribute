@@ -9,6 +9,8 @@ public class OperationComponentDeployInfo extends BaseEntity {
 
     @ApiModelProperty("组件名")
     private String componentName;
+    @ApiModelProperty("服务器ID")
+    private Long serverId;
     @ApiModelProperty("服务器ip")
     private String serverIp;
     @ApiModelProperty("账户名")

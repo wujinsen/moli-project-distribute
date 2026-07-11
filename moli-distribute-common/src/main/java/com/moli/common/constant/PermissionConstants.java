@@ -77,6 +77,11 @@ public final class PermissionConstants {
     public static final String OPERATION_FILE_UPLOAD = "operation:file:upload";
     /** 远程执行受控 shell 命令（SVR-18） */
     public static final String OPERATION_COMMAND_EXEC = "operation:command:exec";
+    /** 端口矩阵管理（SVR-21） */
+    public static final String OPERATION_PORT_MATRIX_LIST = "operation:port-matrix:list";
+    public static final String OPERATION_PORT_MATRIX_ADD = "operation:port-matrix:add";
+    public static final String OPERATION_PORT_MATRIX_EDIT = "operation:port-matrix:edit";
+    public static final String OPERATION_PORT_MATRIX_REMOVE = "operation:port-matrix:remove";
 
     /** 企业知识库 · 空间管理（C 菜单 perms） */
     public static final String KB_SPACE_ADMIN = "kb:space:admin";
