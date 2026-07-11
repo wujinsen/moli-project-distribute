@@ -16,6 +16,7 @@ import com.moli.knowledge.server.dto.IngestPublishResultVo;
 import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
+import com.moli.knowledge.server.dto.RawPrefixVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
 
 import java.util.List;
@@ -26,6 +27,9 @@ import java.util.List;
 public interface KbIngestService {
 
     List<RawTreeNodeVo> rawTree(String prefix);
+
+    /** T20g · raw 下一级目录 prefix 列表（Tab1 下拉）。 */
+    List<RawPrefixVo> rawPrefixes();
 
     IngestJobVo createJob(IngestJobCreateRequest request);
 

@@ -36,4 +36,7 @@ public class SyncTriggerVo {
 
     @ApiModelProperty("Sync 成功后建议下一步")
     private List<KbWorkflowHintVo> nextSteps;
+
+    @ApiModelProperty("true=已提交后台同步，请轮询 GET /kb/sync/status（success/exitCode 无效）")
+    private Boolean asyncSubmitted;
 }

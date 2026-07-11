@@ -184,15 +184,13 @@ export interface KbWorkflowHintVo {
 
 ---
 
-## 7. 进度摘要（2026-06-28 · 后端视角）
+## 7. 进度摘要（2026-07-11 · 后端视角）
 
 | 模块 | 后端 | 前端 UI | 缺口摘要 |
 |------|------|---------|----------|
-| **Ingest** | ✅ T15+T18+T19+T20 后端 | 🔵 **T20f UI** | Tab2：§10.1 nextSteps + raw 冲突；**Tab1/3**：[kb-import-entry-frontend.md](kb-import-entry-frontend.md) |
-| **Wiki 治理** | ✅ T16a/e/g | 🔵 MVP 两步 | §10.2：script/auto/merge-hint 四步闭环 |
-| **共享** | ✅ `nextSteps` 字段 | 🔵 | `KbWorkflowNextSteps.vue` 复用（§10.1） |
-
-**现 UI「只有 2 步」指 Wiki 治理**（① Lint ② AI 批量修复），不是 Ingest 六步缺失。详见 [ops §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距)。
+| **Ingest** | ✅ T15+T18+T19+T20+T20g 后端 | 🔵 **T20f UI** | Tab1：`raw-prefixes` ✅ · zip/batch ✅；前端接下拉。Tab2/3 见 [kb-import-entry-frontend.md](kb-import-entry-frontend.md) |
+| **Wiki 治理** | ✅ T16a/e/g | ✅ 全链路 UI | script-fix / auto-fix / merge-hint / syncAfter 已接（2026-07） |
+| **共享** | ✅ `nextSteps` + Sync 轮询 O1 | ✅ | `KbWorkflowNextSteps` · 健康体检 O1–O4 可对接 |
 
 ---
 
@@ -204,11 +202,11 @@ export interface KbWorkflowHintVo {
 |----|------|------------|------|----------|------|
 | **B1** | 空间 Lint（文件真值） | `POST /kb/wiki-moli/lint-space` | ✅ | ⚠️ 已接 | `exitCode≠0` 仍 HTTP 200 |
 | **B2** | 治理 options | `GET /kb/wiki-moli/govern/options` | ✅ | ⚠️ 部分 | 含 `scriptFixableKinds` / `aiFixableKinds` / `manualOnlyKinds` |
-| **B3** | 脚本修复 | `POST /kb/wiki-moli/govern/script-fix` | ✅ | ❌ | `missing_dates` / `slug_mismatch` / `missing_source` |
-| **B4** | AI 批量修复 | `POST /kb/wiki-moli/govern/ai-batch-fix` | ✅ | ⚠️ 已接 | 需 `kb.llm` |
-| **B5** | 一键 auto-fix | `POST /kb/wiki-moli/govern/auto-fix` | ✅ | ❌ | 含 `relintAfter` / `syncAfter` |
-| **B6** | 合并提示 | `POST /kb/wiki-moli/govern/merge-hint` | ✅ | ❌ | `dup_slug` / `dup_content` / `near_dup` |
-| **B7** | Sync | `POST /kb/sync/trigger` | ✅ | ⚠️ 它页 | 治理页建议 `syncAfter` 或链健康体检 |
+| **B3** | 脚本修复 | `POST /kb/wiki-moli/govern/script-fix` | ✅ | ✅ | `missing_dates` / `slug_mismatch` / `missing_source` |
+| **B4** | AI 批量修复 | `POST /kb/wiki-moli/govern/ai-batch-fix` | ✅ | ✅ | 需 `kb.llm` |
+| **B5** | 一键 auto-fix | `POST /kb/wiki-moli/govern/auto-fix` | ✅ | ✅ | 含 `relintAfter` / `syncAfter` |
+| **B6** | 合并提示 | `POST /kb/wiki-moli/govern/merge-hint` | ✅ | ✅ | `manualSteps` / `relatedSlugs` · `dup_slug` 等 |
+| **B7** | Sync | `POST /kb/sync/trigger` + `GET /kb/sync/status` | ✅ | ✅ | O1 轮询 `running`/`lastStatus`；trigger 仍同步阻塞 |
 | **B8** | Ingest 模板模式 | `useLlmGenerate=false` on express/generate/prepare/regenerate | ✅ | ⚠️ 已接 | 响应 `templateMode=true` |
 | **B9** | 入库后引导 | `commit.nextSteps` / `publish.nextSteps` / `SyncTriggerVo.nextSteps` | ✅ | 🔵 Spec §10.1 | keys: `wiki_govern_lint`, `kb_health_scan` |
 | **B10** | raw 覆盖门禁 | commit/publish 业务错误 | ✅ | 🔵 Spec §10.1 | `code=10012` + `IngestRawConflictVo` |
@@ -350,7 +348,7 @@ export interface KbWorkflowHintVo {
 
 ### 10.2 Wiki 治理 · 四步闭环（W3–W6）
 
-当前 MVP 仅 **① Lint ② AI**；完整 v1 目标 UI：
+**2026-07 现状**：meiling-ui 已接 lint → script/AI → merge-hint → auto-fix → Sync → 复检；下文为 API 对照。
 
 ```
 ① lint-space → ② script-fix（metadata）→ ③ ai-batch-fix（断链/孤儿）
@@ -384,7 +382,7 @@ export interface KbWorkflowHintVo {
 | 2026-06-28 | §8.1 B3 LLM 自动模板降级 + Expert 前端待办 |
 | 2026-06-28 | §8.1 B4 结构化冲突 `data`（`IngestRawConflictVo`） |
 | 2026-06-28 | §8.1 联调 FAQ（B1–B4 / W1·W5 后端定案） |
-| 2026-06-28 | §7 进度摘要 + §8 B1–B10 后端确认清单 |
+| 2026-07-11 | §7/§8/§10.2 对齐现网：治理全按钮 ✅；Ingest Tab1 `raw-prefixes` ⏳；Sync O1 轮询 |
 | 2026-06-28 | 新增前端总览；拆分 Ingest / Wiki 治理对接文档 |
 | 2026-06-27 | Wiki 治理 T16e 后端 + wiki-govern-frontend 初版 |
 | 2026-07-05 | §1.2 页附件 UI 定案；§1.3 + [kb-markdown-image-frontend.md](kb-markdown-image-frontend.md) T22 F1 |

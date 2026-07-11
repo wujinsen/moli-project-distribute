@@ -25,6 +25,7 @@ import com.moli.knowledge.server.dto.IngestPublishResultVo;
 import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
+import com.moli.knowledge.server.dto.RawPrefixVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
 import com.moli.knowledge.server.dto.SyncTriggerVo;
 import com.moli.knowledge.server.dto.WikiSaveRequest;
@@ -221,6 +222,31 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
         int[] budget = {ingestProperties.getMaxTreeNodes()};
         return listChildren(root, base, budget);
+    }
+
+    @Override
+    public List<RawPrefixVo> rawPrefixes() {
+        assertEnabled();
+        kbAclService.assertCanRead(resolveSpace(null).getId());
+
+        Path root = resolveRawRoot();
+        if (!Files.isDirectory(root)) {
+            return new ArrayList<>();
+        }
+        List<RawPrefixVo> result = new ArrayList<>();
+        try (Stream<Path> stream = Files.list(root)) {
+            stream.filter(p -> !p.getFileName().toString().startsWith("."))
+                    .filter(Files::isDirectory)
+                    .sorted(Comparator.comparing(p -> p.getFileName().toString()))
+                    .forEach(p -> {
+                        RawPrefixVo vo = new RawPrefixVo();
+                        vo.setPrefix(root.relativize(p).toString().replace('\\', '/'));
+                        result.add(vo);
+                    });
+        } catch (IOException e) {
+            throw new BaseException("读取 raw 目录失败: " + e.getMessage());
+        }
+        return result;
     }
 
     private List<RawTreeNodeVo> listChildren(Path root, Path dir, int[] budget) {

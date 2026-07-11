@@ -18,6 +18,7 @@ import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
 import com.moli.knowledge.server.dto.RawCoverageVo;
+import com.moli.knowledge.server.dto.RawPrefixVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
 import com.moli.knowledge.server.dto.RawUploadResultVo;
 import com.moli.knowledge.server.config.KbIngestProperties;
@@ -66,6 +67,12 @@ public class KbIngestController {
     @ApiOperation("raw 只读目录树")
     public MoliResult<List<RawTreeNodeVo>> rawTree(@RequestParam(required = false) String prefix) {
         return MoliResult.success(kbIngestService.rawTree(prefix));
+    }
+
+    @GetMapping("/raw-prefixes")
+    @ApiOperation("T20g · raw 下一级 prefix 列表（Tab1 下拉）")
+    public MoliResult<List<RawPrefixVo>> rawPrefixes() {
+        return MoliResult.success(kbIngestService.rawPrefixes());
     }
 
     @GetMapping("/raw-coverage")

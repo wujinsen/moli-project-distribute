@@ -333,6 +333,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | **T20b** | `POST /kb/wiki/page/import` + `KbWikiImportService` | 成品 md 直写 wiki → Sync → 浏览 | ✅ 后端 · 🔵 Tab3 UI |
 | **T20e** | Tab3 可选 `assetsZip` → `{slug}.assets/` + 路径重写 | 相对路径插图 + zip → T22 可浏览 | ✅ 后端 · 🔵 Tab3 UI |
 | **T20c** | `POST /kb/ingest/raw-upload/zip`、`POST /kb/wiki/page/import/batch` | 10 篇 md ≤1 次 Sync | ✅ 后端 · 🔵 Tab1 zip / Tab3 批量 UI |
+| **T20g** | `GET /kb/ingest/raw-prefixes` | Tab1 prefix 下拉（一级目录） | ✅ 后端 · 🔵 Tab1 UI |
 | **T20d** | `docs/sql/16_kb_import_entry_menu.sql` + `KbAclService.assertCanRawUpload` | editor 权限与 Tab 可见性 | ✅ SQL + 后端 · 🔵 Tab1 v-if |
 | **T20f** | meiling-ui 三 Tab + 决策树文案 + API/i18n | 与 T14e 新建复用分类选择 | 🔵 |
 
@@ -631,20 +632,20 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | **KBOPS-2** | Sync 并发锁（按 space_code 的 Redis 锁） | P0 | ✅ |
 | **KBOPS-O1** | Sync 轮询字段：`SyncStatusVo`/`SyncTriggerVo` 对齐 O1–O4 | P0 | ✅ |
 | **T19e** | LLM `encryptionReady` + `KB_LLM_CONFIG_SECRET` 环境变量回退 | P1 | ✅ |
-| **KBOPS-3** | 权限码对齐：enforce `kb:sync:trigger` / `kb:lint:scan` | P0 | 📋 |
-| **KBOPS-4** | 定时同步改 sync-all 三空间（或配置化多空间） | P1 | 📋 |
-| **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | 📋 |
+| **KBOPS-3** | 权限码对齐：enforce `kb:sync:trigger` / `kb:lint:scan` | P0 | ✅ |
+| **KBOPS-4** | 定时同步改 sync-all 三空间（或配置化多空间） | P1 | ✅ 后端 · cron 待开 |
+| **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | ✅ 后端 · 配 URL |
 | **KBOPS-6** | 前端 T16f Wiki 治理全按钮（同 T16f） | P1 | 📋 |
 | **KBOPS-7** | 前端 T19d 平台 LLM 设置页（同 T19d） | P1 | 📋 |
 | **KBOPS-8** | 体检工单增强：issue_type 扩展 + assignee/优先级 + 批量 + 可选定时 scan | P2 | 📋 |
-| **KBOPS-9** | 知识库运维 Dashboard（Sync 趋势/Lint 工单/LLM 调用率/断链汇总；可选 `kb_llm_call_log`） | P2 | 📋 |
+| **KBOPS-9** | 知识库运维 Dashboard（`GET /kb/ops/dashboard`） | P2 | ✅ 后端 · 前端 O4 📋 |
 | **KBOPS-10** | Web 体检检查项对齐 `lint.py`（或明确分工文档） | P2 | 📋 |
 
-**建议起手**：KBOPS-3（权限码）→ KBOPS-4（多空间定时）→ 前端 O1–O4 / T19d。
+**建议起手**：前端 Tab1 接 `raw-prefixes` / O2 `async=true` 轮询；运维 E2E 见 `kb/tools/ci/run_govern_e2e.sh`。
 
 ---
 
-> **2026-07-11**：KBOPS-1/2/O1、T19e 后端已落地；见 [`docs/design/kb-ops-roadmap.md`](../docs/design/kb-ops-roadmap.md)。
+> **2026-07-11**：KBOPS-1/2/3/O1、KBOPS-4/5/9 后端、T19e、T20c/T20g、Sync `async` trigger 已落地；见 [`docs/design/kb-ops-roadmap.md`](../docs/design/kb-ops-roadmap.md)。
 
 ---
 

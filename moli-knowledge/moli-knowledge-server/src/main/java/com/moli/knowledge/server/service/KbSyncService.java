@@ -18,6 +18,11 @@ public interface KbSyncService {
     /** 触发 kb/tools/sync_to_db.py 写库（需 {@code kb:sync:trigger}、空间 admin 或全局管理员）。 */
     SyncTriggerVo trigger(Long spaceId, String spaceCode);
 
+    /**
+     * 触发同步；{@code async=true} 时立即返回并后台执行（供 O2 轮询 {@link #status(Long)}）。
+     */
+    SyncTriggerVo trigger(Long spaceId, String spaceCode, boolean async);
+
     /** 编辑类操作（如移动分类）后触发同步：仅需空间编辑权限。 */
     SyncTriggerVo triggerAfterEdit(Long spaceId);
 

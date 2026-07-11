@@ -1190,7 +1190,7 @@ powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute
 |------|------|------|
 | GET | `/kb/sync/logs?spaceId=&batchNo=&pageNum=&pageSize=` | 同步日志分页 `Page<KbSyncLog>` |
 | GET | `/kb/sync/status?spaceId=` | 最近一批统计 `SyncStatusVo` |
-| POST | `/kb/sync/trigger?spaceId=&spaceCode=` | 触发 `sync_to_db.py`，返回 `SyncTriggerVo` |
+| POST | `/kb/sync/trigger?spaceId=&spaceCode=&async=` | 触发 `sync_to_db.py`；`async=true` 时后台执行并返回 `asyncSubmitted=true` |
 
 > **多空间 Sync**：脚本同时传 `--space {spaceCode}` 与 `--wiki-dir {kb.wiki.space-dirs[spaceCode]}`（如 `moli-ops-manual` → `wiki-moli`）。**勿**对所有空间默认扫 `wiki/`，否则茉莉系统手册空间会误入 enterprise-kb 的 300+ 篇文档。
 
@@ -1214,7 +1214,7 @@ powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute
 }
 ```
 
-`SyncTriggerVo`：`success`、`exitCode`、`spaceCode`、`batchNo`、`status`、`message`、`outputTail`（脚本输出末尾）。
+`SyncTriggerVo`：`success`、`exitCode`、`spaceCode`、`batchNo`、`status`、`message`、`outputTail`（脚本输出末尾）、`asyncSubmitted`（true 时请轮询 `GET /kb/sync/status`）。
 
 ### 6.1 同步配置 `kb.sync.*`
 
@@ -2464,7 +2464,25 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 |------|------|------|
 | POST | `/kb/ingest/raw-upload` | multipart：`prefix` + 多 `file` |
 | POST | `/kb/ingest/raw-upload/zip` | ✅ T20c · zip 解压到 prefix |
-| GET | `/kb/ingest/raw-prefixes` | P1 · 已有 prefix 下拉 |
+| GET | `/kb/ingest/raw-prefixes` | ✅ T20g · raw 下一级 prefix 下拉 |
+
+#### `GET /kb/ingest/raw-prefixes`
+
+**权限**：与 `GET /kb/ingest/raw-tree` 相同（enterprise-kb 空间读权限）。
+
+**响应**：`RawPrefixVo[]`，仅 **一级目录**（不含 `raw/` 根下 loose 文件）。
+
+```json
+{
+  "code": 200,
+  "data": [
+    { "prefix": "school" },
+    { "prefix": "test-walkthrough" }
+  ]
+}
+```
+
+**说明**：二级路径（如 `school/fe`）请用 `raw-tree?prefix=school` 或手输；下拉只列一级便于 Tab1 快速选择。
 
 #### `POST /kb/ingest/raw-upload`
 

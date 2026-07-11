@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -33,6 +34,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,6 +71,18 @@ public class KbSyncServiceImpl implements KbSyncService {
     private String dbUser;
     @Value("${spring.datasource.password}")
     private String dbPassword;
+
+    /** 手动异步 trigger 专用（单线程，避免并发跑多个 sync 脚本）。 */
+    private final ExecutorService asyncTriggerExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "kb-sync-async-trigger");
+        t.setDaemon(true);
+        return t;
+    });
+
+    @PreDestroy
+    void shutdownAsyncTriggerExecutor() {
+        asyncTriggerExecutor.shutdownNow();
+    }
 
     @Override
     public Page<KbSyncLog> logs(Long spaceId, String batchNo, int pageNum, int pageSize) {
@@ -180,12 +195,35 @@ public class KbSyncServiceImpl implements KbSyncService {
 
     @Override
     public SyncTriggerVo trigger(Long spaceId, String spaceCode) {
+        return trigger(spaceId, spaceCode, false);
+    }
+
+    @Override
+    public SyncTriggerVo trigger(Long spaceId, String spaceCode, boolean async) {
         if (!syncProperties.isEnabled()) {
             throw new BaseException("同步 API 已禁用（kb.sync.enabled=false）");
         }
         KbSpace space = resolveSpace(spaceId, spaceCode);
         kbAclService.assertCanSyncTrigger(space.getId());
-        return executeSync(space, SyncTriggerSource.MANUAL);
+        if (!async) {
+            return executeSync(space, SyncTriggerSource.MANUAL);
+        }
+        if (isSyncRunning(space.getSpaceCode())) {
+            throw new BaseException("该空间正在同步中，请稍后再试（" + space.getSpaceCode() + "）");
+        }
+        asyncTriggerExecutor.execute(() -> {
+            try {
+                executeSync(space, SyncTriggerSource.MANUAL);
+            } catch (Exception e) {
+                log.error("[sync] async trigger failed space={}", space.getSpaceCode(), e);
+            }
+        });
+        SyncTriggerVo vo = new SyncTriggerVo();
+        vo.setSpaceId(space.getId());
+        vo.setSpaceCode(space.getSpaceCode());
+        vo.setAsyncSubmitted(true);
+        vo.setMessage("已提交后台同步，请轮询 GET /kb/sync/status");
+        return vo;
     }
 
     @Override

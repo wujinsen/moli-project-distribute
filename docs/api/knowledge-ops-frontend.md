@@ -16,7 +16,7 @@
 | **P0** | Wiki 治理全链路 | `knowledge/wiki-govern/index` | [wiki-govern-frontend.md](wiki-govern-frontend.md) | ✅ | 🔵 **W2/W4/W5/W7** |
 | **P1** | 平台 LLM 设置 | `system/kb-llm` | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | ✅ T19 | 🔵 **T19d** |
 | **P1** | Ingest 三 Tab | `knowledge/ingest/index` | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | ✅ T20a/b/e | 🔵 **T20f** |
-| **P2** | 运维 Dashboard | `knowledge/ops/dashboard` | **本文 §8** | 📋 KBOPS-9 | 📋 规划 |
+| **P2** | 运维 Dashboard | `knowledge/ops/dashboard` | **本文 §8** | ✅ KBOPS-9 | 📋 规划 |
 
 **建议迭代顺序**：**O1–O4（Sync 可见）→ W2/W4/W5/W7（治理闭环）→ T19d → T20f Tab1/3 → Dashboard**
 
@@ -60,7 +60,7 @@ KnowledgeLintView.vue
 | ID | 功能 | API | UI |
 |----|------|-----|-----|
 | **O1** | 当前 Sync 状态 | `GET /kb/sync/status?spaceId=` | 展示 `running` / `lastBatchNo` / `lastStatus` / `lastMessage` |
-| **O2** | 触发 Sync | `POST /kb/sync/trigger?spaceId=` | 按钮；running 时 disabled；需 perm `kb:sync:trigger` 或空间 admin |
+| **O2** | 触发 Sync | `POST /kb/sync/trigger?spaceId=&async=true` | 按钮；提交后轮询 O1 `running`；running 时 disabled |
 | **O3** | 最近日志 | `GET /kb/sync/logs?spaceId=&pageSize=10` | 表格：batchNo、status、createTime、message 摘要 |
 | **O4** | 失败态 | 同上 | `status=fail` 行 **danger** 色 + 展开 message；Toast「Sync 失败，请查看日志」 |
 

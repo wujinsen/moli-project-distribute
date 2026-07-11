@@ -51,9 +51,10 @@ public class KbSyncController {
     }
 
     @PostMapping("/trigger")
-    @ApiOperation("触发 sync_to_db.py 写库")
+    @ApiOperation("触发 sync_to_db.py 写库；async=true 时后台执行并轮询 status")
     public MoliResult<SyncTriggerVo> trigger(@RequestParam(required = false) Long spaceId,
-                                             @RequestParam(required = false) String spaceCode) {
-        return MoliResult.success(kbSyncService.trigger(spaceId, spaceCode));
+                                             @RequestParam(required = false) String spaceCode,
+                                             @RequestParam(required = false, defaultValue = "false") boolean async) {
+        return MoliResult.success(kbSyncService.trigger(spaceId, spaceCode, async));
     }
 }

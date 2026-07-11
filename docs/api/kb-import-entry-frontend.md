@@ -88,7 +88,7 @@ Tab2 `IngestRawPanel` 收到后：刷新 `GET /kb/ingest/raw-tree`，展开 pref
 |---|-----|------|------|------|
 | 1 | Tab1 | POST | `/kb/ingest/raw-upload` | ✅ T20a |
 | 2 | Tab1 | GET | `/kb/ingest/raw-tree` | ✅ 已有 |
-| 3 | Tab1 | GET | `/kb/ingest/raw-prefixes` | 🔵 P1 可选 |
+| 3 | Tab1 | GET | `/kb/ingest/raw-prefixes` | ✅ T20g |
 | 4 | Tab3 | POST | `/kb/wiki/page/import` | ✅ T20b |
 | 5 | Tab3 | GET | `/kb/category/tree?spaceId=` | ✅ 已有 |
 | 6 | Tab3 | POST | `/kb/wiki/page/lint-preview` | ✅ 已有（可选） |
@@ -105,7 +105,7 @@ P1（可选增强 UI）：`POST /kb/ingest/raw-upload/zip` ✅、`POST /kb/wiki/
 | 元素 | 行为 |
 |------|------|
 | 空间 | 与 Tab2 共享；无 editor 时整 Tab disabled |
-| prefix | 输入 + 可选下拉（P1：`raw-prefixes`）；例 `test-walkthrough`、`school/fe` |
+| prefix | 输入 + 下拉（`GET raw-prefixes`）；例 `test-walkthrough`；二级如 `school/fe` 可手输或 raw-tree 展开 |
 | 文件 | drag-drop / 多选；仅 `.md` `.markdown` `.txt` |
 | 冲突策略 | 单选：`SKIP`（默认）/ `OVERWRITE` / `RENAME` |
 | 上传 | 调用 `uploadRaw` → 结果表（uploaded / skipped / renamed） |
