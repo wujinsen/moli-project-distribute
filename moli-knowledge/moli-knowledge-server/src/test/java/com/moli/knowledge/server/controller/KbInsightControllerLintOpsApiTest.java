@@ -65,4 +65,18 @@ public class KbInsightControllerLintOpsApiTest {
         ControllerTestSupport.assertSuccess(result);
         Assert.assertEquals(Integer.valueOf(2), result.getData());
     }
+
+    @Test
+    public void PUT_kb_lint_issue_assign() {
+        MoliResult<Boolean> result = controller.assignIssue(1L, 99L, 1);
+        ControllerTestSupport.assertSuccess(result);
+        verify(kbInsightService).assignIssue(1L, 99L, 1);
+    }
+
+    @Test
+    public void PUT_kb_lint_issue_status() {
+        MoliResult<Boolean> result = controller.updateIssue(1L, 2);
+        ControllerTestSupport.assertSuccess(result);
+        verify(kbInsightService).updateIssueStatus(1L, 2);
+    }
 }

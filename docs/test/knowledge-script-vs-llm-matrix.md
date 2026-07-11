@@ -50,15 +50,18 @@
 
 ---
 
-## 4. 健康体检（DB 快照）
+## 4. 健康体检（DB 快照 · KBOPS-8/10）
 
 | 步骤 | 能力 | 脚本 | LLM |
 |------|------|:----:|:---:|
 | 重新体检 | `GET /kb/lint` | ✅ | |
-| 扫描并落库 | 写 `kb_lint_issue` | ✅ | |
+| 扫描并落库 | 写 `kb_lint_issue`（12 类 + assignee/priority） | ✅ | |
+| 批量工单 | `batch-status` / `batch-assign` | ✅ | |
+| 类型对照 | `GET /kb/lint/issue-types`（Web ↔ lint.py） | ✅ | |
 | Wiki 同步 | `POST /kb/sync/trigger` | ✅ | |
 
-与 **Wiki 治理** 分工：治理 = 磁盘真值；健康体检 = Sync 后 DB。
+与 **Wiki 治理** 分工：治理 = **磁盘真值**（`lint-space`）；健康体检 = **Sync 后 DB 快照**。  
+验收：[knowledge-lint-ops-acceptance.md](knowledge-lint-ops-acceptance.md)
 
 ---
 
@@ -79,6 +82,7 @@
 
 | 文档 | 内容 |
 |------|------|
+| [knowledge-lint-ops-acceptance.md](knowledge-lint-ops-acceptance.md) | KBOPS-8/10 健康体检工单验收 |
 | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | 治理 UI + merge-hint |
 | [knowledge-ingest-acceptance.md](knowledge-ingest-acceptance.md) | Ingest 验收（含模板入库 §1） |
 | [knowledge-wiki-lint-space.md](knowledge-wiki-lint-space.md) | lint-space 验收 |

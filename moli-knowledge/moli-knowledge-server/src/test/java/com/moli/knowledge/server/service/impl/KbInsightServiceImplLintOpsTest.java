@@ -2,6 +2,7 @@ package com.moli.knowledge.server.service.impl;
 
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.service.KbAclService;
@@ -94,6 +95,38 @@ public class KbInsightServiceImplLintOpsTest {
         ArgumentCaptor<KbLintIssue> captor = ArgumentCaptor.forClass(KbLintIssue.class);
         verify(kbLintIssueMapper).updateById(captor.capture());
         Assert.assertEquals(Integer.valueOf(1), captor.getValue().getPriority());
+    }
+
+    @Test
+    public void batchUpdateIssueStatus_updatesStatus() {
+        KbLintIssue issue = openIssue();
+        when(kbLintIssueMapper.selectById(ISSUE_ID)).thenReturn(issue);
+
+        LintIssueBatchStatusRequest request = new LintIssueBatchStatusRequest();
+        request.setIds(Collections.singletonList(ISSUE_ID));
+        request.setStatus(2);
+
+        int updated = service.batchUpdateIssueStatus(request);
+
+        Assert.assertEquals(1, updated);
+        ArgumentCaptor<KbLintIssue> captor = ArgumentCaptor.forClass(KbLintIssue.class);
+        verify(kbLintIssueMapper).updateById(captor.capture());
+        Assert.assertEquals(Integer.valueOf(2), captor.getValue().getStatus());
+        verify(kbAclService).assertCanEdit(SPACE_ID);
+    }
+
+    @Test(expected = BaseException.class)
+    public void batchUpdateIssueStatus_rejectsNullStatus() {
+        LintIssueBatchStatusRequest request = new LintIssueBatchStatusRequest();
+        request.setIds(Collections.singletonList(ISSUE_ID));
+        service.batchUpdateIssueStatus(request);
+    }
+
+    @Test(expected = BaseException.class)
+    public void batchUpdateIssueStatus_rejectsEmptyIds() {
+        LintIssueBatchStatusRequest request = new LintIssueBatchStatusRequest();
+        request.setStatus(1);
+        service.batchUpdateIssueStatus(request);
     }
 
     private static KbLintIssue openIssue() {

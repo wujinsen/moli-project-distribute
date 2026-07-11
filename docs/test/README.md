@@ -10,6 +10,7 @@
 | [order-seckill.md](order-seckill.md) | 秒杀手测 |
 | [user-center.md](user-center.md) | 用户中心 ApiTest |
 | **[operation-deploy-center-acceptance.md](operation-deploy-center-acceptance.md)** | **运维部署中心 SVR-13~20 验收** |
+| **[operation-port-matrix-acceptance.md](operation-port-matrix-acceptance.md)** | **端口矩阵 SVR-21 验收** |
 
 ## 知识库
 
@@ -18,6 +19,7 @@
 | [knowledge-ingest-acceptance.md](knowledge-ingest-acceptance.md) | Ingest 分场景验收 |
 | **[knowledge-e2e-regression.md](knowledge-e2e-regression.md)** | **知识库深度回归（CI + 手测）** |
 | [knowledge-wiki-lint-space.md](knowledge-wiki-lint-space.md) | lint-space 单测 |
+| **[knowledge-lint-ops-acceptance.md](knowledge-lint-ops-acceptance.md)** | **KBOPS-8/10 健康体检工单验收 + 32 单测** |
 | [knowledge-script-vs-llm-matrix.md](knowledge-script-vs-llm-matrix.md) | 脚本 vs LLM |
 | **[knowledge-t22-image-remediation.md](knowledge-t22-image-remediation.md)** | **T22 wujinsen 插图回迁验收 + 自动化测试** |
 

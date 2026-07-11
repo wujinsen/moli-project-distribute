@@ -110,9 +110,9 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 | ID | 需求 | 说明 |
 |----|------|------|
-| **KBOPS-8** | 体检工单增强 | issue_type 扩展、assignee、批量、定时 scan |
-| **KBOPS-9** | 运维 Dashboard | Sync 趋势、Lint 工单、LLM 调用率 |
-| **KBOPS-10** | Web 体检对齐 lint.py | 或文档明确「文件 vs DB」分工 |
+| **KBOPS-8** | 体检工单增强 | issue_type 扩展、assignee、批量、定时 scan | ✅ 后端 · 验收见 [knowledge-lint-ops-acceptance.md](../test/knowledge-lint-ops-acceptance.md) |
+| **KBOPS-9** | 运维 Dashboard | Sync 趋势、Lint 工单、LLM 调用率 | ✅ 后端 |
+| **KBOPS-10** | Web 体检对齐 lint.py | `issue-types` 对照 + DB/文件分工文档 | ✅ |
 
 ### 工程补充（与 KBOPS 并行，非菜单功能）
 
