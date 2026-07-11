@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class OperationProjectVo {
@@ -15,6 +16,8 @@ public class OperationProjectVo {
     private Date updateTime;
 
     private Long serverId;
+    /** N:N 关联的服务器 ID（含主 serverId） */
+    private List<Long> serverIds;
     private String serverIp;
     private String innerIp;
     private String url;

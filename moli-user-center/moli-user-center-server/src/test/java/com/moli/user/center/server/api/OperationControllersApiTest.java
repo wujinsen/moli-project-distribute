@@ -8,10 +8,10 @@ import com.moli.user.center.common.domain.dto.operation.OperationServerSaveReque
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
+import com.moli.user.center.common.domain.vo.OperationComponentLinksVo;
 import com.moli.user.center.common.domain.vo.OperationComponentVo;
 import com.moli.user.center.common.domain.vo.OperationPlatformVo;
-import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
-import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
+import com.moli.user.center.common.domain.vo.OperationProjectLinksVo;
 import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.user.center.common.domain.vo.OperationServerLinksVo;
 import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
@@ -31,11 +31,15 @@ import com.moli.user.center.server.operation.service.OperationDeployPresetServic
 import com.moli.user.center.server.operation.service.OperationDeployService;
 import com.moli.user.center.server.operation.service.OperationHealthProbeService;
 import com.moli.user.center.server.operation.service.OperationPlatformService;
+import com.moli.user.center.server.operation.service.OperationComponentLinkService;
+import com.moli.user.center.server.operation.service.OperationComponentService;
+import com.moli.user.center.server.operation.service.OperationProjectLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
+import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
+import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
 import com.moli.user.center.server.operation.service.OperationRemoteDeployService;
 import com.moli.user.center.server.operation.service.OperationServerLinkService;
 import com.moli.user.center.server.operation.service.OperationAuditService;
-import com.moli.user.center.server.operation.service.OperationComponentService;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import com.moli.user.center.server.operation.service.OperationStatsService;
 import com.moli.user.center.server.operation.support.OperationDeployLocalPolicy;
@@ -93,6 +97,10 @@ public class OperationControllersApiTest extends AbstractApiTest {
     private OperationDeployLocalPolicy deployLocalPolicy;
     @Mock
     private OperationProjectService operationProjectService;
+    @Mock
+    private OperationProjectLinkService operationProjectLinkService;
+    @Mock
+    private OperationComponentLinkService operationComponentLinkService;
     @Mock
     private OperationHealthProbeService operationHealthProbeService;
 
@@ -249,6 +257,18 @@ public class OperationControllersApiTest extends AbstractApiTest {
     }
 
     @Test
+    public void GET_operation_project_links() {
+        when(operationProjectLinkService.getLinks(401L)).thenReturn(new OperationProjectLinksVo());
+        ControllerTestSupport.assertSuccess(projectController.links(401L));
+    }
+
+    @Test
+    public void PUT_operation_project_links() {
+        doNothing().when(operationProjectLinkService).saveLinks(any(), any());
+        ControllerTestSupport.assertSuccess(projectController.saveLinks(401L, new OperationProjectLinksVo()));
+    }
+
+    @Test
     public void GET_operation_component_list() {
         when(operationComponentService.list(any())).thenReturn(new PageRes<>());
         OperationComponentDeployInfo q = new OperationComponentDeployInfo();
@@ -298,6 +318,18 @@ public class OperationControllersApiTest extends AbstractApiTest {
     public void DELETE_operation_component_ids() {
         doNothing().when(operationComponentService).deleteByIds(any());
         ControllerTestSupport.assertSuccess(componentController.remove(new Long[]{1L}));
+    }
+
+    @Test
+    public void GET_operation_component_links() {
+        when(operationComponentLinkService.getLinks(306L)).thenReturn(new OperationComponentLinksVo());
+        ControllerTestSupport.assertSuccess(componentController.links(306L));
+    }
+
+    @Test
+    public void PUT_operation_component_links() {
+        doNothing().when(operationComponentLinkService).saveLinks(any(), any());
+        ControllerTestSupport.assertSuccess(componentController.saveLinks(306L, new OperationComponentLinksVo()));
     }
 
     @Test

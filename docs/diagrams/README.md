@@ -33,6 +33,7 @@
 | [`moli-deploy-topology.drawio`](moli-deploy-topology.drawio) | **本地部署拓扑**：基础设施 + 启动顺序 |
 | [`moli-operation-refactor.drawio`](moli-operation-refactor.drawio) | **运营管理改造目标**：台账四模块 + 部署中心 + operation_task + SSH 状态同步 |
 | [`moli-operation-port-matrix.drawio`](moli-operation-port-matrix.drawio) | **端口矩阵 SVR-21**：DB 表 + Provider 缓存 + 审计/CRUD 双通道 |
+| [`moli-operation-server-links.drawio`](moli-operation-server-links.drawio) | **项目/组件多服务器 SVR-22**：主 `server_id` + N:N 关联表 + API |
 
 **三空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
 

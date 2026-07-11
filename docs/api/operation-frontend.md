@@ -260,6 +260,43 @@ export type OperationServerLinks = {
 | **S6-2** | `PUT` 为**全量替换**；保存成功后刷新拓扑 |
 | **S6-3** | 无效 ID 后端返回业务错误（项目/组件不存在） |
 
+### 5.5 项目/组件 · 多选服务器（S6-b · SVR-22）
+
+设计文档：[operation-server-links.md](../design/operation-server-links.md)
+
+```http
+GET /operation/project/{id}/links
+PUT /operation/project/{id}/links
+GET /operation/component/{id}/links
+PUT /operation/component/{id}/links
+```
+
+**CRUD body 扩展**（`POST`/`PUT` 项目或组件）：
+
+```typescript
+export type OperationProjectSave = {
+  serverId?: number          // 主服务器（部署/探活默认目标）
+  serverIds?: number[]       // N:N 全量；含 serverId；保存时同步关联表
+  projectName: string
+  // ...
+}
+export type OperationComponentSave = {
+  serverId?: number
+  serverIds?: number[]
+  componentName: string
+  // ...
+}
+```
+
+**列表/详情 VO** 回填 `serverIds`；N:N 为空时回退为 `[serverId]`。
+
+| ID | UI |
+|----|-----|
+| **S6-b-1** | 项目编辑：「关联服务器」改 **多选**，绑定 `serverIds` |
+| **S6-b-2** | 组件编辑：同上 |
+| **S6-b-3** | 列表可选展示关联台数 |
+| **S6-b-4** | 部署启停仍用主 `serverId`（`row.serverId`） |
+
 ---
 
 ## 6. P2 · 端口校验 / 部署状态 / 驾驶舱（S3 / S4 / S5）
@@ -652,7 +689,7 @@ ops:
 
 CVM 上 `ubuntu` 用户需能 `sudo nginx -s reload`（见 `deploy/腾讯云上线流程.md` §14）。
 
-手测用例：[`docs/test/operation-deploy-center-acceptance.md`](../../test/operation-deploy-center-acceptance.md)。
+手测用例：[`docs/test/operation-deploy-center-acceptance.md`](../../test/operation-deploy-center-acceptance.md) · 端口矩阵：[`operation-port-matrix-acceptance.md`](../../test/operation-port-matrix-acceptance.md)。
 
 ---
 

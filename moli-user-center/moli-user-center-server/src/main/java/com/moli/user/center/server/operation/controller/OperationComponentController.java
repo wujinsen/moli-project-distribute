@@ -6,9 +6,11 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.dto.operation.OperationComponentSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
+import com.moli.user.center.common.domain.vo.OperationComponentLinksVo;
 import com.moli.user.center.common.domain.vo.OperationComponentVo;
 import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.server.operation.service.OperationComponentLinkService;
 import com.moli.user.center.server.operation.service.OperationComponentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,6 +30,8 @@ public class OperationComponentController {
 
     @Resource
     private OperationComponentService operationComponentService;
+    @Resource
+    private OperationComponentLinkService operationComponentLinkService;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_COMPONENT_LIST)
@@ -83,6 +87,22 @@ public class OperationComponentController {
     @ApiOperation(value = "删除组件", notes = "删除组件")
     public MoliResult<Boolean> remove(@PathVariable Long[] ids) {
         operationComponentService.deleteByIds(ids);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @GetMapping(value = "/{id}/links")
+    @RequiresPermissions(PermissionConstants.OPERATION_COMPONENT_LIST)
+    @ApiOperation(value = "组件关联服务器", notes = "查询组件关联的服务器 ID 列表")
+    public MoliResult<OperationComponentLinksVo> links(@PathVariable Long id) {
+        return MoliResult.success(operationComponentLinkService.getLinks(id));
+    }
+
+    @PutMapping(value = "/{id}/links")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_COMPONENT_EDIT, PermissionConstants.OPERATION_COMPONENT_LIST}, logical = Logical.AND)
+    @MoliLog(title = "组件关联服务器", businessType = BusinessTypeEnum.UPDATE)
+    @ApiOperation(value = "保存组件关联服务器", notes = "全量替换 operation_server_component")
+    public MoliResult<Boolean> saveLinks(@PathVariable Long id, @RequestBody OperationComponentLinksVo links) {
+        operationComponentLinkService.saveLinks(id, links);
         return MoliResult.success(Boolean.TRUE);
     }
 }

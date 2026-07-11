@@ -8,6 +8,8 @@ import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.user.center.server.operation.audit.OperationPortMatrixPortCheck;
 import com.moli.user.center.server.operation.audit.OperationPortMatrixProvider;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
+import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
+import com.moli.user.center.server.operation.service.OperationProjectLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
 import com.moli.user.center.server.operation.support.OperationCrudSupport;
 import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class OperationProjectServiceImpl implements OperationProjectService {
@@ -33,6 +36,10 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     private OperationServerCascadeSupport serverCascadeSupport;
     @Resource
     private OperationPortMatrixProvider portMatrixProvider;
+    @Resource
+    private OperationServerLinkMapper operationServerLinkMapper;
+    @Resource
+    private OperationProjectLinkService operationProjectLinkService;
 
     @Override
     public PageRes<OperationProjectVo> list(OperationProjectDeployInfo query) {
@@ -58,18 +65,22 @@ public class OperationProjectServiceImpl implements OperationProjectService {
 
     @Override
     public void create(OperationProjectSaveRequest request) {
+        applyPrimaryServerFromList(request);
         OperationProjectDeployInfo row = OperationSaveRequestMapper.toEntity(request);
         serverBindingSupport.bindProject(row);
         operationProjectDeployInfoMapper.insert(row);
+        operationProjectLinkService.syncLinks(row.getId(), request.getServerIds(), row.getServerId());
     }
 
     @Override
     public void update(OperationProjectSaveRequest request) {
         crudSupport.assertUpdateId(request.getId());
         requireRow(request.getId());
+        applyPrimaryServerFromList(request);
         OperationProjectDeployInfo row = OperationSaveRequestMapper.toEntity(request);
         serverBindingSupport.bindProject(row);
         operationProjectDeployInfoMapper.updateById(row);
+        operationProjectLinkService.syncLinks(row.getId(), request.getServerIds(), row.getServerId());
     }
 
     @Override
@@ -92,11 +103,32 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     private OperationProjectVo toVo(OperationProjectDeployInfo row) {
         OperationProjectVo vo = new OperationProjectVo();
         BeanUtils.copyProperties(row, vo);
+        List<Long> serverIds = operationServerLinkMapper.selectServerIdsByProjectId(row.getId());
+        if (serverIds == null || serverIds.isEmpty()) {
+            if (row.getServerId() != null) {
+                serverIds = new java.util.ArrayList<>();
+                serverIds.add(row.getServerId());
+            }
+        } else if (row.getServerId() != null && !serverIds.contains(row.getServerId())) {
+            serverIds.add(0, row.getServerId());
+        }
+        vo.setServerIds(serverIds);
         OperationPortMatrixPortCheck portCheck = portMatrixProvider.check(row.getProjectName(), row.getPort());
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
         vo.setDeployRunning(row.getDeployRunning());
         vo.setLastDeployCheckTime(row.getLastDeployCheckTime());
         return vo;
+    }
+
+    private void applyPrimaryServerFromList(OperationProjectSaveRequest request) {
+        if (request == null) {
+            return;
+        }
+        if (request.getServerIds() != null && !request.getServerIds().isEmpty()) {
+            if (request.getServerId() == null) {
+                request.setServerId(request.getServerIds().get(0));
+            }
+        }
     }
 }

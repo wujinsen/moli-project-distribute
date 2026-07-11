@@ -8,6 +8,7 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @Data
 public class OperationComponentSaveRequest {
@@ -15,8 +16,11 @@ public class OperationComponentSaveRequest {
     @ApiModelProperty("主键（更新时必填）")
     private Long id;
 
-    @ApiModelProperty("服务器 ID（推荐；与 serverIp 二选一）")
+    @ApiModelProperty("主服务器 ID（推荐为 serverIds 首项；与 serverIp 二选一）")
     private Long serverId;
+
+    @ApiModelProperty("关联服务器 ID 列表（N:N；保存时全量替换 operation_server_component）")
+    private List<Long> serverIds;
 
     @Size(max = 64, message = "serverIp 过长")
     private String serverIp;
@@ -46,8 +50,10 @@ public class OperationComponentSaveRequest {
     @Size(max = 512, message = "remark 过长")
     private String remark;
 
-    @AssertTrue(message = "serverId 与 serverIp 至少填一项")
+    @AssertTrue(message = "serverId、serverIds 与 serverIp 至少填一项")
     public boolean isServerRefPresent() {
-        return serverId != null || StringUtils.isNotBlank(serverIp);
+        return serverId != null
+                || (serverIds != null && !serverIds.isEmpty())
+                || StringUtils.isNotBlank(serverIp);
     }
 }

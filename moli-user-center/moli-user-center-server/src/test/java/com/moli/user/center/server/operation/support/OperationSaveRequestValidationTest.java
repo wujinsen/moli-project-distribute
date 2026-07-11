@@ -77,6 +77,22 @@ public class OperationSaveRequestValidationTest {
     }
 
     @Test
+    public void project_accepts_serverIds_only() {
+        OperationProjectSaveRequest req = new OperationProjectSaveRequest();
+        req.setProjectName("moli-server");
+        req.setServerIds(java.util.Arrays.asList(201L, 202L));
+        assertTrue(validator.validate(req).isEmpty());
+    }
+
+    @Test
+    public void component_accepts_serverIds_only() {
+        OperationComponentSaveRequest req = new OperationComponentSaveRequest();
+        req.setComponentName("Redis");
+        req.setServerIds(java.util.Arrays.asList(201L, 206L));
+        assertTrue(validator.validate(req).isEmpty());
+    }
+
+    @Test
     public void deployTask_requires_valid_service_key_and_action() {
         OperationDeployTaskRequest req = new OperationDeployTaskRequest();
         req.setAction("restart");

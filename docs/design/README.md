@@ -25,6 +25,7 @@
 | **运维规划（两条独立线）** | [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md)（服务器/基础设施运维·user-center）· [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（知识库内容管道运维·moli-knowledge） |
 | **运营管理 + 部署中心改造** | [`operation-module-refactor-plan.md`](operation-module-refactor-plan.md) · 图 [`moli-operation-refactor.drawio`](../diagrams/moli-operation-refactor.drawio) |
 | **端口矩阵可配置化（SVR-21）** | [`operation-port-matrix-config.md`](operation-port-matrix-config.md) · API [`operation-port-matrix-api.md`](../api/operation-port-matrix-api.md) · 图 [`moli-operation-port-matrix.drawio`](../diagrams/moli-operation-port-matrix.drawio) |
+| **项目/组件多服务器关联（SVR-22）** | [`operation-server-links.md`](operation-server-links.md) · 图 [`moli-operation-server-links.drawio`](../diagrams/moli-operation-server-links.drawio) |
 | 方案长文、踩坑、最佳实践 | `articles/` |
 | 微服务边界一页纸 | `services/` |
 

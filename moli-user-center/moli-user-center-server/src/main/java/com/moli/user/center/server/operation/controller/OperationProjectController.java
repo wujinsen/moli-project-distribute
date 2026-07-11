@@ -6,8 +6,10 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
+import com.moli.user.center.common.domain.vo.OperationProjectLinksVo;
 import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.server.operation.service.OperationProjectLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,6 +29,8 @@ public class OperationProjectController {
 
     @Resource
     private OperationProjectService operationProjectService;
+    @Resource
+    private OperationProjectLinkService operationProjectLinkService;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
@@ -66,6 +70,22 @@ public class OperationProjectController {
     @ApiOperation(value = "删除项目", notes = "删除项目")
     public MoliResult<Boolean> remove(@PathVariable Long[] ids) {
         operationProjectService.deleteByIds(ids);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @GetMapping(value = "/{id}/links")
+    @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
+    @ApiOperation(value = "项目关联服务器", notes = "查询项目关联的服务器 ID 列表")
+    public MoliResult<OperationProjectLinksVo> links(@PathVariable Long id) {
+        return MoliResult.success(operationProjectLinkService.getLinks(id));
+    }
+
+    @PutMapping(value = "/{id}/links")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PROJECT_EDIT, PermissionConstants.OPERATION_PROJECT_LIST}, logical = Logical.AND)
+    @MoliLog(title = "项目关联服务器", businessType = BusinessTypeEnum.UPDATE)
+    @ApiOperation(value = "保存项目关联服务器", notes = "全量替换 operation_server_project")
+    public MoliResult<Boolean> saveLinks(@PathVariable Long id, @RequestBody OperationProjectLinksVo links) {
+        operationProjectLinkService.saveLinks(id, links);
         return MoliResult.success(Boolean.TRUE);
     }
 }

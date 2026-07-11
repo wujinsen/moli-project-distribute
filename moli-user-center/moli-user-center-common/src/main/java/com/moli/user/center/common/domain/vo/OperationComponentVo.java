@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class OperationComponentVo {
@@ -16,8 +17,10 @@ public class OperationComponentVo {
 
     @ApiModelProperty("组件名")
     private String componentName;
-    @ApiModelProperty("服务器ID")
+    @ApiModelProperty("主服务器 ID")
     private Long serverId;
+    /** N:N 关联的服务器 ID（含主 serverId） */
+    private List<Long> serverIds;
     @ApiModelProperty("服务器ip")
     private String serverIp;
     @ApiModelProperty("账户名")

@@ -170,23 +170,27 @@
 - `PUT /operation/server/{id}/ssh`：`operation:ssh:manage`；保存 SSH 凭据 + `uploadAllowedRoots`（只写不读）
 - `POST /operation/server/{id}/ssh/test`：`operation:ssh:manage`；测试 SSH，返回 `OperationSshTestVo`
 
-### 项目管理 `OperationProjectController`（前缀 `/operation/project`，5个）
+### 项目管理 `OperationProjectController`（前缀 `/operation/project`，7个）
 
-- `GET /operation/project/list`：`operation:project:list`；返回 `OperationProjectVo`（含 `expectedPort` / `portMatchStatus` / `deployRunning`）
-- `POST /operation/project`：`operation:project:add` + `list`；保存时按 `serverIp` 自动回填 `serverId`
+- `GET /operation/project/list`：`operation:project:list`；返回 `OperationProjectVo`（含 `serverIds` / `expectedPort` / `portMatchStatus` / `deployRunning`）
+- `POST /operation/project`：`operation:project:add` + `list`；body 可传 `serverIds[]`，同步 `operation_server_project`
 - `PUT /operation/project`：`operation:project:edit` + `list`
-- `GET /operation/project/{id}`：`operation:project:list`；返回 VO
+- `GET /operation/project/{id}`：`operation:project:list`；返回 VO（含 `serverIds`）
 - `DELETE /operation/project/{ids}`：`operation:project:remove` + `list`
+- `GET /operation/project/{id}/links`：`operation:project:list`；返回 `{ projectId, serverIds }`
+- `PUT /operation/project/{id}/links`：`operation:project:edit` + `list`；全量替换 N:N
 
-### 组件管理 `OperationComponentController`（前缀 `/operation/component`，7个）
+### 组件管理 `OperationComponentController`（前缀 `/operation/component`，9个）
 
-- `GET /operation/component/list`：`operation:component:list`；返回 `OperationComponentVo`（含 `status` / `lastCheckTime`）
-- `POST /operation/component`：`operation:component:add` + `list`
+- `GET /operation/component/list`：`operation:component:list`；返回 `OperationComponentVo`（含 `serverIds` / `status` / `lastCheckTime`）
+- `POST /operation/component`：`operation:component:add` + `list`；body 可传 `serverIds[]`
 - `PUT /operation/component`：`operation:component:edit` + `list`
-- `GET /operation/component/{id}`：`operation:component:list`；返回 VO
+- `GET /operation/component/{id}`：`operation:component:list`；返回 VO（含 `serverIds`）
 - `GET /operation/component/{id}/secret`：`operation:secret:view`
 - `DELETE /operation/component/{ids}`：`operation:component:remove` + `list`
 - `POST /operation/component/{id}/check`：`operation:component:list`；TCP 探活，更新并返回 `OperationComponentVo`
+- `GET /operation/component/{id}/links`：`operation:component:list`；返回 `{ componentId, serverIds }`
+- `PUT /operation/component/{id}/links`：`operation:component:edit` + `list`；全量替换 N:N
 
 > **前端对接专稿**：[operation-frontend.md](operation-frontend.md)（枚举、TypeScript、验收 S0–S9）  
 > **部署中心 HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)（SVR-13~20）

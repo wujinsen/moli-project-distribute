@@ -11,6 +11,8 @@ import com.moli.user.center.server.operation.audit.OperationPortMatrixProvider;
 import com.moli.user.center.server.operation.health.OperationHealthStatus;
 import com.moli.user.center.server.operation.health.OperationTcpProbe;
 import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
+import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
+import com.moli.user.center.server.operation.service.OperationComponentLinkService;
 import com.moli.user.center.server.operation.service.OperationComponentService;
 import com.moli.user.center.server.operation.support.OperationCrudSupport;
 import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class OperationComponentServiceImpl implements OperationComponentService {
@@ -40,6 +43,10 @@ public class OperationComponentServiceImpl implements OperationComponentService 
     private OperationServerCascadeSupport serverCascadeSupport;
     @Resource
     private OperationPortMatrixProvider portMatrixProvider;
+    @Resource
+    private OperationServerLinkMapper operationServerLinkMapper;
+    @Resource
+    private OperationComponentLinkService operationComponentLinkService;
 
     @Override
     public PageRes<OperationComponentVo> list(OperationComponentDeployInfo query) {
@@ -68,6 +75,7 @@ public class OperationComponentServiceImpl implements OperationComponentService 
 
     @Override
     public void create(OperationComponentSaveRequest request) {
+        applyPrimaryServerFromList(request);
         OperationComponentDeployInfo row = OperationSaveRequestMapper.toEntity(request);
         serverBindingSupport.bindComponent(row);
         row.setPassword(secretCrudSupport.encryptOnSave(request.getPassword()));
@@ -75,18 +83,21 @@ public class OperationComponentServiceImpl implements OperationComponentService 
             row.setStatus(OperationHealthStatus.UNKNOWN);
         }
         operationComponentDeployInfoMapper.insert(row);
+        operationComponentLinkService.syncLinks(row.getId(), request.getServerIds(), row.getServerId());
     }
 
     @Override
     public void update(OperationComponentSaveRequest request) {
         crudSupport.assertUpdateId(request.getId());
         OperationComponentDeployInfo existing = requireRow(request.getId());
+        applyPrimaryServerFromList(request);
         OperationComponentDeployInfo row = OperationSaveRequestMapper.toEntity(request);
         serverBindingSupport.bindComponent(row);
         row.setPassword(secretCrudSupport.mergeOnUpdate(request.getPassword(), existing.getPassword()));
         row.setStatus(existing.getStatus());
         row.setLastCheckTime(existing.getLastCheckTime());
         operationComponentDeployInfoMapper.updateById(row);
+        operationComponentLinkService.syncLinks(row.getId(), request.getServerIds(), row.getServerId());
     }
 
     @Override
@@ -123,9 +134,30 @@ public class OperationComponentServiceImpl implements OperationComponentService 
         vo.setPasswordMask(secretCrudSupport.passwordMask(row.getPassword()));
         vo.setStatus(row.getStatus());
         vo.setLastCheckTime(row.getLastCheckTime());
+        List<Long> serverIds = operationServerLinkMapper.selectServerIdsByComponentId(row.getId());
+        if (serverIds == null || serverIds.isEmpty()) {
+            if (row.getServerId() != null) {
+                serverIds = new java.util.ArrayList<>();
+                serverIds.add(row.getServerId());
+            }
+        } else if (row.getServerId() != null && !serverIds.contains(row.getServerId())) {
+            serverIds.add(0, row.getServerId());
+        }
+        vo.setServerIds(serverIds);
         OperationPortMatrixPortCheck portCheck = portMatrixProvider.check(row.getComponentName(), row.getPort());
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
         return vo;
+    }
+
+    private void applyPrimaryServerFromList(OperationComponentSaveRequest request) {
+        if (request == null) {
+            return;
+        }
+        if (request.getServerIds() != null && !request.getServerIds().isEmpty()) {
+            if (request.getServerId() == null) {
+                request.setServerId(request.getServerIds().get(0));
+            }
+        }
     }
 }

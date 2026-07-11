@@ -1,0 +1,164 @@
+# 项目/组件 · 多服务器关联（SVR-22）
+
+> 更新：2026-07-11 · 状态：**后端落地中**（项目 ✅ · 组件进行中）  
+> 归属：`moli-user-center` · `operation_server_project` / `operation_server_component`  
+> 前端任务：**S6-b**（项目/组件编辑页多选服务器）· 图 [`moli-operation-server-links.drawio`](../diagrams/moli-operation-server-links.drawio)
+
+---
+
+## 1. 背景
+
+运维台账中，同一逻辑项目（如 `moli-server`）或组件（如 `Redis`）常部署在**多台服务器**（dev / test / pre / pro）。  
+早期 UI 仅支持单选「关联服务器」，与业务期望不符。
+
+后端已有 N:N 关联表与**从服务器侧**维护的 API（SVR-11），但项目/组件 CRUD 未暴露 `serverIds`，列表 VO 也未回填多选结果。
+
+---
+
+## 2. 数据模型（双轨）
+
+![项目/组件多服务器关联](../diagrams/png/moli-operation-server-links.png)
+
+[源文件：`moli-operation-server-links.drawio`](../diagrams/moli-operation-server-links.drawio)
+
+| 层 | 表 / 字段 | 含义 |
+|----|-----------|------|
+| **主表（部署实例）** | `operation_project_deploy_info` / `operation_component_deploy_info` | 一行 = 一条部署台账 |
+| **主服务器** | `server_id` + `server_ip` | **主**关联，用于部署中心 `projectId`/`serverId`、探活、端口矩阵、进程状态同步 |
+| **N:N 关联** | `operation_server_project` / `operation_server_component` | `(server_id, project_id|component_id)` 多对多，表达「还关联哪些服务器」 |
+| **唯一约束** | `uk_server_project` / `uk_server_component` | 同一对不可重复（见 `23_operation_schema_hardening.sql`） |
+
+### 2.1 语义约定
+
+1. **`server_id`（主）**：部署/探活/启停的**默认目标**；`serverIds[0]` 与 `serverId` 应对齐（保存时后端自动校正）。
+2. **`serverIds`（N:N）**：完整关联集合，**含主服务器**；GET 列表/详情时回填。
+3. **同名多行**：仍允许（如 `moli-server` 在 dev/pro 各一条台账）；N:N 描述**单条台账**关联的服务器集合，不跨行合并。
+
+### 2.2 与拓扑 / 部署 API 的关系
+
+| 能力 | 使用字段 |
+|------|----------|
+| `GET /operation/server/{id}/topology` | N:N + `server_id` 回退 |
+| `GET /operation/deploy/{key}/status?serverId=` | 单条台账的 **主** `serverId` |
+| `POST .../task?serverId=&projectId=` | `projectId` 定位台账行；`serverId` 指定远程主机（须在 N:N 或主 `server_id` 中） |
+
+---
+
+## 3. API 契约
+
+### 3.1 项目（`/operation/project`）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `POST` / `PUT` | `/operation/project` | body 增 **`serverIds?: number[]`**；保存后全量同步 `operation_server_project` |
+| `GET` | `/operation/project/{id}` | VO 含 **`serverIds`** |
+| `GET` | `/operation/project/list` | 每行 VO 含 **`serverIds`** |
+| `GET` | `/operation/project/{id}/links` | 返回 `{ projectId, serverIds }` |
+| `PUT` | `/operation/project/{id}/links` | 全量替换 N:N（不修改主表 `server_id`） |
+
+**`OperationProjectSaveRequest`**（节选）：
+
+```json
+{
+  "projectName": "moli-server",
+  "serverId": 201,
+  "serverIds": [201, 202, 204],
+  "deployPath": "/opt/moli/moli-server",
+  "port": "9080",
+  "environment": 1
+}
+```
+
+校验：`serverId`、`serverIds`、`serverIp` **至少一项**；`serverIds` 中 ID 须存在于 `operation_server_info`。
+
+### 3.2 组件（`/operation/component`）
+
+与项目对称：
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `POST` / `PUT` | `/operation/component` | body 增 **`serverIds`** |
+| `GET` | `/operation/component/{id}` / `list` | VO 含 **`serverIds`** |
+| `GET` | `/operation/component/{id}/links` | `{ componentId, serverIds }` |
+| `PUT` | `/operation/component/{id}/links` | 全量替换 `operation_server_component` |
+
+### 3.3 服务器侧（已有 · SVR-11）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `GET` | `/operation/server/{id}/links` | `{ serverId, projectIds, componentIds }` |
+| `PUT` | `/operation/server/{id}/links` | 从服务器视角全量替换 |
+
+---
+
+## 4. 后端实现要点
+
+| 类 | 职责 |
+|----|------|
+| `OperationProjectLinkService` | 项目 N:N 读/写 + `syncLinks(projectId, serverIds, primaryServerId)` |
+| `OperationComponentLinkService` | 组件 N:N（对称） |
+| `OperationProjectServiceImpl` | create/update 后调用 `syncLinks`；`toVo` 回填 `serverIds` |
+| `OperationComponentServiceImpl` | 同上 |
+| `OperationServerCascadeSupport` | 删项目/组件/服务器时清理 N:N 行 |
+
+**`syncLinks` 规则**：
+
+1. 合并 `primaryServerId` + `serverIds`（去重，主 ID 排首）。
+2. 删除该 project/component 的全部 N:N 行后重新插入。
+3. 若合并结果为空，则仅当 `primaryServerId != null` 时插入一条。
+
+---
+
+## 5. 前端对接（S6-b）
+
+| ID | 页面 | 改动 |
+|----|------|------|
+| **S6-b-1** | 项目编辑弹窗 | 「关联服务器」改为 **多选**；绑定 `serverIds`；保存走 `POST/PUT /operation/project` |
+| **S6-b-2** | 组件编辑弹窗 | 同上，`serverIds` |
+| **S6-b-3** | 列表列 | 可选展示「关联 N 台」或 tag 列表 |
+| **S6-b-4** | 部署操作 | 启停/status 仍用 **主** `serverId`；多机关联仅台账展示，或后续扩展「选目标机」 |
+
+TypeScript 类型扩展：
+
+```typescript
+export type OperationProject = {
+  serverId?: number
+  serverIds?: number[]   // 含 serverId
+  // ...
+}
+export type OperationComponent = {
+  serverId?: number
+  serverIds?: number[]
+  // ...
+}
+```
+
+---
+
+## 6. 迁移与兼容
+
+- **已有库**：N:N 表与唯一约束已在 `23_operation_schema_hardening.sql`；**无需新迁移**。
+- **历史数据**：若 N:N 为空但 `server_id` 有值，GET 时 **回退** 为 `serverIds: [serverId]`。
+- **旧前端**：仅传 `serverId` 仍可用；后端写入单条 N:N。
+
+---
+
+## 7. 验收
+
+| # | 场景 | 期望 |
+|---|------|------|
+| L1 | 新建项目，`serverIds: [201,202]` | 主表 `server_id=201`；N:N 两行 |
+| L2 | 更新项目，改 `serverIds` | N:N 全量替换 |
+| L3 | GET 详情 | `serverIds` 与库一致 |
+| L4 | 删项目 | N:N 级联删除 |
+| L5 | 组件 L1–L4 | 与项目对称 |
+| L6 | 仅 `serverId` 无 `serverIds` | N:N 一条，GET 回填 `[serverId]` |
+
+---
+
+## 8. 相关
+
+- 路线图：[server-ops-module-roadmap.md](server-ops-module-roadmap.md) · **SVR-22**
+- 前端说明：[operation-frontend.md](../api/operation-frontend.md) §5.5
+- API 索引：[user-center-api-map.md](../api/user-center-api-map.md)
+- 改造总览：[operation-module-refactor-plan.md](operation-module-refactor-plan.md)

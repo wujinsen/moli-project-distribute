@@ -127,6 +127,15 @@
 | **SVR-21d** | meiling-ui 管理页 `operation/port-matrix/index`（用户方） | ⬜ |
 | **SVR-21e** | 迁移 `24_operation_port_matrix.sql` + `moli.sql` 基线合并；`production-checklist` §2 加注 DB 权威 | ✅ |
 
+### P2+ —— 项目/组件多服务器（SVR-22，2026-07-11）
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| **SVR-22a** | 设计：主 `server_id` + N:N 双轨 · [`operation-server-links.md`](operation-server-links.md) | ✅ |
+| **SVR-22b** | 项目 CRUD/VO `serverIds`；`GET/PUT /operation/project/{id}/links` | ✅ |
+| **SVR-22c** | 组件对称 API + `OperationComponentLinkService` | ✅ |
+| **SVR-22d** | meiling-ui 项目/组件编辑多选（S6-b） | ⬜ |
+
 ---
 
 ## 6. Phase R · 台账 + 部署中心改造（2026-07-11 规划）
