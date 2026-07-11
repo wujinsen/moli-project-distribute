@@ -1,6 +1,7 @@
 package com.moli.knowledge.server.config;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Component;
@@ -48,5 +49,18 @@ public class KbLlmProperties {
 
     public boolean usable() {
         return enabled && apiKey != null && !apiKey.trim().isEmpty();
+    }
+
+    /** yaml / Nacos 优先；否则读进程环境变量 KB_LLM_CONFIG_SECRET（无需重启即可注入）。 */
+    public String resolveConfigSecret() {
+        if (StringUtils.isNotBlank(configSecret)) {
+            return configSecret.trim();
+        }
+        String env = System.getenv("KB_LLM_CONFIG_SECRET");
+        return StringUtils.isNotBlank(env) ? env.trim() : null;
+    }
+
+    public boolean configSecretConfigured() {
+        return StringUtils.isNotBlank(resolveConfigSecret());
     }
 }

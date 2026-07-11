@@ -1,6 +1,7 @@
 package com.moli.knowledge.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbSyncProperties;
@@ -43,6 +44,8 @@ public class KbSyncServiceImpl implements KbSyncService {
     private static final Pattern JDBC_MYSQL = Pattern.compile(
             "jdbc:mysql://([^:/]+)(?::(\\d+))?/([^?]+)");
     private static final String SYNC_LOCK_PREFIX = "kb:sync:lock:";
+
+    private static final Pattern BATCH_NO = Pattern.compile("batch=(\\d{14,})");
 
     @Resource
     private KbSyncLogMapper kbSyncLogMapper;
@@ -91,39 +94,88 @@ public class KbSyncServiceImpl implements KbSyncService {
         } else if (!kbAclService.isAdmin()) {
             throw new BaseException("无权查看全库同步状态");
         }
-        LambdaQueryWrapper<KbSyncLog> latestWrapper = new LambdaQueryWrapper<>();
-        if (spaceId != null) {
-            latestWrapper.eq(KbSyncLog::getSpaceId, spaceId);
-        }
-        latestWrapper.orderByDesc(KbSyncLog::getCreateTime).last("limit 1");
-        KbSyncLog latest = kbSyncLogMapper.selectOne(latestWrapper);
-        if (latest == null) {
-            return new SyncStatusVo();
-        }
 
-        List<KbSyncLog> batchLogs = kbSyncLogMapper.selectList(new LambdaQueryWrapper<KbSyncLog>()
-                .eq(KbSyncLog::getBatchNo, latest.getBatchNo())
-                .eq(spaceId != null, KbSyncLog::getSpaceId, spaceId));
+        KbSpace space = spaceId != null ? kbSpaceMapper.selectById(spaceId) : null;
+        String spaceCode = space != null ? space.getSpaceCode() : null;
+        boolean running = isSyncRunning(spaceCode);
+
+        QueryWrapper<KbSyncLog> batchWrapper = new QueryWrapper<>();
+        if (spaceId != null) {
+            batchWrapper.eq("space_id", spaceId);
+        }
+        batchWrapper.eq("action", "batch")
+                .orderByDesc("create_time")
+                .last("limit 1");
+        KbSyncLog batchRow = kbSyncLogMapper.selectOne(batchWrapper);
 
         SyncStatusVo vo = new SyncStatusVo();
-        vo.setBatchNo(latest.getBatchNo());
-        vo.setSpaceId(latest.getSpaceId());
-        vo.setLastSyncTime(latest.getCreateTime());
-        vo.setTotal(batchLogs.size());
+        vo.setSpaceId(spaceId);
+        vo.setSpaceCode(spaceCode);
+        vo.setRunning(running);
+
+        if (batchRow == null) {
+            if (running) {
+                vo.setLastStatus("running");
+                vo.setLastMessage("同步进行中");
+            }
+            return vo;
+        }
+
+        vo.setBatchNo(batchRow.getBatchNo());
+        vo.setLastBatchNo(batchRow.getBatchNo());
+        vo.setLastSyncTime(batchRow.getCreateTime());
+        vo.setLastFinishTime(batchRow.getCreateTime());
+
+        if (running) {
+            vo.setLastStatus("running");
+            vo.setLastMessage("同步进行中");
+        } else {
+            vo.setLastStatus(batchRow.getStatus());
+            vo.setLastMessage(batchRow.getMessage());
+        }
+
+        QueryWrapper<KbSyncLog> listWrapper = new QueryWrapper<>();
+        listWrapper.eq("batch_no", batchRow.getBatchNo());
+        if (spaceId != null) {
+            listWrapper.eq("space_id", spaceId);
+        }
+        List<KbSyncLog> batchLogs = kbSyncLogMapper.selectList(listWrapper);
 
         Map<String, Integer> counts = new LinkedHashMap<>();
         int fail = 0;
+        int success = 0;
+        int docTotal = 0;
         for (KbSyncLog row : batchLogs) {
+            if ("batch".equalsIgnoreCase(row.getAction())) {
+                continue;
+            }
+            docTotal++;
             if (row.getAction() != null) {
                 counts.merge(row.getAction(), 1, Integer::sum);
             }
             if ("fail".equalsIgnoreCase(row.getStatus())) {
                 fail++;
+            } else if ("success".equalsIgnoreCase(row.getStatus())) {
+                success++;
             }
         }
+        vo.setTotal(docTotal);
         vo.setActionCounts(counts);
         vo.setFailCount(fail);
+        vo.setSuccessCount(success);
         return vo;
+    }
+
+    private boolean isSyncRunning(String spaceCode) {
+        if (!syncProperties.isLockEnabled() || StringUtils.isBlank(spaceCode)) {
+            return false;
+        }
+        try {
+            return Boolean.TRUE.equals(stringRedisTemplate.hasKey(SYNC_LOCK_PREFIX + spaceCode));
+        } catch (Exception e) {
+            log.warn("[sync] check lock failed space={}", spaceCode, e);
+            return false;
+        }
     }
 
     @Override
@@ -270,8 +322,10 @@ public class KbSyncServiceImpl implements KbSyncService {
             int exitCode = process.exitValue();
             result.setExitCode(exitCode);
             result.setSuccess(exitCode == 0);
-            result.setOutputTail(tail(output.toString(), 2000));
+            String outputText = output.toString();
+            result.setOutputTail(tail(outputText, 2000));
             result.setSpaceId(space.getId());
+            applyTriggerMeta(result, outputText, exitCode);
             if (result.isSuccess()) {
                 result.setNextSteps(com.moli.knowledge.server.util.KbWorkflowHints.afterWikiWrite(space.getId()));
             }
@@ -330,6 +384,35 @@ public class KbSyncServiceImpl implements KbSyncService {
             return text;
         }
         return text.substring(text.length() - maxLen);
+    }
+
+    void applyTriggerMeta(SyncTriggerVo result, String outputText, int exitCode) {
+        Matcher matcher = BATCH_NO.matcher(outputText != null ? outputText : "");
+        if (matcher.find()) {
+            result.setBatchNo(matcher.group(1));
+        }
+        result.setStatus(result.isSuccess() ? "success" : "fail");
+        if (result.isSuccess()) {
+            result.setMessage(extractSyncSummary(outputText));
+        } else {
+            result.setMessage("exitCode=" + exitCode);
+        }
+    }
+
+    private String extractSyncSummary(String outputText) {
+        if (StringUtils.isBlank(outputText)) {
+            return null;
+        }
+        for (String line : outputText.split("\n")) {
+            if (line.contains("同步完成") && line.contains("batch=")) {
+                int idx = line.indexOf('：');
+                if (idx >= 0 && idx + 1 < line.length()) {
+                    return line.substring(idx + 1).trim();
+                }
+                return line.trim();
+            }
+        }
+        return null;
     }
 
     private DbEndpoint parseJdbcUrl(String url) {

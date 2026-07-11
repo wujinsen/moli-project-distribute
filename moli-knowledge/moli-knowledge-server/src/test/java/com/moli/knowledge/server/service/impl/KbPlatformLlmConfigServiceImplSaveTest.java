@@ -48,7 +48,8 @@ public class KbPlatformLlmConfigServiceImplSaveTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(yamlLlm.getConfigSecret()).thenReturn(SECRET);
+        when(yamlLlm.resolveConfigSecret()).thenReturn(SECRET);
+        when(yamlLlm.configSecretConfigured()).thenReturn(true);
     }
 
     @Test
@@ -84,6 +85,7 @@ public class KbPlatformLlmConfigServiceImplSaveTest {
         KbPlatformLlmConfigVo vo = service.save(req);
         Assert.assertTrue(vo.getAvailable());
         Assert.assertTrue(vo.getPersistedInDatabase());
+        Assert.assertTrue(vo.getEncryptionReady());
         Assert.assertEquals("database", vo.getSource());
         verify(platformLlmConfigMapper).updateById(any(KbPlatformLlmConfig.class));
         verify(llmRuntime).refresh();

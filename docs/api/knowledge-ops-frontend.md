@@ -12,7 +12,7 @@
 
 | 优先级 | 模块 | 路由 | 文档 | 后端 | 前端 |
 |--------|------|------|------|------|------|
-| **P0** | 健康体检 · Sync 增强 | `knowledge/lint/index` | **本文 §3** | 🔵 KBOPS-1 待修 | 🔵 **O1–O4** |
+| **P0** | 健康体检 · Sync 增强 | `knowledge/lint/index` | **本文 §3** | ✅ KBOPS-1/2 + O1 字段 | 🔵 **O1–O4** |
 | **P0** | Wiki 治理全链路 | `knowledge/wiki-govern/index` | [wiki-govern-frontend.md](wiki-govern-frontend.md) | ✅ | 🔵 **W2/W4/W5/W7** |
 | **P1** | 平台 LLM 设置 | `system/kb-llm` | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | ✅ T19 | 🔵 **T19d** |
 | **P1** | Ingest 三 Tab | `knowledge/ingest/index` | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | ✅ T20a/b/e | 🔵 **T20f** |
@@ -42,7 +42,7 @@ Ingest `commit/publish` 默认 **auto-sync**（`kb.ingest.commit-auto-sync=true`
 
 ## 3. P0 · 健康体检页 Sync 增强（O1–O4）
 
-> **背景**：KBOPS-1 修复后，`SyncTriggerVo` / `kb_sync_log` 会返回真实 `status` 与 `message`。现有 UI 需提前对齐字段，避免仍显示「恒成功」。
+> **背景**：KBOPS-1/2/O1 后端 ✅（2026-07-11）。`SyncStatusVo` 含 `running`/`lastStatus`/`lastMessage`；前端 O1–O4 可对接。
 
 ### 3.1 建议布局（在现有 lint 页扩展）
 

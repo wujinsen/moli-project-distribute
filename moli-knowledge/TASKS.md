@@ -627,8 +627,10 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 
 | 子任务 | 内容 | 优先级 | 状态 |
 |--------|------|--------|------|
-| **KBOPS-1** | Sync 失败可观测：`sync_to_db.py` 区分 success/fail 写 `kb_sync_log.status`；`failCount` 生效 | P0 | 📋 |
-| **KBOPS-2** | Sync 并发锁（按 space_code 的 Redis 锁） | P0 | 📋 |
+| **KBOPS-1** | Sync 失败可观测：`sync_to_db.py` 区分 success/fail；`failCount` 生效 | P0 | ✅ |
+| **KBOPS-2** | Sync 并发锁（按 space_code 的 Redis 锁） | P0 | ✅ |
+| **KBOPS-O1** | Sync 轮询字段：`SyncStatusVo`/`SyncTriggerVo` 对齐 O1–O4 | P0 | ✅ |
+| **T19e** | LLM `encryptionReady` + `KB_LLM_CONFIG_SECRET` 环境变量回退 | P1 | ✅ |
 | **KBOPS-3** | 权限码对齐：enforce `kb:sync:trigger` / `kb:lint:scan` | P0 | 📋 |
 | **KBOPS-4** | 定时同步改 sync-all 三空间（或配置化多空间） | P1 | 📋 |
 | **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | 📋 |
@@ -638,7 +640,11 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | **KBOPS-9** | 知识库运维 Dashboard（Sync 趋势/Lint 工单/LLM 调用率/断链汇总；可选 `kb_llm_call_log`） | P2 | 📋 |
 | **KBOPS-10** | Web 体检检查项对齐 `lint.py`（或明确分工文档） | P2 | 📋 |
 
-**建议起手**：KBOPS-1 + KBOPS-2（改动可控、修"运维看不见失败"的硬伤）。
+**建议起手**：KBOPS-3（权限码）→ KBOPS-4（多空间定时）→ 前端 O1–O4 / T19d。
+
+---
+
+> **2026-07-11**：KBOPS-1/2/O1、T19e 后端已落地；见 [`docs/design/kb-ops-roadmap.md`](../docs/design/kb-ops-roadmap.md)。
 
 ---
 

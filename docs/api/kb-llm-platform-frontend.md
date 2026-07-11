@@ -79,6 +79,8 @@ export type KbPlatformLlmConfig = {
   extraModels?: string[]
   /** 当前运行时是否可调用 LLM */
   available: boolean
+  /** 加密主密钥是否已配置（保存新 api-key 前置条件） */
+  encryptionReady?: boolean
   /** database | yaml_fallback */
   source: string
   /** DB 是否已持久化 api-key（与 yaml 兜底区分） */

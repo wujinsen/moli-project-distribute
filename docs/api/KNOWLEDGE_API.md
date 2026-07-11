@@ -456,7 +456,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 
 > **前端对接**（T19d）：[`kb-llm-platform-frontend.md`](kb-llm-platform-frontend.md)  
 > **权限**：平台超管或 `kb:platform:llm`。API Key **加密存库**，响应永不回明文。  
-> **前置**：执行 [`../sql/11_kb_platform_llm_config.sql`](../sql/11_kb_platform_llm_config.sql)、[`../sql/12_kb_platform_llm_menu.sql`](../sql/12_kb_platform_llm_menu.sql)；保存 api-key 到 DB 须配置 `kb.llm.config-secret`（`KB_LLM_CONFIG_SECRET`，见设计文档 §7）。
+> **前置**：执行 [`../sql/11_kb_platform_llm_config.sql`](../sql/11_kb_platform_llm_config.sql)、[`../sql/12_kb_platform_llm_menu.sql`](../sql/12_kb_platform_llm_menu.sql)；保存 api-key 到 DB 须配置 `kb.llm.config-secret` 或环境变量 **`KB_LLM_CONFIG_SECRET`**（见设计文档 §5.4）。GET 返回 **`encryptionReady`** 供前端预检。
 
 **网关路径**（meiling-ui）：`/KnowledgeServer/kb/platform/llm-config`
 
@@ -478,6 +478,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
   "available": true,
   "source": "database",
   "persistedInDatabase": true,
+  "encryptionReady": true,
   "updateTime": "2026-06-28 15:00:00"
 }
 ```
@@ -485,6 +486,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 | 字段 | 说明 |
 |------|------|
 | `available` | `enabled && apiKeyConfigured`（运行时是否可调用） |
+| `encryptionReady` | 加密主密钥已配置（yaml 或 `KB_LLM_CONFIG_SECRET`）；保存新 api-key 前置条件 |
 | `source` | `database` / `yaml_fallback` |
 | `persistedInDatabase` | DB 是否已有加密 api-key（与 yaml 兜底区分） |
 | `apiKeyMask` | 脱敏展示；**不是**可编辑用的明文 |
@@ -1192,20 +1194,27 @@ powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute
 
 > **多空间 Sync**：脚本同时传 `--space {spaceCode}` 与 `--wiki-dir {kb.wiki.space-dirs[spaceCode]}`（如 `moli-ops-manual` → `wiki-moli`）。**勿**对所有空间默认扫 `wiki/`，否则茉莉系统手册空间会误入 enterprise-kb 的 300+ 篇文档。
 
-`SyncStatusVo` 示例：
+`SyncStatusVo` 示例（KBOPS O1）：
 
 ```json
 {
-  "batchNo": "20260622153000",
+  "running": false,
   "spaceId": 900000000000000001,
+  "spaceCode": "enterprise-kb",
+  "batchNo": "20260622153000",
+  "lastBatchNo": "20260622153000",
+  "lastStatus": "success",
+  "lastMessage": "insert=2 update=10 skip=42 fail=0",
   "lastSyncTime": "2026-06-22 15:30:00",
+  "lastFinishTime": "2026-06-22 15:30:00",
   "total": 54,
   "actionCounts": { "insert": 2, "update": 10, "skip": 42 },
-  "failCount": 0
+  "failCount": 0,
+  "successCount": 54
 }
 ```
 
-`SyncTriggerVo`：`success`、`exitCode`、`spaceCode`、`outputTail`（脚本输出末尾）。
+`SyncTriggerVo`：`success`、`exitCode`、`spaceCode`、`batchNo`、`status`、`message`、`outputTail`（脚本输出末尾）。
 
 ### 6.1 同步配置 `kb.sync.*`
 

@@ -46,6 +46,9 @@ public class KbPlatformLlmConfigVo {
     @ApiModelProperty("DB 是否已持久化 api-key")
     private Boolean persistedInDatabase;
 
+    @ApiModelProperty("加密主密钥是否已配置（KB_LLM_CONFIG_SECRET / kb.llm.config-secret）")
+    private Boolean encryptionReady;
+
     @ApiModelProperty("DB 更新时间 yyyy-MM-dd HH:mm:ss")
     private String updateTime;
 }

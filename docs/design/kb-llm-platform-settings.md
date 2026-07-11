@@ -232,12 +232,14 @@ OpenAI 兼容 API（DeepSeek / Qwen / GLM …）
 
 | 方式 | 示例 |
 |------|------|
-| 环境变量（推荐） | PowerShell: `[Convert]::ToBase64String((1..32 \| ForEach-Object { Get-Random -Max 256 }))` 或 `openssl rand -base64 32` |
-| yaml（仅本地 dev） | `kb.llm.config-secret: "your-random-string"` |
+| 环境变量（推荐） | `KB_LLM_CONFIG_SECRET`；**进程启动后注入亦生效**（`KbLlmProperties.resolveConfigSecret()` 回退读 env，无需重启 JVM） |
+| yaml / Nacos | `kb.llm.config-secret`；Nacos 变更可 `@RefreshScope` 刷新 |
 
 支持：32 字节 Base64，或任意字符串（内部 SHA-256）。**密钥轮换后**需用户在 UI 重新保存 api-key。
 
-未配置时 PUT 带新 key 失败，前端应展示后端 `msg` 并提示联系运维。
+未配置时 PUT 带新 key 失败，前端应展示后端 `msg` 并提示联系运维。GET 响应 **`encryptionReady`**（bool）可在表单顶部提前展示「加密主密钥未配置」。
+
+生成密钥示例：PowerShell `[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Max 256 }))` 或 `openssl rand -base64 32`。
 
 ---
 

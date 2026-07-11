@@ -86,7 +86,7 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         KbPlatformLlmConfig row = getSingletonRow();
         if (row != null && StringUtils.isNotBlank(row.getApiKeyCipher())) {
             try {
-                String plainKey = KbLlmConfigCipher.decrypt(row.getApiKeyCipher(), yamlLlm.getConfigSecret());
+                String plainKey = KbLlmConfigCipher.decrypt(row.getApiKeyCipher(), yamlLlm.resolveConfigSecret());
                 if (StringUtils.isNotBlank(plainKey)) {
                     return fromDatabaseRow(row, plainKey.trim());
                 }
@@ -153,7 +153,7 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         } else if (StringUtils.isNotBlank(request.getApiKey())) {
             assertConfigSecretPresent();
             String plain = request.getApiKey().trim();
-            row.setApiKeyCipher(KbLlmConfigCipher.encrypt(plain, yamlLlm.getConfigSecret()));
+            row.setApiKeyCipher(KbLlmConfigCipher.encrypt(plain, yamlLlm.resolveConfigSecret()));
             row.setApiKeyMask(KbLlmConfigCipher.maskApiKey(plain));
         }
 
@@ -266,11 +266,12 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         }
         vo.setAvailable(effective.usable());
         vo.setSource(effective.getSource().name().toLowerCase());
+        vo.setEncryptionReady(yamlLlm.configSecretConfigured());
         return vo;
     }
 
     private void assertConfigSecretPresent() {
-        if (StringUtils.isBlank(yamlLlm.getConfigSecret())) {
+        if (!yamlLlm.configSecretConfigured()) {
             throw new BaseException("未配置 kb.llm.config-secret（KB_LLM_CONFIG_SECRET），无法将 api-key 加密存入数据库");
         }
     }
@@ -339,9 +340,9 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         row.setTemperature(BigDecimal.valueOf(toDouble(null, yamlLlm.getTemperature())));
         row.setTimeoutSeconds(toInt(null, yamlLlm.getTimeoutSeconds()));
         if (copyYamlApiKey && StringUtils.isNotBlank(yamlLlm.getApiKey())
-                && StringUtils.isNotBlank(yamlLlm.getConfigSecret())) {
+                && yamlLlm.configSecretConfigured()) {
             String plain = yamlLlm.getApiKey().trim();
-            row.setApiKeyCipher(KbLlmConfigCipher.encrypt(plain, yamlLlm.getConfigSecret()));
+            row.setApiKeyCipher(KbLlmConfigCipher.encrypt(plain, yamlLlm.resolveConfigSecret()));
             row.setApiKeyMask(KbLlmConfigCipher.maskApiKey(plain));
         }
         return row;
