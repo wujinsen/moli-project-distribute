@@ -88,7 +88,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
         if (StringUtils.isNotBlank(request.getKeyword()) && kbSearchProperties.fullTextEnabled()) {
             try {
-                return kbDocumentMapper.searchFullText(
+                Page<KbDocument> result = kbDocumentMapper.searchFullText(
                         new Page<>(request.getPageNum(), request.getPageSize()),
                         singleSpaceId,
                         multiSpaceIds,
@@ -99,11 +99,25 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                         request.getKeyword().trim(),
                         StringUtils.trimToNull(request.getSource()),
                         kbTypes);
+                if (result.getTotal() > 0) {
+                    return result;
+                }
+                log.debug("Fulltext search returned 0 hits, fallback to LIKE for keyword: {}",
+                        request.getKeyword());
             } catch (Exception e) {
                 log.warn("Fulltext search failed, fallback to LIKE: {}", e.getMessage());
             }
         }
 
+        return searchByLike(request, singleSpaceId, scopeSpaces, categoryScope, kbTypes, documentIds);
+    }
+
+    private Page<KbDocument> searchByLike(DocumentSearchRequest request,
+                                          Long singleSpaceId,
+                                          List<Long> scopeSpaces,
+                                          CategoryFilterScope categoryScope,
+                                          List<String> kbTypes,
+                                          List<Long> documentIds) {
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
         if (singleSpaceId != null) {
@@ -117,9 +131,11 @@ public class KbDocumentServiceImpl implements KbDocumentService {
         }
         KbDocumentFilterSupport.applyKbTypes(wrapper, kbTypes);
         if (StringUtils.isNotBlank(request.getKeyword())) {
-            wrapper.and(w -> w.like(KbDocument::getTitle, request.getKeyword())
-                    .or().like(KbDocument::getSummary, request.getKeyword())
-                    .or().like(KbDocument::getContent, request.getKeyword()));
+            String keyword = request.getKeyword().trim();
+            wrapper.and(w -> w.like(KbDocument::getTitle, keyword)
+                    .or().like(KbDocument::getSlug, keyword)
+                    .or().like(KbDocument::getSummary, keyword)
+                    .or().like(KbDocument::getContent, keyword));
         }
         if (request.getTagId() != null) {
             wrapper.in(KbDocument::getId, documentIds);
