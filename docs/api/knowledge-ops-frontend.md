@@ -135,6 +135,45 @@ export const listSyncLogs = (params: { spaceId: string; pageNum?: number; pageSi
 
 ---
 
+## 3.7 P1 · 体检工单增强（O5–O8 · KBOPS-8）
+
+> **后端** ✅。在 `LintIssueTable` 扩展筛选与批量操作。
+
+| ID | 功能 | API | UI |
+|----|------|-----|-----|
+| **O5** | 类型筛选 | `GET /kb/lint/issues?issueType=` | 下拉；数据源 `GET /kb/lint/issue-types` |
+| **O6** | 指派 / 优先级 | `PUT /kb/lint/issue/{id}/assign` | 行内选择处理人、优先级 |
+| **O7** | 批量状态 | `PUT /kb/lint/issues/batch-status` | 多选 → 已忽略/已修复 |
+| **O8** | 批量指派 | `PUT /kb/lint/issues/batch-assign` | 多选 → 统一处理人/优先级 |
+
+**TypeScript 建议**：
+
+```typescript
+export type KbLintIssue = {
+  id: string
+  spaceId: string
+  documentId?: string
+  issueType: string
+  detail?: string
+  status: 0 | 1 | 2
+  assigneeId?: string
+  priority?: 0 | 1 | 2
+  scanTime?: string
+}
+
+export type LintIssueTypeVo = {
+  code?: string
+  label: string
+  lintPyKind?: string
+  webOnly?: boolean
+  lintPyOnly?: boolean
+}
+```
+
+**分工提示（KBOPS-10）**：列表页角标说明「DB 快照体检」；Sync 前引导用户去 **Wiki 治理** 跑 `lint-space`（文件真值）。
+
+---
+
 ## 4. P0 · Wiki 治理（T16f / KBOPS-6）
 
 **完整规格不在此重复**，请直接实现：

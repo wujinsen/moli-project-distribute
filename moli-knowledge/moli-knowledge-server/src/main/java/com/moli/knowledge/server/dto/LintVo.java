@@ -61,6 +61,12 @@ public class LintVo implements Serializable {
     @ApiModelProperty("统计汇总")
     private Map<String, Integer> counts = new LinkedHashMap<>();
 
+    @ApiModelProperty("数据源：db_snapshot=MySQL kb_document；文件真值请用 lint.py 或 lint-space")
+    private String dataSource = "db_snapshot";
+
+    @ApiModelProperty("文件级体检入口提示")
+    private String fileLintPath = "/kb/wiki-moli/lint-space";
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

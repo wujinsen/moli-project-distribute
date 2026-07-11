@@ -695,28 +695,47 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 
 ### 4.2 体检（只算不落库）`GET /kb/lint`
 
-> **数据源**：扫描 **MySQL `kb_document`**（`KbInsightServiceImpl.loadDocs()`），**不读**部署机上的 `kb/wiki*` 文件。  
-> 若 wiki 已改但未 Sync，体检结果仍是**旧快照**。Sync 前门禁请用 **`lint.py`**（见 `wiki-moli/guides/查询与体检指南` §3）。  
-> 同页 **Wiki 同步** Tab（`POST /kb/sync/trigger`）才是 wiki → DB，与「扫描并落库」不是同一操作。
+> **数据源（KBOPS-10）**：扫描 **MySQL `kb_document`** 快照（`dataSource=db_snapshot`），**不读**磁盘 `kb/wiki*`。  
+> **文件真值**（Sync 前门禁）：`python kb/tools/lint.py --strict` 或 `POST /kb/wiki-moli/lint-space`（§4.7）。  
+> 若 wiki 已改但未 Sync，本接口仍是**旧库内容**。分工详见 `wiki-moli/guides/查询与体检指南` §3.3。
 
 | 参数 | 位置 | 必填 |
 |------|------|------|
 | `spaceId` | query | 否 |
 
-响应 `data`：
+响应 `data`：`LintVo`（节选）
 
 ```json
 {
-  "broken":   [ { "page": "90010", "title": "用户中心", "target": "不存在的页" } ],
-  "orphans":  [ { "slug": "90030", "title": "孤儿页" } ],
-  "noSummary":[ { "slug": "90031", "title": "缺摘要页" } ],
-  "counts": { "pages": 17, "broken": 0, "orphans": 2, "noSummary": 1 }
+  "dataSource": "db_snapshot",
+  "fileLintPath": "/kb/wiki-moli/lint-space",
+  "broken": [ { "page": "90010", "title": "用户中心", "target": "不存在的页" } ],
+  "orphans": [ { "slug": "90030", "title": "孤儿页" } ],
+  "noSummary": [ { "slug": "90031", "title": "缺摘要页" } ],
+  "duplicates": [ { "stem": "foo", "page": "90032", "title": "...", "slugs": ["guides/foo", "articles/foo"] } ],
+  "stale": [ { "slug": "90033", "title": "...", "reason": "被 [[new]] supersedes 但仍为已发布" } ],
+  "conflicts": [ { "page": "90034", "title": "...", "slugs": ["a", "b"], "detail": "contentHash 相同" } ],
+  "missingSources": [ { "page": "90035", "title": "...", "detail": "sources 为空" } ],
+  "badTypes": [],
+  "missingTitles": [],
+  "slugMismatches": [],
+  "missingDates": [],
+  "missingConcepts": [],
+  "counts": {
+    "pages": 17, "broken": 0, "orphans": 2, "noSummary": 1,
+    "duplicates": 0, "stale": 0, "conflicts": 0,
+    "missingSources": 0, "badTypes": 0, "missingTitles": 0,
+    "slugMismatches": 0, "missingDates": 0, "missingConcepts": 0
+  }
 }
 ```
 
 ### 4.3 体检并落库 `POST /kb/lint/scan`
 
-参数同上（`spaceId` query 可选）。执行扫描并把问题写入 `kb_lint_issue`（清掉旧的「待处理」项后重建），返回结构同 `/kb/lint`。
+权限：`kb:lint:scan` 或空间 editor（单空间）/ 超管（全库）。  
+参数同上（`spaceId` query 可选）。执行扫描并把问题写入 `kb_lint_issue`（**清掉旧的 status=0 待处理**后重建），返回结构同 `/kb/lint`。
+
+**定时任务（KBOPS-8）**：`kb.lint.schedule-enabled=true` 时按 `kb.lint.schedule-cron`（默认每周一 03:00）对配置空间自动 `scan` 落库。
 
 ### 4.4 体检问题列表 `GET /kb/lint/issues`
 
@@ -724,8 +743,11 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 |------|------|------|------|
 | `spaceId` | query | 否 | |
 | `status` | query | 否 | `0`待处理 `1`已忽略 `2`已修复 |
+| `issueType` | query | 否 | 见 §4.8 |
+| `assigneeId` | query | 否 | 处理人用户 ID |
+| `priority` | query | 否 | `0`普通 `1`高 `2`紧急 |
 
-响应 `data`：`KbLintIssue[]`，元素含 `id/spaceId/documentId/issueType/detail/status/scanTime`。
+响应 `data`：`KbLintIssue[]`，元素含 `id/spaceId/documentId/issueType/detail/status/assigneeId/priority/scanTime`。
 
 ### 4.5 更新问题状态 `PUT /kb/lint/issue/{id}?status=`
 
@@ -733,6 +755,57 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 |------|------|------|------|
 | `id` | path | 是 | 问题 ID |
 | `status` | query | 是 | `0`/`1`/`2` |
+
+需空间 **editor** 或超管。
+
+### 4.5.1 批量更新状态 `PUT /kb/lint/issues/batch-status`（KBOPS-8）
+
+请求体 `LintIssueBatchStatusRequest`：
+
+```json
+{ "ids": [9001, 9002], "status": 2 }
+```
+
+响应 `data`：更新条数 `int`。
+
+### 4.5.2 指派 / 优先级 `PUT /kb/lint/issue/{id}/assign`
+
+| 参数 | 位置 | 必填 | 说明 |
+|------|------|------|------|
+| `assigneeId` | query | 否 | 处理人 |
+| `priority` | query | 否 | `0`/`1`/`2` |
+
+### 4.5.3 批量指派 `PUT /kb/lint/issues/batch-assign`（KBOPS-8）
+
+请求体 `LintIssueBatchAssignRequest`：
+
+```json
+{ "ids": [9001, 9002], "assigneeId": 42, "priority": 1 }
+```
+
+`assigneeId` 与 `priority` 至少填一项。
+
+### 4.8 问题类型对照 `GET /kb/lint/issue-types`（KBOPS-8/10）
+
+返回 `LintIssueTypeVo[]`：`code`（Web issue_type）、`label`、`lintPyKind`（lint.py KIND）、`webOnly`、`lintPyOnly`。
+
+| Web `code` | lint.py | 说明 |
+|------------|---------|------|
+| `broken_link` | `broken_link` | 断链 |
+| `orphan` | `orphan` | 孤儿页 |
+| `no_summary` | — | **Web 特有**（DB summary 空） |
+| `duplicate` | `dup_slug` | slug 裸名歧义 |
+| `stale` | `outdated` | 过时 / supersedes |
+| `conflict` | `dup_content` | contentHash 重复 |
+| `missing_source` | `missing_source` | sources 空 |
+| `bad_type` | `bad_type` | type 非法 |
+| `missing_title` | `missing_title` | 无 title 且无 H1 |
+| `slug_mismatch` | `slug_mismatch` | frontmatter slug ≠ 路径 |
+| `missing_dates` | `missing_dates` | 缺 created/updated |
+| `missing_concept` | `missing_concept` | 断链目标被多页引用 |
+| — | `near_dup` / `space_branding` / `asym_related` | **仅 lint.py**（文件真值） |
+
+已有库若缺 `assignee_id`/`priority` 列，执行 `docs/sql/17_kb_lint_ops_enhance.sql`。
 
 ### 4.6 文件级空间 Lint（T16a · 文件真值）✅
 

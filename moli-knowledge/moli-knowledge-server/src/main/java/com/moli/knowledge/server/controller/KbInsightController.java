@@ -5,6 +5,7 @@ import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
 import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.dto.LintIssueTypeVo;
 import com.moli.knowledge.server.support.KbLintIssueTypes;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.service.KbInsightService;
@@ -83,9 +84,9 @@ public class KbInsightController {
     }
 
     @GetMapping("/lint/issue-types")
-    @ApiOperation("KBOPS-8 · 支持的体检问题类型")
-    public MoliResult<List<String>> issueTypes() {
-        return MoliResult.success(KbLintIssueTypes.all());
+    @ApiOperation("KBOPS-8/10 · 体检问题类型（含 lint.py 对照）")
+    public MoliResult<List<LintIssueTypeVo>> issueTypes() {
+        return MoliResult.success(KbLintIssueTypes.descriptors());
     }
 
     @PutMapping("/lint/issue/{id}/assign")

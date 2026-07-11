@@ -637,9 +637,9 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | ✅ 后端 · 配 URL |
 | **KBOPS-6** | 前端 T16f Wiki 治理全按钮（同 T16f） | P1 | 📋 |
 | **KBOPS-7** | 前端 T19d 平台 LLM 设置页（同 T19d） | P1 | 📋 |
-| **KBOPS-8** | 体检工单增强：issue_type 扩展 + assignee/优先级 + 批量 + 可选定时 scan | P2 | 📋 |
+| **KBOPS-8** | 体检工单增强：issue_type 扩展 + assignee/优先级 + 批量 + 可选定时 scan | P2 | ✅ |
 | **KBOPS-9** | 知识库运维 Dashboard（`GET /kb/ops/dashboard`） | P2 | ✅ 后端 · 前端 O4 📋 |
-| **KBOPS-10** | Web 体检检查项对齐 `lint.py`（或明确分工文档） | P2 | 📋 |
+| **KBOPS-10** | Web 体检检查项对齐 `lint.py`（或明确分工文档） | P2 | ✅ |
 
 **建议起手**：前端 Tab1 接 `raw-prefixes` / O2 `async=true` 轮询；运维 E2E 见 `kb/tools/ci/run_govern_e2e.sh`。
 

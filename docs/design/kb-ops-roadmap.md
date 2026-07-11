@@ -82,9 +82,9 @@
 
 | 任务 | 内容 |
 |------|------|
-| **KBOPS-8** | 体检工单增强：扩展 issue_type、assignee/优先级、批量状态变更、可选定时 scan |
+| **KBOPS-8** | 体检工单增强：扩展 issue_type、assignee/优先级、批量状态变更、可选定时 scan | ✅ 2026-07-12 |
 | **KBOPS-9** | **知识库运维 Dashboard**：`GET /kb/ops/dashboard` — Sync 趋势、Lint 工单、LLM 摘要、漂移采样 | ✅ 后端 · 前端 O4 📋 |
-| **KBOPS-10** | Web 健康体检检查项对齐 `lint.py`（或明确"文件真值用治理页、DB 快照用体检页"的分工文档） |
+| **KBOPS-10** | Web 健康体检检查项对齐 `lint.py` + 分工文档（`GET /kb/lint/issue-types`、`LintVo.dataSource`、查询与体检指南 §3.3） | ✅ 2026-07-12 |
 
 ---
 
@@ -93,7 +93,7 @@
 | 表 | 用途 | 增量规划 |
 |----|------|----------|
 | `kb_sync_log` | Sync 审计 | ✅ KBOPS-1 `status/message`；O1 读 `action=batch` 汇总行 |
-| `kb_lint_issue` | 体检工单 | KBOPS-8 增 assignee/priority |
+| `kb_lint_issue` | 体检工单 | ✅ KBOPS-8 assignee/priority + 批量 API + 定时 scan |
 | `kb_platform_llm_config` | 平台 LLM 单例 | 已就绪（T19） |
 | `kb_llm_call_log`（新） | LLM 调用审计 | KBOPS-9 可选 |
 
