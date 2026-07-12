@@ -10,7 +10,7 @@
 
 ## 1. 背景与现状
 
-SVR-5 已提供单服务器拓扑：`GET /operation/server/{id}/topology` 返回 `{ server, projects[], components[] }`，前端在服务器管理页以**列表式弹窗**展示（关联项目/组件 + 健康徽章）。
+SVR-5 曾提供单服务器拓扑 `GET /operation/server/{id}/topology`，**已于 2026-07-12 删除**；由 `GET /operation/relations/server/{id}`（SVR-28b）承接，前端 RelationDrawer 统一调用。
 
 局限：
 
@@ -131,7 +131,7 @@ GET /operation/topology            # 权限 operation:server:list
 | 组件行端口校验 | `portMatchStatus` / `expectedPort`（topology VO 需补） | `PortMatchBadge` |
 | 最近任务 | `GET /operation/task/list?serverId=`（已有） | 弹窗底部「最近任务」5 条：类型/状态/时间，点击开 `DeployTaskDrawer` |
 
-后端改动仅限 `OperationServerTopologyVo` 的子项 VO 补字段（`OperationProjectDeployInfoVo` 已有部署字段则复用；`OperationComponentTopologyItemVo` 补 `portMatchStatus`/`expectedPort`）。
+P1.5 弹窗增强（部署/端口徽章 + 最近任务）由 `OperationRelationsVo` 字段直接提供，在 RelationDrawer（SVR-28d）中展示。
 
 ---
 

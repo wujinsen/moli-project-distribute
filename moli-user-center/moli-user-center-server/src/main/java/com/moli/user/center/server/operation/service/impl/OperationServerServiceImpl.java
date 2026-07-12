@@ -6,23 +6,15 @@ import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationServerRoles;
 import com.moli.user.center.common.domain.dto.operation.OperationServerTagsSupport;
-import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
-import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
-import com.moli.user.center.common.domain.vo.OperationComponentTopologyItemVo;
-import com.moli.user.center.common.domain.vo.OperationProjectDeployInfoVo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
 import com.moli.user.center.common.domain.vo.OperationServerSshVo;
-import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.user.center.common.domain.vo.OperationSshTestVo;
 import com.moli.user.center.common.domain.entity.OperationTask;
 import com.moli.user.center.server.operation.health.OperationHealthStatus;
 import com.moli.user.center.server.operation.health.OperationTcpProbe;
 import com.moli.user.center.server.operation.mapper.OperationTaskMapper;
-import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
-import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
-import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import com.moli.user.center.server.operation.ssh.OperationSshAuthType;
@@ -44,8 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,12 +48,6 @@ public class OperationServerServiceImpl implements OperationServerService {
     private OperationServerMapper operationServerMapper;
     @Resource
     private OperationCrudSupport crudSupport;
-    @Resource
-    private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
-    @Resource
-    private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
-    @Resource
-    private OperationServerLinkMapper operationServerLinkMapper;
     @Resource
     private OperationSecretSupport secretSupport;
     @Resource
@@ -171,16 +155,6 @@ public class OperationServerServiceImpl implements OperationServerService {
     }
 
     @Override
-    public OperationServerTopologyVo getTopology(Long id) {
-        OperationServerInfo server = requireRow(id);
-        OperationServerTopologyVo topology = new OperationServerTopologyVo();
-        topology.setServer(toVo(server));
-        topology.setProjects(loadProjects(server));
-        topology.setComponents(loadComponents(server));
-        return topology;
-    }
-
-    @Override
     public OperationServerVo checkHealth(Long id) {
         OperationServerInfo row = requireRow(id);
         int status = OperationTcpProbe.probe(row.getIp(), row.getPort());
@@ -241,76 +215,6 @@ public class OperationServerServiceImpl implements OperationServerService {
     @Override
     public OperationServerInfo requireEntity(Long id) {
         return requireRow(id);
-    }
-
-    private List<OperationProjectDeployInfoVo> loadProjects(OperationServerInfo server) {
-        Set<Long> projectIds = new LinkedHashSet<>(operationServerLinkMapper.selectProjectIdsByServerId(server.getId()));
-        LambdaQueryWrapper<OperationProjectDeployInfo> byServerId = new LambdaQueryWrapper<>();
-        byServerId.eq(OperationProjectDeployInfo::getServerId, server.getId());
-        operationProjectDeployInfoMapper.selectList(byServerId).forEach(p -> projectIds.add(p.getId()));
-
-        if (projectIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-        List<OperationProjectDeployInfo> rows = operationProjectDeployInfoMapper.selectBatchIds(projectIds);
-        Map<Long, OperationProjectDeployInfoVo> ordered = new LinkedHashMap<>();
-        for (OperationProjectDeployInfo row : rows) {
-            OperationProjectDeployInfoVo vo = new OperationProjectDeployInfoVo();
-            BeanUtils.copyProperties(row, vo);
-            ordered.put(row.getId(), vo);
-        }
-        return new ArrayList<>(ordered.values());
-    }
-
-    private List<OperationComponentTopologyItemVo> loadComponents(OperationServerInfo server) {
-        Set<Long> componentIds = new LinkedHashSet<>(operationServerLinkMapper.selectComponentIdsByServerId(server.getId()));
-
-        LambdaQueryWrapper<OperationComponentDeployInfo> byServerId = new LambdaQueryWrapper<>();
-        byServerId.eq(OperationComponentDeployInfo::getServerId, server.getId());
-        operationComponentDeployInfoMapper.selectList(byServerId).forEach(c -> componentIds.add(c.getId()));
-
-        LambdaQueryWrapper<OperationComponentDeployInfo> byIp = new LambdaQueryWrapper<>();
-        List<String> serverIps = collectServerIps(server);
-        if (!serverIps.isEmpty()) {
-            byIp.in(OperationComponentDeployInfo::getServerIp, serverIps);
-            operationComponentDeployInfoMapper.selectList(byIp).forEach(c -> componentIds.add(c.getId()));
-        }
-
-        if (componentIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return operationComponentDeployInfoMapper.selectBatchIds(componentIds).stream()
-                .map(this::toComponentTopologyItem)
-                .collect(Collectors.toList());
-    }
-
-    private static List<String> collectServerIps(OperationServerInfo server) {
-        List<String> ips = new ArrayList<>(2);
-        if (StringUtils.isNotBlank(server.getIp())) {
-            ips.add(server.getIp().trim());
-        }
-        if (StringUtils.isNotBlank(server.getInnerIp())) {
-            String inner = server.getInnerIp().trim();
-            if (!ips.contains(inner)) {
-                ips.add(inner);
-            }
-        }
-        return ips;
-    }
-
-    private OperationComponentTopologyItemVo toComponentTopologyItem(OperationComponentDeployInfo row) {
-        OperationComponentTopologyItemVo vo = new OperationComponentTopologyItemVo();
-        vo.setId(row.getId());
-        vo.setComponentName(row.getComponentName());
-        vo.setServerId(row.getServerId());
-        vo.setServerIp(row.getServerIp());
-        vo.setPort(row.getPort());
-        vo.setVersion(row.getVersion());
-        vo.setDeployPath(row.getDeployPath());
-        vo.setEnvironment(row.getEnvironment());
-        vo.setStatus(row.getStatus());
-        vo.setLastCheckTime(row.getLastCheckTime());
-        return vo;
     }
 
     private OperationServerInfo requireRow(Long id) {

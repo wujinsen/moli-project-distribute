@@ -163,7 +163,8 @@
 - `PUT /operation/server`：`operation:server:edit` + `list`
 - `GET /operation/server/{id}`：`operation:server:list`
 - `DELETE /operation/server/{ids}`：`operation:server:remove` + `list`
-- `GET /operation/server/{id}/topology`：`operation:server:list`；返回 `OperationServerTopologyVo`（server + projects + components）
+- `GET /operation/server/{id}/links`：`operation:server:list`；N:N 项目/组件 ID
+- ~~`GET /operation/server/{id}/topology`~~：**已删除**（SVR-5）；改用 `GET /operation/relations/server/{id}`
 - `POST /operation/server/{id}/check`：`operation:server:list`；TCP 探活，更新并返回 `OperationServerVo`
 - `GET /operation/server/{id}/links`：`operation:server:list`；返回 `OperationServerLinksVo`（`projectIds` / `componentIds`）
 - `PUT /operation/server/{id}/links`：`operation:server:edit` + `list`；全量替换 N:N 关联

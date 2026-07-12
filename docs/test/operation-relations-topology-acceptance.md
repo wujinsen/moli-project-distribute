@@ -3,7 +3,7 @@
 > 模块：`moli-user-center-server` + `meiling-ui`（前端 S10/S11 待做）  
 > 契约：[`docs/api/operation-frontend.md`](../api/operation-frontend.md) §5.6~5.8  
 > 设计：[`server-topology-visualization.md`](../design/server-topology-visualization.md)、[`operation-relations-navigation.md`](../design/operation-relations-navigation.md)  
-> 自动化：`mvn -pl moli-user-center-server -Dtest=Operation*Relation*,Operation*Topology*,OperationProjectComponentLink* test`
+> 自动化：`mvn -pl moli-user-center-server -Dtest=Operation*Relation*,Operation*Topology*,OperationProjectComponentLink*,OperationRelationsTopologyControllersApiTest test`
 
 ## 0. 前置条件
 
@@ -91,3 +91,4 @@
 | `OperationRelationServiceImplTest` | 三实体视角、primary 标记、非法类型 |
 | `OperationTopologyServiceImplTest` | 节点前缀、deploys 去重、depends_on 边 |
 | `OperationServerCascadeSupportTest` | 删项目/组件时清理 `operation_project_component` |
+| `OperationRelationsTopologyControllersApiTest` | Controller：`GET /topology`、`GET /relations/*`、`GET/PUT component-links` |

@@ -38,7 +38,7 @@
 
 | 能力 | 使用字段 |
 |------|----------|
-| `GET /operation/server/{id}/topology` | N:N + `server_id` 回退 |
+| `GET /operation/relations/server/{id}` | N:N + 主 `server_id` + `server_ip` 回退（SVR-28b） |
 | `GET /operation/deploy/{key}/status?serverId=` | 单条台账的 **主** `serverId` |
 | `POST .../task?serverId=&projectId=` | `projectId` 定位台账行；`serverId` 指定远程主机（须在 N:N 或主 `server_id` 中） |
 

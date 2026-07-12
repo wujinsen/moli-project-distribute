@@ -76,7 +76,7 @@ GET /operation/relations/{entityType}/{id}     # entityType = server | project |
 
 - **一个接口吃三个方向**，`servers` 里标 `primary`（主 `server_id`）
 - `recentTasks` 按 `serverId` / `projectId` 命中 `operation_task` 取最近 5 条
-- 单机版 `GET /operation/server/{id}/topology`（SVR-5）**保留不动**，新 API 是它的泛化；前端逐步迁到新 API 后再评估下线
+- 单机服务器关联详情改用 `GET /operation/relations/server/{id}`（SVR-28b）；原 `GET /operation/server/{id}/topology`（SVR-5）已删除
 - SVR-25a 的 `GET /operation/topology`（全局图）与本 API 共享 `OperationRelationQuerySupport` 的 N:N 读取（含回退），只写一份
 
 ### 3.3 列表反向过滤

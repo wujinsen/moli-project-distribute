@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectComponent;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
+import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectComponentLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
+import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import com.moli.user.center.server.testsupport.MybatisPlusTestSupport;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +41,8 @@ public class OperationRelationQuerySupportTest {
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Mock
     private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
+    @Mock
+    private OperationServerMapper operationServerMapper;
 
     @Before
     public void setUp() {
@@ -100,5 +104,32 @@ public class OperationRelationQuerySupportTest {
         List<Long> ids = relationQuerySupport.resolveProjectIdsForServer(201L);
 
         assertEquals(Arrays.asList(402L, 401L), ids);
+    }
+
+    @Test
+    public void resolveComponentIdsForServer_includes_components_matching_public_or_inner_ip() {
+        OperationServerInfo server = new OperationServerInfo();
+        server.setId(201L);
+        server.setIp("203.0.113.10");
+        server.setInnerIp("10.0.0.5");
+        when(operationServerMapper.selectById(201L)).thenReturn(server);
+        when(operationServerLinkMapper.selectComponentIdsByServerId(201L)).thenReturn(Collections.emptyList());
+
+        OperationComponentDeployInfo byPublicIp = component(306L, "203.0.113.10");
+        OperationComponentDeployInfo byInnerIp = component(307L, "10.0.0.5");
+        when(operationComponentDeployInfoMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Collections.emptyList())
+                .thenReturn(Arrays.asList(byPublicIp, byInnerIp));
+
+        List<Long> ids = relationQuerySupport.resolveComponentIdsForServer(201L);
+
+        assertEquals(Arrays.asList(306L, 307L), ids);
+    }
+
+    private static OperationComponentDeployInfo component(Long id, String serverIp) {
+        OperationComponentDeployInfo row = new OperationComponentDeployInfo();
+        row.setId(id);
+        row.setServerIp(serverIp);
+        return row;
     }
 }

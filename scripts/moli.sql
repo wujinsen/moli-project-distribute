@@ -124,6 +124,30 @@ INSERT INTO `operation_project_deploy_info` VALUES (405, 1, '2026-06-10 00:28:39
 INSERT INTO `operation_project_deploy_info` VALUES (406, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 201, '127.0.0.1', '127.0.0.1', 'http://localhost:9528', 'moli-admin', '/dev/moli-admin', '9528', 1, '本地前端开发服务');
 
 -- ----------------------------
+-- Table structure for operation_project_component
+-- ----------------------------
+DROP TABLE IF EXISTS `operation_project_component`;
+CREATE TABLE `operation_project_component`  (
+  `id` bigint NOT NULL COMMENT '主键',
+  `project_id` bigint NOT NULL COMMENT '项目 ID',
+  `component_id` bigint NOT NULL COMMENT '组件 ID',
+  `remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '依赖说明，如 业务库/会话缓存',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_operation_project_component`(`project_id` ASC, `component_id` ASC) USING BTREE,
+  INDEX `idx_opc_component`(`component_id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '项目→组件依赖（手工维护）' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of operation_project_component
+-- ----------------------------
+INSERT INTO `operation_project_component` VALUES (9201, 401, 307, '本地业务库');
+INSERT INTO `operation_project_component` VALUES (9202, 401, 306, '会话缓存');
+INSERT INTO `operation_project_component` VALUES (9203, 402, 301, '生产 MySQL');
+INSERT INTO `operation_project_component` VALUES (9204, 402, 302, '生产 Redis');
+INSERT INTO `operation_project_component` VALUES (9205, 404, 301, '测试 MySQL');
+INSERT INTO `operation_project_component` VALUES (9206, 404, 302, '测试 Redis');
+
+-- ----------------------------
 -- Table structure for operation_server_component
 -- ----------------------------
 DROP TABLE IF EXISTS `operation_server_component`;
@@ -656,6 +680,7 @@ INSERT INTO `sys_menu` VALUES (403, NULL, NULL, NULL, NULL, '平台管理', 'Pla
 INSERT INTO `sys_menu` VALUES (404, NULL, NULL, NULL, NULL, '组件管理', 'Components', 'コンポーネント', 400, 'component', 'operation/component/index', NULL, 'C', 'operation:component:list', 1, 'component', 4);
 INSERT INTO `sys_menu` VALUES (405, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '部署中心', 'Deploy Center', 'デプロイセンター', 400, 'deploy', 'operation/deploy/index', 'OperationDeployCenter', 'C', 'operation:server:list', 1, 'upload', 5);
 INSERT INTO `sys_menu` VALUES (406, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '端口矩阵', 'Port Matrix', 'ポートマトリクス', 400, 'port-matrix', 'operation/port-matrix/index', 'OperationPortMatrix', 'C', 'operation:port-matrix:list', 1, 'table', 6);
+INSERT INTO `sys_menu` VALUES (407, 1, '2026-07-12 00:00:00', 1, '2026-07-12 00:00:00', '拓扑图', 'Topology', 'トポロジ図', 400, 'topology', 'operation/topology/index', 'OperationTopology', 'C', 'operation:server:list', 1, 'git-branch', 7);
 INSERT INTO `sys_menu` VALUES (500, NULL, NULL, 2, '2026-06-09 21:58:01', 'ChatGPT', 'ChatGPT', 'ChatGPT', 0, 'chatgpt', NULL, 'Chatgpt', 'M', NULL, 0, 'message', 5);
 INSERT INTO `sys_menu` VALUES (501, NULL, NULL, 2, '2026-06-09 21:58:08', '智能对话', 'AI Chat', 'AI対話', 500, 'completion', 'chatgpt/completion/index', NULL, 'C', 'chatgpt:completion:list', 0, 'message', 1);
 INSERT INTO `sys_menu` VALUES (600, NULL, NULL, 1, '2026-06-09 23:00:34', '烛龙', 'Candlelight', '燭龍データ', 0, 'candlelight', NULL, NULL, 'M', NULL, 1, 'chart', 6);
@@ -1153,6 +1178,8 @@ INSERT INTO `sys_role_menu` VALUES (910400405, 1, 405);
 INSERT INTO `sys_role_menu` VALUES (910402405, 720354230530998272, 405);
 INSERT INTO `sys_role_menu` VALUES (910400406, 1, 406);
 INSERT INTO `sys_role_menu` VALUES (910720406, 720354230530998272, 406);
+INSERT INTO `sys_role_menu` VALUES (910400407, 1, 407);
+INSERT INTO `sys_role_menu` VALUES (910720407, 720354230530998272, 407);
 INSERT INTO `sys_role_menu` VALUES (722982329672269825, 720354230530998272, 500);
 INSERT INTO `sys_role_menu` VALUES (722982329672269826, 720354230530998272, 501);
 INSERT INTO `sys_role_menu` VALUES (722982329676464128, 720354230530998272, 600);

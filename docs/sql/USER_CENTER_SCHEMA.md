@@ -1,6 +1,6 @@
 # 用户中心 · 表结构设计
 
-> 更新：2026-06-25 · 基线脚本 [`scripts/moli.sql`](../../scripts/moli.sql)  
+> 更新：2026-07-12 · 基线脚本 [`scripts/moli.sql`](../../scripts/moli.sql)  
 > 实体源码：`moli-user-center-common/.../domain/entity/`  
 > RBAC 字段说明：[`../zh-CN/RBAC.md`](../zh-CN/RBAC.md) §2
 
@@ -23,7 +23,7 @@
 
 ---
 
-## 2. 表清单（22 张）
+## 2. 表清单（26 张）
 
 ### 2.1 RBAC 与组织（14）
 
@@ -50,7 +50,7 @@
 | `sys_login_log` | 登录成功/失败 |
 | `sys_operation_log` | 操作审计（模块、方法、参数、耗时） |
 
-### 2.3 运维资产（9）
+### 2.3 运维资产（10）
 
 | 表 | 说明 |
 |----|------|
@@ -58,13 +58,14 @@
 | `operation_server_info` | 服务器 |
 | `operation_server_project` | 服务器—项目 N:N |
 | `operation_project_deploy_info` | 项目部署信息 |
+| `operation_project_component` | 项目—组件依赖 N:N（SVR-26a；拓扑 `depends_on` 边） |
 | `operation_server_component` | 服务器—组件 N:N |
 | `operation_component_deploy_info` | 组件部署信息（含 `server_id`） |
 | `operation_task` | 运维异步任务（deploy/upload/command/health_probe）；含可选 `project_id` |
 | `operation_port_matrix` | 端口矩阵主表（SVR-21） |
 | `operation_port_matrix_alias` | 端口矩阵别名（全局唯一） |
 
-> 迁移：端口矩阵见 [`24_operation_port_matrix.sql`](24_operation_port_matrix.sql)。
+> 迁移：端口矩阵见 [`24_operation_port_matrix.sql`](24_operation_port_matrix.sql)；项目依赖见 [`29_operation_project_component.sql`](29_operation_project_component.sql)（已合并进 `moli.sql` 基线）。拓扑图菜单 id **407** 见 [`28_operation_topology_menu.sql`](28_operation_topology_menu.sql)（已合并进 `moli.sql` 基线）。
 
 ---
 
@@ -77,8 +78,9 @@ sys_dept ◄── sys_user ──► sys_user_role ──► sys_role ──►
                 ├── sys_user_post ──► sys_post
                 └── sys_user_system ──► sys_system
 
-operation_platform_info ──► operation_server_info ──► operation_server_project
-                                              └──► operation_server_component
+operation_platform_info ──► operation_server_info ──► operation_server_project ──► operation_project_deploy_info
+                                              └──► operation_server_component ──► operation_component_deploy_info
+operation_project_deploy_info ──► operation_project_component ──► operation_component_deploy_info
 ```
 
 可视化 RBAC 子集：[`../diagrams/moli-rbac-model.drawio`](../diagrams/moli-rbac-model.drawio) / [PNG](../diagrams/png/moli-rbac-model.png)。
@@ -123,6 +125,16 @@ operation_platform_info ──► operation_server_info ──► operation_serv
 | `menu_id` | 所属页面 |
 | `status` | 启用/停用 |
 
+### 4.5 `operation_project_component`（SVR-26a）
+
+| 字段 | 说明 |
+|------|------|
+| `project_id` | 项目 ID（逻辑外键 → `operation_project_deploy_info`） |
+| `component_id` | 组件 ID（逻辑外键 → `operation_component_deploy_info`） |
+| `remark` | 依赖说明，如「业务库」「会话缓存」 |
+
+唯一约束：`uk_operation_project_component(project_id, component_id)`。删除项目/组件时由 `OperationServerCascadeSupport` 级联清理。
+
 ---
 
 ## 5. DDL 来源与增量
@@ -132,7 +144,7 @@ operation_platform_info ──► operation_server_info ──► operation_serv
 | **新环境** | `scripts/init-db.ps1` 或导入 `scripts/moli.sql` |
 | **秒杀表** | 追加 `docs/sql/02_seckill_schema.sql` |
 | **知识库表** | 追加 `docs/sql/03_knowledge_schema.sql` |
-| **历史 patch** | 已合并进 `moli.sql`（含 21/22 部署中心 + 23 组件 `server_id`）；老库按 [`sql-migration-order.md`](../ops/sql-migration-order.md) 追 17→23 |
+| **历史 patch** | 已合并进 `moli.sql`（含 21/22 部署中心 + 23 组件 `server_id` + **28 拓扑菜单 407** + **29 项目依赖表**）；老库按 [`sql-migration-order.md`](../ops/sql-migration-order.md) 追 17→29 |
 
 ---
 
@@ -141,7 +153,7 @@ operation_platform_info ──► operation_server_info ──► operation_serv
 | 表 | 行数 | 备注 |
 |----|------|------|
 | `sys_user` | 33 | 含演示账号 |
-| `sys_menu` | 31 | 含 RBAC + 运维 + 知识库菜单 |
+| `sys_menu` | 32 | 含 RBAC + 运维（含拓扑图 407）+ 知识库菜单 |
 | `sys_role` | 10 | |
 | `sys_system` | 35 | 多系统门户演示 |
 | `sys_action` | 38 | 动作码目录 |

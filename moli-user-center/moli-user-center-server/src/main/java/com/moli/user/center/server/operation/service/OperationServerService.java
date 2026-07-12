@@ -4,7 +4,6 @@ import com.moli.user.center.common.domain.dto.operation.OperationServerSaveReque
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
 import com.moli.user.center.common.domain.vo.OperationServerSshVo;
-import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.user.center.common.domain.vo.OperationSshTestVo;
 import com.moli.common.page.PageRes;
@@ -25,8 +24,6 @@ public interface OperationServerService {
     void update(OperationServerSaveRequest request);
 
     void deleteByIds(Long[] ids);
-
-    OperationServerTopologyVo getTopology(Long id);
 
     OperationServerVo checkHealth(Long id);
 

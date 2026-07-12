@@ -9,6 +9,8 @@ import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfo
 import com.moli.user.center.server.operation.mapper.OperationProjectComponentLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
+import com.moli.user.center.server.operation.mapper.OperationServerMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -35,6 +37,8 @@ public class OperationRelationQuerySupport {
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Resource
     private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
+    @Resource
+    private OperationServerMapper operationServerMapper;
 
     public List<Long> resolveServerIdsForProject(Long projectId, Long primaryServerId) {
         Set<Long> ids = new LinkedHashSet<>(safeList(operationServerLinkMapper.selectServerIdsByProjectId(projectId)));
@@ -63,10 +67,21 @@ public class OperationRelationQuerySupport {
 
     public List<Long> resolveComponentIdsForServer(Long serverId) {
         Set<Long> ids = new LinkedHashSet<>(safeList(operationServerLinkMapper.selectComponentIdsByServerId(serverId)));
-        LambdaQueryWrapper<OperationComponentDeployInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(OperationComponentDeployInfo::getServerId, serverId);
-        wrapper.select(OperationComponentDeployInfo::getId);
-        operationComponentDeployInfoMapper.selectList(wrapper).forEach(row -> ids.add(row.getId()));
+        LambdaQueryWrapper<OperationComponentDeployInfo> byServerId = new LambdaQueryWrapper<>();
+        byServerId.eq(OperationComponentDeployInfo::getServerId, serverId);
+        byServerId.select(OperationComponentDeployInfo::getId);
+        operationComponentDeployInfoMapper.selectList(byServerId).forEach(row -> ids.add(row.getId()));
+
+        OperationServerInfo server = operationServerMapper.selectById(serverId);
+        if (server != null) {
+            List<String> serverIps = collectServerIps(server);
+            if (!serverIps.isEmpty()) {
+                LambdaQueryWrapper<OperationComponentDeployInfo> byIp = new LambdaQueryWrapper<>();
+                byIp.in(OperationComponentDeployInfo::getServerIp, serverIps);
+                byIp.select(OperationComponentDeployInfo::getId);
+                operationComponentDeployInfoMapper.selectList(byIp).forEach(row -> ids.add(row.getId()));
+            }
+        }
         return new ArrayList<>(ids);
     }
 
@@ -217,6 +232,20 @@ public class OperationRelationQuerySupport {
             counts.put(id, 0);
         }
         return counts;
+    }
+
+    private static List<String> collectServerIps(OperationServerInfo server) {
+        List<String> ips = new ArrayList<>(2);
+        if (StringUtils.isNotBlank(server.getIp())) {
+            ips.add(server.getIp().trim());
+        }
+        if (StringUtils.isNotBlank(server.getInnerIp())) {
+            String inner = server.getInnerIp().trim();
+            if (!ips.contains(inner)) {
+                ips.add(inner);
+            }
+        }
+        return ips;
     }
 
     private static <T> List<T> safeList(List<T> list) {

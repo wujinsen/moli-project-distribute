@@ -9,7 +9,6 @@ import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.vo.OperationServerInfoVo;
 import com.moli.user.center.common.domain.vo.OperationServerLinksVo;
 import com.moli.user.center.common.domain.vo.OperationServerSshVo;
-import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.user.center.common.domain.vo.OperationSshTestVo;
 import com.moli.common.page.PageRes;
@@ -73,13 +72,6 @@ public class OperationServerController {
     @ApiOperation(value = "查询单个服务器", notes = "查询单个服务器")
     public MoliResult<OperationServerVo> selectOne(@PathVariable Long id) {
         return MoliResult.success(operationServerService.getById(id));
-    }
-
-    @GetMapping(value = "/{id}/topology")
-    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
-    @ApiOperation(value = "服务器拓扑", notes = "聚合该服务器上的项目与组件")
-    public MoliResult<OperationServerTopologyVo> topology(@PathVariable Long id) {
-        return MoliResult.success(operationServerService.getTopology(id));
     }
 
     @PostMapping(value = "/{id}/check")

@@ -80,7 +80,7 @@
 | 任务 | 内容 |
 |------|------|
 | **SVR-4** | **健康探测**：对 `operation_server_info` / `operation_component_deploy_info` 做 TCP 端口探活，记录 `last_check_time` / `status`；`POST .../check` 触发探测 | ✅ 2026-07-09 |
-| **SVR-5** | **级联视图**：`GET /operation/server/{id}/topology` 返回该服务器上的项目 + 组件（聚合 N:N + server_id/server_ip 回退） | ✅ 2026-07-09 |
+| **SVR-5** | **级联视图**：原 `GET /operation/server/{id}/topology` → **已删除**，由 `GET /operation/relations/server/{id}`（SVR-28b）承接 | ✅ 2026-07-09 · 下线 2026-07-12 |
 | **SVR-6** | 前端「运维管理」页展示状态灯 + 行内探测 + 拓扑弹窗 + 关联编辑（meiling-ui） | ✅ 2026-07-10 · [operation-frontend.md](../api/operation-frontend.md) §5 |
 
 ### P2 —— 联动与自动化（按需）
@@ -160,7 +160,7 @@
 |------|------|------|
 | **SVR-25a** | 后端 `GET /operation/topology` 全局聚合 API（三表 + 两 N:N，回退主 `server_id`） | ✅ |
 | **SVR-25b** | meiling-ui `TopologyGraphView`（ECharts force/circular + 环境/角色/标签筛选 + `ServerDetailModal` 联动） | ⬜ |
-| **SVR-25c** | 菜单 SQL `28_operation_topology_menu.sql`（perms 复用 `operation:server:list`） | ⬜ |
+| **SVR-25c** | 菜单 SQL `28_operation_topology_menu.sql`（perms 复用 `operation:server:list`） | ✅ · 已合并 `moli.sql` |
 | **SVR-25d** | 单机拓扑弹窗叠加 `deployRunning` / `portMatchStatus` / 最近任务 | ⬜ |
 | **SVR-26a** | `operation_project_component` 表 + `component-links` API + 拓扑 `depends_on` 边 | ✅ |
 | **SVR-26b** | 项目页组件依赖维护弹窗 + 拓扑依赖边开关 | ⬜ |

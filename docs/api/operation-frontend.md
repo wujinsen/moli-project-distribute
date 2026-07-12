@@ -233,48 +233,23 @@ POST /operation/component/{id}/check
 
 `OperationComponentVo` 同样含 `status`、`lastCheckTime`（另含 §3.3 端口字段）。
 
-### 5.3 服务器拓扑（S2）
+### 5.3 服务器关联详情（SVR-28b · 替代原 SVR-5 单机拓扑）
+
+> **已删除** `GET /operation/server/{id}/topology`（SVR-5）。服务器行「拓扑/关联」弹窗统一改调：
 
 ```http
-GET /operation/server/{id}/topology
+GET /operation/relations/server/{id}
 ```
 
-**响应 `OperationServerTopologyVo`**：
-
-```typescript
-export type OperationServerTopology = {
-  server?: OperationServer
-  projects?: OperationTopologyProject[]
-  components?: OperationTopologyComponent[]
-}
-
-export type OperationTopologyProject = {
-  id?: number | string
-  projectName?: string
-  serverIp?: string
-  port?: string
-  deployPath?: string
-  url?: string
-  environment?: number
-}
-
-export type OperationTopologyComponent = {
-  id?: number | string
-  componentName?: string
-  serverIp?: string
-  port?: string
-  version?: string
-  status?: 0 | 1 | 2 | 3 | null
-}
-```
+**响应 `OperationRelationsVo`**（见 §5.7.2）：`entity` + `projects[]` + `components[]` + `recentTasks[]`（含 `deployRunning` / `portMatchStatus`）。
 
 | ID | UI |
 |----|-----|
-| **S2-1** | 服务器行操作「拓扑」→ 弹窗展示 `server` 摘要 + 关联 `projects` / `components` 列表 |
-| **S2-2** | 组件行可带 `HealthStatusBadge`（与列表一致） |
+| **S2-1** | 服务器行「关联」→ `RelationDrawer` 调 `GET /operation/relations/server/{id}` |
+| **S2-2** | 组件行带 `portMatchStatus`、健康 `status`；项目行带 `deployRunning` |
 | **S2-3** | （可选升级 **S6**）弹窗内「编辑关联」→ 调 `GET/PUT .../links` |
 
-**种子数据 smoke**：`GET /operation/server/201/topology` 应含项目 401/406、组件 306/307/304（以库内 seed 为准）。
+**种子数据 smoke**：`GET /operation/relations/server/201` 应含项目 401/406、组件 306/307/304（以库内 seed 为准）。
 
 ### 5.4 N:N 关联维护（S6）
 
@@ -599,7 +574,7 @@ import type {
   OperationPlatform,
   OperationProject,
   OperationServer,
-  OperationServerTopology,
+  OperationRelations,
   OperationPortAudit,
   OperationStats,
   OperationDeployStatus,
@@ -616,8 +591,8 @@ export const checkServerApi = (id: number | string) =>
 export const checkComponentApi = (id: number | string) =>
   request<OperationComponent>(`${OP}/component/${id}/check`, { method: 'POST' })
 
-export const getServerTopologyApi = (id: number | string) =>
-  request<OperationServerTopology>(`${OP}/server/${id}/topology`, { method: 'GET' })
+export const getServerRelationsApi = (id: number | string) =>
+  request<OperationRelations>(`${OP}/relations/server/${id}`, { method: 'GET' })
 
 export const revealPlatformSecretApi = (id: number | string) =>
   request<OperationSecretReveal>(`${OP}/platform/${id}/secret`, { method: 'GET' })

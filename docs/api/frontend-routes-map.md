@@ -53,7 +53,7 @@ Authorization: {token}  # 后续请求
 |---------|------|-----------|-----------|-------|-------------|
 | 400 | 运营管理 | `operation` | Layout | — | — |
 | 401 | 项目管理 | `operation/project/index` | ProjectManageView | `operation:project:list` | `/operation/project` |
-| 402 | 服务器管理 | `operation/server/index` | ServerManageView | `operation:server:list` | `/operation/server` + `topology` / `links` / `check` |
+| 402 | 服务器管理 | `operation/server/index` | ServerManageView | `operation:server:list` | `/operation/server` + `links` / `check`；关联详情 `/operation/relations/server/{id}` |
 | 403 | 平台管理 | `operation/platform/index` | PlatformManageView | `operation:platform:list` | `/operation/platform` + `secret` |
 | 404 | 组件管理 | `operation/component/index` | ComponentManageView | `operation:component:list` | `/operation/component` + `check` / `secret` |
 | 405 | 部署中心 | `operation/deploy/index` | DeployCenterView | `operation:server:list` | `/operation/deploy/*`、`/operation/file/upload`、`/operation/command/*`、`/operation/task/*` |

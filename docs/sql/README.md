@@ -69,6 +69,7 @@
 | `operation_component_deploy_info` | 8 | 是 |
 | `operation_platform_info` | 6 | 是 |
 | `operation_project_deploy_info` | 6 | 是 |
+| `operation_project_component` | 6 | 是 |
 | `operation_server_component` | 10 | 是 |
 | `operation_server_info` | 6 | 是 |
 | `operation_server_project` | 6 | 是 |
@@ -77,12 +78,12 @@
 | `sys_dict_data` | 35 | 是 |
 | `sys_dict_type` | 12 | 是 |
 | `sys_login_log` | 39 | 否（审计表） |
-| `sys_menu` | 31 | 是 |
+| `sys_menu` | 32 | 是 |
 | `sys_operation_log` | 166 | 否（审计表） |
 | `sys_post` | 39 | 是 |
 | `sys_role` | 10 | 是 |
 | `sys_role_action` | 56 | 是 |
-| `sys_role_menu` | 45 | 是 |
+| `sys_role_menu` | 47 | 是 |
 | `sys_system` | 35 | 是 |
 | `sys_user` | 33 | 是 |
 | `sys_user_post` | 1 | 是 |

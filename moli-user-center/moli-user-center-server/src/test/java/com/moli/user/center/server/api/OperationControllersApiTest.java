@@ -14,7 +14,6 @@ import com.moli.user.center.common.domain.vo.OperationPlatformVo;
 import com.moli.user.center.common.domain.vo.OperationProjectLinksVo;
 import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.user.center.common.domain.vo.OperationServerLinksVo;
-import com.moli.user.center.common.domain.vo.OperationServerTopologyVo;
 import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
 import com.moli.user.center.common.domain.vo.OperationPortAuditVo;
@@ -185,12 +184,6 @@ public class OperationControllersApiTest extends AbstractApiTest {
     public void GET_operation_server_id() {
         when(operationServerService.getById(1L)).thenReturn(new OperationServerVo());
         ControllerTestSupport.assertSuccess(serverController.selectOne(1L));
-    }
-
-    @Test
-    public void GET_operation_server_topology() {
-        when(operationServerService.getTopology(1L)).thenReturn(new OperationServerTopologyVo());
-        ControllerTestSupport.assertSuccess(serverController.topology(1L));
     }
 
     @Test
