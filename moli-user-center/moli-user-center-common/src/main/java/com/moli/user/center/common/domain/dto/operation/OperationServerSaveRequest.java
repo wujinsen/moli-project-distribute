@@ -29,6 +29,13 @@ public class OperationServerSaveRequest {
     @OperationEnvironment
     private Integer environment;
 
+    @OperationServerRole
+    @Size(max = 32, message = "serverRole 过长")
+    private String serverRole;
+
+    @OperationServerTags
+    private java.util.List<String> tags;
+
     @Size(max = 512, message = "remark 过长")
     private String remark;
 }

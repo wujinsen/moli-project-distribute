@@ -43,6 +43,13 @@ public class OperationServerController {
         return MoliResult.success(operationServerService.list(operationServerInfoVo));
     }
 
+    @GetMapping("/tag-options")
+    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
+    @ApiOperation(value = "服务器标签选项", notes = "全库已用标签去重列表，供筛选与输入联想")
+    public MoliResult<java.util.List<String>> tagOptions() {
+        return MoliResult.success(operationServerService.listTagOptions());
+    }
+
     @PostMapping
     @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_ADD, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @MoliLog(title = "添加服务器", businessType = BusinessTypeEnum.INSERT)

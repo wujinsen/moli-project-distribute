@@ -59,7 +59,7 @@
 | `operation:command:exec` | `POST /operation/command/exec/task` 远程 shell；上传 `postAction=custom` |
 | `operation:ssh:manage` | `PUT /operation/server/{id}/ssh` SSH 凭据与 `uploadAllowedRoots` |
 
-迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**、**`23_operation_schema_hardening.sql`**、**`24_operation_port_matrix.sql`**（SVR-21）。完整顺序见 [`sql-migration-order.md`](../ops/sql-migration-order.md)。
+迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**、**`23_operation_schema_hardening.sql`**、**`24_operation_port_matrix.sql`**（SVR-21）、**`26_operation_server_role.sql`**（SVR-23）、**`27_operation_server_tags.sql`**（SVR-24）。完整顺序见 [`sql-migration-order.md`](../ops/sql-migration-order.md)。
 
 ---
 
@@ -76,7 +76,38 @@
 
 列表筛选：query 传 `environment`；空或不传表示全部。
 
-### 3.2 健康状态 `status`（服务器 / 组件）
+### 3.2 服务器角色 `serverRole`（SVR-23）
+
+与 `environment` **正交**：环境表示 dev/test/pre/pro；角色表示主机职能分类。
+
+| 值 | 含义 | i18n key |
+|----|------|----------|
+| `app` | 应用 / 业务服务主机 | `operation.serverRole.app` |
+| `db` | 数据库 | `operation.serverRole.db` |
+| `cache` | 缓存（Redis 等） | `operation.serverRole.cache` |
+| `mq` | 消息队列 | `operation.serverRole.mq` |
+| `gateway` | 网关 / 负载均衡 / Nginx | `operation.serverRole.gateway` |
+| `bastion` | 堡垒机 / 跳板 | `operation.serverRole.bastion` |
+| `middleware` | 中间件（Nacos、ZK、Kafka 等） | `operation.serverRole.middleware` |
+| `other` | 其它 | `operation.serverRole.other` |
+
+- 列表筛选：`GET /operation/server/list?serverRole=app`；空或不传表示全部。
+- 新建默认 `app`（后端未传时回填）；`POST`/`PUT` 请求体可带 `serverRole`；非法值校验失败。
+
+### 3.3 服务器标签 `tags`（SVR-24）
+
+自由标签，**一台服务器可多个**；存库为 JSON 数组字符串（如 `["pro","gz"]`）。
+
+| 规则 | 说明 |
+|------|------|
+| 格式 | 每项 1–32 字符，小写字母/数字/`-`/`:`/`_`，首字符须为字母或数字 |
+| 数量 | 最多 20 个；保存时去重、转小写 |
+| 筛选 | `GET /operation/server/list?tag=pro` 精确匹配单项（`JSON_CONTAINS`） |
+| 联想 | `GET /operation/server/tag-options` 返回全库已用标签去重排序 |
+
+请求/响应 VO 字段为 `tags: string[]`（非 JSON 字符串）。
+
+### 3.4 健康状态 `status`（服务器 / 组件）
 
 | 值 | 含义 | UI 建议 |
 |----|------|---------|
@@ -87,7 +118,7 @@
 
 探测接口会**写库**并返回更新后的 VO：`POST /operation/server/{id}/check`、`POST /operation/component/{id}/check`。
 
-### 3.3 端口校验 `portMatchStatus`（组件列表 VO）
+### 3.5 端口校验 `portMatchStatus`（组件列表 VO）
 
 | 值 | 含义 | UI 建议 |
 |----|------|---------|
@@ -98,7 +129,7 @@
 
 矩阵服务名与期望端口见 [§7](#7-端口矩阵对照表)。
 
-### 3.4 密码字段（平台 / 组件）
+### 3.6 密码字段（平台 / 组件）
 
 | 场景 | 行为 |
 |------|------|
@@ -166,7 +197,8 @@ export type OperationSecretReveal = { password?: string }
 ### 5.1 服务器列表 + 探测（S1）
 
 ```http
-GET  /operation/server/list?pageNum=1&pageSize=10&serverName=&ip=&environment=
+GET  /operation/server/list?pageNum=1&pageSize=10&serverName=&ip=&environment=&serverRole=&tag=
+GET  /operation/server/tag-options
 POST /operation/server/{id}/check
 ```
 
@@ -174,7 +206,9 @@ POST /operation/server/{id}/check
 
 ```typescript
 export type OperationServer = {
-  // ...serverName, ip, innerIp, port, environment, remark
+  // ...serverName, ip, innerIp, port, environment, serverRole, tags, remark
+  serverRole?: 'app' | 'db' | 'cache' | 'mq' | 'gateway' | 'bastion' | 'middleware' | 'other' | null
+  tags?: string[]
   status?: 0 | 1 | 2 | 3 | null
   lastCheckTime?: string | number | null
 }
@@ -182,6 +216,8 @@ export type OperationServer = {
 
 | ID | UI |
 |----|-----|
+| **S1-0** | 列表/表单增加「角色」列与筛选（`ServerRoleBadge` / `ServerRoleSelect`） |
+| **S1-0b** | 列表/表单「标签」列与筛选；`GET /tag-options` 联想（`ServerTagsInput` / `ServerTagsBadges`） |
 | **S1-1** | 列表增加「健康状态」列（灯 + 可选 `lastCheckTime`） |
 | **S1-2** | 行操作「探测」→ `check` API；成功后就地更新该行 `status` / `lastCheckTime` |
 

@@ -93,6 +93,42 @@ public class OperationSaveRequestValidationTest {
     }
 
     @Test
+    public void server_rejects_invalid_serverRole() {
+        OperationServerSaveRequest req = new OperationServerSaveRequest();
+        req.setServerName("moli-backend-dev");
+        req.setIp("127.0.0.1");
+        req.setServerRole("invalid");
+        assertFalse(validator.validate(req).isEmpty());
+    }
+
+    @Test
+    public void server_accepts_valid_serverRole() {
+        OperationServerSaveRequest req = new OperationServerSaveRequest();
+        req.setServerName("moli-mysql-pro");
+        req.setIp("10.0.0.1");
+        req.setServerRole("db");
+        assertTrue(validator.validate(req).isEmpty());
+    }
+
+    @Test
+    public void server_rejects_invalid_tags() {
+        OperationServerSaveRequest req = new OperationServerSaveRequest();
+        req.setServerName("moli-backend-dev");
+        req.setIp("127.0.0.1");
+        req.setTags(java.util.Arrays.asList("!!!", "ok"));
+        assertFalse(validator.validate(req).isEmpty());
+    }
+
+    @Test
+    public void server_accepts_valid_tags() {
+        OperationServerSaveRequest req = new OperationServerSaveRequest();
+        req.setServerName("moli-backend-dev");
+        req.setIp("127.0.0.1");
+        req.setTags(java.util.Arrays.asList("gz", "knowledge"));
+        assertTrue(validator.validate(req).isEmpty());
+    }
+
+    @Test
     public void deployTask_requires_valid_service_key_and_action() {
         OperationDeployTaskRequest req = new OperationDeployTaskRequest();
         req.setAction("restart");

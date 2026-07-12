@@ -23,6 +23,12 @@ public class OperationServerInfo extends BaseEntity {
     @ApiModelProperty("开发环境: 1: dev 2:test 3:pre 4:pro")
     private Integer environment;
 
+    @ApiModelProperty("角色 app/db/cache/mq/gateway/bastion/middleware/other")
+    private String serverRole;
+
+    @ApiModelProperty("标签 JSON 数组")
+    private String tags;
+
     private String remark;
 
     @ApiModelProperty("健康状态 0未知 1可达 2不可达 3跳过")

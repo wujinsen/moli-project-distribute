@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class OperationServerVo {
@@ -19,6 +20,8 @@ public class OperationServerVo {
     private String innerIp;
     private String port;
     private Integer environment;
+    private String serverRole;
+    private List<String> tags;
     private String remark;
 
     @ApiModelProperty("健康状态 0未知 1可达 2不可达 3跳过")

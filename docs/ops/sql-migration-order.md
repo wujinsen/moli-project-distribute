@@ -43,6 +43,8 @@
 | 18 | `17_kb_lint_ops_enhance.sql` | KBOPS-8 体检工单 `assignee_id`/`priority` + `kb:ops:dashboard` 动作 |
 | 18 | `24_operation_port_matrix.sql` | 端口矩阵表 + 种子 + 菜单 406 + `operation:port-matrix:*`（SVR-21） |
 | 19 | `25_operation_task_project_id.sql` | `operation_task.project_id` + 索引（Phase R3 P1） |
+| 20 | `26_operation_server_role.sql` | `operation_server_info.server_role` + 索引 + 按名称回填（SVR-23） |
+| 21 | `27_operation_server_tags.sql` | `operation_server_info.tags` JSON 数组 + 环境种子回填（SVR-24） |
 
 ---
 

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationServerRoles;
+import com.moli.user.center.common.domain.dto.operation.OperationServerTagsSupport;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
@@ -82,9 +84,32 @@ public class OperationServerServiceImpl implements OperationServerService {
         if (query.getEnvironment() != null) {
             wrapper.eq(OperationServerInfo::getEnvironment, query.getEnvironment());
         }
+        if (StringUtils.isNotBlank(query.getServerRole())) {
+            wrapper.eq(OperationServerInfo::getServerRole, query.getServerRole().trim());
+        }
+        if (StringUtils.isNotBlank(query.getTag())) {
+            String tag = OperationServerTagsSupport.normalizeTag(query.getTag());
+            if (tag != null && OperationServerTagsSupport.isValidTag(tag)) {
+                wrapper.apply("JSON_CONTAINS(COALESCE(tags, '[]'), {0})", "\"" + tag + "\"");
+            }
+        }
         wrapper.orderByDesc(OperationServerInfo::getCreateTime);
         return crudSupport.selectPage(operationServerMapper, wrapper,
                 query.getPageNum(), query.getPageSize(), this::toVo);
+    }
+
+    @Override
+    public List<String> listTagOptions() {
+        LambdaQueryWrapper<OperationServerInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(OperationServerInfo::getTags)
+                .isNotNull(OperationServerInfo::getTags)
+                .ne(OperationServerInfo::getTags, "");
+        List<OperationServerInfo> rows = operationServerMapper.selectList(wrapper);
+        List<List<String>> groups = new ArrayList<>();
+        for (OperationServerInfo row : rows) {
+            groups.add(OperationServerTagsSupport.parse(row.getTags()));
+        }
+        return OperationServerTagsSupport.mergeDistinct(groups);
     }
 
     @Override
@@ -98,6 +123,9 @@ public class OperationServerServiceImpl implements OperationServerService {
         assertUniqueIp(row, null);
         if (row.getStatus() == null) {
             row.setStatus(OperationHealthStatus.UNKNOWN);
+        }
+        if (StringUtils.isBlank(row.getServerRole())) {
+            row.setServerRole(OperationServerRoles.APP);
         }
         operationServerMapper.insert(row);
     }
@@ -296,6 +324,7 @@ public class OperationServerServiceImpl implements OperationServerService {
     private OperationServerVo toVo(OperationServerInfo row) {
         OperationServerVo vo = new OperationServerVo();
         BeanUtils.copyProperties(row, vo);
+        vo.setTags(OperationServerTagsSupport.parse(row.getTags()));
         // 私钥/密码不回显，仅暴露是否已配置
         vo.setSshConfigured(row.getSshAuthType() != null
                 && (StringUtils.isNotBlank(row.getSshPrivateKey()) || StringUtils.isNotBlank(row.getSshPassphrase())));

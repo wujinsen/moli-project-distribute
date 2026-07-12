@@ -166,6 +166,8 @@ CREATE TABLE `operation_server_info`  (
   `inner_ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '内网IP',
   `port` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '端口',
   `environment` int NULL DEFAULT NULL COMMENT '环境',
+  `server_role` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '角色 app/db/cache/mq/gateway/bastion/middleware/other',
+  `tags` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标签 JSON 数组',
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
   `status` tinyint NULL DEFAULT 0 COMMENT '健康 0未知 1可达 2不可达 3跳过',
   `last_check_time` datetime NULL DEFAULT NULL COMMENT '最近探测时间',
@@ -178,18 +180,19 @@ CREATE TABLE `operation_server_info`  (
   `upload_allowed_roots` text NULL COMMENT '该服务器允许上传的路径前缀',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_operation_server_env`(`environment` ASC) USING BTREE,
-  INDEX `idx_operation_server_ip`(`ip` ASC) USING BTREE
+  INDEX `idx_operation_server_ip`(`ip` ASC) USING BTREE,
+  INDEX `idx_operation_server_role`(`server_role` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '服务器信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of operation_server_info
 -- ----------------------------
-INSERT INTO `operation_server_info` VALUES (201, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-dev', '127.0.0.1', '127.0.0.1', '9080', 1, '本地开发机，跑 moli-server + Redis', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
-INSERT INTO `operation_server_info` VALUES (202, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-test', '10.0.1.10', '172.31.10.10', '9080', 2, '测试环境 EC2', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
-INSERT INTO `operation_server_info` VALUES (203, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pre', '10.0.2.10', '172.31.20.10', '9080', 3, '预发布环境 EC2', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
-INSERT INTO `operation_server_info` VALUES (204, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pro', '52.62.xxx.xxx', '172.31.30.10', '443', 4, '生产 EC2，Nginx 反代 api.wu-jinsen.com', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
-INSERT INTO `operation_server_info` VALUES (205, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-mysql-pro', '10.0.3.20', '172.31.30.20', '3306', 4, 'RDS MySQL 或自建数据库', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
-INSERT INTO `operation_server_info` VALUES (206, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-redis-pro', '10.0.3.30', '172.31.30.30', '6379', 4, 'Redis，Shiro Session 存储', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (201, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-dev', '127.0.0.1', '127.0.0.1', '9080', 1, 'app', '["local","dev"]', '本地开发机，跑 moli-server + Redis', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (202, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-test', '10.0.1.10', '172.31.10.10', '9080', 2, 'app', '["test"]', '测试环境 EC2', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (203, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pre', '10.0.2.10', '172.31.20.10', '9080', 3, 'app', '["pre"]', '预发布环境 EC2', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (204, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pro', '52.62.xxx.xxx', '172.31.30.10', '443', 4, 'gateway', '["pro","gateway"]', '生产 EC2，Nginx 反代 api.wu-jinsen.com', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (205, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-mysql-pro', '10.0.3.20', '172.31.30.20', '3306', 4, 'db', '["pro","db"]', 'RDS MySQL 或自建数据库', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (206, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-redis-pro', '10.0.3.30', '172.31.30.30', '6379', 4, 'cache', '["pro","cache"]', 'Redis，Shiro Session 存储', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
 
 -- ----------------------------
 -- Table structure for operation_server_project

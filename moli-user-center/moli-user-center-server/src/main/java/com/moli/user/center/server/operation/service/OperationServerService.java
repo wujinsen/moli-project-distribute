@@ -9,9 +9,14 @@ import com.moli.user.center.common.domain.vo.OperationServerVo;
 import com.moli.user.center.common.domain.vo.OperationSshTestVo;
 import com.moli.common.page.PageRes;
 
+import java.util.List;
+
 public interface OperationServerService {
 
     PageRes<OperationServerVo> list(OperationServerInfoVo query);
+
+    /** 全库已用标签（去重排序），供筛选/输入联想。 */
+    List<String> listTagOptions();
 
     OperationServerVo getById(Long id);
 

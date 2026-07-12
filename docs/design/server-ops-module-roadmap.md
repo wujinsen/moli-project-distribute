@@ -21,7 +21,7 @@
 | 表 | 用途 | 关键字段 |
 |----|------|----------|
 | `operation_platform_info` | 运维平台账号 | `platform_name`, `url`, `account`, `password`, `environment` |
-| `operation_server_info` | 服务器 | `server_name`, `ip`, `inner_ip`, `port`, `environment` |
+| `operation_server_info` | 服务器 | `server_name`, `ip`, `inner_ip`, `port`, `environment`, `server_role`, `tags` |
 | `operation_component_deploy_info` | 组件部署 | `component_name`, `server_ip`, `account`, `password`, `deploy_path`, `port`, `version`, `environment` |
 | `operation_project_deploy_info` | 项目部署 | `server_id`, `server_ip`, `url`, `project_name`, `deploy_path`, `port`, `environment` |
 | `operation_server_project` | 服务器↔项目 N:N | `server_id`, `project_id` |
@@ -135,6 +135,22 @@
 | **SVR-22b** | 项目 CRUD/VO `serverIds`；`GET/PUT /operation/project/{id}/links` | ✅ |
 | **SVR-22c** | 组件对称 API + `OperationComponentLinkService` | ✅ |
 | **SVR-22d** | meiling-ui 项目/组件编辑多选（S6-b） | ⬜ |
+
+### P2+ —— 服务器角色分类（SVR-23，2026-07-12）
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| **SVR-23a** | `operation_server_info.server_role` 列 + 索引 + 按名称回填 · [`26_operation_server_role.sql`](../sql/26_operation_server_role.sql) | ✅ |
+| **SVR-23b** | 后端 VO/DTO/校验 + 列表 `serverRole` 筛选；新建默认 `app` | ✅ |
+| **SVR-23c** | meiling-ui 服务器页角色筛选/列/表单 · `ServerRoleSelect` / `ServerRoleBadge` | ✅ |
+
+### P2+ —— 服务器标签（SVR-24，2026-07-12）
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| **SVR-24a** | `operation_server_info.tags` JSON 列 · [`27_operation_server_tags.sql`](../sql/27_operation_server_tags.sql) | ✅ |
+| **SVR-24b** | 后端 `tags[]` 校验 + 列表 `tag` 筛选 + `GET /tag-options` | ✅ |
+| **SVR-24c** | meiling-ui `ServerTagsInput` / `ServerTagsBadges` + 列表筛选 | ✅ |
 
 ---
 

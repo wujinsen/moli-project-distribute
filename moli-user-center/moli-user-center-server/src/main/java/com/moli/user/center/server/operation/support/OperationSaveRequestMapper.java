@@ -4,6 +4,7 @@ import com.moli.user.center.common.domain.dto.operation.OperationComponentSaveRe
 import com.moli.user.center.common.domain.dto.operation.OperationPlatformSaveRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationServerTagsSupport;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
@@ -36,6 +37,8 @@ public final class OperationSaveRequestMapper {
         row.setInnerIp(trim(req.getInnerIp()));
         row.setPort(trim(req.getPort()));
         row.setEnvironment(req.getEnvironment());
+        row.setServerRole(trim(req.getServerRole()));
+        row.setTags(OperationServerTagsSupport.toJson(req.getTags()));
         row.setRemark(trim(req.getRemark()));
         return row;
     }
