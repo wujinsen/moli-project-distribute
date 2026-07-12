@@ -20,6 +20,8 @@
 | **P2** | 驾驶舱 ops KPI | `CandlelightDragon/cockpit/index`（tab=ops） | ✅ SVR-9 | **S5** 合并 `/operation/stats` |
 | **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-11 | **S6** 拓扑弹窗内编辑关联 |
 | **P2+** | 项目/组件多服务器 | `operation/project/index`、`operation/component/index` | ✅ SVR-22 | **S6-b** 列表行「关联服务器」多选弹窗 |
+| **P4** | 全局拓扑图 | `operation/topology/index`（待菜单） | ✅ SVR-25a | **S10** ECharts 拓扑页 |
+| **P4** | 关联关系导航 | 三管理页 + 部署/任务 | ✅ SVR-26a/28a/28b | **S11** RelationDrawer + 关联列 chips |
 | **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 异步 probe-all + 轮询（见 §13） |
 | **P3** | SSH 凭据 | `operation/server/index` | ✅ SVR-13 | **S8** SSH 配置弹窗 + 测试连接 |
 | **P3** | 部署中心 | `operation/deploy/index` | ✅ SVR-14~20 | **S9** 远程启停 + 灵活上传 + 远程命令 + 任务轮询 |
@@ -60,7 +62,7 @@
 | `operation:command:exec` | `POST /operation/command/exec/task` 远程 shell；上传 `postAction=custom` |
 | `operation:ssh:manage` | `PUT /operation/server/{id}/ssh` SSH 凭据与 `uploadAllowedRoots` |
 
-迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**、**`23_operation_schema_hardening.sql`**、**`24_operation_port_matrix.sql`**（SVR-21）、**`26_operation_server_role.sql`**（SVR-23）、**`27_operation_server_tags.sql`**（SVR-24）。完整顺序见 [`sql-migration-order.md`](../ops/sql-migration-order.md)。
+迁移脚本（已有库需执行）：`docs/sql/17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql`、**`22_operation_command_flex.sql`**、**`23_operation_schema_hardening.sql`**、**`24_operation_port_matrix.sql`**（SVR-21）、**`26_operation_server_role.sql`**（SVR-23）、**`27_operation_server_tags.sql`**（SVR-24）、**`29_operation_project_component.sql`**（SVR-26a）。完整顺序见 [`sql-migration-order.md`](../ops/sql-migration-order.md)。
 
 ---
 
@@ -334,6 +336,116 @@ export type OperationComponentSave = {
 | **S6-b-2** | 组件列表行：同上 | ✅ |
 | **S6-b-3** | 列表列：主 `名称 · IP` + `+N` | ✅ |
 | **S6-b-4** | 部署启停仍用主 `serverId`（`row.serverId`） | ✅ |
+
+### 5.6 项目依赖组件（SVR-26a · ✅ 后端）
+
+```http
+GET /operation/project/{id}/component-links
+PUT /operation/project/{id}/component-links
+```
+
+**请求/响应 `OperationProjectComponentLinksVo`**：
+
+```typescript
+export type OperationProjectComponentLinks = {
+  projectId?: number | string
+  componentIds?: (number | string)[]
+}
+```
+
+| ID | UI | 状态 |
+|----|-----|------|
+| **S26-1** | 项目行「依赖组件」多选弹窗，`PUT .../component-links` 全量替换 | ⬜ |
+| **S26-2** | 拓扑图 `depends_on` 边（`GET /operation/topology` 已含） | ⬜ |
+
+### 5.7 关联关系导航（SVR-28 · 后端 ✅）
+
+#### 5.7.1 列表关系计数 + 反向过滤（SVR-28a）
+
+列表 VO 增量字段：
+
+| 页 | 字段 |
+|----|------|
+| 项目 | `serverCount`、`componentCount` |
+| 组件 | `serverCount`、`projectCount` |
+| 服务器 | `projectCount`、`componentCount` |
+
+反向过滤 query（可与 `environment` 等叠加）：
+
+| 列表 | 参数 | 语义 |
+|------|------|------|
+| `GET /operation/project/list` | `serverId` | 关联某服务器（含 N:N + 主 `server_id`） |
+| | `componentId` | 依赖某组件 |
+| `GET /operation/component/list` | `serverId` | 部署在某服务器（含 N:N） |
+| | `projectId` | 被某项目依赖 |
+| `GET /operation/server/list` | `projectId` | 承载某项目 |
+| | `componentId` | 承载某组件 |
+
+#### 5.7.2 统一关系 API（SVR-28b）
+
+```http
+GET /operation/relations/{entityType}/{id}
+```
+
+- `entityType`：`server` | `project` | `component`
+- 权限：`operation:project:list`（与项目列表相同）
+- 响应 `OperationRelationsVo`：`entity` + `servers[]`（含 `primary`）+ `projects[]` + `components[]` + `recentTasks[]`（最多 5 条）
+
+```typescript
+export type OperationRelations = {
+  entityType: 'server' | 'project' | 'component'
+  entity: { entityType: string; id: number; name: string; environment?: number }
+  servers: Array<{
+    id: number; serverName: string; ip?: string; innerIp?: string
+    environment?: number; serverRole?: string; tags?: string[]
+    status?: number; primary?: boolean
+  }>
+  projects: Array<{
+    id: number; projectName: string; port?: string; environment?: number
+    deployRunning?: boolean; portMatchStatus?: number
+  }>
+  components: Array<{
+    id: number; componentName: string; port?: string; version?: string
+    environment?: number; status?: number; portMatchStatus?: number
+  }>
+  recentTasks: Array<{
+    id: number; taskType?: string; action?: string; status?: string; createTime?: string
+  }>
+}
+```
+
+| ID | UI | 状态 |
+|----|-----|------|
+| **S11-1** | `RelationDrawer` 调统一 API，三管理页「关联」列 chips | ⬜ |
+| **S11-2** | 行内「定位」跳列表带 `serverId`/`projectId`/`componentId` 过滤 | ⬜ |
+| **S11-3** | 部署中心/任务历史实体名可点 → 同一抽屉 | ⬜ |
+
+### 5.8 全局拓扑图（SVR-25a · ✅ 后端）
+
+```http
+GET /operation/topology
+```
+
+- 权限：`operation:server:list`
+- 响应 `OperationTopologyGraphVo`：节点 id 前缀 `s-` / `p-` / `c-`；边 `type` = `deploys` | `depends_on`
+
+```typescript
+export type OperationTopologyGraph = {
+  servers: Array<{ id: string; serverId: number; serverName: string; ip?: string; innerIp?: string
+    environment?: number; serverRole?: string; tags?: string[]; status?: number }>
+  projects: Array<{ id: string; projectId: number; projectName: string; port?: string
+    environment?: number; deployRunning?: boolean; portMatchStatus?: number }>
+  components: Array<{ id: string; componentId: number; componentName: string; port?: string
+    version?: string; environment?: number; status?: number; portMatchStatus?: number }>
+  links: Array<{ source: string; target: string; type: 'deploys' | 'depends_on' }>
+}
+```
+
+| ID | UI | 状态 |
+|----|-----|------|
+| **S10-1** | 新页 `TopologyGraphView`（ECharts force/circular） | ⬜ |
+| **S10-2** | 筛选：环境/角色/标签/关键字；点服务器 → `ServerDetailModal` | ⬜ |
+| **S10-3** | 深链 `?focus=s-{id}|p-{id}|c-{id}`；导出 PNG | ⬜ |
 
 ---
 

@@ -1,6 +1,7 @@
 package com.moli.user.center.server.operation.support;
 
 import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
+import com.moli.user.center.server.operation.mapper.OperationProjectComponentLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerComponentLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerProjectLinkMapper;
@@ -29,6 +30,8 @@ public class OperationServerCascadeSupportTest {
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Mock
     private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
+    @Mock
+    private OperationProjectComponentLinkMapper operationProjectComponentLinkMapper;
 
     @Test
     public void onDeleteServer_clears_links_and_server_id() {
@@ -44,11 +47,13 @@ public class OperationServerCascadeSupportTest {
     public void onDeleteProject_removes_nn_row() {
         cascadeSupport.onDeleteProject(401L);
         verify(operationServerProjectLinkMapper, times(1)).delete(any());
+        verify(operationProjectComponentLinkMapper, times(1)).delete(any());
     }
 
     @Test
     public void onDeleteComponent_removes_nn_row() {
         cascadeSupport.onDeleteComponent(301L);
         verify(operationServerComponentLinkMapper, times(1)).delete(any());
+        verify(operationProjectComponentLinkMapper, times(1)).delete(any());
     }
 }

@@ -6,9 +6,11 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
+import com.moli.user.center.common.domain.vo.OperationProjectComponentLinksVo;
 import com.moli.user.center.common.domain.vo.OperationProjectLinksVo;
 import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.server.operation.service.OperationProjectComponentLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
 import io.swagger.annotations.Api;
@@ -31,6 +33,8 @@ public class OperationProjectController {
     private OperationProjectService operationProjectService;
     @Resource
     private OperationProjectLinkService operationProjectLinkService;
+    @Resource
+    private OperationProjectComponentLinkService operationProjectComponentLinkService;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
@@ -86,6 +90,23 @@ public class OperationProjectController {
     @ApiOperation(value = "保存项目关联服务器", notes = "全量替换 operation_server_project")
     public MoliResult<Boolean> saveLinks(@PathVariable Long id, @RequestBody OperationProjectLinksVo links) {
         operationProjectLinkService.saveLinks(id, links);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    @GetMapping(value = "/{id}/component-links")
+    @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
+    @ApiOperation(value = "项目依赖组件", notes = "查询项目关联的组件 ID 列表")
+    public MoliResult<OperationProjectComponentLinksVo> componentLinks(@PathVariable Long id) {
+        return MoliResult.success(operationProjectComponentLinkService.getLinks(id));
+    }
+
+    @PutMapping(value = "/{id}/component-links")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_PROJECT_EDIT, PermissionConstants.OPERATION_PROJECT_LIST}, logical = Logical.AND)
+    @MoliLog(title = "项目依赖组件", businessType = BusinessTypeEnum.UPDATE)
+    @ApiOperation(value = "保存项目依赖组件", notes = "全量替换 operation_project_component")
+    public MoliResult<Boolean> saveComponentLinks(@PathVariable Long id,
+                                                  @RequestBody OperationProjectComponentLinksVo links) {
+        operationProjectComponentLinkService.saveLinks(id, links);
         return MoliResult.success(Boolean.TRUE);
     }
 }

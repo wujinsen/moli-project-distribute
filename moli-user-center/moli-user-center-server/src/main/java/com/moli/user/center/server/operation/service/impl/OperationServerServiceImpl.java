@@ -31,6 +31,7 @@ import com.moli.user.center.server.operation.ssh.OperationSshCommandResult;
 import com.moli.user.center.server.operation.ssh.OperationSshSession;
 import com.moli.user.center.server.operation.support.OperationBizException;
 import com.moli.user.center.server.operation.support.OperationCrudSupport;
+import com.moli.user.center.server.operation.support.OperationRelationQuerySupport;
 import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
 import com.moli.user.center.server.operation.support.OperationSecretSupport;
 import com.moli.user.center.server.operation.support.OperationServerCascadeSupport;
@@ -71,6 +72,8 @@ public class OperationServerServiceImpl implements OperationServerService {
     private OperationServerCascadeSupport serverCascadeSupport;
     @Resource
     private OperationTaskMapper operationTaskMapper;
+    @Resource
+    private OperationRelationQuerySupport relationQuerySupport;
 
     @Override
     public PageRes<OperationServerVo> list(OperationServerInfoVo query) {
@@ -93,9 +96,17 @@ public class OperationServerServiceImpl implements OperationServerService {
                 wrapper.apply("JSON_CONTAINS(COALESCE(tags, '[]'), {0})", "\"" + tag + "\"");
             }
         }
+        if (query.getProjectId() != null) {
+            relationQuerySupport.applyServerProjectFilter(wrapper, query.getProjectId());
+        }
+        if (query.getComponentId() != null) {
+            relationQuerySupport.applyServerComponentFilter(wrapper, query.getComponentId());
+        }
         wrapper.orderByDesc(OperationServerInfo::getCreateTime);
-        return crudSupport.selectPage(operationServerMapper, wrapper,
+        PageRes<OperationServerVo> page = crudSupport.selectPage(operationServerMapper, wrapper,
                 query.getPageNum(), query.getPageSize(), this::toVo);
+        fillRelationCounts(page.getList());
+        return page;
     }
 
     @Override
@@ -329,5 +340,18 @@ public class OperationServerServiceImpl implements OperationServerService {
         vo.setSshConfigured(row.getSshAuthType() != null
                 && (StringUtils.isNotBlank(row.getSshPrivateKey()) || StringUtils.isNotBlank(row.getSshPassphrase())));
         return vo;
+    }
+
+    private void fillRelationCounts(List<OperationServerVo> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        List<Long> ids = list.stream().map(OperationServerVo::getId).collect(Collectors.toList());
+        Map<Long, Integer> projectCounts = relationQuerySupport.countProjectsByServerIds(ids);
+        Map<Long, Integer> componentCounts = relationQuerySupport.countComponentsByServerIds(ids);
+        for (OperationServerVo vo : list) {
+            vo.setProjectCount(projectCounts.getOrDefault(vo.getId(), 0));
+            vo.setComponentCount(componentCounts.getOrDefault(vo.getId(), 0));
+        }
     }
 }

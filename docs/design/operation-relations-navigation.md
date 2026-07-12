@@ -1,6 +1,6 @@
 # 运营管理 · 关联关系导航与搜索（SVR-28）
 
-> 更新：2026-07-12 · 状态：**设计稿（待排期）**
+> 更新：2026-07-12 · 状态：**后端 26a/28a/28b 已落地**；前端 RelationDrawer 待做（SVR-28c~f）
 > 归属：`moli-user-center` · 菜单「运营管理」(id 400) 全部子页 · meiling-ui
 > 姊妹篇：[`server-topology-visualization.md`](server-topology-visualization.md)（SVR-25 拓扑图 = 全局视角；本篇 = **列表内的关系视角**，两者共用关系数据）
 > 前置：**SVR-26a `operation_project_component` 表提级为本设计前置**（没有它「项目↔组件」无从谈起）

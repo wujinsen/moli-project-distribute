@@ -45,4 +45,10 @@ public class OperationServerVo {
 
     @ApiModelProperty("该服务器允许上传的路径前缀")
     private String uploadAllowedRoots;
+
+    @ApiModelProperty("关联项目数量")
+    private Integer projectCount;
+
+    @ApiModelProperty("关联组件数量")
+    private Integer componentCount;
 }

@@ -12,6 +12,7 @@ import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
 import com.moli.user.center.server.operation.service.OperationProjectLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
 import com.moli.user.center.server.operation.support.OperationCrudSupport;
+import com.moli.user.center.server.operation.support.OperationRelationQuerySupport;
 import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
 import com.moli.user.center.server.operation.support.OperationServerBindingSupport;
 import com.moli.user.center.server.operation.support.OperationServerCascadeSupport;
@@ -21,7 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OperationProjectServiceImpl implements OperationProjectService {
@@ -40,6 +44,8 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     private OperationServerLinkMapper operationServerLinkMapper;
     @Resource
     private OperationProjectLinkService operationProjectLinkService;
+    @Resource
+    private OperationRelationQuerySupport relationQuerySupport;
 
     @Override
     public PageRes<OperationProjectVo> list(OperationProjectDeployInfo query) {
@@ -53,9 +59,17 @@ public class OperationProjectServiceImpl implements OperationProjectService {
         if (query.getEnvironment() != null) {
             wrapper.eq(OperationProjectDeployInfo::getEnvironment, query.getEnvironment());
         }
+        if (query.getServerId() != null) {
+            relationQuerySupport.applyProjectServerFilter(wrapper, query.getServerId());
+        }
+        if (query.getComponentId() != null) {
+            relationQuerySupport.applyProjectComponentFilter(wrapper, query.getComponentId());
+        }
         wrapper.orderByDesc(OperationProjectDeployInfo::getCreateTime);
-        return crudSupport.selectPage(operationProjectDeployInfoMapper, wrapper,
+        PageRes<OperationProjectVo> page = crudSupport.selectPage(operationProjectDeployInfoMapper, wrapper,
                 query.getPageNum(), query.getPageSize(), this::toVo);
+        fillRelationCounts(page.getList());
+        return page;
     }
 
     @Override
@@ -119,6 +133,23 @@ public class OperationProjectServiceImpl implements OperationProjectService {
         vo.setDeployRunning(row.getDeployRunning());
         vo.setLastDeployCheckTime(row.getLastDeployCheckTime());
         return vo;
+    }
+
+    private void fillRelationCounts(List<OperationProjectVo> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        List<Long> ids = list.stream().map(OperationProjectVo::getId).collect(Collectors.toList());
+        Map<Long, Long> primaryByProject = new HashMap<>();
+        for (OperationProjectVo vo : list) {
+            primaryByProject.put(vo.getId(), vo.getServerId());
+        }
+        Map<Long, Integer> serverCounts = relationQuerySupport.countServersByProjectIds(ids, primaryByProject);
+        Map<Long, Integer> componentCounts = relationQuerySupport.countComponentsByProjectIds(ids);
+        for (OperationProjectVo vo : list) {
+            vo.setServerCount(serverCounts.getOrDefault(vo.getId(), 0));
+            vo.setComponentCount(componentCounts.getOrDefault(vo.getId(), 0));
+        }
     }
 
     private void applyPrimaryServerFromList(OperationProjectSaveRequest request) {

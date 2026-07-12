@@ -48,4 +48,10 @@ public class OperationComponentVo {
     private String expectedPort;
     @ApiModelProperty("0未映射 1一致 2不符 3跳过")
     private Integer portMatchStatus;
+
+    @ApiModelProperty("关联服务器数量（含主 server_id 与 N:N）")
+    private Integer serverCount;
+
+    @ApiModelProperty("被项目依赖数量")
+    private Integer projectCount;
 }

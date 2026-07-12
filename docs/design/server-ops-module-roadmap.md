@@ -1,6 +1,6 @@
 # 服务器运维模块 · 演进规划（技术端运维）
 
-> 更新：2026-07-12 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）；**P3 部署中心已落地**（SVR-13~20）；**P2+ 多服务器关联 / 角色 / 标签已落地**（SVR-22/23/24）；**P4 拓扑可视化设计稿**（SVR-25~27，见 [`server-topology-visualization.md`](server-topology-visualization.md)）
+> 更新：2026-07-12 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）；**P3 部署中心已落地**（SVR-13~20）；**P2+ 多服务器关联 / 角色 / 标签已落地**（SVR-22/23/24）；**P4 拓扑与关系导航后端已落地**（SVR-25a/26a/28a/28b ✅；前端 25b/28c 待做）
 > 归属：`moli-user-center` · `operation_*` 表 · 菜单「运营/运维管理」(id 400)
 > 边界：**只管服务器/基础设施资产运维**；知识库内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（另一条独立路线，互不重叠）
 
@@ -158,11 +158,12 @@
 
 | 任务 | 内容 | 状态 |
 |------|------|------|
-| **SVR-25a** | 后端 `GET /operation/topology` 全局聚合 API（三表 + 两 N:N，回退主 `server_id`） | ⬜ |
+| **SVR-25a** | 后端 `GET /operation/topology` 全局聚合 API（三表 + 两 N:N，回退主 `server_id`） | ✅ |
 | **SVR-25b** | meiling-ui `TopologyGraphView`（ECharts force/circular + 环境/角色/标签筛选 + `ServerDetailModal` 联动） | ⬜ |
 | **SVR-25c** | 菜单 SQL `28_operation_topology_menu.sql`（perms 复用 `operation:server:list`） | ⬜ |
 | **SVR-25d** | 单机拓扑弹窗叠加 `deployRunning` / `portMatchStatus` / 最近任务 | ⬜ |
-| **SVR-26a/b** | `operation_project_component` 依赖表 + API + 拓扑依赖边（**提级为 SVR-28 前置**） | ⬜ |
+| **SVR-26a** | `operation_project_component` 表 + `component-links` API + 拓扑 `depends_on` 边 | ✅ |
+| **SVR-26b** | 项目页组件依赖维护弹窗 + 拓扑依赖边开关 | ⬜ |
 | **SVR-27a/b** | SSH facts 白名单采集 / 探测历史曲线（远期） | ⬜ |
 
 ### P4 —— 关联关系导航与搜索（SVR-28，2026-07-12 设计）
@@ -172,8 +173,8 @@
 
 | 任务 | 内容 | 状态 |
 |------|------|------|
-| **SVR-28a** | 列表 VO 关系计数（GROUP BY 聚合）+ 项目/组件/服务器列表反向过滤参数 | ⬜ |
-| **SVR-28b** | 统一关系 API `GET /operation/relations/{type}/{id}`（servers/projects/components/recentTasks） | ⬜ |
+| **SVR-28a** | 列表 VO 关系计数（GROUP BY 聚合）+ 项目/组件/服务器列表反向过滤参数 | ✅ |
+| **SVR-28b** | 统一关系 API `GET /operation/relations/{type}/{id}`（servers/projects/components/recentTasks） | ✅ |
 | **SVR-28c** | `RelationDrawer` 组件 + 三管理页「关联」列 chips + URL 过滤 chip | ⬜ |
 | **SVR-28d** | 服务器页拓扑弹窗升级为 RelationDrawer（吸收 SVR-25d） | ⬜ |
 | **SVR-28e** | 平台/部署中心/端口矩阵/任务历史 接入（实体名可点） | ⬜ |

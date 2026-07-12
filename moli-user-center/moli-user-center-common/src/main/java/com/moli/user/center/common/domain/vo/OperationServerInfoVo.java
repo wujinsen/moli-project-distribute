@@ -29,5 +29,11 @@ public class OperationServerInfoVo extends BaseEntity {
     @ApiModelProperty("按标签筛选（精确匹配单项）")
     private String tag;
 
+    @ApiModelProperty("按关联项目筛选")
+    private Long projectId;
+
+    @ApiModelProperty("按关联组件筛选")
+    private Long componentId;
+
     private String remark;
 }

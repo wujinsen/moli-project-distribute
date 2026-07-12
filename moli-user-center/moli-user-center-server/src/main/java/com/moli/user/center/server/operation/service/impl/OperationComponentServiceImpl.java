@@ -15,6 +15,7 @@ import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
 import com.moli.user.center.server.operation.service.OperationComponentLinkService;
 import com.moli.user.center.server.operation.service.OperationComponentService;
 import com.moli.user.center.server.operation.support.OperationCrudSupport;
+import com.moli.user.center.server.operation.support.OperationRelationQuerySupport;
 import com.moli.user.center.server.operation.support.OperationSaveRequestMapper;
 import com.moli.user.center.server.operation.support.OperationSecretCrudSupport;
 import com.moli.user.center.server.operation.support.OperationServerBindingSupport;
@@ -26,7 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OperationComponentServiceImpl implements OperationComponentService {
@@ -47,6 +51,8 @@ public class OperationComponentServiceImpl implements OperationComponentService 
     private OperationServerLinkMapper operationServerLinkMapper;
     @Resource
     private OperationComponentLinkService operationComponentLinkService;
+    @Resource
+    private OperationRelationQuerySupport relationQuerySupport;
 
     @Override
     public PageRes<OperationComponentVo> list(OperationComponentDeployInfo query) {
@@ -58,14 +64,19 @@ public class OperationComponentServiceImpl implements OperationComponentService 
             wrapper.like(OperationComponentDeployInfo::getServerIp, query.getServerIp());
         }
         if (query.getServerId() != null) {
-            wrapper.eq(OperationComponentDeployInfo::getServerId, query.getServerId());
+            relationQuerySupport.applyComponentServerFilter(wrapper, query.getServerId());
+        }
+        if (query.getProjectId() != null) {
+            relationQuerySupport.applyComponentProjectFilter(wrapper, query.getProjectId());
         }
         if (query.getEnvironment() != null) {
             wrapper.eq(OperationComponentDeployInfo::getEnvironment, query.getEnvironment());
         }
         wrapper.orderByDesc(OperationComponentDeployInfo::getCreateTime);
-        return crudSupport.selectPage(operationComponentDeployInfoMapper, wrapper,
+        PageRes<OperationComponentVo> page = crudSupport.selectPage(operationComponentDeployInfoMapper, wrapper,
                 query.getPageNum(), query.getPageSize(), this::toVo);
+        fillRelationCounts(page.getList());
+        return page;
     }
 
     @Override
@@ -148,6 +159,23 @@ public class OperationComponentServiceImpl implements OperationComponentService 
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
         return vo;
+    }
+
+    private void fillRelationCounts(List<OperationComponentVo> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        List<Long> ids = list.stream().map(OperationComponentVo::getId).collect(Collectors.toList());
+        Map<Long, Long> primaryByComponent = new HashMap<>();
+        for (OperationComponentVo vo : list) {
+            primaryByComponent.put(vo.getId(), vo.getServerId());
+        }
+        Map<Long, Integer> serverCounts = relationQuerySupport.countServersByComponentIds(ids, primaryByComponent);
+        Map<Long, Integer> projectCounts = relationQuerySupport.countProjectsByComponentIds(ids);
+        for (OperationComponentVo vo : list) {
+            vo.setServerCount(serverCounts.getOrDefault(vo.getId(), 0));
+            vo.setProjectCount(projectCounts.getOrDefault(vo.getId(), 0));
+        }
     }
 
     private void applyPrimaryServerFromList(OperationComponentSaveRequest request) {

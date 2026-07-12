@@ -6,7 +6,9 @@ import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationServerComponent;
 import com.moli.user.center.common.domain.entity.OperationServerProject;
+import com.moli.user.center.common.domain.entity.OperationProjectComponent;
 import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfoMapper;
+import com.moli.user.center.server.operation.mapper.OperationProjectComponentLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerComponentLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerProjectLinkMapper;
@@ -24,6 +26,8 @@ public class OperationServerCascadeSupport {
     private OperationServerProjectLinkMapper operationServerProjectLinkMapper;
     @Resource
     private OperationServerComponentLinkMapper operationServerComponentLinkMapper;
+    @Resource
+    private OperationProjectComponentLinkMapper operationProjectComponentLinkMapper;
     @Resource
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Resource
@@ -57,6 +61,10 @@ public class OperationServerCascadeSupport {
         LambdaQueryWrapper<OperationServerProject> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OperationServerProject::getProjectId, projectId);
         operationServerProjectLinkMapper.delete(wrapper);
+
+        LambdaQueryWrapper<OperationProjectComponent> pc = new LambdaQueryWrapper<>();
+        pc.eq(OperationProjectComponent::getProjectId, projectId);
+        operationProjectComponentLinkMapper.delete(pc);
     }
 
     public void onDeleteComponent(Long componentId) {
@@ -66,5 +74,9 @@ public class OperationServerCascadeSupport {
         LambdaQueryWrapper<OperationServerComponent> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OperationServerComponent::getComponentId, componentId);
         operationServerComponentLinkMapper.delete(wrapper);
+
+        LambdaQueryWrapper<OperationProjectComponent> pc = new LambdaQueryWrapper<>();
+        pc.eq(OperationProjectComponent::getComponentId, componentId);
+        operationProjectComponentLinkMapper.delete(pc);
     }
 }

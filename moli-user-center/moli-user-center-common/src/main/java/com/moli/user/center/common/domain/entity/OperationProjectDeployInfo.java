@@ -1,7 +1,7 @@
 package com.moli.user.center.common.domain.entity;
 
 import com.moli.common.core.BaseEntity;
-import io.swagger.annotations.ApiModel;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -28,4 +28,8 @@ public class OperationProjectDeployInfo extends BaseEntity {
     @ApiModelProperty("部署进程是否运行（定时同步）")
     private Boolean deployRunning;
     private java.util.Date lastDeployCheckTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty("按依赖组件筛选")
+    private Long componentId;
 }

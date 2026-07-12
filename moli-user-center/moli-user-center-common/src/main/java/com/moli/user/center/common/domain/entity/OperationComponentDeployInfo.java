@@ -1,6 +1,7 @@
 package com.moli.user.center.common.domain.entity;
 
 import com.moli.common.core.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -33,4 +34,7 @@ public class OperationComponentDeployInfo extends BaseEntity {
     @ApiModelProperty("最近探测时间")
     private java.util.Date lastCheckTime;
 
+    @TableField(exist = false)
+    @ApiModelProperty("按依赖项目筛选")
+    private Long projectId;
 }

@@ -35,4 +35,10 @@ public class OperationProjectVo {
     @ApiModelProperty("部署进程是否运行（可映射 serviceKey 时由定时任务更新）")
     private Boolean deployRunning;
     private Date lastDeployCheckTime;
+
+    @ApiModelProperty("关联服务器数量（含主 server_id 与 N:N）")
+    private Integer serverCount;
+
+    @ApiModelProperty("依赖组件数量")
+    private Integer componentCount;
 }

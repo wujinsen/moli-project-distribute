@@ -5,8 +5,8 @@
 
 ## 1. 基本结论
 
-- 控制器数量: 15
-- HTTP 接口数量: 约 70（`GET/POST/PUT/DELETE` 注解统计）
+- 控制器数量: 17
+- HTTP 接口数量: 约 75（`GET/POST/PUT/DELETE` 注解统计）
 - 统一返回: `MoliResult<T>`
 - 分页返回: `PageRes<T>`
 - 鉴权方式: Shiro Session（token 实际为 sessionId）
@@ -158,7 +158,7 @@
 
 ### 服务器管理 `OperationServerController`（前缀 `/operation/server`，11个）
 
-- `GET /operation/server/list`：`operation:server:list`；返回 `OperationServerVo`（含 `status` / `lastCheckTime`）
+- `GET /operation/server/list`：`operation:server:list`；返回 `OperationServerVo`（含 `status` / `lastCheckTime` / `projectCount` / `componentCount` / `tags` / `serverRole`）；支持 `projectId`、`componentId` 反向过滤
 - `POST /operation/server`：`operation:server:add` + `list`
 - `PUT /operation/server`：`operation:server:edit` + `list`
 - `GET /operation/server/{id}`：`operation:server:list`
@@ -170,19 +170,21 @@
 - `PUT /operation/server/{id}/ssh`：`operation:ssh:manage`；保存 SSH 凭据 + `uploadAllowedRoots`（只写不读）
 - `POST /operation/server/{id}/ssh/test`：`operation:ssh:manage`；测试 SSH，返回 `OperationSshTestVo`
 
-### 项目管理 `OperationProjectController`（前缀 `/operation/project`，7个）
+### 项目管理 `OperationProjectController`（前缀 `/operation/project`，9个）
 
-- `GET /operation/project/list`：`operation:project:list`；返回 `OperationProjectVo`（含 `serverIds` / `expectedPort` / `portMatchStatus` / `deployRunning`）
+- `GET /operation/project/list`：`operation:project:list`；返回 `OperationProjectVo`（含 `serverIds` / `serverCount` / `componentCount` / `expectedPort` / `portMatchStatus` / `deployRunning`）；支持 `serverId`、`componentId` 反向过滤
 - `POST /operation/project`：`operation:project:add` + `list`；body 可传 `serverIds[]`，同步 `operation_server_project`
 - `PUT /operation/project`：`operation:project:edit` + `list`
 - `GET /operation/project/{id}`：`operation:project:list`；返回 VO（含 `serverIds`）
 - `DELETE /operation/project/{ids}`：`operation:project:remove` + `list`
 - `GET /operation/project/{id}/links`：`operation:project:list`；返回 `{ projectId, serverIds }`
 - `PUT /operation/project/{id}/links`：`operation:project:edit` + `list`；全量替换 N:N
+- `GET /operation/project/{id}/component-links`：`operation:project:list`；返回 `{ projectId, componentIds }`（SVR-26a）
+- `PUT /operation/project/{id}/component-links`：`operation:project:edit` + `list`；全量替换 `operation_project_component`
 
 ### 组件管理 `OperationComponentController`（前缀 `/operation/component`，9个）
 
-- `GET /operation/component/list`：`operation:component:list`；返回 `OperationComponentVo`（含 `serverIds` / `status` / `lastCheckTime`）
+- `GET /operation/component/list`：`operation:component:list`；返回 `OperationComponentVo`（含 `serverIds` / `serverCount` / `projectCount` / `status` / `lastCheckTime`）；支持 `serverId`（含 N:N）、`projectId` 反向过滤
 - `POST /operation/component`：`operation:component:add` + `list`；body 可传 `serverIds[]`
 - `PUT /operation/component`：`operation:component:edit` + `list`
 - `GET /operation/component/{id}`：`operation:component:list`；返回 VO（含 `serverIds`）
@@ -212,6 +214,14 @@
 ### 运维统计 `OperationStatsController`（前缀 `/operation`，1个）
 
 - `GET /operation/stats`：`operation:project:list`；台账计数 + 端口不符数 + 健康 DOWN 数（驾驶舱 ops 用）
+
+### 全局拓扑 `OperationTopologyController`（前缀 `/operation/topology`，1个 · SVR-25a）
+
+- `GET /operation/topology`：`operation:server:list`；返回 `OperationTopologyGraphVo`（servers/projects/components 节点 + `deploys`/`depends_on` 边）
+
+### 关联关系 `OperationRelationsController`（前缀 `/operation/relations`，1个 · SVR-28b）
+
+- `GET /operation/relations/{entityType}/{id}`：`operation:project:list`；`entityType` = `server`|`project`|`component`；返回 `OperationRelationsVo`（关联实体 + 最近 5 条任务）
 
 ### 部署与发布 `OperationDeployController` / `OperationFileController` / `OperationCommandController` / `OperationTaskController`
 
