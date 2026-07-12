@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moli.knowledge.server.mapper.KbDocumentChunkMapper">
+
+    <sql id="askChunkJoinWhere">
+        FROM kb_document_chunk c
+        INNER JOIN kb_document d ON d.id = c.document_id AND d.is_delete = 0
+        WHERE c.is_delete = 0
+        <if test="spaceIds != null and spaceIds.size() &gt; 0">
+            AND c.space_id IN
+            <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+        </if>
+        <if test="status != null">
+            AND c.status = #{status}
+        </if>
+        <if test="includeTypes != null and includeTypes.size() &gt; 0">
+            AND c.kb_type IN
+            <foreach collection="includeTypes" item="t" open="(" separator="," close=")">
+                #{t}
+            </foreach>
+        </if>
+        <if test="excludeTypes != null and excludeTypes.size() &gt; 0">
+            AND c.kb_type NOT IN
+            <foreach collection="excludeTypes" item="t" open="(" separator="," close=")">
+                #{t}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="searchAskChunkCandidates" resultType="com.moli.knowledge.server.dto.KbChunkAskRow">
+        SELECT c.id AS chunkId,
+               c.document_id AS documentId,
+               c.space_id AS spaceId,
+               c.slug,
+               d.title,
+               d.summary,
+               c.kb_type AS kbType,
+               c.heading,
+               c.content,
+               c.chunk_index AS chunkIndex
+        <include refid="askChunkJoinWhere"/>
+        <if test="keyword != null and keyword != ''">
+            AND MATCH(c.heading, c.content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
+        </if>
+        ORDER BY
+        MATCH(c.heading, c.content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) DESC,
+        c.chunk_index ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="searchAskChunkCandidatesLike" resultType="com.moli.knowledge.server.dto.KbChunkAskRow">
+        SELECT c.id AS chunkId,
+               c.document_id AS documentId,
+               c.space_id AS spaceId,
+               c.slug,
+               d.title,
+               d.summary,
+               c.kb_type AS kbType,
+               c.heading,
+               c.content,
+               c.chunk_index AS chunkIndex
+        <include refid="askChunkJoinWhere"/>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                c.heading LIKE CONCAT('%', #{keyword}, '%')
+                OR c.content LIKE CONCAT('%', #{keyword}, '%')
+                OR d.title LIKE CONCAT('%', #{keyword}, '%')
+                OR d.summary LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        ORDER BY c.update_time DESC, c.chunk_index ASC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

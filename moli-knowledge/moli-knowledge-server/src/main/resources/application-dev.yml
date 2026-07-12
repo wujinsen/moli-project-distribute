@@ -86,8 +86,10 @@ kb:
   search:
     # fulltext：用 kb_document 上 ngram 全文索引 ftx_kb_document（MATCH AGAINST）；like：旧三字段 LIKE
     mode: fulltext
-    # Query(/kb/ask) 候选召回上限：先用全文索引按相关度取至多 N 页，再做内存 bigram 精排，避免全量扫描
+    # Query(/kb/ask) 候选召回上限：先用全文索引按相关度取至多 N 页/段，再做内存 bigram 精排，避免全量扫描
     ask-candidate-limit: 100
+    # true：按 kb_document_chunk 切段召回（需 sync 写入 chunk）；false：整页召回
+    chunk-enabled: true
   sync:
     enabled: true
     python: python

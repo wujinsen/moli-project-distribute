@@ -47,6 +47,7 @@
 | 22 | `27_operation_server_tags.sql` | `operation_server_info.tags` JSON 数组 + 环境种子回填（SVR-24）；未执行 26 时可单独跑（`tags` 列接 `environment` 后） |
 | 23 | `29_operation_project_component.sql` | 项目→组件依赖 N:N 表（SVR-26a）；拓扑 `depends_on` 边与 `component-links` API 前置（**已合并进 `moli.sql` 基线**） |
 | 24 | `28_operation_topology_menu.sql` | 拓扑图菜单 407（SVR-25c）；perms 复用 `operation:server:list`（**已合并进 `moli.sql` 基线**） |
+| 25 | `29_kb_document_chunk.sql` | 知识库切段表 `kb_document_chunk` + ngram 全文（`/kb/ask` 按段召回） |
 
 ---
 

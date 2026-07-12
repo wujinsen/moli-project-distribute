@@ -113,7 +113,7 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 |------|----------|--------|------|
 | ① 纯 index | < ~300 页 | `index.md` 直读 + 全文读 | ✅ Agent 层（kb/ + serve.py）现仍用 |
 | ② 本地混合检索 | ~300–1000 页 / 召回变差 | qmd（本地 BM25+小向量+rerank，无服务） | 💤 暂不需要（Agent 层 index 仍够用） |
-| ③ 检索后端 | >1000–2000 页 / 多人产品 | **MySQL ngram 全文（已上）** → Meilisearch/Typesense → ES（海量）→ 向量库（语义） | ✅ **MySQL ngram 全文已落地**（产品层 browse+ask）；Meilisearch/ES 留待召回/规模信号 |
+| ③ 检索后端 | >1000–2000 页 / 多人产品 | **MySQL ngram 全文（已上）** → **chunk 切段（规范已定）** → Meilisearch/Typesense → ES（海量）→ 向量库（语义） | ✅ ngram 已落地；🔜 chunk 实现（[[知识库-chunk切段规范]]） |
 
 > 详见 [AGENTS.md §7](AGENTS.md)。原则：先把 markdown wiki 跑厚，搜不准再上 qmd，产品化才谈服务端。
 >
@@ -136,7 +136,7 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 | **Ingest 工作台（批次）** | raw 选源 → Plan → 多页草稿 → diff → lint → commit → Sync | ✅ M6 / T15（前端部分 🔵） |
 | **Wiki 治理（空间级）** | lint-space → script/ai/auto-fix → merge-hint → Sync | ✅ 后端 T16；🔵 T16f UI |
 | 权限隔离 | 复用现有 Shiro + Dubbo，在服务层/检索选页时做 ACL 过滤 | ✅ 空间 viewer/editor |
-| 评测 | 标准问答集 + 答对率/命中率/引用可追溯，回归看改动好坏 | 💤 |
+| 评测 | 标准问答集 + 答对率/命中率/引用可追溯，回归看改动好坏 | 🔜 骨架已建：`kb/eval/golden.jsonl`（12 题）+ `kb/tools/eval_ask.py`（hit@k/MRR/coverage，`--min-hit` 可作 CI 门禁）；待跑通基线并扩题 |
 
 ---
 

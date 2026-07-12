@@ -18,7 +18,8 @@
 | **Query `/kb/ask`（带引用 + 反馈）** | 🔜 | `kb_qa_log` |
 | **空间级 ACL（复用 Shiro/Dubbo）** | 🔜 | `kb_space_member` |
 | 面试题系列 / 作用域过滤（type/domain） | 🔜 | `kb_document`(+kb_type/domain) |
-| 全文检索（先 MySQL FULLTEXT，量大再外置） | 🔜 | `kb_document` ngram 全文索引 |
+| 全文检索（先 MySQL FULLTEXT，量大再外置） | ✅ | `kb_document` ngram 全文索引 |
+| **chunk 切段（/kb/ask 按段召回）** | ✅ | `kb_document_chunk`（sync 派生，见 `29_kb_document_chunk.sql`） |
 | **平台 LLM Web 配置（T19）** | ✅ | `kb_platform_llm_config`（设计 [`../design/kb-llm-platform-settings.md`](../design/kb-llm-platform-settings.md)） |
 
 通用约定：`bigint` 雪花主键；`create_id/create_time/update_id/update_time` 审计字段（MyBatis-Plus 自动填充）；`is_delete` 逻辑删除；**`utf8mb4`**。
@@ -36,6 +37,7 @@
 | `kb_space` | 知识空间（多租户 / 权限边界） | 不变 |
 | `kb_category` | 分类树（`parent_id` 自关联） | +`icon` |
 | `kb_document` | **知识文档（核心）** | +`slug` +`source` +`source_path` +`content_hash` +`kb_type` +`domain`，+全文索引 |
+| `kb_document_chunk` | **文档切段（ask 召回）** | sync 从正文按 `##` 派生；`ftx_kb_document_chunk(heading,content)` ngram |
 | `kb_tag` | 标签 | +`(space_id,tag_name)` 唯一 |
 | `kb_document_tag` | 文档-标签关联 | +`tag_id` 索引 |
 | `kb_comment` | 评论（`parent_id` 楼中楼） | 不变 |

@@ -21,8 +21,15 @@ public class KbSearchProperties {
      */
     private int askCandidateLimit = 100;
 
+    /** true：/kb/ask 按 kb_document_chunk 切段召回；false：整页召回（兼容回退）。 */
+    private boolean chunkEnabled = true;
+
     public boolean fullTextEnabled() {
         return "fulltext".equalsIgnoreCase(mode);
+    }
+
+    public boolean isChunkEnabled() {
+        return chunkEnabled;
     }
 
     public int normalizedAskCandidateLimit() {

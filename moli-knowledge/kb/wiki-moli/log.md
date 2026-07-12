@@ -42,3 +42,7 @@
 ## [2026-07-10] maintenance | lint-strict 收口 → 删除 T20/E2E 验收页（guides/x、guides/t20f-wiki-144730、wiki/database/e2e-import）；index 运维链修正；fix_moli_orphans 无 orphan 时跳过
 
 ## [2026-07-11] enrich | 远程部署自动化 SVR-13~17 → 前端部署中心/SSH 弹窗 + docs/sql/21 + operation-frontend §11 + wiki/腾讯云文档
+
+## [2026-07-13] implement | ask 作用域/精排优化 → golden hit@8=100%（M03/M06/E01 修复）
+## [2026-07-13] implement | chunk 切段 v1：sync_to_db 写 kb_document_chunk + /kb/ask 按段召回（+ eval 回归）
+## [2026-07-13] create | 知识库 chunk 切段规范 → develop/知识库-chunk切段规范（+ enrich 知识库服务/Meilisearch规划/技术方案索引；kb/eval README 链入）

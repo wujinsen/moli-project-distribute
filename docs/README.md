@@ -12,7 +12,7 @@
 | L0 | `.cursor/rules/*.mdc` | Cursor 自动注入（含 draw.io 触发） |
 | L1 | **`/AGENTS.md`** | monorepo 总入口：文档落点 + draw.io 强制 |
 | L2 | `moli-knowledge/kb/AGENTS.md` | 仅 wiki Ingest / sync |
-| L3 | `.cursor/skills/drawio-diagrams/` | 画图时必读 |
+| L3 | [`.cursor/skills/`](../.cursor/skills/) | 专项流程：draw.io · SQL 基线 · operation 模块 · kb ingest |
 
 各 `moli-user-center`、`moli-order` 等**不需要**单独 `AGENTS.md`；写 `moli-xxx/README.md` + ingest 到 `wiki-moli/develop/` 即可。
 

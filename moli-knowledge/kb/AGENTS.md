@@ -17,6 +17,7 @@
 | L1 | [`/AGENTS.md`](../../AGENTS.md) | 任何模块文档、架构图、API 索引 |
 | **L2** | **本文件** | 仅 `kb/raw`、`kb/wiki*` 维护 |
 | L3 | [`.cursor/skills/drawio-diagrams/`](../../.cursor/skills/drawio-diagrams/SKILL.md) | 文档需架构/ER/流程图时 **必须**调用 |
+| L3 | [`.cursor/skills/kb-ingest-sync/`](../../.cursor/skills/kb-ingest-sync/SKILL.md) | Ingest/Lint/Sync **速查**（完整规则仍在本文件） |
 
 **draw.io**：wiki 页与 `docs/` 同样禁止用 ASCII 箭头图作主图；优先链到 `docs/diagrams/moli-*.drawio` + PNG（见 L1 §3）。
 

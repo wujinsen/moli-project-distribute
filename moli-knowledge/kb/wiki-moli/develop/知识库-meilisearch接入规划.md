@@ -10,9 +10,9 @@ sources:
   - moli-knowledge/kb/ROADMAP.md
   - moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/impl/KbAskServiceImpl.java
   - docs/sql/KNOWLEDGE_SCHEMA.md
-related: [知识库设计哲学-docs-as-code, 知识库服务, kb-wiki到es同步流水线, wiki同步指南, 知识库使用指南]
+related: [知识库设计哲学-docs-as-code, 知识库-chunk切段规范, 知识库服务, kb-wiki到es同步流水线, wiki同步指南, 知识库使用指南]
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-13
 ---
 
 # 知识库 Meilisearch 接入规划
@@ -47,6 +47,10 @@ wiki/*.md → sync_to_db.py → MySQL（存储/ACL/分类，真相镜像）
 
 ## 2. 索引文档模型
 
+> **与 chunk 切段的关系（2026-07-13）**：若已落地 [[知识库-chunk切段规范]]，Meilisearch 索引粒度为 **1 chunk = 1 条文档**（非整页）。切段规则、字段冗余与 sync 钩子见该页 §3、§6；下文「一页一条」为 chunk 未上时的初版模型。
+
+### 2.1 chunk 未上（初版 / 浏览列表仍可按页）
+
 每篇 wiki 文档 → 一条 Meilisearch 文档：
 
 | 字段 | 来源 | Meilisearch 角色 |
@@ -72,6 +76,34 @@ wiki/*.md → sync_to_db.py → MySQL（存储/ACL/分类，真相镜像）
   "sortableAttributes": ["update_time"]
 }
 ```
+
+### 2.2 chunk 已上（推荐，`/kb/ask` 与精排召回）
+
+每个 `kb_document_chunk` → 一条 Meilisearch 文档：
+
+| 字段 | 来源 | Meilisearch 角色 |
+|------|------|------------------|
+| `id` | `kb_document_chunk.id` | 主键 |
+| `document_id` | chunk 表 | filter / 回查整页 |
+| `slug` | 冗余 | filter / 展示 / 引用 |
+| `heading` | 节标题 | **searchable**（加权） |
+| `content` | 切段正文 | **searchable** |
+| `title` | `kb_document.title` | **searchable**（页标题，可选冗余） |
+| `space_id` | 冗余 | **filterable**（ACL） |
+| `category_id` | 冗余 | **filterable** |
+| `kb_type` | 冗余 | **filterable** + facet |
+| `status` | 冗余 | **filterable** |
+| `chunk_index` | int | sortable / 同页内排序 |
+
+```json
+{
+  "searchableAttributes": ["heading", "content", "title"],
+  "filterableAttributes": ["space_id", "category_id", "kb_type", "status", "document_id"],
+  "sortableAttributes": ["chunk_index"]
+}
+```
+
+浏览侧栏 `/kb/document/search` 可继续按**整页**索引或 hit 聚合回 `document_id`（产品二选一，见 [[知识库-chunk切段规范]] §4）。
 
 ## 3. 体裁(kb_type)与分类(category)在检索中的位置
 
@@ -115,7 +147,7 @@ POST /indexes/kb/search
 
 | 事件 | 动作 |
 |------|------|
-| 新增 / 改 wiki 页 | `content_hash` 变 → bulk 写 Meilisearch 文档 |
+| 新增 / 改 wiki 页 | `content_hash` 变 → bulk 写 Meilisearch（chunk 已上时写 **chunk 行**，见 [[知识库-chunk切段规范]]） |
 | 删 / 移 wiki 页 | DB `is_delete=1` → Meilisearch **按 slug/id delete** |
 | 改体裁 `type:` | frontmatter 改 → Sync 更新 `kb_type` → reindex 该文档 |
 | 全量重建 | 从 MySQL `kb_document` 扫一遍 bulk（灾备/首次） |
@@ -143,8 +175,9 @@ MySQL ngram 全文（已上）
 
 建议顺序：
 
-1. **先按 MySQL** 落地体裁过滤 + facet（`/kb/document/search?kbType=`、`/kb/index/types`、`/kb/meta/kb-types`）——小、即用。
-2. 信号触发后，**只换 search 实现层**为 Meilisearch，接口与前端零改动；体裁这块零返工。
+1. **先落地 chunk 切段**（MySQL `kb_document_chunk` + ask 按段召回，见 [[知识库-chunk切段规范]]）并用 `kb/eval/golden.jsonl` 回归。
+2. **先按 MySQL** 落地体裁过滤 + facet（`/kb/document/search?kbType=`、`/kb/index/types`、`/kb/meta/kb-types`）——小、即用。
+3. 信号触发后，**只换 search 实现层**为 Meilisearch，接口与前端零改动；索引读 chunk 表 bulk。
 
 ## 相关
 

@@ -7,12 +7,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.knowledge.server.dto.AskRequest;
 import com.moli.knowledge.server.dto.AskResponse;
+import com.moli.knowledge.server.dto.KbChunkAskRow;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.dto.QaHistoryVo;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbQaLog;
 import com.moli.knowledge.server.enums.DocumentStatus;
+import com.moli.knowledge.server.mapper.KbDocumentChunkMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbQaLogMapper;
 import com.moli.knowledge.server.service.KbAclService;
@@ -28,8 +30,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,6 +60,8 @@ public class KbAskServiceImpl implements KbAskService {
 
     @Resource
     private KbDocumentMapper kbDocumentMapper;
+    @Resource
+    private KbDocumentChunkMapper kbDocumentChunkMapper;
     @Resource
     private KbQaLogMapper kbQaLogMapper;
     @Resource
@@ -87,56 +93,27 @@ public class KbAskServiceImpl implements KbAskService {
             return empty;
         }
 
-        // 候选召回：优先 ngram 全文按相关度取 top-N（避免全量载入内存）；
-        // 全文未启用 / 异常 / 0 命中时，回退到原「全量扫描」保证召回。
         int candidateLimit = kbSearchProperties.normalizedAskCandidateLimit();
-        List<KbDocument> candidates = null;
-        boolean usedFullText = false;
-        if (kbSearchProperties.fullTextEnabled() && StringUtils.isNotBlank(question)) {
-            try {
-                candidates = kbDocumentMapper.searchAskCandidates(
-                        scopeSpaces,
-                        DocumentStatus.PUBLISHED.getCode(),
-                        scope.include.isEmpty() ? null : scope.include,
-                        scope.exclude.isEmpty() ? null : new ArrayList<>(scope.exclude),
-                        question,
-                        candidateLimit);
-                usedFullText = candidates != null && !candidates.isEmpty();
-            } catch (Exception e) {
-                log.warn("ask 全文召回失败，回退全量扫描: {}", e.getMessage());
-                candidates = null;
-            }
-        }
-        if (candidates == null || candidates.isEmpty()) {
-            LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
-            wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
-            if (scopeSpaces.size() == 1) {
-                wrapper.eq(KbDocument::getSpaceId, scopeSpaces.get(0));
-            } else {
-                wrapper.in(KbDocument::getSpaceId, scopeSpaces);
-            }
-            if (!scope.include.isEmpty()) {
-                wrapper.in(KbDocument::getKbType, scope.include);
-            }
-            candidates = kbDocumentMapper.selectList(wrapper);
-            usedFullText = false;
-        }
+        List<AskResponse.Citation> citations;
+        String llmContext;
 
-        // 内存 bigram 重排精排。全文召回集已按相关度排序，命中保留（score==0 用全文序兜底）；
-        // 全量扫描兜底则仍按 score>0 过滤，避免把全库零分页塞进结果。
-        List<Scored> scored = new ArrayList<>();
-        for (KbDocument d : candidates) {
-            if (d.getKbType() != null && scope.exclude.contains(d.getKbType())) {
-                continue;
+        if (kbSearchProperties.isChunkEnabled()) {
+            ChunkRecallResult chunkResult = recallAndScoreChunks(scopeSpaces, scope, question, terms, candidateLimit);
+            DocumentRecallResult docResult = recallAndScoreDocuments(
+                    scopeSpaces, scope, question, terms, candidateLimit);
+            if (chunkResult != null && !chunkResult.scored.isEmpty()) {
+                citations = buildMergedCitations(chunkResult.scored, docResult.scored, terms, topK);
+                llmContext = buildChunkContext(chunkResult.scored, topK);
+            } else {
+                citations = buildDocumentCitations(docResult.scored, terms, topK);
+                llmContext = buildContext(docResult.scored, topK);
             }
-            int s = score(d, terms);
-            if (s > 0 || usedFullText) {
-                scored.add(new Scored(d, s));
-            }
+        } else {
+            DocumentRecallResult docResult = recallAndScoreDocuments(
+                    scopeSpaces, scope, question, terms, candidateLimit);
+            citations = buildDocumentCitations(docResult.scored, terms, topK);
+            llmContext = buildContext(docResult.scored, topK);
         }
-        // 稳定排序：分数降序，等分时保留全文相关度顺序
-        scored.sort((a, b) -> Integer.compare(b.score, a.score));
 
         AskResponse resp = new AskResponse();
         resp.setScope(scope.include.isEmpty() ? "全部类型" : scope.include.toString());
@@ -144,21 +121,14 @@ public class KbAskServiceImpl implements KbAskService {
         resp.setProvider(kbLlmClient.getProvider());
         resp.setModel(kbLlmClient.getModel());
 
-        List<AskResponse.Citation> citations = new ArrayList<>();
-        for (int i = 0; i < scored.size() && i < topK; i++) {
-            KbDocument d = scored.get(i).doc;
-            citations.add(new AskResponse.Citation(d.getId(), d.getSpaceId(), d.getSlug(), d.getTitle(),
-                    d.getKbType(), snippet(d, terms)));
-        }
         resp.setCitations(citations);
 
         if (shouldUseLlm(request) && !citations.isEmpty()) {
             try {
-                String ctx = buildContext(scored, topK);
                 Long askSpaceId = request.getSpaceId() != null ? request.getSpaceId()
                         : (scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null);
                 String answer = kbLlmClient.chat(KbLlmCallScenes.ASK, askSpaceId, SYSTEM_PROMPT,
-                        "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + ctx);
+                        "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + llmContext);
                 resp.setAnswer(answer);
                 resp.setMode("generative");
             } catch (Exception e) {                       // noqa
@@ -302,7 +272,22 @@ public class KbAskServiceImpl implements KbAskService {
             s.reason = "命中『方案/最佳实践』意图 → 限 article + concept";
             return s;
         }
-        if (find(q, "怎么|如何|启动|部署|配置|登录|操作|步骤|开通")) {
+        // 设计/原理类（概要设计、RBAC 模型怎么设计、JVM 怎么工作）→ 概念/文章，勿落 guide
+        if (find(q, "是怎么设计|如何设计|怎样设计|怎么设计|设计思路|概要设计|架构设计|"
+                + "是怎么工作|如何工作|怎样工作|怎么工作|工作原理|什么原理|怎么实现|如何实现")) {
+            s.include.add("concept");
+            s.include.add("article");
+            s.include.add("service");
+            s.reason = "命中『设计/原理』意图 → 限 concept + article + service";
+            return s;
+        }
+        // 「三操作」是知识库产品术语，勿与「怎么操作」意图混淆
+        if (!find(q, "三操作")
+                && find(q, "怎么启动|如何启动|怎么部署|如何部署|怎么配置|如何配置|"
+                + "怎么登录|如何登录|怎么操作|如何操作|操作步骤|怎么用|如何使用|怎么使用|"
+                + "怎么跑|如何跑|怎么开通|如何开通|怎么提问|如何提问|怎么查询|如何查询|"
+                + "怎么向|如何向|怎么同步|如何同步|怎么初始化|如何初始化|"
+                + "体检怎么|提问怎么|查询怎么|同步怎么|启动|部署|配置|登录|步骤|开通|体检")) {
             s.include.add("guide");
             s.include.add("service");
             s.reason = "命中『怎么操作』意图 → 限 guide + service";
@@ -345,6 +330,8 @@ public class KbAskServiceImpl implements KbAskService {
         return new ArrayList<>(terms);
     }
 
+    private static final int BODY_TERM_HIT_CAP = 8;
+
     private int score(KbDocument d, List<String> terms) {
         if (terms.isEmpty()) {
             return 0;
@@ -352,13 +339,15 @@ public class KbAskServiceImpl implements KbAskService {
         String title = lower(d.getTitle());
         String summary = lower(d.getSummary());
         String body = lower(d.getContent());
+        String slug = lower(d.getSlug());
         int score = 0;
         for (String t : terms) {
             score += count(title, t) * 5;
             score += count(summary, t) * 3;
-            score += count(body, t) * 1;
+            score += Math.min(count(body, t), BODY_TERM_HIT_CAP);
+            score += count(slug, t) * 4;
         }
-        return score;
+        return finalizeRecallScore(score, slug);
     }
 
     private String snippet(KbDocument d, List<String> terms) {
@@ -396,6 +385,293 @@ public class KbAskServiceImpl implements KbAskService {
 
     private String lower(String s) {
         return s == null ? "" : s.toLowerCase();
+    }
+
+    // ------------------------------------------------------------------
+    // 候选召回（chunk / 整页）
+    // ------------------------------------------------------------------
+
+    private static class ChunkRecallResult {
+        final List<ChunkScored> scored;
+
+        ChunkRecallResult(List<ChunkScored> scored) {
+            this.scored = scored;
+        }
+    }
+
+    private static class DocumentRecallResult {
+        final List<Scored> scored;
+
+        DocumentRecallResult(List<Scored> scored) {
+            this.scored = scored;
+        }
+    }
+
+    private ChunkRecallResult recallAndScoreChunks(List<Long> scopeSpaces, Scope scope, String question,
+                                                   List<String> terms, int candidateLimit) {
+        List<KbChunkAskRow> candidates = null;
+        boolean usedFullText = false;
+        if (kbSearchProperties.fullTextEnabled() && StringUtils.isNotBlank(question)) {
+            try {
+                candidates = kbDocumentChunkMapper.searchAskChunkCandidates(
+                        scopeSpaces,
+                        DocumentStatus.PUBLISHED.getCode(),
+                        scope.include.isEmpty() ? null : scope.include,
+                        scope.exclude.isEmpty() ? null : new ArrayList<>(scope.exclude),
+                        question,
+                        candidateLimit);
+                usedFullText = candidates != null && !candidates.isEmpty();
+                if (!usedFullText) {
+                    candidates = kbDocumentChunkMapper.searchAskChunkCandidatesLike(
+                            scopeSpaces,
+                            DocumentStatus.PUBLISHED.getCode(),
+                            scope.include.isEmpty() ? null : scope.include,
+                            scope.exclude.isEmpty() ? null : new ArrayList<>(scope.exclude),
+                            question,
+                            candidateLimit);
+                    usedFullText = candidates != null && !candidates.isEmpty();
+                }
+            } catch (Exception e) {
+                log.warn("ask chunk 全文召回失败: {}", e.getMessage());
+                candidates = null;
+            }
+        }
+        if (candidates == null || candidates.isEmpty()) {
+            return null;
+        }
+        List<ChunkScored> scored = new ArrayList<>();
+        for (KbChunkAskRow row : candidates) {
+            if (row.getKbType() != null && scope.exclude.contains(row.getKbType())) {
+                continue;
+            }
+            int s = scoreChunk(row, terms);
+            if (s > 0 || usedFullText) {
+                scored.add(new ChunkScored(row, s));
+            }
+        }
+        scored.sort((a, b) -> Integer.compare(b.score, a.score));
+        return scored.isEmpty() ? null : new ChunkRecallResult(scored);
+    }
+
+    private DocumentRecallResult recallAndScoreDocuments(List<Long> scopeSpaces, Scope scope, String question,
+                                                         List<String> terms, int candidateLimit) {
+        List<KbDocument> candidates = null;
+        boolean usedFullText = false;
+        if (kbSearchProperties.fullTextEnabled() && StringUtils.isNotBlank(question)) {
+            try {
+                candidates = kbDocumentMapper.searchAskCandidates(
+                        scopeSpaces,
+                        DocumentStatus.PUBLISHED.getCode(),
+                        scope.include.isEmpty() ? null : scope.include,
+                        scope.exclude.isEmpty() ? null : new ArrayList<>(scope.exclude),
+                        question,
+                        candidateLimit);
+                usedFullText = candidates != null && !candidates.isEmpty();
+            } catch (Exception e) {
+                log.warn("ask 全文召回失败，回退全量扫描: {}", e.getMessage());
+                candidates = null;
+            }
+        }
+        if (candidates == null || candidates.isEmpty()) {
+            LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
+            wrapper.eq(KbDocument::getStatus, DocumentStatus.PUBLISHED.getCode());
+            if (scopeSpaces.size() == 1) {
+                wrapper.eq(KbDocument::getSpaceId, scopeSpaces.get(0));
+            } else {
+                wrapper.in(KbDocument::getSpaceId, scopeSpaces);
+            }
+            if (!scope.include.isEmpty()) {
+                wrapper.in(KbDocument::getKbType, scope.include);
+            }
+            candidates = kbDocumentMapper.selectList(wrapper);
+            usedFullText = false;
+        }
+        List<Scored> scored = new ArrayList<>();
+        for (KbDocument d : candidates) {
+            if (d.getKbType() != null && scope.exclude.contains(d.getKbType())) {
+                continue;
+            }
+            int s = score(d, terms);
+            if (s > 0 || usedFullText) {
+                scored.add(new Scored(d, s));
+            }
+        }
+        scored.sort((a, b) -> Integer.compare(b.score, a.score));
+        return new DocumentRecallResult(scored);
+    }
+
+    private List<AskResponse.Citation> buildDocumentCitations(List<Scored> scored, List<String> terms, int topK) {
+        List<AskResponse.Citation> citations = new ArrayList<>();
+        for (int i = 0; i < scored.size() && i < topK; i++) {
+            KbDocument d = scored.get(i).doc;
+            citations.add(new AskResponse.Citation(d.getId(), d.getSpaceId(), d.getSlug(), d.getTitle(),
+                    d.getKbType(), snippet(d, terms)));
+        }
+        return citations;
+    }
+
+    private List<AskResponse.Citation> buildMergedCitations(List<ChunkScored> chunkScored,
+                                                            List<Scored> docScored,
+                                                            List<String> terms, int topK) {
+        Map<Long, MergedCitation> merged = new HashMap<>();
+        for (ChunkScored cs : chunkScored) {
+            mergeCitation(merged, cs.row.getDocumentId(), cs.score, cs.row, null);
+        }
+        for (Scored s : docScored) {
+            mergeCitation(merged, s.doc.getId(), s.score, null, s.doc);
+        }
+        List<MergedCitation> rows = new ArrayList<>(merged.values());
+        rows.sort((a, b) -> Integer.compare(b.score, a.score));
+        List<AskResponse.Citation> citations = new ArrayList<>();
+        for (int i = 0; i < rows.size() && i < topK; i++) {
+            MergedCitation m = rows.get(i);
+            if (m.chunk != null) {
+                KbChunkAskRow r = m.chunk;
+                citations.add(new AskResponse.Citation(r.getDocumentId(), r.getSpaceId(), r.getSlug(),
+                        r.getTitle(), r.getKbType(), snippetChunk(r, terms)));
+            } else if (m.doc != null) {
+                KbDocument d = m.doc;
+                citations.add(new AskResponse.Citation(d.getId(), d.getSpaceId(), d.getSlug(), d.getTitle(),
+                        d.getKbType(), snippet(d, terms)));
+            }
+        }
+        return citations;
+    }
+
+    private void mergeCitation(Map<Long, MergedCitation> merged, Long docId, int score,
+                               KbChunkAskRow chunk, KbDocument doc) {
+        MergedCitation existing = merged.get(docId);
+        if (existing == null) {
+            merged.put(docId, new MergedCitation(score, chunk, doc));
+            return;
+        }
+        if (score > existing.score) {
+            existing.score = score;
+            if (chunk != null) {
+                existing.chunk = chunk;
+            }
+            if (doc != null) {
+                existing.doc = doc;
+            }
+        } else {
+            if (chunk != null && existing.chunk == null) {
+                existing.chunk = chunk;
+            }
+            if (doc != null && existing.doc == null) {
+                existing.doc = doc;
+            }
+        }
+    }
+
+    private List<AskResponse.Citation> buildChunkCitations(List<ChunkScored> scored, List<String> terms, int topK) {
+        Set<Long> seen = new LinkedHashSet<>();
+        List<AskResponse.Citation> citations = new ArrayList<>();
+        for (ChunkScored cs : scored) {
+            Long docId = cs.row.getDocumentId();
+            if (seen.contains(docId)) {
+                continue;
+            }
+            seen.add(docId);
+            KbChunkAskRow r = cs.row;
+            citations.add(new AskResponse.Citation(r.getDocumentId(), r.getSpaceId(), r.getSlug(), r.getTitle(),
+                    r.getKbType(), snippetChunk(r, terms)));
+            if (citations.size() >= topK) {
+                break;
+            }
+        }
+        return citations;
+    }
+
+    private int scoreChunk(KbChunkAskRow c, List<String> terms) {
+        if (terms.isEmpty()) {
+            return 0;
+        }
+        String heading = lower(c.getHeading());
+        String title = lower(c.getTitle());
+        String summary = lower(c.getSummary());
+        String slug = lower(c.getSlug());
+        String body = lower(c.getContent());
+        int score = 0;
+        for (String t : terms) {
+            score += count(heading, t) * 8;
+            score += count(title, t) * 6;
+            score += count(slug, t) * 5;
+            score += count(summary, t) * 3;
+            score += Math.min(count(body, t), BODY_TERM_HIT_CAP);
+        }
+        return finalizeRecallScore(score, slug);
+    }
+
+    /** 压低 annex 归档长文的正文刷分，避免盖过精炼概念页。 */
+    private int finalizeRecallScore(int score, String slug) {
+        if (score <= 0 || StringUtils.isBlank(slug)) {
+            return score;
+        }
+        if (slug.toLowerCase().contains("/annex-")) {
+            return score / 3;
+        }
+        return score;
+    }
+
+    private String snippetChunk(KbChunkAskRow c, List<String> terms) {
+        String body = c.getContent() == null ? "" : c.getContent();
+        String low = body.toLowerCase();
+        int pos = -1;
+        for (String t : terms) {
+            int i = low.indexOf(t);
+            if (i != -1 && (pos == -1 || i < pos)) {
+                pos = i;
+            }
+        }
+        int width = 140;
+        String snip;
+        if (pos == -1) {
+            snip = body.substring(0, Math.min(width, body.length()));
+        } else {
+            int start = Math.max(0, pos - width / 3);
+            snip = body.substring(start, Math.min(start + width, body.length()));
+        }
+        snip = snip.replaceAll("\\s+", " ").trim();
+        if (StringUtils.isNotBlank(c.getHeading())) {
+            return c.getHeading() + " · " + snip;
+        }
+        return snip;
+    }
+
+    private String buildChunkContext(List<ChunkScored> scored, int topK) {
+        int budget = 12000;
+        StringBuilder sb = new StringBuilder();
+        int used = 0;
+        Set<Long> docsInContext = new LinkedHashSet<>();
+        Map<Long, Integer> perDoc = new HashMap<>();
+        for (ChunkScored cs : scored) {
+            Long docId = cs.row.getDocumentId();
+            if (!docsInContext.contains(docId)) {
+                if (docsInContext.size() >= topK) {
+                    continue;
+                }
+                docsInContext.add(docId);
+            }
+            int n = perDoc.getOrDefault(docId, 0);
+            if (n >= 2) {
+                continue;
+            }
+            perDoc.put(docId, n + 1);
+            KbChunkAskRow r = cs.row;
+            String head = r.getHeading() == null ? "" : r.getHeading();
+            String chunk = "## 节：[[" + r.getSlug() + "]]（" + r.getTitle() + "）\n" + head + "\n"
+                    + (r.getContent() == null ? "" : r.getContent().trim()) + "\n";
+            if (used + chunk.length() > budget) {
+                chunk = chunk.substring(0, Math.max(0, budget - used));
+            }
+            sb.append(chunk).append("\n");
+            used += chunk.length();
+            if (used >= budget) {
+                break;
+            }
+        }
+        return sb.toString();
     }
 
     // ------------------------------------------------------------------
@@ -462,6 +738,28 @@ public class KbAskServiceImpl implements KbAskService {
         } catch (Exception e) {                            // noqa: 记录日志失败不影响问答
             log.warn("写 kb_qa_log 失败: {}", e.getMessage());
             return null;
+        }
+    }
+
+    private static class MergedCitation {
+        int score;
+        KbChunkAskRow chunk;
+        KbDocument doc;
+
+        MergedCitation(int score, KbChunkAskRow chunk, KbDocument doc) {
+            this.score = score;
+            this.chunk = chunk;
+            this.doc = doc;
+        }
+    }
+
+    private static class ChunkScored {
+        final KbChunkAskRow row;
+        final int score;
+
+        ChunkScored(KbChunkAskRow row, int score) {
+            this.row = row;
+            this.score = score;
         }
     }
 

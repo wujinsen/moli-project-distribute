@@ -12,14 +12,25 @@
 | **L0** | [`.cursor/rules/`](.cursor/rules/) | Cursor 自动注入；改对应文件时生效 |
 | **L1** | **本文件** `AGENTS.md` | 全 monorepo：文档落点、draw.io、微服务 README |
 | **L2** | [`moli-knowledge/kb/AGENTS.md`](moli-knowledge/kb/AGENTS.md) | **仅** `kb/` 下 Ingest / Query / Lint / sync |
-| **L3** | [`.cursor/skills/`](.cursor/skills/) | 专项能力（如 [`drawio-diagrams`](.cursor/skills/drawio-diagrams/SKILL.md)） |
+| **L3** | [`.cursor/skills/`](.cursor/skills/) | 专项多步流程（见 §1.1） |
+
+### 1.1 L3 Skill 清单
+
+| Skill | 何时 `@` |
+|-------|----------|
+| [`drawio-diagrams`](.cursor/skills/drawio-diagrams/SKILL.md) | 架构 / ER / 流程 / 部署拓扑图 |
+| [`sql-migration-baseline`](.cursor/skills/sql-migration-baseline/SKILL.md) | `docs/sql/NN_*.sql`、合并 `scripts/moli.sql`、菜单/表迁移 |
+| [`operation-module-feature`](.cursor/skills/operation-module-feature/SKILL.md) | `moli-user-center` 运维 `operation_*`、SVR 任务、关联/拓扑 API |
+| [`kb-ingest-sync`](.cursor/skills/kb-ingest-sync/SKILL.md) | `kb/raw`、wiki ingest、lint、sync、chunk 切段、`eval_ask.py`（**仍须读 L2 全文**） |
 
 **决策**
 
 ```
-任务涉及 kb/raw、wiki ingest、sync？     → 先读 L2（kb/AGENTS.md）
-任务涉及任意模块文档 / 架构图 / API 说明？ → 读 L1（本文件）+ docs/README.md
-需要画架构 / ER / 流程图？               → 读 L3 drawio skill，禁止只写 ASCII 主图
+任务涉及 kb/raw、wiki ingest、sync、chunk 切段、ask 评测？ → L2 kb/AGENTS.md + @kb-ingest-sync
+任务涉及任意模块文档 / 架构图 / API 说明？ → L1 本文件 + docs/README.md
+需要画架构 / ER / 流程图？               → @drawio-diagrams
+新增 SQL 迁移 / 合并 moli.sql 基线？     → @sql-migration-baseline
+改 moli-user-center operation_* / SVR？  → @operation-module-feature
 ```
 
 ---
@@ -80,7 +91,7 @@
 2. **本文件 L1** — 任何 Agent 任务先认 monorepo 入口。
 3. **模块 README** — 各服务第一稿 + 文档索引（见 [`moli-user-center/README.md`](moli-user-center/README.md) 范例）。
 4. **kb L2** — Ingest 时 enrich `wiki/services/`，不复制 `docs/api/` 全文。
-5. **Skill L3** — 画图时读 skill，保证端口/表名与代码一致。
+5. **Skill L3** — 专项流程见 §1.1；画图、SQL 基线、运维模块、kb ingest 时 `@` 对应 skill。
 
 未来若拆多 Git 仓：各仓复制 **L0 + L1 摘要 + drawio skill**；**L2 仍只在知识库仓**。
 

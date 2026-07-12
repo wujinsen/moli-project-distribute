@@ -55,14 +55,15 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+HERE = Path(__file__).resolve().parent          # kb/tools
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+from chunk_split import split_markdown_body  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # 路径与常量
 # ---------------------------------------------------------------------------
 
-HERE = Path(__file__).resolve().parent          # kb/tools
 KB_DIR = HERE.parent                             # kb
 DEFAULT_WIKI_DIR = KB_DIR / "wiki"
 
@@ -410,7 +411,7 @@ def sync_to_db(docs, rels, args):
     idgen = IdGen()
     batch_no = datetime.now().strftime("%Y%m%d%H%M%S")
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    stats = {"insert": 0, "update": 0, "skip": 0, "delete": 0, "fail": 0}
+    stats = {"insert": 0, "update": 0, "skip": 0, "delete": 0, "fail": 0, "chunk": 0}
     try:
         with conn.cursor() as cur:
             # 解析 space_id
@@ -480,6 +481,14 @@ def sync_to_db(docs, rels, args):
                                 stats["skip"] += 1
                                 _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
                                      "skip", d.content_hash, now)
+                            if _chunk_count(cur, doc_id) == 0:
+                                try:
+                                    stats["chunk"] += _sync_chunks(
+                                        cur, idgen, doc_id, d, space_id, new_cat,
+                                        args.operator, now)
+                                except Exception as ce:  # noqa: BLE001
+                                    stats["fail"] += 1
+                                    print(f"[error] chunk 同步失败 {d.slug}: {ce}")
                             continue
                         cur.execute(
                             "UPDATE kb_document SET title=%s, summary=%s, content=%s, "
@@ -494,6 +503,13 @@ def sync_to_db(docs, rels, args):
                         stats["update"] += 1
                         _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
                              "reactivate" if reactivate else "update", d.content_hash, now)
+                        try:
+                            stats["chunk"] += _sync_chunks(
+                                cur, idgen, doc_id, d, space_id, _category_id(d),
+                                args.operator, now)
+                        except Exception as ce:  # noqa: BLE001
+                            stats["fail"] += 1
+                            print(f"[error] chunk 同步失败 {d.slug}: {ce}")
                     else:
                         doc_id = idgen.next()
                         slug_to_id[d.slug] = doc_id
@@ -512,6 +528,13 @@ def sync_to_db(docs, rels, args):
                         stats["insert"] += 1
                         _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
                              "insert", d.content_hash, now)
+                        try:
+                            stats["chunk"] += _sync_chunks(
+                                cur, idgen, doc_id, d, space_id, _category_id(d),
+                                args.operator, now)
+                        except Exception as ce:  # noqa: BLE001
+                            stats["fail"] += 1
+                            print(f"[error] chunk 同步失败 {d.slug}: {ce}")
                 except Exception as e:                  # noqa: BLE001
                     stats["fail"] += 1
                     doc_id = slug_to_id.get(d.slug)
@@ -526,6 +549,11 @@ def sync_to_db(docs, rels, args):
                     try:
                         cur.execute("UPDATE kb_document SET is_delete=1, update_time=%s "
                                     "WHERE id=%s", (now, doc_id))
+                        cur.execute(
+                            "UPDATE kb_document_chunk SET is_delete=1, update_time=%s "
+                            "WHERE document_id=%s AND is_delete=0",
+                            (now, doc_id),
+                        )
                         stats["delete"] += 1
                         _log(cur, idgen, batch_no, space_id, doc_id, slug,
                              "delete", None, now)
@@ -660,6 +688,41 @@ def _sync_tags(cur, idgen, space_id, docs, slug_to_id, operator, now):
             cur.execute(
                 "INSERT IGNORE INTO kb_document_tag (id, document_id, tag_id) "
                 "VALUES (%s,%s,%s)", (idgen.next(), doc_id, tid))
+
+
+def _sync_chunks(cur, idgen, document_id: int, d: "Doc", space_id: int,
+                 category_id, operator: int, now: str) -> int:
+    """全量重建单篇文档的 chunk 行。返回写入段数。"""
+    cur.execute(
+        "UPDATE kb_document_chunk SET is_delete=1, update_time=%s "
+        "WHERE document_id=%s AND is_delete=0",
+        (now, document_id),
+    )
+    drafts = split_markdown_body(d.body)
+    if not drafts:
+        drafts = split_markdown_body(d.body or d.title or d.slug)
+    for ch in drafts:
+        cid = idgen.next()
+        cur.execute(
+            "INSERT INTO kb_document_chunk (id, create_id, create_time, update_id, "
+            "update_time, document_id, space_id, slug, kb_type, category_id, status, "
+            "chunk_index, heading, heading_level, content, char_count, content_hash, "
+            "is_delete) VALUES "
+            "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0)",
+            (cid, operator, now, operator, now, document_id, space_id, d.slug,
+             d.kb_type, category_id, d.status, ch.chunk_index, ch.heading,
+             ch.heading_level, ch.content, ch.char_count, ch.content_hash),
+        )
+    return len(drafts)
+
+
+def _chunk_count(cur, document_id: int) -> int:
+    cur.execute(
+        "SELECT COUNT(*) FROM kb_document_chunk WHERE document_id=%s AND is_delete=0",
+        (document_id,),
+    )
+    row = cur.fetchone()
+    return int(row[0]) if row else 0
 
 
 def _sync_relations(cur, idgen, space_id, rels, slug_to_id, operator, now):
