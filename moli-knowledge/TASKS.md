@@ -1,6 +1,6 @@
 # 企业知识库 · 待办任务清单（可并行开工）
 
-> 更新：2026-07-06
+> 更新：2026-07-12
 > 用途：每个任务**自包含、文件边界清晰**，可在不同对话框/工作区并行开工，尽量不互相冲突。
 > 范式与分工见 [`kb/ROADMAP.md`](kb/ROADMAP.md)；表结构见 [`../docs/sql/KNOWLEDGE_SCHEMA.md`](../docs/sql/KNOWLEDGE_SCHEMA.md)。
 >
@@ -18,7 +18,7 @@
 | 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
 | kb 知识 | ✅ wiki + wiki-moli + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
 | 后端工作台 | ✅ T14…T19 · **T20a–e + T20c/d P1** | — |
-| 前端 meiling-ui | ✅ T6 浏览/问答 · T15 Ingest（部分）· T14 编辑 | **T16f** 治理 · **KBOPS-8f** O5–O8 · **O9** scan 状态 · **T19d** LLM · **T20f** 导入 Tab |
+| 前端 meiling-ui | ✅ T6 浏览/问答 · T14 编辑 · T15 Ingest · **T16f** 治理 · **O1–O9** 健康体检 · **T19d** LLM · **T20f** 导入 Tab · **Dashboard** | 图谱大图 UX 调优 · 生产 cron/告警/LLM Secret 配置 |
 
 ---
 
@@ -161,7 +161,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 > 产出：`KbInsightServiceImpl` 重构（graph 优先读 `kb_relation`，空表回退运行时）；新增 `scan`/`issues`/`updateIssueStatus`；`KbInsightController` 加 `POST /kb/lint/scan`、`GET /kb/lint/issues`、`PUT /kb/lint/issue/{id}`。返回结构与 GraphVo/LintVo 兼容；`mvn compile` 通过。
 > **2026-06-24（图谱卡死优化）**：3300+ 篇下 `/kb/graph` 不再每次扫正文——边只读 `kb_relation`、节点只查 `id/title/kb_type/status`（**不含 content/summary**），按**度数降序裁剪**到 `maxNodes`（full=300/summary=50，上限 2000），新增 `minDeg` 过滤；`GraphVo` 加 `meta{totalNodes,totalLinks,returnedNodes,returnedLinks,truncated,source,mode}`。新增 `GET /kb/graph/ego?docId=&depth=`（BFS 邻域子图，逐层查 relation，不加载全图）。节点 `type` 改用 `kb_type`（与浏览分组一致）。详见 `docs/KNOWLEDGE_API.md` §4.1。
-> ⚠️ 前端待办：默认 `mode=summary` 或 `minDeg`，核心节点先画，点击节点用 `ego` 展开；大图禁用 force 持续布局。
+> **2026-07-12**：前端 `KnowledgeGraphView` 已支持 `mode=summary` / `minDeg` / `ego` 展开；大图 force 布局性能仍可迭代。
 
 - **目标**：把现在运行时计算的 `/kb/graph`、`/kb/lint` 改为读 `kb_relation` / `kb_lint_issue`（同步时写入），大库更快、可跟踪「忽略/修复」。
 - **涉及文件**：
@@ -317,11 +317,11 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ---
 
-## T20 · 双入口导入（Raw 投喂 + Wiki 成品） ✅ 后端 P0–P1 已交付 · 🔵 前端 T20f 待做
+## T20 · 双入口导入（Raw 投喂 + Wiki 成品） ✅ 后端 + 前端 T20f 已交付
 
 > **产品 PRD**：[`docs/product/knowledge-import-entry-prd.md`](../docs/product/knowledge-import-entry-prd.md)  
 > **技术设计**：[`docs/design/kb-import-entry-design.md`](../docs/design/kb-import-entry-design.md)  
-> **前端对接**：[`docs/api/kb-import-entry-frontend.md`](../docs/api/kb-import-entry-frontend.md)  
+> **前端对接**：[`docs/api/kb-import-entry-frontend.md`](../docs/api/kb-import-entry-frontend.md) · meiling-ui `KnowledgeIngestWorkbenchView.vue`  
 > **流程图**：[`docs/diagrams/moli-kb-import-entry.drawio`](../docs/diagrams/moli-kb-import-entry.drawio) · [API 时序](../docs/diagrams/moli-kb-import-entry-api.drawio)  
 > 与 **T15 Tab2** 并列：T20 Tab1/3 为其补充 **Web 输入**；Tab2 Ingest 逻辑 **不变**。
 
@@ -329,13 +329,13 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 子任务 | 范围 | 验收 | 状态 |
 |--------|------|------|------|
-| **T20a** | `POST /kb/ingest/raw-upload` + `KbRawUploadService` | 上传 md 至 raw → Tab2 可见 → Ingest → Sync | ✅ 后端 · 🔵 Tab1 UI |
-| **T20b** | `POST /kb/wiki/page/import` + `KbWikiImportService` | 成品 md 直写 wiki → Sync → 浏览 | ✅ 后端 · 🔵 Tab3 UI |
-| **T20e** | Tab3 可选 `assetsZip` → `{slug}.assets/` + 路径重写 | 相对路径插图 + zip → T22 可浏览 | ✅ 后端 · 🔵 Tab3 UI |
-| **T20c** | `POST /kb/ingest/raw-upload/zip`、`POST /kb/wiki/page/import/batch` | 10 篇 md ≤1 次 Sync | ✅ 后端 · 🔵 Tab1 zip / Tab3 批量 UI |
-| **T20g** | `GET /kb/ingest/raw-prefixes` | Tab1 prefix 下拉（一级目录） | ✅ 后端 · 🔵 Tab1 UI |
-| **T20d** | `docs/sql/16_kb_import_entry_menu.sql` + `KbAclService.assertCanRawUpload` | editor 权限与 Tab 可见性 | ✅ SQL + 后端 · 🔵 Tab1 v-if |
-| **T20f** | meiling-ui 三 Tab + 决策树文案 + API/i18n | 与 T14e 新建复用分类选择 | 🔵 |
+| **T20a** | `POST /kb/ingest/raw-upload` + `KbRawUploadService` | 上传 md 至 raw → Tab2 可见 → Ingest → Sync | ✅ |
+| **T20b** | `POST /kb/wiki/page/import` + `KbWikiImportService` | 成品 md 直写 wiki → Sync → 浏览 | ✅ |
+| **T20e** | Tab3 可选 `assetsZip` → `{slug}.assets/` + 路径重写 | 相对路径插图 + zip → T22 可浏览 | ✅ |
+| **T20c** | `POST /kb/ingest/raw-upload/zip`、`POST /kb/wiki/page/import/batch` | 10 篇 md ≤1 次 Sync | ✅ |
+| **T20g** | `GET /kb/ingest/raw-prefixes` | Tab1 prefix 下拉（一级目录） | ✅ |
+| **T20d** | `docs/sql/16_kb_import_entry_menu.sql` + `KbAclService.assertCanRawUpload` | editor 权限与 Tab 可见性 | ✅ |
+| **T20f** | meiling-ui 三 Tab + 决策树文案 + API/i18n | `KbRawUploadPanel` / Tab2 / `KbWikiImportPanel` | ✅ meiling-ui 2026-07-10+ |
 
 **后端交付（2026-07-06）**：`KbRawUploadService` / `KbWikiImportService` / `KbWikiAssetBundleUtil`（T20e）· 单测含 wiki-import 集成测 + assetsZip。  
 **后端交付（2026-07-11）**：T20c zip raw + wiki import/batch · T20d `kb:ingest:rawUpload` ACL。
@@ -350,7 +350,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 ---
 
-## T16 · Web Wiki 治理工作台（Lint→修复→复检→Sync 链路） ✅ 后端已交付（T16a/e/g）；🔵 T16f 前端
+## T16 · Web Wiki 治理工作台（Lint→修复→复检→Sync 链路） ✅ 后端 + 前端 T16f 已交付
 
 > 产品方案：[[Wiki治理工作台产品方案]]（`kb/wiki/guides/`）。需求总览：`docs/product/knowledge-workbench-requirements.md`。  
 > 与 T14（单篇编辑）/ T15（raw 批次 ingest）并列：**T16 = 空间级批量治理**（文件真值 lint → **script-fix / ai-batch-fix / auto-fix**）。
@@ -364,13 +364,13 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | **T16a** | `POST /kb/wiki/lint-space` + 前端 lint 真值展示 | 选空间扫文件真值 | ✅ |
 | **T16e** | `script-fix` / `ai-batch-fix` / `auto-fix` | metadata + 断链/孤儿批量修 | ✅ |
 | **T16g** | `merge-hint` + `manualOnlyKinds` | dup_slug 复制 Cursor 指令 | ✅ |
-| **T16f** | meiling-ui 治理页 | 见 `docs/api/wiki-govern-frontend.md` | 🔵 |
+| **T16f** | meiling-ui 治理页 | `KnowledgeWikiGovernView.vue` · E2E `kb:e2e:script-fix` / `kb:e2e:extended` | ✅ |
 | ~~T16b/c enrich 批量~~ | — | **已废弃** | ❌ |
 
 - **数据贯通**：`lint.py` 的 `issue.page` = slug，直接传入 govern API 的 `issues[]`。
 - **涉及文件**：
   - server：`KbWikiGovernServiceImpl`、`KbWikiFrontmatterFixUtil`、`WikiGovernKindUtil`、`KbWikiMergeHintUtil`
-  - meiling-ui：`KnowledgeWikiGovernView.vue`（待接）
+  - meiling-ui：`KnowledgeWikiGovernView.vue`（✅ 已联调）
   - 文档：`docs/api/wiki-govern-frontend.md`、`docs/test/knowledge-script-vs-llm-matrix.md`
 - **依赖**：✅ T14a、T9 ACL、T2 LLM、`lint.py`
 
@@ -581,10 +581,10 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 2. **T14a → T14b**（M5 wiki 读写 + 单篇 AI 改稿底座）。
 3. ✅ **T15a → T15b → T15c → T15d → T15e**（M6 Ingest 工作台闭环）。
 4. T14c–d 可并行增强。
-5. 🔵 **T16f**（M7 Wiki 治理前端：lint-space → script/AI/auto-fix → merge-hint → 复检 → Sync）。后端 T16a/e/g ✅。
+5. ✅ **T16f**（M7 Wiki 治理前端：lint-space → script/AI/auto-fix → merge-hint → 复检 → Sync）。
 6. ✅ **T17a → T17b → T17c → T17d**（M6+ Ingest 落盘对齐文档分类 + 自定义 slug）。
 7. ✅ **T18**（M6+ Ingest 一键入库 Express 流）。
-8. 🔵 **T19**（M8 平台 LLM 系统设置：DB 存 Key + 系统管理 UI）。后端 ✅；前端 T19d 📋。设计 [`docs/design/kb-llm-platform-settings.md`](../docs/design/kb-llm-platform-settings.md)
+8. ✅ **T19**（M8 平台 LLM 系统设置：DB 存 Key + 系统管理 UI）。后端 + 前端 T19d ✅；生产新 Key 入库需 `KB_LLM_CONFIG_SECRET`。
 
 ---
 
@@ -597,7 +597,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | **T19a** | DDL `11_kb_platform_llm_config.sql` + `KbLlmRuntime` + 加密 | ✅ |
 | **T19b** | `GET/PUT/POST test` `/kb/platform/llm-config` + `kb:platform:llm` | ✅ |
 | **T19c** | `KbLlmClient` 切 Runtime；回归 Ask/Ingest/Wiki | ✅ |
-| **T19d** | `system/kb-llm/index` 设置页 + `12_kb_platform_llm_menu.sql` | 📋（前端） |
+| **T19d** | `system/kb-llm/index` 设置页 + `12_kb_platform_llm_menu.sql` | ✅ meiling-ui 联调验收 |
 | **T19e** | API 契约 §3.5、前端对接文档、运维说明 | ✅ |
 
 **非目标（一期）**：moli-ai 独立服务、按空间多套 Key、用户自带 Key。
@@ -635,46 +635,46 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | **KBOPS-3** | 权限码对齐：enforce `kb:sync:trigger` / `kb:lint:scan` | P0 | ✅ |
 | **KBOPS-4** | 定时同步改 sync-all 三空间（或配置化多空间） | P1 | ✅ 后端 · cron 待开 |
 | **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | ✅ 后端 · 配 URL |
-| **KBOPS-6** | 前端 T16f Wiki 治理全按钮（同 T16f） | P1 | 📋 |
-| **KBOPS-7** | 前端 T19d 平台 LLM 设置页（同 T19d） | P1 | 📋 |
+| **KBOPS-6** | 前端 T16f Wiki 治理全按钮（同 T16f） | P1 | ✅ meiling-ui |
+| **KBOPS-7** | 前端 T19d 平台 LLM 设置页（同 T19d） | P1 | ✅ meiling-ui |
 | **KBOPS-8** | 体检工单增强：issue_type 扩展 + assignee/优先级 + 批量 + 可选定时 scan | P2 | ✅ 后端 |
-| **KBOPS-8f** | meiling-ui 体检工单 UI（**O5–O8**） | P1 | 📋 |
-| **KBOPS-9** | 知识库运维 Dashboard（`GET /kb/ops/dashboard`） | P2 | ✅ 后端 · 前端 O4 📋 |
+| **KBOPS-8f** | meiling-ui 体检工单 UI（**O5–O8**） | P1 | ✅ meiling-ui |
+| **KBOPS-9** | 知识库运维 Dashboard（`GET /kb/ops/dashboard`） | P2 | ✅ 后端 + 前端聚合 |
 | **KBOPS-10** | Web 体检检查项对齐 `lint.py`（或明确分工文档） | P2 | ✅ |
 
-**建议起手**：前端 **O5–O8**（KBOPS-8f）· Tab1 接 `raw-prefixes` / O2 `async=true` 轮询；运维 E2E 见 `kb/tools/ci/run_govern_e2e.sh`。
+**建议起手（2026-07-12）**：部署 knowledge-server 最新版（O7 batch / O8 分页 / O9 scan status）→ `npm run kb:prd` 探针全绿 → 生产开 cron / 告警 / `KB_LLM_CONFIG_SECRET`。前端细节见 meiling-ui [`docs/api/knowledge-ops-frontend.md`](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §0。
 
 ---
 
-## KBOPS-8f · 健康体检工单 UI（meiling-ui · O5–O8）
+## KBOPS-8f · 健康体检工单 UI（meiling-ui · O5–O8） ✅
 
-> **后端** ✅ KBOPS-8/10 · **前端** 📋 待 meiling-ui  
-> 权威对接：[docs/api/knowledge-ops-frontend.md](../docs/api/knowledge-ops-frontend.md) §3.7  
+> **后端** ✅ KBOPS-8/10 · **前端** ✅ meiling-ui（`KbLintIssuesPanel.vue`）  
+> 权威对接：[docs/api/knowledge-ops-frontend.md](../docs/api/knowledge-ops-frontend.md) §3.7 · meiling-ui 副本 §3.7  
 > 验收：[docs/test/knowledge-lint-ops-acceptance.md](../docs/test/knowledge-lint-ops-acceptance.md)
 
 **目标**：在 **`knowledge/lint/index`**（`KnowledgeLintView`）扩展 **DB 体检工单**筛选与批量操作；与 O1–O4 Sync 区同页。
 
 | 子任务 | API | UI | 状态 |
 |--------|-----|-----|------|
-| **O5** | `GET /kb/lint/issues?issueType=` · `GET /kb/lint/issue-types` | 工单表类型筛选下拉 | 📋 |
-| **O6** | `PUT /kb/lint/issue/{id}/assign` | 行内处理人 + 优先级（0/1/2） | 📋 |
-| **O7** | `PUT /kb/lint/issues/batch-status` | 多选 → 已忽略/已修复 | 📋 |
-| **O8** | `PUT /kb/lint/issues/batch-assign` | 多选 → 统一指派/优先级 | 📋 |
+| **O5** | `GET /kb/lint/issues?issueType=` · `GET /kb/lint/issue-types` | 工单表类型/状态筛选 +「仅未指派」 | ✅ |
+| **O6** | `PUT /kb/lint/issue/{id}?assigneeId=` | 行内指派人 +「指派给我」 | ✅ |
+| **O7** | `PUT /kb/lint/issues/batch` | 多选 → 已忽略/已修复/批量指派 | ✅ `kbLint.ts` |
+| **O8** | `GET /kb/lint/issues?pageNum&pageSize` | `AppPagination` 服务端分页（旧版全量数组仍兼容 slice） | ✅ |
 
 ---
 
-## O9 · Scan 状态条（meiling-ui · 只读）
+## O9 · Scan 状态条（meiling-ui · 只读） ✅
 
-> **后端** ✅ `GET /kb/lint/scan/status` · **前端** 📋  
-> 对接：[docs/api/knowledge-ops-frontend.md](../docs/api/knowledge-ops-frontend.md) §3.5
+> **后端** ✅ `GET /kb/lint/scan/status` · **前端** ✅ `KbLintScanStatusBar.vue`  
+> 对接：[docs/api/knowledge-ops-frontend.md](../docs/api/knowledge-ops-frontend.md) §3.8
 
 **目标**：健康体检页展示 **定时 scan 是否开启** + **上次 scan 落库时间**（只读，不改 yml）。
 
 | 子任务 | API | UI | 状态 |
 |--------|-----|-----|------|
-| **O9** | `GET /kb/lint/scan/status?spaceId=` | `scheduleEnabled` 徽章 + `lastScanTime` + 可选 `openIssueCount` | 📋 |
+| **O9** | `GET /kb/lint/scan/status?spaceId=` | `scheduleEnabled` 徽章 + `lastScanTime` + `openIssueCount` | ✅ |
 
-**开工提示词**：
+**历史开工提示词**（已实现，仅供回溯）：
 
 ```
 实现 O9 健康体检 Scan 状态条（meiling-ui）：
@@ -693,14 +693,14 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 - 页面：knowledge/lint/index，扩展 LintIssueTable（Scan 落库后的 kb_lint_issue 列表）
 - API：GET issue-types、GET issues（issueType/assigneeId/priority/status）
 - 单条：PUT issue/{id}/assign、PUT issue/{id}?status=
-- 批量：PUT issues/batch-status、PUT issues/batch-assign
+- 批量：`PUT /kb/lint/issues/batch`（统一 batch；兼容 `batch-status` / `batch-assign`）
 - 角标文案：「DB 快照体检」；修文件引导 Wiki 治理 lint-space（KBOPS-10）
 - types/api：src/types/knowledge/kbLint.ts、src/api/knowledge/kbLint.ts（或扩 knowledge.ts）
 ```
 
 ---
 
-> **2026-07-11**：KBOPS-1/2/3/O1、KBOPS-4/5/9 后端、T19e、T20c/T20g、Sync `async` trigger 已落地；见 [`docs/design/kb-ops-roadmap.md`](../docs/design/kb-ops-roadmap.md)。
+> **2026-07-12**：KBOPS 前端（O1–O9、T16f、T19d、T20f、Dashboard）已在 meiling-ui 落地；`TASKS.md` 与 [`docs/api/knowledge-ops-frontend.md`](../docs/api/knowledge-ops-frontend.md) 同步。待办仅剩 **生产运维配置**（cron / 告警 / LLM Secret）与 **knowledge-server 部署**后探针复验。
 
 ---
 

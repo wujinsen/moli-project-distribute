@@ -1,7 +1,7 @@
 # 知识库运维 · 子域规划（内容管道运维）
 
-> 更新：2026-07-11 · 状态：**P0/P1 后端大部分已落地**（KBOPS-1/2/3/O1 · KBOPS-4/5/9 后端 · T19e）；前端 T16f/T19d/O1–O4 待 meiling-ui  
-> **产品 PRD**：[`docs/product/knowledge-ops-prd.md`](../product/knowledge-ops-prd.md) · **前端对接**：[`docs/api/knowledge-ops-frontend.md`](../api/knowledge-ops-frontend.md)  
+> 更新：2026-07-12 · 状态：**P0/P1/P2 后端 + meiling-ui 前端均已落地**（KBOPS-1~10 · O1–O9 · T16f · T19d · T20f · Dashboard）；待办仅剩 **生产运维配置**（cron / 告警 webhook / `KB_LLM_CONFIG_SECRET`）与部署后探针复验  
+> **产品 PRD**：[`docs/product/knowledge-ops-prd.md`](../product/knowledge-ops-prd.md) · **前端对接**：[`docs/api/knowledge-ops-frontend.md`](../api/knowledge-ops-frontend.md) · meiling-ui 副本 [`meiling-ui/docs/api/knowledge-ops-frontend.md`](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §0  
 > 归属：`moli-knowledge` · `kb_sync_log` / `kb_lint_issue` / `kb_platform_llm_config`
 > 边界：**只管知识库内容管道运维**（wiki→DB 同步、体检、LLM 配置）；服务器/基础设施运维见 [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md)（另一条独立路线，互不重叠）
 
@@ -24,8 +24,9 @@
 | Sync（wiki→DB 单向增量） | `KbSyncServiceImpl` + `KbSyncScheduler` + `sync_to_db.py` | `kb_sync_log` | ✅ 手动/定时/CI · **KBOPS-1/2/O1** · `POST trigger?async=true` 可选后台 |
 | DB 健康体检（工单） | `KbInsightServiceImpl` | `kb_lint_issue` | ✅ |
 | 文件级 Lint（治理前门禁） | `KbWikiLintServiceImpl` + `lint.py` | 不落库 | ✅ 后端 |
-| 平台 LLM 配置（T19） | `KbPlatformLlmConfigServiceImpl` | `kb_platform_llm_config` | ✅ 后端 + **T19e**；前端 T19d 📋 |
-| Wiki 治理批量修复 | `KbWikiGovernServiceImpl` | — | ✅ 后端；前端 T16f 📋 |
+| 平台 LLM 配置（T19） | `KbPlatformLlmConfigServiceImpl` | `kb_platform_llm_config` | ✅ 后端 + **T19e** + 前端 **T19d** |
+| Wiki 治理批量修复 | `KbWikiGovernServiceImpl` | — | ✅ 后端 + 前端 **T16f** |
+| 运维 Dashboard | `KbOpsDashboardController` | — | ✅ 后端 **KBOPS-9** + 前端聚合 |
 
 接口前缀：`/kb/sync/*`、`/kb/lint*`、`/kb/wiki/lint-space`、`/kb/wiki/govern/*`、`/kb/platform/llm-config`。
 
@@ -41,8 +42,8 @@
 | K-P3 | ~~Sync 无失败告警~~ | ✅ KBOPS-5 | `KbSyncAlertService` + `kb.sync.alert.*`（默认关，配 webhook 启用） |
 | K-P4 | **定时同步默认关闭**：`schedule-enabled=false`；开启后 `resolveScheduleSpaceCodes()` 已支持三空间 / 配置列表 | 🟡 低 | `KbSyncScheduler` · 生产按需开 cron |
 | K-P5 | ~~权限码未 enforce~~ | ✅ KBOPS-3 | `KbAclService.assertCanSyncTrigger` / `assertCanLintScan` |
-| K-P6 | ~~DB 体检 issue_type 不全、工单无 assignee/批量~~ | ✅ KBOPS-8 | 后端 · 前端 **KBOPS-8f（O5–O8）** 📋 |
-| K-P7 | **前端缺口**：T16f 治理全按钮、T19d LLM 设置页、**KBOPS-8f 体检工单 O5–O8**（后端均已就绪） | 🟡 中 | meiling-ui |
+| K-P6 | ~~DB 体检 issue_type 不全、工单无 assignee/批量~~ | ✅ KBOPS-8 | 后端 + 前端 **KBOPS-8f（O5–O8）** |
+| K-P7 | ~~前端缺口：T16f / T19d / O5–O8~~ | ✅ | meiling-ui 2026-07-12 联调验收 |
 | K-P8 | Web 健康体检检查项**少于** `lint.py`（missing_source/bad_type/dup_slug/outdated 等未覆盖） | 🟢 低 | 设计差异 |
 
 ---
@@ -74,8 +75,8 @@
 |------|------|
 | **KBOPS-4** | 定时同步 **sync-all 三空间**（或 `kb.sync.schedule-space-codes`）；`KbSyncScheduler` 按列表循环 | ✅ 后端 · 生产 cron 待开 |
 | **KBOPS-5** | **失败告警**：Sync/定时失败 webhook（飞书/企微/generic JSON），`kb.sync.alert.enabled` | ✅ 后端 · 运维配 URL |
-| **KBOPS-6** | **前端 T16f**：Wiki 治理全按钮（script-fix / auto-fix / merge-hint / Sync 勾选 / 复检摘要）—— 见 `docs/api/wiki-govern-frontend.md` |
-| **KBOPS-7** | **前端 T19d**：平台 LLM 设置页 —— 见 `docs/api/kb-llm-platform-frontend.md` |
+| **KBOPS-6** | **前端 T16f**：Wiki 治理全按钮（script-fix / auto-fix / merge-hint / Sync 勾选 / 复检摘要）—— 见 `docs/api/wiki-govern-frontend.md` | ✅ meiling-ui |
+| **KBOPS-7** | **前端 T19d**：平台 LLM 设置页 —— 见 `docs/api/kb-llm-platform-frontend.md` | ✅ meiling-ui |
 | **T19e** | **LLM 加密就绪信号**：`encryptionReady` + 环境变量 `KB_LLM_CONFIG_SECRET` 运行时回退（保存新 key 无需重启） | ✅ |
 
 ### P2 —— 增强（按需）
@@ -83,7 +84,7 @@
 | 任务 | 内容 |
 |------|------|
 | **KBOPS-8** | 体检工单增强：扩展 issue_type、assignee/优先级、批量状态变更、可选定时 scan | ✅ 2026-07-12 |
-| **KBOPS-9** | **知识库运维 Dashboard**：`GET /kb/ops/dashboard` — Sync 趋势、Lint 工单、LLM 摘要、漂移采样 | ✅ 后端 · 前端 O4 📋 |
+| **KBOPS-9** | **知识库运维 Dashboard**：`GET /kb/ops/dashboard` — Sync 趋势、Lint 工单、LLM 摘要、漂移采样 | ✅ 后端 + 前端 `KnowledgeOpsDashboardView` |
 | **KBOPS-10** | Web 健康体检检查项对齐 `lint.py` + 分工文档（`GET /kb/lint/issue-types`、`LintVo.dataSource`、查询与体检指南 §3.3） | ✅ 2026-07-12 |
 
 ---

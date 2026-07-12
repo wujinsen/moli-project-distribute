@@ -4,7 +4,24 @@
 > **产品 PRD**：[knowledge-ops-prd.md](../product/knowledge-ops-prd.md)  
 > **技术规划**：[kb-ops-roadmap.md](../design/kb-ops-roadmap.md)  
 > **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §4（体检/Sync）、§3.5（LLM）  
-> **工作台总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)
+> **工作台总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
+> **meiling-ui 落地审计（权威）**：[`meiling-ui/docs/api/knowledge-ops-frontend.md`](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §0 · 与 [`moli-knowledge/TASKS.md`](../../moli-knowledge/TASKS.md) 同步至 **2026-07-12**
+
+---
+
+## 0. 前端落地摘要（2026-07-12）
+
+| 模块 | 状态 | 代码落点（meiling-ui） |
+|------|------|------------------------|
+| O1–O4 Sync | ✅ | `KbSyncOpsPanel.vue` |
+| O5–O8 体检工单 | ✅ | `KbLintIssuesPanel.vue` · `kbLint.ts` |
+| O9 Scan 状态条 | ✅ | `KbLintScanStatusBar.vue` |
+| T16f Wiki 治理 | ✅ | `KnowledgeWikiGovernView.vue` |
+| T19d 平台 LLM | ✅ | `system/kb-llm/index.vue` |
+| T20f Ingest 三 Tab | ✅ | `KnowledgeIngestWorkbenchView.vue` |
+| KBOPS-9 Dashboard | ✅ | `KnowledgeOpsDashboardView.vue` |
+
+**剩余（非前端）**：生产开 `kb.sync.schedule-enabled` / `kb.lint.schedule-enabled`、告警 webhook、`KB_LLM_CONFIG_SECRET`；部署 knowledge-server ≥ O7 batch 后 `npm run kb:prd` 复验。
 
 ---
 
@@ -12,14 +29,14 @@
 
 | 优先级 | 模块 | 路由 | 文档 | 后端 | 前端 |
 |--------|------|------|------|------|------|
-| **P0** | 健康体检 · Sync 增强 | `knowledge/lint/index` | **本文 §3** | ✅ KBOPS-1/2 + O1 + **O9** | 🔵 **O1–O4** · **O9** |
-| **P1** | **体检工单增强** | `knowledge/lint/index` | **本文 §3.7** | ✅ KBOPS-8/10 | 🔵 **O5–O8**（**KBOPS-8f**） |
-| **P0** | Wiki 治理全链路 | `knowledge/wiki-govern/index` | [wiki-govern-frontend.md](wiki-govern-frontend.md) | ✅ | 🔵 **W2/W4/W5/W7** |
-| **P1** | 平台 LLM 设置 | `system/kb-llm` | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | ✅ T19 | 🔵 **T19d** |
-| **P1** | Ingest 三 Tab | `knowledge/ingest/index` | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | ✅ T20a/b/e | 🔵 **T20f** |
-| **P2** | 运维 Dashboard | `knowledge/ops/dashboard` | **本文 §8** | ✅ KBOPS-9 | 📋 规划 |
+| **P0** | 健康体检 · Sync 增强 | `knowledge/lint/index` | **本文 §3** | ✅ KBOPS-1/2 + O1 + **O9** | ✅ **O1–O4** · **O9** |
+| **P1** | **体检工单增强** | `knowledge/lint/index` | **本文 §3.7** | ✅ KBOPS-8/10 | ✅ **O5–O8**（**KBOPS-8f**） |
+| **P0** | Wiki 治理全链路 | `knowledge/wiki-govern/index` | [wiki-govern-frontend.md](wiki-govern-frontend.md) | ✅ | ✅ **T16f** |
+| **P1** | 平台 LLM 设置 | `system/kb-llm` | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | ✅ T19 | ✅ **T19d** |
+| **P1** | Ingest 三 Tab | `knowledge/ingest/index` | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | ✅ T20a/b/e | ✅ **T20f** |
+| **P2** | 运维 Dashboard | `knowledge/ops/dashboard` | **本文 §8** | ✅ KBOPS-9 | ✅ 前端聚合 |
 
-**建议迭代顺序**：**O1–O4 + O9（Sync/Scan 可见）→ O5–O8（工单批量）→ W2/W4/W5/W7（治理闭环）→ T19d → T20f Tab1/3 → Dashboard**
+**建议迭代顺序（已完成）**：O1–O4 + O9 → O5–O8 → T16f → T19d → T20f → Dashboard。E2E：`meiling-ui` 仓库 `npm run kb:e2e` + `kb:e2e:extended`。
 
 **网关前缀**：`{VITE_API_BASE_URL}/KnowledgeServer`
 
@@ -122,7 +139,7 @@ export const listSyncLogs = (params: { spaceId: string; pageNum?: number; pageSi
 
 ### 3.5 Scan 状态条（O9 · 只读）
 
-> **后端** ✅ `GET /kb/lint/scan/status` · **前端** 🔵
+> **后端** ✅ `GET /kb/lint/scan/status` · **前端** ✅ `KbLintScanStatusBar.vue`
 
 | ID | 功能 | API | UI |
 |----|------|-----|-----|
@@ -160,24 +177,24 @@ export const getLintScanStatus = (spaceId: string) =>
 
 ### 3.7 验收 O1–O4 / O9
 
-- [ ] 选空间后加载 status + 最近 10 条 log  
-- [ ] trigger 成功 → status 刷新、log 新增 success 行  
-- [ ] trigger 失败（运维配合制造）→ fail 行可见、Toast  
-- [ ] running 时不能重复 trigger  
-- [ ] **O9**：展示定时 scan 开关状态 + 最近 scan 时间（只读）
+- [x] 选空间后加载 status + 最近 10 条 log  
+- [x] trigger 成功 → status 刷新、log 新增 success 行  
+- [x] trigger 失败（运维配合制造）→ fail 行可见、Toast  
+- [x] running 时不能重复 trigger  
+- [x] **O9**：展示定时 scan 开关状态 + 最近 scan 时间（只读）
 
 ---
 
-## 3.7 P1 · 体检工单增强（O5–O8 · KBOPS-8）
+## 3.7 P1 · 体检工单增强（O5–O8 · KBOPS-8f） ✅
 
-> **后端** ✅。在 `LintIssueTable` 扩展筛选与批量操作。
+> **后端** ✅ · **前端** ✅ `KbLintIssuesPanel.vue` + `src/api/knowledge/kbLint.ts`
 
 | ID | 功能 | API | UI |
 |----|------|-----|-----|
 | **O5** | 类型筛选 | `GET /kb/lint/issues?issueType=` | 下拉；数据源 `GET /kb/lint/issue-types` |
-| **O6** | 指派 / 优先级 | `PUT /kb/lint/issue/{id}/assign` | 行内选择处理人、优先级 |
-| **O7** | 批量状态 | `PUT /kb/lint/issues/batch` | 多选 → 已忽略/已修复（兼容 `batch-status`） |
-| **O8** | 批量指派 | `PUT /kb/lint/issues/batch-assign` | 多选 → 统一处理人/优先级 |
+| **O6** | 指派 | `PUT /kb/lint/issue/{id}?assigneeId=` | 行内选择处理人 +「指派给我」 |
+| **O7** | 批量状态 | `PUT /kb/lint/issues/batch` | 多选 → 已忽略/已修复（`clearAssignee` 清指派） |
+| **O8** | 分页 | `GET /kb/lint/issues?pageNum&pageSize` | `AppPagination`；旧版全量数组仍兼容客户端 slice |
 
 **TypeScript 建议**：
 
@@ -205,19 +222,20 @@ export type LintIssueTypeVo = {
 
 **分工提示（KBOPS-10）**：列表页角标说明「DB 快照体检」；Sync 前引导用户去 **Wiki 治理** 跑 `lint-space`（文件真值）。
 
-### 3.7.1 DoD（KBOPS-8f · meiling-ui）
+### 3.7.1 DoD（KBOPS-8f · meiling-ui） ✅
 
-- [ ] 扫描落库后工单列表支持 `issueType` / `assigneeId` / `priority` / `status` 筛选  
-- [ ] `GET /kb/lint/issue-types` 驱动类型下拉（展示 `webOnly` / `lintPyOnly` 提示）  
-- [ ] 行内改 `assigneeId`、`priority`（O6）  
-- [ ] 多选批量改 status（O7）、批量指派（O8）  
-- [ ] 页头说明：DB 快照 ≠ 磁盘 lint.py；修 wiki 走治理页  
+- [x] 扫描落库后工单列表支持 `issueType` / `assigneeId` / `status` 筛选  
+- [x] `GET /kb/lint/issue-types` 驱动类型下拉  
+- [x] 行内改 `assigneeId`（O6）  
+- [x] 多选批量改 status / 指派（O7 · `PUT /kb/lint/issues/batch`）  
+- [x] 服务端分页或全量兼容 slice（O8）  
+- [x] 页头说明：DB 快照 ≠ 磁盘 lint.py；修 wiki 走治理页  
 
 ---
 
-## 4. P0 · Wiki 治理（T16f / KBOPS-6）
+## 4. P0 · Wiki 治理（T16f / KBOPS-6） ✅
 
-**完整规格不在此重复**，请直接实现：
+**完整规格**见下表（meiling-ui `KnowledgeWikiGovernView.vue` 已联调）：
 
 | 文档 | 内容 |
 |------|------|
@@ -235,7 +253,7 @@ export type LintIssueTypeVo = {
 
 ---
 
-## 5. P1 · 平台 LLM 设置（T19d / KBOPS-7）
+## 5. P1 · 平台 LLM 设置（T19d / KBOPS-7） ✅
 
 → 全文 **[kb-llm-platform-frontend.md](kb-llm-platform-frontend.md)**
 
@@ -249,7 +267,7 @@ export type LintIssueTypeVo = {
 
 ---
 
-## 6. P1 · Ingest 三 Tab（T20f）
+## 6. P1 · Ingest 三 Tab（T20f） ✅
 
 → 全文 **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)**
 
@@ -273,9 +291,9 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 
 ---
 
-## 8. P2 · 运维 Dashboard（规划 · KBOPS-9）
+## 8. P2 · 运维 Dashboard（KBOPS-9） ✅
 
-**路由建议**：`knowledge/ops/dashboard` · perm `kb:ops:dashboard`（SQL 待补）
+**路由**：`knowledge/ops/dashboard` · perm `kb:ops:dashboard` · `KnowledgeOpsDashboardView.vue`
 
 | 区块 | 数据源 | 说明 |
 |------|--------|------|
@@ -284,7 +302,7 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 | LLM 可用 | `GET /kb/ask/llm-config` | available 灯 |
 | （可选）断链 Top N | lint issues `broken_link` | P2 |
 
-后端 Dashboard 专用 API **尚未实现**；P2 前可用现有 logs/issues 接口前端聚合。
+后端 `GET /kb/ops/dashboard` ✅；前端 D1–D4 由 `kbOpsDashboard.ts` 聚合现有 logs/issues/llm-config 接口实现。
 
 ---
 
@@ -303,21 +321,21 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 
 ## 10. 验收总表（运维前端）
 
-| ID | 模块 | 项 | 优先级 |
-|----|------|-----|--------|
-| O1 | Sync | 状态卡片 | P0 |
-| O2 | Sync | 触发按钮 + 锁 | P0 |
-| O3 | Sync | 日志列表 | P0 |
-| O4 | Sync | 失败展示 | P0 |
-| O9 | 体检 Scan | 定时状态 + 最近 scan 时间（只读） | P0 |
-| O5 | 体检工单 | 类型筛选 | P1 |
-| O6 | 体检工单 | 行内指派/优先级 | P1 |
-| O7 | 体检工单 | 批量改状态 | P1 |
-| O8 | 体检工单 | 批量指派 | P1 |
-| W1–W8 | 治理 | 见 wiki-govern §13 | P0 |
-| T19d | LLM | 见 kb-llm-platform | P1 |
-| T20f | Ingest | 见 kb-import-entry §10 | P1 |
-| D1–D4 | Dashboard | §8 四区块 | P2 |
+| ID | 模块 | 项 | 优先级 | 状态 |
+|----|------|-----|--------|------|
+| O1 | Sync | 状态卡片 | P0 | ✅ |
+| O2 | Sync | 触发按钮 + 锁 | P0 | ✅ |
+| O3 | Sync | 日志列表 | P0 | ✅ |
+| O4 | Sync | 失败展示 | P0 | ✅ |
+| O9 | 体检 Scan | 定时状态 + 最近 scan 时间（只读） | P0 | ✅ |
+| O5 | 体检工单 | 类型筛选 | P1 | ✅ |
+| O6 | 体检工单 | 行内指派 | P1 | ✅ |
+| O7 | 体检工单 | 批量改状态/指派 | P1 | ✅ |
+| O8 | 体检工单 | 分页 | P1 | ✅ |
+| W1–W8 | 治理 | 见 wiki-govern §13 | P0 | ✅ |
+| T19d | LLM | 见 kb-llm-platform | P1 | ✅ |
+| T20f | Ingest | 见 kb-import-entry §10 | P1 | ✅ |
+| D1–D4 | Dashboard | §8 四区块 | P2 | ✅ |
 
 ---
 
@@ -328,11 +346,9 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 | `src/api/knowledge/kbSync.ts` | §3.4 Sync API |
 | `src/types/knowledge/kbSync.ts` | §3.3 类型 |
 | `src/components/knowledge/KbSyncOpsPanel.vue` | §3.2 可复用 Sync 区 |
-| `src/components/knowledge/KbLintIssueTable.vue` | §3.7 工单表（O5–O8） |
-| `src/api/knowledge/kbLint.ts` | issue-types / issues / batch-* / assign / **scan/status** |
-| `src/types/knowledge/kbLint.ts` | `KbLintIssue` · `LintIssueTypeVo` · **`LintScanStatusVo`** |
-| `src/components/knowledge/KbLintScanStatusBar.vue` | §3.5 O9 |
-| `src/views/knowledge/lint/index.vue` | 嵌入 KbSyncOpsPanel + KbLintIssueTable |
+| `src/components/knowledge/KbLintIssuesPanel.vue` | §3.7 工单表（O5–O8） |
+| `src/api/knowledge/kbLint.ts` | issues / batch / assign / **scan/status** |
+| `src/views/knowledge/KnowledgeLintView.vue` | 嵌入 KbSyncOpsPanel + KbLintIssuesPanel + O9 |
 | `src/views/knowledge/wiki-govern/` | 见 wiki-govern §14 |
 | `src/views/system/kb-llm/index.vue` | T19d |
 
@@ -365,7 +381,7 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-12 | §0 前端落地摘要；§1/§3.7/§8/§10 标 ✅；O7 统一 `PUT /kb/lint/issues/batch`；与 TASKS.md / meiling-ui §0 对齐 |
 | 2026-07-12 | §3.5 增 O9 · `GET /kb/lint/scan/status`（定时 scan 只读展示） |
-| 2026-07-12 | §1/§10/§11 增 KBOPS-8f · O5–O8 工单 UI 排期与 DoD |
 | 2026-07-09 | 初稿：O1–O4 Sync UI、排期、Dashboard 规划、与 T16f/T19d/T20f 交叉引用 |
 | 2026-06-28 | 治理细节见 wiki-govern-frontend.md |
