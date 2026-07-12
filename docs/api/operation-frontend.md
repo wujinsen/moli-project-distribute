@@ -657,18 +657,21 @@ export type OperationDeployPresets = {
 
 | 步骤 | 检查 |
 |------|------|
-| 1 | user-center 启动（`:8888`），`OPS_SECRET_KEY` 已配置（P0 加密） |
-| 2 | DB 已执行 `17_*`～`23_*`（**`23_*` 补组件 `server_id`**）；远程部署需 `ops.deploy.enabled` + `ops.upload.enabled` |
-| 3 | meiling-ui proxy `/operation` → `8888`；登录角色含 `operation:*:list` |
-| 4 | 平台/组件：列表只见 mask；reveal 需 `operation:secret:view` |
-| 5 | 服务器/组件：探测后 `status` / `lastCheckTime` 更新 |
-| 6 | 服务器 id=201：拓扑含关联项目与组件 |
-| 7 | 端口校验：`mismatched >= 1`（种子 moli-server 9080） |
-| 8 | 驾驶舱 ops：`/operation/stats` 计数与库内台账一致 |
-| 9 | 部署中心：SSH 已配置 → 启停返回 taskId → 日志轮询成功 |
-| 10 | 文件上传：jar 到 `moli-*/` + `restartService` 后置动作 |
-| 11 | probe-all：POST 得 taskId → 轮询至 finished → 刷新服务器/项目列表 |
-| 12 | 生产：`allow-local=false` 时所有 deploy API 必须带 `serverId` |
+| 1 | user-center 启动（`:8888`），`ops.secret.key` / `OPS_SECRET_KEY` 已配置 |
+| 2 | DB 已执行 `17_*`～`29_*`（含 `operation_project_component`、拓扑菜单 407）；顺序见 [`sql-migration-order.md`](../ops/sql-migration-order.md) |
+| 3 | **部署中心三开关**（默认均为 false）：`ops.upload.enabled`、`ops.command.enabled`、`ops.deploy.enabled` — 本地 dev 建议在 `application-dev.yml` 置 `true` |
+| 4 | meiling-ui **vite proxy** `/operation` → `8888`；**大文件上传勿经 Gateway**（易浏览器 `Failed to fetch`） |
+| 5 | 登录角色含 `operation:*:list`；部署中心另需 `file:upload`、`command:exec`、`deploy:exec`、`ssh:manage` |
+| 6 | 平台/组件：列表只见 mask；reveal 需 `operation:secret:view` |
+| 7 | 服务器/组件：探测后 `status` / `lastCheckTime` 更新 |
+| 8 | `GET /operation/relations/server/{id}` 含关联项目与组件（旧 topology API 已删除） |
+| 9 | 项目关联服务器：弹窗保存 1 台后 `serverCount`=1，抽屉 servers 仅 1 条且 `primary` 正确 |
+| 10 | 端口校验：`mismatched >= 1`（种子 moli-server 9080 vs 矩阵 8888） |
+| 11 | 驾驶舱 ops：`/operation/stats` 计数与库内台账一致 |
+| 12 | 部署中心：SSH 已配置且测试连接成功 → 启停/上传返回 `taskId` → 任务抽屉轮询 |
+| 13 | 文件上传：`postAction=custom` 需 command 开关 + 权限；zip 解压推荐预设 `unzipToDist` |
+| 14 | probe-all：POST 得 taskId → 轮询至 finished |
+| 15 | 生产：`allow-local=false` 时所有 deploy API 必须带 `serverId` |
 
 ---
 

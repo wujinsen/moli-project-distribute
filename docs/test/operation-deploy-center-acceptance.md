@@ -9,7 +9,7 @@
 | # | 项 | 期望 |
 |---|-----|------|
 | P0 | DB 已执行 `docs/sql/17_*`～`22_operation_command_flex.sql` | `operation_task` 表存在；菜单 405「部署中心」可见 |
-| P1 | user-center 配置 | `OPS_SECRET_KEY` 已设；`OPS_DEPLOY_ENABLED=true`；`OPS_UPLOAD_ENABLED=true`；**`OPS_COMMAND_ENABLED=true`**（测远程命令/custom 后置） |
+| P1 | user-center 配置 | `OPS_SECRET_KEY` 已设；**`OPS_UPLOAD_ENABLED=true`**；**`OPS_COMMAND_ENABLED=true`**；远程启停需 **`OPS_DEPLOY_ENABLED=true`**（见 [`operation-deploy-api.md`](../api/operation-deploy-api.md) §2.1） |
 | P2 | 角色权限 | `operation:ssh:manage`、`operation:deploy:exec`、`operation:file:upload`、**`operation:command:exec`**、`operation:server:list` |
 | P3 | 腾讯云 CVM | OS 用户 `ubuntu`；`sudo nginx -s reload` 已配 NOPASSWD（若测 nginxReload） |
 | P4 | 服务器台账 | 目标 CVM 已录入；SSH 私钥已配置且测试连接成功 |

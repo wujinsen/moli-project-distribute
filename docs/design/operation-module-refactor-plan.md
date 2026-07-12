@@ -345,6 +345,8 @@ operation/support/
 - [x] 部署中心：启停/上传/命令三开关 + Runbook（[`deploy/上线流程.md`](../../deploy/上线流程.md) §7）
 - [x] probe-all：HTTP 异步返回 taskId（100 台压测待联调）
 - [x] `serviceKey` 扩展 order/bi：YAML + presets；远程脚本待扩展
+- [x] 多服务器关联双轨同步（2026-07-13）：`PUT .../links` 对齐主 `server_id`；关系计数以 N:N 为准 — 见 [`operation-server-links.md`](operation-server-links.md) §2.3
+- [ ] **前端 P4**：SVR-25b 拓扑图 · SVR-28c～f RelationDrawer — 见 roadmap §5.1
 
 ---
 

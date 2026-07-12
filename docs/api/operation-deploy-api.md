@@ -87,6 +87,35 @@ ops:
 | `ops.command.enabled=false` | 拒绝远程命令、上传 `postAction=custom` |
 | `ops.health.probe-enabled=false` | 关闭定时批量探活调度器 |
 
+### 2.1 本地 dev 推荐片段（`application-dev.yml`）
+
+部署中心联调时三开关默认 **false**，需在 profile `dev` 显式打开（`application.yml` 主配置仍为 false，生产安全）：
+
+```yaml
+ops:
+  secret:
+    key: your-local-dev-secret    # 或 OPS_SECRET_KEY
+  deploy:
+    enabled: true
+    allow-local: true             # 仅本地；无 serverId 时允许本机 moli-service.sh
+  upload:
+    enabled: true
+  command:
+    enabled: true
+```
+
+注意：`application-dev.yml` 中 `spring.servlet.multipart` 默认为 **10MB**；大于 10MB 的 zip 需调大或走 `OPS_UPLOAD_MAX_FILE_SIZE`。
+
+### 2.2 常见联调错误
+
+| 浏览器/接口现象 | 原因 | 处理 |
+|-----------------|------|------|
+| `Failed to fetch`（上传） | 经 Gateway 传大 multipart、或服务未启 | dev 用 vite proxy → `:8888`；确认 user-center 进程 |
+| `文件上传发布未启用` | `ops.upload.enabled=false` | §2.1 或 `OPS_UPLOAD_ENABLED=true` |
+| `远程命令执行未启用` | `ops.command.enabled=false` | §2.1 或 `OPS_COMMAND_ENABLED=true` |
+| `serverIp 与 serverId 不一致`（旧版） | 换关联服务器后行内旧 IP | **2026-07-13 起** 后端以 `serverId` 覆盖 IP；升级后重试 |
+| 关联 1 台显示 2 台（旧版） | 主表与 N:N 不同步 | **2026-07-13 起** 保存 links 同步主表；或重新点「确定关联」 |
+
 ---
 
 ## 3. SSH 凭据（SVR-13）

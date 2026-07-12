@@ -1,6 +1,6 @@
 # 项目/组件 · 多服务器关联（SVR-22）
 
-> 更新：2026-07-11 · 状态：**后端落地中**（项目 ✅ · 组件进行中）  
+> 更新：2026-07-13 · 状态：**后端 ✅**（项目 + 组件对称）· **前端 S6-b ✅**  
 > 归属：`moli-user-center` · `operation_server_project` / `operation_server_component`  
 > 前端任务：**S6-b**（项目/组件编辑页多选服务器）· 图 [`moli-operation-server-links.drawio`](../diagrams/moli-operation-server-links.drawio)
 
@@ -38,9 +38,25 @@
 
 | 能力 | 使用字段 |
 |------|----------|
-| `GET /operation/relations/server/{id}` | N:N + 主 `server_id` + `server_ip` 回退（SVR-28b） |
+| `GET /operation/relations/server/{id}` | N:N 非空时仅 N:N；空时回退主 `server_id`（§2.3） |
 | `GET /operation/deploy/{key}/status?serverId=` | 单条台账的 **主** `serverId` |
 | `POST .../task?serverId=&projectId=` | `projectId` 定位台账行；`serverId` 指定远程主机（须在 N:N 或主 `server_id` 中） |
+
+### 2.3 关系解析与保存同步（2026-07-13）
+
+**原则**：关联以 **`server_id`（数字 ID）** 为准；`server_ip` 为展示/探活冗余字段，随 `serverId` 自动回填。
+
+| 操作 | 行为 |
+|------|------|
+| `PUT /operation/project/{id}/links` | 全量替换 N:N；**同步**主表 `server_id` / `server_ip` 为 `serverIds[0]`；清空关联时清空主 `server_id` |
+| `POST`/`PUT` 项目/组件 CRUD | `serverIds` 非空时 **`serverId` 强制对齐 `serverIds[0]`**，再 `syncLinks` |
+| `OperationRelationQuerySupport.resolveServerIdsForProject` | N:N **非空** → 仅返回 N:N；N:N 空 → 回退 `[serverId]`（§6 兼容） |
+| `OperationServerBindingSupport.bindProject` | 有 `serverId` → 用服务器台账 IP **覆盖**行内 `server_ip`（换机不留旧 IP） |
+
+**易踩坑**：
+
+- 多台服务器 **同 IP 不同 ID**（如本地 `127.0.0.1` 的 dev/pro 两条台账）→ 必须用弹窗 **按 ID 选**，勿只靠填 IP 反查。
+- **`project_name` 可重复**（dev/pro 各一行）→ 计数、关系 API 按 **`project_id`**，不按名称合并。
 
 ---
 
@@ -157,6 +173,8 @@ export type OperationComponent = {
 | L4 | 删项目 | N:N 级联删除 |
 | L5 | 组件 L1–L4 | 与项目对称 |
 | L6 | 仅 `serverId` 无 `serverIds` | N:N 一条，GET 回填 `[serverId]` |
+| L7 | 弹窗只选 1 台保存后 | `serverCount`=1；`GET /operation/relations/project/{id}` 仅 1 台；主表 `server_id` 与 N:N 首项一致 |
+| L8 | 换关联服务器（旧 IP 仍留在行上） | 保存成功，不报「serverIp 与 serverId 不一致」；`server_ip` 更新为新机 IP |
 
 ---
 

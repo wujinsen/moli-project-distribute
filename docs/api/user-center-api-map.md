@@ -179,7 +179,7 @@
 - `GET /operation/project/{id}`：`operation:project:list`；返回 VO（含 `serverIds`）
 - `DELETE /operation/project/{ids}`：`operation:project:remove` + `list`
 - `GET /operation/project/{id}/links`：`operation:project:list`；返回 `{ projectId, serverIds }`
-- `PUT /operation/project/{id}/links`：`operation:project:edit` + `list`；全量替换 N:N
+- `PUT /operation/project/{id}/links`：`operation:project:edit` + `list`；全量替换 N:N，**并同步主表 `server_id`/`server_ip` 为 `serverIds[0]`**（2026-07-13）
 - `GET /operation/project/{id}/component-links`：`operation:project:list`；返回 `{ projectId, componentIds }`（SVR-26a）
 - `PUT /operation/project/{id}/component-links`：`operation:project:edit` + `list`；全量替换 `operation_project_component`
 
@@ -193,10 +193,11 @@
 - `DELETE /operation/component/{ids}`：`operation:component:remove` + `list`
 - `POST /operation/component/{id}/check`：`operation:component:list`；TCP 探活，更新并返回 `OperationComponentVo`
 - `GET /operation/component/{id}/links`：`operation:component:list`；返回 `{ componentId, serverIds }`
-- `PUT /operation/component/{id}/links`：`operation:component:edit` + `list`；全量替换 N:N
+- `PUT /operation/component/{id}/links`：`operation:component:edit` + `list`；全量替换 N:N，**并同步主表 `server_id`**（2026-07-13）
 
-> **前端对接专稿**：[operation-frontend.md](operation-frontend.md)（枚举、TypeScript、验收 S0–S9）  
-> **部署中心 HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)（SVR-13~20）
+> **前端对接专稿**：[operation-frontend.md](operation-frontend.md)（枚举、TypeScript、验收 S0–S11）  
+> **部署中心 HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)（SVR-13~20）  
+> **路线图 / 待办**：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) §5.1
 
 ### 运维审计 `OperationAuditController`（前缀 `/operation/audit`，1个）
 

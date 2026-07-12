@@ -1,6 +1,6 @@
 # 服务器运维模块 · 演进规划（技术端运维）
 
-> 更新：2026-07-12 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）；**P3 部署中心已落地**（SVR-13~20）；**P2+ 多服务器关联 / 角色 / 标签已落地**（SVR-22/23/24）；**P4 拓扑与关系导航后端已落地**（SVR-25a/26a/28a/28b ✅；前端 25b/28c 待做）
+> 更新：2026-07-13 · 状态：**后端主线已闭环**（SVR-1～28b、21、22～24）；**前端 P4 待做**（25b、26b、28c～f）；**2026-07-13 已修** 多服务器双轨同步与 `serverId`/`serverIp` 绑定  
 > 归属：`moli-user-center` · `operation_*` 表 · 菜单「运营/运维管理」(id 400)
 > 边界：**只管服务器/基础设施资产运维**；知识库内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（另一条独立路线，互不重叠）
 
@@ -182,6 +182,26 @@
 
 建议顺序：26a → 28a → 28b → 28c →（25a/b 并行）→ 28d/e/f
 
+### 5.1 当前待办总览（2026-07-13）
+
+| 类别 | 状态 | 内容 |
+|------|------|------|
+| **后端 API** | ✅ 主线完成 | 四台账、部署中心、端口矩阵、拓扑/关系读取层、component-links |
+| **后端增强** | ⬜ 可选 | order/bi 远程启停脚本扩展；`deploy_running` 全量远程化；relations 分实体权限 |
+| **前端 meiling-ui** | ⬜ **主缺口** | SVR-25b 拓扑图 · SVR-26b 组件依赖弹窗 · SVR-28c～f RelationDrawer 全站接入 |
+| **本地联调** | ⚠️ 常漏配 | `ops.upload/command/deploy.enabled` 默认 false；大文件勿经 Gateway；SSH + `OPS_SECRET_KEY` |
+| **缺陷修复** | ✅ 2026-07-13 | 见 §5.2（关联计数虚高、`serverIp` 与 `serverId` 不一致报错） |
+
+### 5.2 缺陷修复记录（2026-07-13 · SVR-22/28 关联）
+
+| 现象 | 根因 | 修复 |
+|------|------|------|
+| 关联弹窗只选 1 台，列表/抽屉显示「服务器 2」 | 主表 `server_id` 与 N:N 不同步；计数合并两边 | `PUT .../links` 同步主表 `server_id`；`OperationRelationQuerySupport` N:N 非空时以 N:N 为准 |
+| 保存关联报「serverIp 与 serverId 不一致」 | 换服务器后行内仍留旧 `server_ip` | `OperationServerBindingSupport`：**有 `serverId` 时以台账 IP 覆盖**，不再抛错 |
+| 同名 `project_name` 多行误解为「一台项目两台机」 | 设计允许 dev/pro 各一条台账 | 以 **`project_id` / `server_id`** 区分，不按 `project_name` 合并计数 |
+
+实现类：`OperationProjectLinkServiceImpl`、`OperationRelationQuerySupport`、`OperationServerBindingSupport`。设计细节：[`operation-server-links.md`](operation-server-links.md) §2.3。
+
 ---
 
 ## 6. Phase R · 台账 + 部署中心改造（2026-07-11 规划）
@@ -199,7 +219,16 @@ SVR-13~20 功能已上线，但 **Schema 漂移、组件缺 `server_id`、定时
 
 架构图：[`moli-operation-refactor.drawio`](../diagrams/moli-operation-refactor.drawio)
 
-**建议起手**：R0 + R1（低风险、修 `Unknown column` 类问题），再 R3.2（部署状态远程化）。
+**建议起手**：R0 + R1（低风险）已完成；后续可选 **R3.2**（`deploy_running` 定时同步全走 SSH，弱化本机脚本依赖）。
+
+### 6.1 仍开放的架构债（非阻塞）
+
+| 项 | 说明 |
+|----|------|
+| `deploy_running` 本机回退 | `status-sync-mode=local` 时仍读本机 `moli-service.sh`；生产应 `ssh` |
+| order/bi 远程启停 | YAML/registry 已登记；目标机 `moli-service.sh` 待扩展 |
+| Gateway 大文件上传 | 经网关上传 multipart 易 `Failed to fetch`；dev 宜 vite proxy → `:8888` |
+| `OperationHealthSupport` 抽取 | 重构计划中的可选收敛项 |
 
 ---
 

@@ -1,6 +1,6 @@
 # 运营管理 · 关联关系导航与搜索（SVR-28）
 
-> 更新：2026-07-12 · 状态：**后端 26a/28a/28b 已落地**；前端 RelationDrawer 待做（SVR-28c~f）
+> 更新：2026-07-13 · 状态：**后端 26a/28a/28b ✅**；**前端 RelationDrawer 待做**（SVR-28c~f）  
 > 归属：`moli-user-center` · 菜单「运营管理」(id 400) 全部子页 · meiling-ui
 > 姊妹篇：[`server-topology-visualization.md`](server-topology-visualization.md)（SVR-25 拓扑图 = 全局视角；本篇 = **列表内的关系视角**，两者共用关系数据）
 > 前置：**SVR-26a `operation_project_component` 表提级为本设计前置**（没有它「项目↔组件」无从谈起）
@@ -51,7 +51,7 @@ ER + 交互图：[`moli-operation-relations-nav.drawio`](../diagrams/moli-operat
 | 组件 | `serverCount`、`projectCount` |
 | 服务器 | `projectCount`、`componentCount`（列表页直接显示，不用点拓扑才知道） |
 
-实现：`OperationRelationCountSupport`，对当前页 id 集合各查一条 `SELECT xx_id, COUNT(*) ... WHERE xx_id IN (...) GROUP BY xx_id`（含主 `server_id` 回退合并），O(1) 条 SQL/关系方向。
+实现：`OperationRelationQuerySupport`（`countServersByProjectIds` / `resolveServerIdsForProject`），对当前页 id 集合聚合；**N:N 非空时计数以 N:N 为准**，主 `server_id` 仅作 N:N 为空时的回退（与 [`operation-server-links.md`](operation-server-links.md) §2.3 一致）。
 
 ### 3.2 统一关系详情 API
 
@@ -77,7 +77,7 @@ GET /operation/relations/{entityType}/{id}     # entityType = server | project |
 - **一个接口吃三个方向**，`servers` 里标 `primary`（主 `server_id`）
 - `recentTasks` 按 `serverId` / `projectId` 命中 `operation_task` 取最近 5 条
 - 单机服务器关联详情改用 `GET /operation/relations/server/{id}`（SVR-28b）；原 `GET /operation/server/{id}/topology`（SVR-5）已删除
-- SVR-25a 的 `GET /operation/topology`（全局图）与本 API 共享 `OperationRelationQuerySupport` 的 N:N 读取（含回退），只写一份
+- SVR-25a 的 `GET /operation/topology`（全局图）与本 API 共享 `OperationRelationQuerySupport` 的 N:N 读取（N:N 非空时不合并过期主 `server_id`），只写一份
 
 ### 3.3 列表反向过滤
 
@@ -176,7 +176,7 @@ SVR-25b 拓扑页工具栏的关键字筛选升级为**实体搜索下拉**：
 
 | # | 用例 |
 |---|------|
-| 1 | 项目列表「关联」列计数与 N:N 行数一致（含主 `server_id` 回退去重） |
+| 1 | 项目列表「关联」列 `serverCount` 与 `GET /operation/relations/project/{id}` 的 `servers.length` 一致（单条台账维度，不按 `project_name` 跨行合并） |
 | 2 | 项目 A 依赖 MySQL、Redis → 组件 tab 显示 2 行；在组件管理页对 MySQL 点「项目 4」→ 列表筛出含 A 的 4 个项目 |
 | 3 | RelationDrawer 内 组件行点「详情」→ 抽屉切到该组件视角，面包屑可回退 |
 | 4 | 抽屉「在拓扑图中查看」→ 拓扑页聚焦对应节点 |
