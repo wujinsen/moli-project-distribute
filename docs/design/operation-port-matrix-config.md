@@ -313,5 +313,6 @@ normalize(name) = trim(name).toLowerCase().replace('_', '-')
 - API 契约：[`operation-port-matrix-api.md`](../api/operation-port-matrix-api.md)
 - 前端对接：[`operation-frontend.md`](../api/operation-frontend.md) §14
 - SQL：[`24_operation_port_matrix.sql`](../sql/24_operation_port_matrix.sql)
+- 验收：[`operation-port-matrix-acceptance.md`](../test/operation-port-matrix-acceptance.md)
 - 路线图：[`server-ops-module-roadmap.md`](server-ops-module-roadmap.md) §5 SVR-21
 - 现网端口清单：[`production-checklist.md`](../ops/production-checklist.md) §2

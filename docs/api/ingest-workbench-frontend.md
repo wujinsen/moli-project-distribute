@@ -146,6 +146,31 @@ POST /kb/ingest/jobs/{id}/draft/regenerate?slug=guides/foo&useLlmGenerate=true
 
 `regenerate` 的上述字段在 **`IngestDraftVo`** 上（非 `IngestGenerateResultVo`）。
 
+### 4.4a 异步生成 + SSE 进度（T15f） ✅
+
+> **后端** ✅ · **前端** ✅ `KnowledgeIngestWorkbenchView.vue` + `kbIngest.ts`  
+> 契约：`KNOWLEDGE_API.md` §9.4.1a · 设计：`docs/design/kb-ingest-generate-sse-design.md`
+
+Expert 详情页「生成草稿 / 续跑生成」默认走异步链路；旧版 knowledge-server 无 `generate/start` 时自动回退同步 `POST .../generate`。
+
+| 步骤 | API | 前端 |
+|------|-----|------|
+| 1 | `POST /kb/ingest/jobs/{id}/generate/start?resume=&useLlmGenerate=` | `startKbIngestGenerateApi` → `taskId` |
+| 2 | `GET /kb/ingest/jobs/{id}/generate/stream?taskId=` | `subscribeKbIngestGenerateStream`（fetch + Authorization） |
+| 3 | SSE `complete` 后 | `GET /drafts` 刷新列表 |
+
+**SSE 事件**：`started` · `page_start`（展示当前 slug）· `page_done` · `progress` · `complete` · `error`
+
+**UI**：生成中展示 `knowledge.ingest.generateLive`（`正在生成：{slug}`）；`progress` 更新 `lastGenerateStats`。
+
+**回退**：stream 404/405 或「异步 generate 未启用」→ 同步 `generateKbIngestDraftsApi`（与 T15b 行为一致）。
+
+```typescript
+// src/api/knowledge/kbIngest.ts
+startKbIngestGenerateApi(jobId, { resume, useLlmGenerate })
+subscribeKbIngestGenerateStream(jobId, taskId, handlers, signal?)
+```
+
 ---
 
 ## 5. nextSteps（T19 · 前端增量）
@@ -327,7 +352,8 @@ export function publishIngestJobApi(
 | **I2** | `publish`/`commit` 后 **nextSteps** CTA | ✅ | 🔵 | 跳转 Wiki 治理 / 健康体检 |
 | **I3** | raw **覆盖/簇引用** commit 报错可读 | ✅ | 🔵 | 解析 `data.conflicts` + `msg`；引导 enrich（见 [ops §2.6](../ops/knowledge-workbench-operations.md#26-raw-覆盖与簇已引用)） |
 | **I4** | Express **`useLlmPlan`** 与模板勾选独立 | ✅ | ⚠️ | 两 checkbox 分别映射 query |
-| **I5** | Expert **`generate?resume=`** 断点续跑 | ✅ | ⚠️ | 跳过已生成 slug |
+| **I5** | Expert **`generate?resume=`** 断点续跑 | ✅ | ✅ | 跳过已生成 slug |
+| **I6** | Expert **T15f SSE** `generate/start` + `stream` + 当前 slug 进度 | ✅ | ✅ | 无 start 时回退同步 generate |
 
 ### 11.2 回归场景（手工）
 
@@ -353,6 +379,7 @@ export function publishIngestJobApi(
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-12 | §4.4a T15f SSE generate 进度；§11 I6 验收 |
 | 2026-07-06 | §0 T20 三 Tab + 链 [kb-import-entry-frontend.md](kb-import-entry-frontend.md) |
 | 2026-06-28 | §4.4 Expert `useLlmGenerate=!templateMode`；B3 `llmFallback` 字段 |
 | 2026-06-28 | §11 I1–I5 验收进度 + §12 落点 |

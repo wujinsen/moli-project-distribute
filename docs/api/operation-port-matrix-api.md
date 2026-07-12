@@ -235,6 +235,7 @@ export const removePortMatrixApi = (ids: string) =>
 ## 8. 相关
 
 - 设计：[`operation-port-matrix-config.md`](../design/operation-port-matrix-config.md)
+- 验收：[`operation-port-matrix-acceptance.md`](../test/operation-port-matrix-acceptance.md)
 - 前端：[`operation-frontend.md`](operation-frontend.md) §14
 - 审计：[`operation-frontend.md`](operation-frontend.md) §6.1
 - API 地图：[`user-center-api-map.md`](user-center-api-map.md)（实现后补 §4 条目）
