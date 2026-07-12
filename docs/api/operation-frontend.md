@@ -19,6 +19,7 @@
 | **P2** | 部署进程状态 | `operation/project/index` | ✅ SVR-8 | **S4** 进程状态（只读） |
 | **P2** | 驾驶舱 ops KPI | `CandlelightDragon/cockpit/index`（tab=ops） | ✅ SVR-9 | **S5** 合并 `/operation/stats` |
 | **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-11 | **S6** 拓扑弹窗内编辑关联 |
+| **P2+** | 项目/组件多服务器 | `operation/project/index`、`operation/component/index` | ✅ SVR-22 | **S6-b** 列表行「关联服务器」多选弹窗 |
 | **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 异步 probe-all + 轮询（见 §13） |
 | **P3** | SSH 凭据 | `operation/server/index` | ✅ SVR-13 | **S8** SSH 配置弹窗 + 测试连接 |
 | **P3** | 部署中心 | `operation/deploy/index` | ✅ SVR-14~20 | **S9** 远程启停 + 灵活上传 + 远程命令 + 任务轮询 |
@@ -296,9 +297,10 @@ export type OperationServerLinks = {
 | **S6-2** | `PUT` 为**全量替换**；保存成功后刷新拓扑 |
 | **S6-3** | 无效 ID 后端返回业务错误（项目/组件不存在） |
 
-### 5.5 项目/组件 · 多选服务器（S6-b · SVR-22）
+### 5.5 项目/组件 · 多选服务器（S6-b · SVR-22 · ✅）
 
-设计文档：[operation-server-links.md](../design/operation-server-links.md)
+设计文档：[operation-server-links.md](../design/operation-server-links.md)  
+meiling-ui 实现：`OperationServerLinksModal` · `OperationLinkedServersCell` · §15 in `meiling-ui/docs/api/operation-frontend.md`
 
 ```http
 GET /operation/project/{id}/links
@@ -326,12 +328,12 @@ export type OperationComponentSave = {
 
 **列表/详情 VO** 回填 `serverIds`；N:N 为空时回退为 `[serverId]`。
 
-| ID | UI |
-|----|-----|
-| **S6-b-1** | 项目编辑：「关联服务器」改 **多选**，绑定 `serverIds` |
-| **S6-b-2** | 组件编辑：同上 |
-| **S6-b-3** | 列表可选展示关联台数 |
-| **S6-b-4** | 部署启停仍用主 `serverId`（`row.serverId`） |
+| ID | UI | 状态 |
+|----|-----|------|
+| **S6-b-1** | 项目列表行：「关联服务器」→ 多选弹窗，`PUT .../links` | ✅ |
+| **S6-b-2** | 组件列表行：同上 | ✅ |
+| **S6-b-3** | 列表列：主 `名称 · IP` + `+N` | ✅ |
+| **S6-b-4** | 部署启停仍用主 `serverId`（`row.serverId`） | ✅ |
 
 ---
 

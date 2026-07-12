@@ -1,6 +1,6 @@
 # 服务器运维模块 · 演进规划（技术端运维）
 
-> 更新：2026-07-11 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）；**P3 部署中心已落地**（SVR-13~20）
+> 更新：2026-07-12 · 状态：**P0 安全已落地**（SVR-1/2/3）；**P1 可观测已落地**（SVR-4/5/6）；**P2 联动已落地**（SVR-7/8 + 驾驶舱统计）；**P3 部署中心已落地**（SVR-13~20）；**P2+ 多服务器关联 / 角色 / 标签已落地**（SVR-22/23/24）
 > 归属：`moli-user-center` · `operation_*` 表 · 菜单「运营/运维管理」(id 400)
 > 边界：**只管服务器/基础设施资产运维**；知识库内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（另一条独立路线，互不重叠）
 
@@ -124,7 +124,7 @@
 | **SVR-21a** | 表 `operation_port_matrix` + `operation_port_matrix_alias`；种子 = 现 `OperationPortMatrix.java` | ✅ · [`24_operation_port_matrix.sql`](../sql/24_operation_port_matrix.sql) |
 | **SVR-21b** | `OperationPortMatrixProvider` 内存缓存；审计/列表改读 DB；空表回退内置默认 | ✅ |
 | **SVR-21c** | CRUD `GET/POST/PUT/DELETE /operation/port-matrix/*`；权限 `operation:port-matrix:*`；菜单 406 | ✅ · [`operation-port-matrix-api.md`](../api/operation-port-matrix-api.md) |
-| **SVR-21d** | meiling-ui 管理页 `operation/port-matrix/index`（用户方） | ⬜ |
+| **SVR-21d** | meiling-ui 管理页 `operation/port-matrix/index`（用户方） | ✅ |
 | **SVR-21e** | 迁移 `24_operation_port_matrix.sql` + `moli.sql` 基线合并；`production-checklist` §2 加注 DB 权威 | ✅ |
 
 ### P2+ —— 项目/组件多服务器（SVR-22，2026-07-11）
@@ -134,7 +134,7 @@
 | **SVR-22a** | 设计：主 `server_id` + N:N 双轨 · [`operation-server-links.md`](operation-server-links.md) | ✅ |
 | **SVR-22b** | 项目 CRUD/VO `serverIds`；`GET/PUT /operation/project/{id}/links` | ✅ |
 | **SVR-22c** | 组件对称 API + `OperationComponentLinkService` | ✅ |
-| **SVR-22d** | meiling-ui 项目/组件编辑多选（S6-b） | ⬜ |
+| **SVR-22d** | meiling-ui 项目/组件列表「关联服务器」多选弹窗（S6-b / S6-b+） | ✅ |
 
 ### P2+ —— 服务器角色分类（SVR-23，2026-07-12）
 

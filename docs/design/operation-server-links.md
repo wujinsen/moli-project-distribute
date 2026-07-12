@@ -109,14 +109,18 @@
 
 ---
 
-## 5. 前端对接（S6-b）
+## 5. 前端对接（S6-b · ✅ 2026-07-12）
 
-| ID | 页面 | 改动 |
-|----|------|------|
-| **S6-b-1** | 项目编辑弹窗 | 「关联服务器」改为 **多选**；绑定 `serverIds`；保存走 `POST/PUT /operation/project` |
-| **S6-b-2** | 组件编辑弹窗 | 同上，`serverIds` |
-| **S6-b-3** | 列表列 | 可选展示「关联 N 台」或 tag 列表 |
-| **S6-b-4** | 部署操作 | 启停/status 仍用 **主** `serverId`；多机关联仅台账展示，或后续扩展「选目标机」 |
+实现：`meiling-ui` · `OperationServerLinksModal` · `OperationLinkedServersCell` · `useOperationServerLabelCache`
+
+| ID | 页面 | 改动 | 状态 |
+|----|------|------|------|
+| **S6-b-1** | 项目列表行 | 「关联服务器」→ **多选弹窗**；`PUT .../project/{id}/links` | ✅ |
+| **S6-b-2** | 组件列表行 | 同上，`PUT .../component/{id}/links` | ✅ |
+| **S6-b-3** | 列表列 | 主服务器 `名称 · IP` + `+N`；点击主标签查看详情 | ✅ |
+| **S6-b-4** | 部署操作 | 启停/status 仍用 **主** `serverId`；多机关联仅台账展示 | ✅ |
+
+**列表数据补全**：列表接口可能只带主 `serverId`；前端 `enrichRowsWithLinks` 对每行补拉 `GET .../links`。若 links 返回空数组 `[]`，应清空行内 `serverIds`/`serverId` 展示（避免取消关联后仍显示旧缓存）。
 
 TypeScript 类型扩展：
 
