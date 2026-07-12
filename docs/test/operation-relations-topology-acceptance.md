@@ -1,6 +1,6 @@
 # 运营管理 · 拓扑与关联关系验收用例（SVR-25a / 26a / 28a / 28b）
 
-> 模块：`moli-user-center-server` + `meiling-ui`（前端 S10/S11 待做）  
+> 模块：`moli-user-center-server` + `meiling-ui`（前端 S10/S11/S26 **已落地**，待联合点验）  
 > 契约：[`docs/api/operation-frontend.md`](../api/operation-frontend.md) §5.6~5.8  
 > 设计：[`server-topology-visualization.md`](../design/server-topology-visualization.md)、[`operation-relations-navigation.md`](../design/operation-relations-navigation.md)  
 > 自动化：`mvn -pl moli-user-center-server -Dtest=Operation*Relation*,Operation*Topology*,OperationProjectComponentLink*,OperationRelationsTopologyControllersApiTest test`
@@ -71,14 +71,17 @@
 
 ---
 
-## 5. 前端待验收（SVR-25b / 28c，后端就绪后）
+## 5. 前端验收（SVR-25b / 28c / 26b · meiling-ui 已落地）
+
+> 实现对照：meiling-ui [`operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md) · §16 [`operation-frontend.md`](../../meiling-ui/docs/api/operation-frontend.md)
 
 | ID | 场景 | 期望 |
 |----|------|------|
-| UI-1 | 三列表「关联」列 chips | 计数与 API 一致；点击打开 RelationDrawer |
+| UI-1 | 三列表「关联」列 chips | 计数与 API 一致；点击打开 `RelationDrawer` |
 | UI-2 | RelationDrawer | 调 `GET /operation/relations/...`；Tab 切换；「定位」带 query 过滤 |
-| UI-3 | 拓扑页 | `TopologyGraphView` 渲染 `GET /operation/topology`；点节点弹详情 |
-| UI-4 | 项目依赖弹窗 | `PUT .../component-links` 全量保存 |
+| UI-3 | 拓扑页 | `OperationTopologyGraphView` 渲染 `GET /operation/topology`；`?focus=` 深链 |
+| UI-4 | 项目依赖弹窗 | `OperationProjectComponentLinksModal` · `PUT .../component-links` 全量保存 |
+| UI-5 | 关联保存回归 | 弹窗只选 1 台后 `serverCount=1`；无「幽灵第二台」（后端 §2.3 同步） |
 
 ---
 

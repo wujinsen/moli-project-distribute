@@ -82,7 +82,7 @@ public class OperationComponentServiceImpl implements OperationComponentService 
     }
 
     @Override
-    public void create(OperationComponentSaveRequest request) {
+    public Long create(OperationComponentSaveRequest request) {
         applyPrimaryServerFromList(request);
         OperationComponentDeployInfo row = OperationSaveRequestMapper.toEntity(request);
         serverBindingSupport.bindComponent(row);
@@ -92,6 +92,7 @@ public class OperationComponentServiceImpl implements OperationComponentService 
         }
         operationComponentDeployInfoMapper.insert(row);
         operationComponentLinkService.syncLinks(row.getId(), request.getServerIds(), row.getServerId());
+        return row.getId();
     }
 
     @Override

@@ -11,7 +11,7 @@ public interface OperationProjectService {
 
     OperationProjectVo getById(Long id);
 
-    void create(OperationProjectSaveRequest request);
+    Long create(OperationProjectSaveRequest request);
 
     void update(OperationProjectSaveRequest request);
 

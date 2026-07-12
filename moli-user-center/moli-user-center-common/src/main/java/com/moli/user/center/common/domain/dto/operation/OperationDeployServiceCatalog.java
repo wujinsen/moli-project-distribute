@@ -37,7 +37,11 @@ public final class OperationDeployServiceCatalog {
                 entry("gateway", "网关",
                         "gateway", "moli-gateway"),
                 entry("knowledge", "知识库",
-                        "knowledge", "moli-knowledge", "knowledge-server")
+                        "knowledge", "moli-knowledge", "knowledge-server"),
+                entry("order", "订单服务",
+                        "order", "moli-order", "order-server"),
+                entry("bi", "BI 服务",
+                        "bi", "moli-bi", "bi-server")
         );
     }
 

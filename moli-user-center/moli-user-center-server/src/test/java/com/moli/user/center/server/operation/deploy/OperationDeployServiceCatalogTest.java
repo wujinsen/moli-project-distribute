@@ -25,6 +25,8 @@ public class OperationDeployServiceCatalogTest {
         assertEquals("user-center", OperationDeployServiceCatalog.resolveProjectName("moli-server"));
         assertEquals("gateway", OperationDeployServiceCatalog.resolveProjectName("moli-gateway"));
         assertEquals("knowledge", OperationDeployServiceCatalog.resolveProjectName("knowledge-server"));
+        assertEquals("order", OperationDeployServiceCatalog.resolveProjectName("moli-order"));
+        assertEquals("bi", OperationDeployServiceCatalog.resolveProjectName("moli-bi"));
     }
 
     @Test

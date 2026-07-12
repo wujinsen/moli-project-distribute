@@ -1,6 +1,8 @@
 # 服务器运维 · 运营管理 · 前端对接说明（meiling-ui）
 
 > **读者**：meiling-ui 前端（菜单「运营管理」· 驾驶舱 ops 页）。  
+> **更新**：2026-07-13 · **后端联调通知（给前端）**：[operation-backend-handoff.md](operation-backend-handoff.md)  
+> **meiling-ui 权威副本**：[`meiling-ui/docs/api/operation-frontend.md`](../../meiling-ui/docs/api/operation-frontend.md) · handoff：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
 > **技术规划**：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md)  
 > **HTTP 契约索引**：[user-center-api-map.md](user-center-api-map.md) §4  
 > **端口矩阵权威**：[production-checklist.md](../ops/production-checklist.md) §2  
@@ -20,8 +22,8 @@
 | **P2** | 驾驶舱 ops KPI | `CandlelightDragon/cockpit/index`（tab=ops） | ✅ SVR-9 | **S5** 合并 `/operation/stats` |
 | **P2** | N:N 关联维护 | `operation/server/index` | ✅ SVR-11 | **S6** 拓扑弹窗内编辑关联 |
 | **P2+** | 项目/组件多服务器 | `operation/project/index`、`operation/component/index` | ✅ SVR-22 | **S6-b** 列表行「关联服务器」多选弹窗 |
-| **P4** | 全局拓扑图 | `operation/topology/index`（待菜单） | ✅ SVR-25a | **S10** ECharts 拓扑页 |
-| **P4** | 关联关系导航 | 三管理页 + 部署/任务 | ✅ SVR-26a/28a/28b | **S11** RelationDrawer + 关联列 chips |
+| **P4** | 全局拓扑图 | `operation/topology/index`（菜单 407） | ✅ SVR-25a/b | **S10** `OperationTopologyGraphView` |
+| **P4** | 关联关系导航 | 三管理页 + 部署/任务/端口/平台 | ✅ SVR-26a/28a～f | **S11** `RelationDrawer` + chips + URL 过滤 |
 | **P2** | 批量探活 / 部署同步 | 服务器页工具栏 | ✅ SVR-12 | **S7** 异步 probe-all + 轮询（见 §13） |
 | **P3** | SSH 凭据 | `operation/server/index` | ✅ SVR-13 | **S8** SSH 配置弹窗 + 测试连接 |
 | **P3** | 部署中心 | `operation/deploy/index` | ✅ SVR-14~20 | **S9** 远程启停 + 灵活上传 + 远程命令 + 任务轮询 |
@@ -50,7 +52,9 @@
 | 平台管理 | `operation/platform/index` | `operation:platform:list` | 同上 |
 | 组件管理 | `operation/component/index` | `operation:component:list` | 同上 |
 | 部署中心 | `operation/deploy/index` | `operation:server:list` | `deploy:exec` / `file:upload` / `command:exec` |
+| 任务历史 | `operation/task/index` | `operation:server:list` | 只读列表 + 日志抽屉（与部署中心同权） |
 | **端口矩阵** | `operation/port-matrix/index` | `operation:port-matrix:list` | `add` / `edit` / `remove` + **list**（SVR-21） |
+| **拓扑图** | `operation/topology/index` | `operation:server:list` | 只读全图（菜单 id **407** · SVR-25c） |
 
 **跨域权限**（非菜单 perms，需角色 `sys_action` 绑定）：
 
@@ -277,7 +281,9 @@ export type OperationServerLinks = {
 ### 5.5 项目/组件 · 多选服务器（S6-b · SVR-22 · ✅）
 
 设计文档：[operation-server-links.md](../design/operation-server-links.md)  
-meiling-ui 实现：`OperationServerLinksModal` · `OperationLinkedServersCell` · §15 in `meiling-ui/docs/api/operation-frontend.md`
+meiling-ui 实现：`OperationServerLinksModal` · `OperationLinkedServersCell` · [`meiling-ui/docs/api/operation-frontend.md`](../../meiling-ui/docs/api/operation-frontend.md) §15
+
+**后端联调（2026-07-13 ✅）**：`POST` create 接受 `serverIds`；`PUT .../links` 同步主表 `server_id` / `server_ip` / `innerIp`；详见 [`operation-server-links.md`](../design/operation-server-links.md) §2.3。
 
 ```http
 GET /operation/project/{id}/links
@@ -312,6 +318,8 @@ export type OperationComponentSave = {
 | **S6-b-3** | 列表列：主 `名称 · IP` + `+N` | ✅ |
 | **S6-b-4** | 部署启停仍用主 `serverId`（`row.serverId`） | ✅ |
 
+**`POST` 响应（2026-07-13）**：`POST /operation/project` · `POST /operation/component` 的 `data` 为新建 **`id`（Long）**，不再返回 `boolean`；前端 create 后可直接用 `id` 补调 `PUT .../links`。
+
 ### 5.6 项目依赖组件（SVR-26a · ✅ 后端）
 
 ```http
@@ -330,8 +338,8 @@ export type OperationProjectComponentLinks = {
 
 | ID | UI | 状态 |
 |----|-----|------|
-| **S26-1** | 项目行「依赖组件」多选弹窗，`PUT .../component-links` 全量替换 | ⬜ |
-| **S26-2** | 拓扑图 `depends_on` 边（`GET /operation/topology` 已含） | ⬜ |
+| **S26-1** | 项目行「依赖组件」→ `OperationProjectComponentLinksModal`，`PUT .../component-links` 全量替换 | ✅ |
+| **S26-2** | 拓扑图 `depends_on` 边（`GET /operation/topology` 已含） | ✅ |
 
 ### 5.7 关联关系导航（SVR-28 · 后端 ✅）
 
@@ -391,9 +399,9 @@ export type OperationRelations = {
 
 | ID | UI | 状态 |
 |----|-----|------|
-| **S11-1** | `RelationDrawer` 调统一 API，三管理页「关联」列 chips | ⬜ |
-| **S11-2** | 行内「定位」跳列表带 `serverId`/`projectId`/`componentId` 过滤 | ⬜ |
-| **S11-3** | 部署中心/任务历史实体名可点 → 同一抽屉 | ⬜ |
+| **S11-1** | `RelationDrawer` 调统一 API，三管理页 `OperationRelationChips` | ✅ |
+| **S11-2** | 行内「定位」跳列表带 `serverId`/`projectId`/`componentId` 过滤 | ✅ |
+| **S11-3** | 部署中心/任务历史/端口审计/平台实体名可点 → 同一抽屉 | ✅ |
 
 ### 5.8 全局拓扑图（SVR-25a · ✅ 后端）
 
@@ -418,9 +426,9 @@ export type OperationTopologyGraph = {
 
 | ID | UI | 状态 |
 |----|-----|------|
-| **S10-1** | 新页 `TopologyGraphView`（ECharts force/circular） | ⬜ |
-| **S10-2** | 筛选：环境/角色/标签/关键字；点服务器 → `ServerDetailModal` | ⬜ |
-| **S10-3** | 深链 `?focus=s-{id}|p-{id}|c-{id}`；导出 PNG | ⬜ |
+| **S10-1** | `OperationTopologyGraphView`（ECharts force/circular） | ✅ |
+| **S10-2** | 筛选：环境/角色/标签/关键字；点服务器 → `ServerDetailModal` | ✅ |
+| **S10-3** | 深链 `?focus=s-{id}|p-{id}|c-{id}`；导出 PNG | ✅ |
 
 ---
 
@@ -677,8 +685,16 @@ export type OperationDeployPresets = {
 
 ## 13. Phase R 改造 · 前端必改（2026-07-11）
 
-> 后端改造方案：[`operation-module-refactor-plan.md`](../design/operation-module-refactor-plan.md)  
-> HTTP 细节：[`operation-deploy-api.md`](operation-deploy-api.md)
+> **2026-07-13 后端追加**：[`operation-backend-handoff.md`](operation-backend-handoff.md)（create 返回 id · links 已验收 · order/bi 脚本）
+
+### 13.0 Breaking · `POST` create 返回 id（2026-07-13）
+
+| API | 旧 | 新 |
+|-----|----|----|
+| `POST /operation/project` | `data: true` | **`data: number`**（新建 id） |
+| `POST /operation/component` | `data: true` | **`data: number`**（新建 id） |
+
+`addProjectApi` / `addComponentApi` 返回类型改为 `number`；create 带 `serverIds` 时一般无需再 `PUT links`。
 
 ### 13.1 Breaking 清单（按优先级）
 
@@ -748,12 +764,12 @@ async function loadPresets() {
 | S4 | 部署 | status 只读可查；不可用时 message 可读 |
 | S5 | 驾驶舱 | ops KPI 使用真实 stats，非纯 Mock |
 | S6 | 关联 | links GET/PUT 可维护拓扑；保存后拓扑刷新 | ✅ |
-| S7 | 批量探活 | probe-all 返回 taskId → 轮询 → 刷新列表 | 🔴 待改 |
+| S7 | 批量探活 | probe-all 返回 taskId → 轮询 → 刷新列表 | ✅ |
 | S8 | SSH | 配置私钥后 `sshConfigured=true`；测试连接返回 whoami | ✅ |
 | S9 | 部署中心 | 选服务器 → 启停三件套返回 taskId；轮询进度/日志；上传 jar/zip | ✅ |
-| S10 | 拓扑图 | `GET /operation/topology` 节点/边正确；ECharts 页可筛选聚焦 | 后端 ✅ / UI ⬜ |
-| S11 | 关系导航 | 列表 chips 计数；RelationDrawer 三向关联 + 定位过滤 | 后端 ✅ / UI ⬜ |
-| S26 | 项目依赖组件 | `component-links` GET/PUT；拓扑 `depends_on` 边 | 后端 ✅ / UI ⬜ |
+| S10 | 拓扑图 | `GET /operation/topology` 节点/边正确；ECharts 页可筛选聚焦 | ✅ |
+| S11 | 关系导航 | 列表 chips 计数；RelationDrawer 三向关联 + 定位过滤 | ✅ |
+| S26 | 项目依赖组件 | `component-links` GET/PUT；拓扑 `depends_on` 边 | ✅ |
 
 ---
 

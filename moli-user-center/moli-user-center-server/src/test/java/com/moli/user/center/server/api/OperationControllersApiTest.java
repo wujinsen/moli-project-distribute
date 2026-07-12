@@ -221,7 +221,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_project_insert() {
-        doNothing().when(operationProjectService).create(any());
+        when(operationProjectService.create(any())).thenReturn(401L);
         OperationProjectSaveRequest req = new OperationProjectSaveRequest();
         req.setProjectName("moli-server");
         req.setServerId(201L);
@@ -272,7 +272,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_component_insert() {
-        doNothing().when(operationComponentService).create(any());
+        when(operationComponentService.create(any())).thenReturn(301L);
         OperationComponentSaveRequest req = new OperationComponentSaveRequest();
         req.setComponentName("Redis");
         req.setServerId(201L);

@@ -1,6 +1,7 @@
 # 服务器运维模块 · 演进规划（技术端运维）
 
-> 更新：2026-07-13 · 状态：**后端主线已闭环**（SVR-1～28b、21、22～24）；**前端 P4 待做**（25b、26b、28c～f）；**2026-07-13 已修** 多服务器双轨同步与 `serverId`/`serverIp` 绑定  
+> 更新：2026-07-13 · 状态：**后端 + 前端主线已闭环**（SVR-1～28、21、22～24）；**2026-07-13 已修** 多服务器双轨同步与 `serverId`/`serverIp` 绑定  
+> **meiling-ui 交付**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)
 > 归属：`moli-user-center` · `operation_*` 表 · 菜单「运营/运维管理」(id 400)
 > 边界：**只管服务器/基础设施资产运维**；知识库内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（另一条独立路线，互不重叠）
 
@@ -159,11 +160,11 @@
 | 任务 | 内容 | 状态 |
 |------|------|------|
 | **SVR-25a** | 后端 `GET /operation/topology` 全局聚合 API（三表 + 两 N:N，回退主 `server_id`） | ✅ |
-| **SVR-25b** | meiling-ui `TopologyGraphView`（ECharts force/circular + 环境/角色/标签筛选 + `ServerDetailModal` 联动） | ⬜ |
+| **SVR-25b** | meiling-ui `OperationTopologyGraphView`（ECharts force/circular + 环境/角色/标签筛选 + `ServerDetailModal` 联动） | ✅ |
 | **SVR-25c** | 菜单 SQL `28_operation_topology_menu.sql`（perms 复用 `operation:server:list`） | ✅ · 已合并 `moli.sql` |
-| **SVR-25d** | 单机拓扑弹窗叠加 `deployRunning` / `portMatchStatus` / 最近任务 | ⬜ |
+| **SVR-25d** | `RelationDrawer` 叠加 `deployRunning` / `portMatchStatus` / `recentTasks` | ✅ |
 | **SVR-26a** | `operation_project_component` 表 + `component-links` API + 拓扑 `depends_on` 边 | ✅ |
-| **SVR-26b** | 项目页组件依赖维护弹窗 + 拓扑依赖边开关 | ⬜ |
+| **SVR-26b** | 项目页 `OperationProjectComponentLinksModal` + 拓扑 `depends_on` 边 | ✅ |
 | **SVR-27a/b** | SSH facts 白名单采集 / 探测历史曲线（远期） | ⬜ |
 
 ### P4 —— 关联关系导航与搜索（SVR-28，2026-07-12 设计）
@@ -175,10 +176,10 @@
 |------|------|------|
 | **SVR-28a** | 列表 VO 关系计数（GROUP BY 聚合）+ 项目/组件/服务器列表反向过滤参数 | ✅ |
 | **SVR-28b** | 统一关系 API `GET /operation/relations/{type}/{id}`（servers/projects/components/recentTasks） | ✅ |
-| **SVR-28c** | `RelationDrawer` 组件 + 三管理页「关联」列 chips + URL 过滤 chip | ⬜ |
-| **SVR-28d** | 服务器页拓扑弹窗升级为 RelationDrawer（吸收 SVR-25d） | ⬜ |
-| **SVR-28e** | 平台/部署中心/端口矩阵/任务历史 接入（实体名可点） | ⬜ |
-| **SVR-28f** | 拓扑页实体搜索下拉 + `?focus=` 深链（并 SVR-25b 实施） | ⬜ |
+| **SVR-28c** | `RelationDrawer` + `OperationRelationChips` + URL 过滤 chip | ✅ |
+| **SVR-28d** | 服务器页 `OperationServerRelationLinksModal`；旧 topology API 已移除 | ✅ |
+| **SVR-28e** | `OperationEntityLink` · 部署中心/端口矩阵/任务历史/平台 → 同一抽屉 | ✅ |
+| **SVR-28f** | 拓扑页实体搜索 + `?focus=s-{id}` 深链 | ✅ |
 
 建议顺序：26a → 28a → 28b → 28c →（25a/b 并行）→ 28d/e/f
 
@@ -187,8 +188,10 @@
 | 类别 | 状态 | 内容 |
 |------|------|------|
 | **后端 API** | ✅ 主线完成 | 四台账、部署中心、端口矩阵、拓扑/关系读取层、component-links |
-| **后端增强** | ⬜ 可选 | order/bi 远程启停脚本扩展；`deploy_running` 全量远程化；relations 分实体权限 |
-| **前端 meiling-ui** | ⬜ **主缺口** | SVR-25b 拓扑图 · SVR-26b 组件依赖弹窗 · SVR-28c～f RelationDrawer 全站接入 |
+| **后端增强** | ⬜ 可选 | `deploy_running` 全量远程化；relations 分实体权限 |
+| **后端 2026-07-13** | ✅ | `POST` project/component create 返回 `id`；`moli-service.sh` 扩展 order/bi |
+| **前端 meiling-ui** | ✅ **主线完成** | S0–S13 · SVR-21d · **SVR-25/26b/28**；详见 [`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md) |
+| **联合验收** | 🔵 待点验 | handoff §5 smoke + [`operation-relations-topology-acceptance.md`](../test/operation-relations-topology-acceptance.md) §5 |
 | **本地联调** | ⚠️ 常漏配 | `ops.upload/command/deploy.enabled` 默认 false；大文件勿经 Gateway；SSH + `OPS_SECRET_KEY` |
 | **缺陷修复** | ✅ 2026-07-13 | 见 §5.2（关联计数虚高、`serverIp` 与 `serverId` 不一致报错） |
 

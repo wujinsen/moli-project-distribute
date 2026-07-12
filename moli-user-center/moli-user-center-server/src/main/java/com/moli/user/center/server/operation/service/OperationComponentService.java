@@ -12,7 +12,7 @@ public interface OperationComponentService {
 
     OperationComponentVo getById(Long id);
 
-    void create(OperationComponentSaveRequest request);
+    Long create(OperationComponentSaveRequest request);
 
     void update(OperationComponentSaveRequest request);
 

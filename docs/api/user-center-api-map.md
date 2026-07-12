@@ -174,7 +174,8 @@
 ### 项目管理 `OperationProjectController`（前缀 `/operation/project`，9个）
 
 - `GET /operation/project/list`：`operation:project:list`；返回 `OperationProjectVo`（含 `serverIds` / `serverCount` / `componentCount` / `expectedPort` / `portMatchStatus` / `deployRunning`）；支持 `serverId`、`componentId` 反向过滤
-- `POST /operation/project`：`operation:project:add` + `list`；body 可传 `serverIds[]`，同步 `operation_server_project`
+- `POST /operation/project`：`operation:project:add` + `list`；body 可传 `serverIds[]`，同步 `operation_server_project`；**响应 `data` 为新建 `id`（Long）**
+- `POST /operation/component`：同上对称；**响应 `data` 为新建 `id`（Long）**
 - `PUT /operation/project`：`operation:project:edit` + `list`
 - `GET /operation/project/{id}`：`operation:project:list`；返回 VO（含 `serverIds`）
 - `DELETE /operation/project/{ids}`：`operation:project:remove` + `list`
@@ -195,7 +196,7 @@
 - `GET /operation/component/{id}/links`：`operation:component:list`；返回 `{ componentId, serverIds }`
 - `PUT /operation/component/{id}/links`：`operation:component:edit` + `list`；全量替换 N:N，**并同步主表 `server_id`**（2026-07-13）
 
-> **前端对接专稿**：[operation-frontend.md](operation-frontend.md)（枚举、TypeScript、验收 S0–S11）  
+> **前端对接专稿**：[operation-frontend.md](operation-frontend.md) · **后端联调通知（给前端）**：[operation-backend-handoff.md](operation-backend-handoff.md)
 > **部署中心 HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)（SVR-13~20）  
 > **路线图 / 待办**：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) §5.1
 

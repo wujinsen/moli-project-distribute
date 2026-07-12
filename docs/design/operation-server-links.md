@@ -66,7 +66,7 @@
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| `POST` / `PUT` | `/operation/project` | body 增 **`serverIds?: number[]`**；保存后全量同步 `operation_server_project` |
+| `POST` / `PUT` | `/operation/project` | body 增 **`serverIds?: number[]`**；保存后全量同步 `operation_server_project`；**`POST` 响应 `data` 为新建 `id`（Long）** |
 | `GET` | `/operation/project/{id}` | VO 含 **`serverIds`** |
 | `GET` | `/operation/project/list` | 每行 VO 含 **`serverIds`** |
 | `GET` | `/operation/project/{id}/links` | 返回 `{ projectId, serverIds }` |
@@ -93,7 +93,7 @@
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| `POST` / `PUT` | `/operation/component` | body 增 **`serverIds`** |
+| `POST` / `PUT` | `/operation/component` | body 增 **`serverIds`**；**`POST` 响应 `data` 为新建 `id`（Long）** |
 | `GET` | `/operation/component/{id}` / `list` | VO 含 **`serverIds`** |
 | `GET` | `/operation/component/{id}/links` | `{ componentId, serverIds }` |
 | `PUT` | `/operation/component/{id}/links` | 全量替换 `operation_server_component`，并同步主表 `server_id` |

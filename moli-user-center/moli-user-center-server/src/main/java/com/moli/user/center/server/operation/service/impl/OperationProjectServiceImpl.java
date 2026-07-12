@@ -75,12 +75,13 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     }
 
     @Override
-    public void create(OperationProjectSaveRequest request) {
+    public Long create(OperationProjectSaveRequest request) {
         applyPrimaryServerFromList(request);
         OperationProjectDeployInfo row = OperationSaveRequestMapper.toEntity(request);
         serverBindingSupport.bindProject(row);
         operationProjectDeployInfoMapper.insert(row);
         operationProjectLinkService.syncLinks(row.getId(), request.getServerIds(), row.getServerId());
+        return row.getId();
     }
 
     @Override

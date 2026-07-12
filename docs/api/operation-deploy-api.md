@@ -74,7 +74,7 @@ ops:
     default-work-dir: ${OPS_COMMAND_DEFAULT_WORK_DIR:/opt/moli-project-distribute}
 ```
 
-**serviceKey 说明**：`order` / `bi` 与端口矩阵别名一致，会出现在 `GET .../presets` 的 `serviceKeys`；远程 **启停** 仍依赖目标机 `deploy/linux/moli-service.sh` 是否实现该 key（当前脚本仅 `user-center` · `gateway` · `knowledge`）。
+**serviceKey 说明**：`order` / `bi` 与端口矩阵别名一致，会出现在 `GET .../presets` 的 `serviceKeys`；远程启停依赖目标机 `deploy/linux/moli-service.sh`（已支持 `user-center` · `gateway` · `knowledge` · **`order`** · **`bi`**）。
 
 | 开关 | 影响 |
 |------|------|

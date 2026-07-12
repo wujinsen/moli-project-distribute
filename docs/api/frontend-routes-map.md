@@ -57,7 +57,9 @@ Authorization: {token}  # 后续请求
 | 403 | 平台管理 | `operation/platform/index` | PlatformManageView | `operation:platform:list` | `/operation/platform` + `secret` |
 | 404 | 组件管理 | `operation/component/index` | ComponentManageView | `operation:component:list` | `/operation/component` + `check` / `secret` |
 | 405 | 部署中心 | `operation/deploy/index` | DeployCenterView | `operation:server:list` | `/operation/deploy/*`、`/operation/file/upload`、`/operation/command/*`、`/operation/task/*` |
-| 406 | 端口矩阵 | `operation/port-matrix/index` | PortMatrixManageView（建议） | `operation:port-matrix:list` | `/operation/port-matrix` CRUD · 设计 [operation-port-matrix-api.md](operation-port-matrix-api.md) |
+| 406 | 端口矩阵 | `operation/port-matrix/index` | PortMatrixManageView | `operation:port-matrix:list` | `/operation/port-matrix` CRUD · 设计 [operation-port-matrix-api.md](operation-port-matrix-api.md) |
+| 407 | 拓扑图 | `operation/topology/index` | OperationTopologyGraphView | `operation:server:list` | `GET /operation/topology` · 设计 [server-topology-visualization.md](../design/server-topology-visualization.md) |
+| — | 任务历史 | `operation/task/index` | TaskHistoryView | `operation:server:list` | `GET /operation/task/list` · supplement 路由（无独立 menu_id 时由 `operationSupplementRoutes` 注册） |
 
 **跨域权限**：`operation:secret:view`（明文 reveal）、`operation:deploy:exec`（启停）、`operation:file:upload`（上传）、`operation:command:exec`（远程命令 / custom 后置）、`operation:ssh:manage`（SSH 配置）。
 
@@ -72,9 +74,13 @@ Authorization: {token}  # 后续请求
 | `POST /operation/file/upload` | SFTP 上传发布 | `file:upload` + list |
 | `POST /operation/command/exec/task` | 远程 shell | `command:exec` + list |
 | `GET /operation/task/{id}` | 任务日志轮询 | `operation:server:list` |
+| `GET /operation/task/list` | 任务历史分页 | `operation:server:list` |
+| `GET /operation/topology` | 全局拓扑图（SVR-25a） | `operation:server:list` |
+| `GET /operation/relations/{type}/{id}` | 单实体关联抽屉（SVR-28b） | `operation:project:list` |
+| `GET/PUT /operation/project/{id}/component-links` | 项目组件依赖（SVR-26a） | `operation:project:*` |
 | `POST /operation/health/probe-all` | 批量探活 | `operation:server:list` |
 
-**前端对接**：[operation-frontend.md](operation-frontend.md) · **HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)
+**前端对接**：[operation-frontend.md](operation-frontend.md) · **meiling-ui handoff**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md) · **HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)
 
 ---
 
@@ -101,7 +107,7 @@ Authorization: {token}  # 后续请求
 | Wiki 编辑 | ✅ | ✅ |
 | Wiki 治理 | ✅ | ⚠️ T16f 部分 |
 | LLM 设置 | ✅ | 🔵 T19d |
-| 运营管理四页 | ✅ | ✅ |
+| 运营管理 | ✅ | ✅（四台账 + 部署中心 + 端口矩阵 + **拓扑图 407** + **RelationDrawer** + 任务历史） |
 
 ---
 

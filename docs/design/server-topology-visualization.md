@@ -1,6 +1,6 @@
 # 服务器拓扑可视化 · 设计（SVR-25）
 
-> 更新：2026-07-12 · 状态：**后端 P1 API 已落地**（SVR-25a ✅）；**P2 依赖表已落地**（SVR-26a ✅）；前端拓扑页待做（SVR-25b/c）
+> 更新：2026-07-13 · 状态：**后端 P1/P2 ✅**（SVR-25a、26a）；**前端 ✅**（SVR-25b/c/d、26b · meiling-ui `OperationTopologyGraphView`）
 > 归属：`moli-user-center` · 菜单「运营管理」 · meiling-ui
 > 上游：[`server-ops-module-roadmap.md`](server-ops-module-roadmap.md)（SVR-5 拓扑、SVR-8 部署状态、SVR-21 端口矩阵、SVR-22 多服务器、SVR-23 角色、SVR-24 标签）
 > 前端契约：[`../api/operation-frontend.md`](../api/operation-frontend.md)
@@ -34,9 +34,9 @@ SVR-5 曾提供单服务器拓扑 `GET /operation/server/{id}/topology`，**已�
 
 | 期 | 内容 | 动库 | 状态 |
 |----|------|------|------|
-| **P1** | 全局拓扑图页 `operation/topology/index` + 聚合 API | 否 | **后端 ✅** / 前端 ⬜ |
-| **P1.5** | 现有拓扑弹窗叠加：部署状态、端口徽章、最近任务 | 否 | ⬜（并入 SVR-28d） |
-| **P2** | 项目↔组件依赖表 + 图上依赖边（调用链） | **是**（1 张 N:N） | **表+边 ✅** / 前端弹窗 ⬜ |
+| **P1** | 全局拓扑图页 `operation/topology/index` + 聚合 API | 否 | ✅ |
+| **P1.5** | `RelationDrawer` 叠加部署状态、端口徽章、最近任务 | 否 | ✅（SVR-28d） |
+| **P2** | 项目↔组件依赖表 + 图上依赖边（调用链） | **是**（1 张 N:N） | ✅ |
 | **P3** | SSH facts 采集、探测历史曲线 | P3b 需新表 | ⬜ |
 
 架构图：[`moli-operation-topology-graph.drawio`](../diagrams/moli-operation-topology-graph.drawio)

@@ -47,9 +47,8 @@ public class OperationProjectController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_PROJECT_ADD, PermissionConstants.OPERATION_PROJECT_LIST}, logical = Logical.AND)
     @MoliLog(title = "添加项目", businessType = BusinessTypeEnum.INSERT)
     @ApiOperation(value = "添加项目", notes = "添加项目")
-    public MoliResult<Boolean> insert(@Valid @RequestBody OperationProjectSaveRequest request) {
-        operationProjectService.create(request);
-        return MoliResult.success(Boolean.TRUE);
+    public MoliResult<Long> insert(@Valid @RequestBody OperationProjectSaveRequest request) {
+        return MoliResult.success(operationProjectService.create(request));
     }
 
     @PutMapping

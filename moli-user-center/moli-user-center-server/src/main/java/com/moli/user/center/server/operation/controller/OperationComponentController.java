@@ -44,9 +44,8 @@ public class OperationComponentController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_COMPONENT_ADD, PermissionConstants.OPERATION_COMPONENT_LIST}, logical = Logical.AND)
     @MoliLog(title = "添加运维组件", businessType = BusinessTypeEnum.INSERT)
     @ApiOperation(value = "添加组件", notes = "添加组件")
-    public MoliResult<Boolean> insert(@Valid @RequestBody OperationComponentSaveRequest request) {
-        operationComponentService.create(request);
-        return MoliResult.success(Boolean.TRUE);
+    public MoliResult<Long> insert(@Valid @RequestBody OperationComponentSaveRequest request) {
+        return MoliResult.success(operationComponentService.create(request));
     }
 
     @PutMapping

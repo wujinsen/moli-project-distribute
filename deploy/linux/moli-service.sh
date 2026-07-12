@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Moli 微服务启停脚本（Linux）
-# 基于 deploy/linux/moli-server.sh，适配 moli-project-distribute 三服务目录
+# 基于 deploy/linux/moli-server.sh，适配 moli-project-distribute 五服务目录
 #
 # 部署根: /opt/moli-project-distribute
 # 方式 A（整仓）: JAR 在 moli-*/target/ 或 moli-*-server/target/
@@ -9,12 +9,16 @@
 #   moli-user-center/  jar + application-pro.yml + conf/moli-user-center.env
 #   moli-gateway/
 #   moli-knowledge/
+#   moli-order/
+#   moli-ai/          (BI · artifact moli-bi-server)
 #   deploy/linux/moli-service.sh
 #
 # 用法:
 #   ./deploy/linux/moli-service.sh user-center start
 #   ./deploy/linux/moli-service.sh gateway status
 #   ./deploy/linux/moli-service.sh knowledge logs 200
+#   ./deploy/linux/moli-service.sh order restart
+#   ./deploy/linux/moli-service.sh bi status
 
 set -u
 
@@ -29,32 +33,42 @@ declare -A SVC_MODULE=(
   [user-center]="moli-user-center"
   [gateway]="moli-gateway"
   [knowledge]="moli-knowledge"
+  [order]="moli-order"
+  [bi]="moli-ai"
 )
 declare -A SVC_APP_NAME=(
   [user-center]="user-center-server"
   [gateway]="moli-gateway"
   [knowledge]="knowledge-server"
+  [order]="order-server"
+  [bi]="bi-server"
 )
 declare -A SVC_JAR_PREFIX=(
   [user-center]="moli-user-center-server"
   [gateway]="moli-gateway"
   [knowledge]="moli-knowledge-server"
+  [order]="moli-order-server"
+  [bi]="moli-bi-server"
 )
 declare -A SVC_PID_NAME=(
   [user-center]="user-center"
   [gateway]="gateway"
   [knowledge]="knowledge"
+  [order]="order"
+  [bi]="bi"
 )
 # 方式 A（整仓 git pull）：JAR 在 Maven target 子目录
 declare -A SVC_MAVEN_TARGET=(
   [user-center]="moli-user-center-server/target"
   [gateway]="target"
   [knowledge]="moli-knowledge-server/target"
+  [order]="moli-order-server/target"
+  [bi]="moli-ai-server/target"
 )
 
 if [[ -z "$SERVICE_KEY" || -z "${SVC_MODULE[$SERVICE_KEY]:-}" ]]; then
   cat <<EOF
-Usage: $0 {user-center|gateway|knowledge} {start|stop|restart|status|logs [lines]}
+Usage: $0 {user-center|gateway|knowledge|order|bi} {start|stop|restart|status|logs [lines]}
 
 Deploy root: ${MOLI_DEPLOY_ROOT}
 Env:  \${APP_HOME}/conf/moli-<service>.env  (see deploy/linux/moli-*.env.example)

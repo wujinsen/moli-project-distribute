@@ -1,6 +1,6 @@
 # 运营管理 · 关联关系导航与搜索（SVR-28）
 
-> 更新：2026-07-13 · 状态：**后端 26a/28a/28b ✅**；**前端 RelationDrawer 待做**（SVR-28c~f）  
+> 更新：2026-07-13 · 状态：**后端 26a/28a/28b ✅** · **前端 SVR-28c～f ✅**（meiling-ui `RelationDrawer` 全站接入）
 > 归属：`moli-user-center` · 菜单「运营管理」(id 400) 全部子页 · meiling-ui
 > 姊妹篇：[`server-topology-visualization.md`](server-topology-visualization.md)（SVR-25 拓扑图 = 全局视角；本篇 = **列表内的关系视角**，两者共用关系数据）
 > 前置：**SVR-26a `operation_project_component` 表提级为本设计前置**（没有它「项目↔组件」无从谈起）
@@ -188,19 +188,18 @@ SVR-25b 拓扑页工具栏的关键字筛选升级为**实体搜索下拉**：
 
 ## 7. 任务编号（并入 roadmap）
 
-| 任务 | 内容 | 依赖 |
+| 任务 | 内容 | 状态 |
 |------|------|------|
-| **SVR-26a** | `operation_project_component` 表 + 级联 + `component-links` API（`29_operation_project_component.sql`） | — |
-| **SVR-26b** | 项目页组件依赖维护弹窗（复用 links 弹窗模板） | 26a |
-| **SVR-28a** | 列表 VO 关系计数（`OperationRelationCountSupport`）+ 三列表反向过滤参数 | 26a |
-| **SVR-28b** | 统一关系 API `GET /operation/relations/{type}/{id}`（含 recentTasks） | 26a |
-| **SVR-28c** | `RelationDrawer` + 三管理页「关联」列 chips + URL 过滤 chip | 28a/b |
-| **SVR-28d** | 服务器页拓扑弹窗替换为 RelationDrawer（吸收 SVR-25d） | 28c |
-| **SVR-28e** | 平台/部署中心/端口矩阵/任务历史 四页接入（实体名可点 + 过滤） | 28c |
-| **SVR-28f** | 拓扑页搜索下拉 + `?focus=` 深链泛化（与 SVR-25b 合并实施） | SVR-25b |
+| **SVR-26a** | `operation_project_component` 表 + 级联 + `component-links` API | ✅ |
+| **SVR-26b** | 项目页 `OperationProjectComponentLinksModal` | ✅ |
+| **SVR-28a** | 列表 VO 关系计数 + 三列表反向过滤参数 | ✅ |
+| **SVR-28b** | 统一关系 API `GET /operation/relations/{type}/{id}` | ✅ |
+| **SVR-28c** | `RelationDrawer` + chips + URL 过滤 | ✅ |
+| **SVR-28d** | 服务器关联编辑；吸收 SVR-25d 字段展示 | ✅ |
+| **SVR-28e** | 部署中心/端口矩阵/任务历史/平台实体链接 | ✅ |
+| **SVR-28f** | 拓扑页搜索 + `?focus=` 深链 | ✅ |
 
-**建议实施顺序**：26a → 28a → 28b → 28c →（25a/25b 拓扑图并行）→ 28d/e/f。
-拓扑图（SVR-25）与关系导航（SVR-28）共用后端关系读取层，先做 28a/b 时把 `OperationRelationQuerySupport` 抽出来，25a 直接复用。
+**实施顺序**（已完成）：26a → 28a → 28b → 28c → 25a/b → 28d/e/f。
 
 ## 8. 非目标
 
