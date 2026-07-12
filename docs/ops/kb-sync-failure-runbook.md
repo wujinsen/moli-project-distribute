@@ -234,6 +234,8 @@ bash kb/tools/ci/run_sync.sh lint-all   # exit 0，仅打印问题
 
 ### 9.1 推荐造败法（未分类文档 · 可逆）
 
+> **说明（2026-07-12）**：旧版 `sync_to_db.py` 在未分类校验失败（exit `4`）时**不写** `kb_sync_log`，导致 Web/脚本看不到 fail。已修复：中止前写入 `action=batch`、`status=fail`。请确保 knowledge-server 调用的脚本已更新。
+
 在 **`enterprise-kb`** 磁盘 `moli-knowledge/kb/wiki/` 下，于**不存在于 `kb_category.dir_slug` 的一级目录**放一篇测试页（整批 Sync 中止，`kb_sync_log` 写入 `status=fail`）：
 
 ```bash

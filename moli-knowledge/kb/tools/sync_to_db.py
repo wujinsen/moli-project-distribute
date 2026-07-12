@@ -445,6 +445,11 @@ def sync_to_db(docs, rels, args):
 
             rc = check_uncategorized_before_sync(docs, None, dir_to_cat, args)
             if rc != 0:
+                bad = find_uncategorized_docs(docs, set(dir_to_cat.keys()))
+                summary = f"未分类文档 {len(bad)} 篇，Sync 已中止"
+                if bad:
+                    summary += f"；示例 {bad[0][1]}：{bad[0][2]}"
+                _persist_batch_fail(args, batch_no, space_id, summary)
                 return rc
 
             def _category_id(doc):
