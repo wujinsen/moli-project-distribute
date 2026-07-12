@@ -56,8 +56,9 @@ import com.moli.knowledge.server.service.KbWikiFileService;
 import com.moli.knowledge.server.service.ingest.IngestPlanPathResolver;
 import com.moli.knowledge.server.util.KbIngestTemplateWriter;
 import com.moli.knowledge.server.util.IngestLlmGenerateModeUtil;
-import com.moli.knowledge.server.util.KbWorkflowHints;
+import com.moli.knowledge.server.support.IngestGenerateProgressSink;
 import com.moli.knowledge.server.util.KbWikiFrontmatterUtil;
+import com.moli.knowledge.server.util.KbWorkflowHints;
 import com.moli.knowledge.server.util.ShiroUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -98,6 +99,7 @@ public class KbIngestServiceImpl implements KbIngestService {
 
     /** 批次状态。 */
     private static final String ST_PLANNED = "planned";
+    private static final String ST_GENERATING = "generating";
     private static final String ST_REVIEWING = "reviewing";
     private static final String ST_COMMITTED = "committed";
     /** 草稿动作。 */
@@ -675,17 +677,60 @@ public class KbIngestServiceImpl implements KbIngestService {
     // ---------------------------------------------------------------- T15b 生成 / 审阅
 
     @Override
+    public int countGeneratePages(Long jobId) {
+        GeneratePlanContext ctx = prepareGeneratePlan(jobId, false);
+        return ctx.total;
+    }
+
+    @Override
     public IngestGenerateResultVo generate(Long jobId, boolean resume, boolean useLlmGenerate) {
+        return generateWithProgress(jobId, resume, useLlmGenerate, null);
+    }
+
+    @Override
+    public IngestGenerateResultVo generateWithProgress(Long jobId, boolean resume, boolean useLlmGenerate,
+                                                       IngestGenerateProgressSink sink) {
         assertEnabled();
+        GeneratePlanContext ctx = prepareGeneratePlan(jobId, true);
+        if (sink != null) {
+            sink.onStarted(ctx.total, resume, ctx.llmMode.isTemplateMode(), ctx.llmMode.isLlmFallback(),
+                    ctx.llmMode.getLlmFallbackReason());
+        }
+
+        markJobGenerating(ctx.job);
+
+        GeneratePagesResult pages = runGeneratePages(ctx, resume, sink);
+
+        if (!resume && pages.fresh.isEmpty() && !pages.existingDrafts.isEmpty()) {
+            restoreJobPlanned(ctx.job);
+            String msg = "本次生成全部失败，已保留原有草稿；请检查 LLM 配置后重试";
+            if (sink != null) {
+                sink.onError(msg);
+            }
+            throw new BaseException(msg);
+        }
+
+        persistGeneratedDrafts(ctx.job, resume, pages.fresh);
+
+        IngestGenerateResultVo result = buildGenerateResult(ctx, resume, pages);
+        if (sink != null) {
+            sink.onComplete(result);
+        }
+        log.info("[ingest] generate job={} resume={} useLlmGenerate={} effectiveUseLlm={} llmFallback={} generated={} skipped={} failed={}",
+                jobId, resume, useLlmGenerate, ctx.llmMode.isEffectiveUseLlm(), ctx.llmMode.isLlmFallback(),
+                pages.fresh.size(), pages.skipped, pages.failed);
+        return result;
+    }
+
+    private GeneratePlanContext prepareGeneratePlan(Long jobId, boolean resolveLlm) {
         KbIngestJob job = loadJob(jobId);
         KbSpace space = resolveSpace(job.getSpaceId());
         kbAclService.assertCanEdit(space.getId());
-        IngestLlmGenerateModeUtil.Result llmMode = IngestLlmGenerateModeUtil.resolve(useLlmGenerate, llmClient.usable());
-        if (llmMode.isLlmFallback()) {
-            log.warn("[ingest] generate job={} useLlmGenerate=true but LLM unusable, fallback to template mode",
-                    jobId);
+
+        IngestLlmGenerateModeUtil.Result llmMode = null;
+        if (resolveLlm) {
+            llmMode = IngestLlmGenerateModeUtil.resolve(true, llmClient.usable());
         }
-        boolean effectiveUseLlm = llmMode.isEffectiveUseLlm();
 
         KbIngestPlan plan = latestPlan(jobId);
         if (plan == null || StringUtils.isBlank(plan.getPlanJson())) {
@@ -703,6 +748,45 @@ public class KbIngestServiceImpl implements KbIngestService {
                     + ingestProperties.getMaxPagesPerBatch() + "，请拆分批次");
         }
 
+        GeneratePlanContext ctx = new GeneratePlanContext();
+        ctx.job = job;
+        ctx.space = space;
+        ctx.planObj = planObj;
+        ctx.create = create;
+        ctx.enrich = enrich;
+        ctx.total = total;
+        ctx.llmMode = llmMode;
+        return ctx;
+    }
+
+    private void markJobGenerating(KbIngestJob job) {
+        job.setStatus(ST_GENERATING);
+        job.setUpdateId(ShiroUtils.getUserId());
+        job.setUpdateTime(new Date());
+        jobMapper.updateById(job);
+    }
+
+    private void restoreJobPlanned(KbIngestJob job) {
+        job.setStatus(ST_PLANNED);
+        job.setUpdateId(ShiroUtils.getUserId());
+        job.setUpdateTime(new Date());
+        jobMapper.updateById(job);
+    }
+
+    private GeneratePagesResult runGeneratePages(GeneratePlanContext ctx, boolean resume,
+                                                 IngestGenerateProgressSink sink) {
+        Long jobId = ctx.job.getId();
+        KbSpace space = ctx.space;
+        JSONArray create = ctx.create;
+        JSONArray enrich = ctx.enrich;
+        boolean effectiveUseLlm = ctx.llmMode == null
+                || ctx.llmMode.isEffectiveUseLlm();
+
+        if (ctx.llmMode != null && ctx.llmMode.isLlmFallback()) {
+            log.warn("[ingest] generate job={} useLlmGenerate=true but LLM unusable, fallback to template mode",
+                    jobId);
+        }
+
         List<KbIngestDraft> existingDrafts = draftMapper.selectList(new LambdaQueryWrapper<KbIngestDraft>()
                 .eq(KbIngestDraft::getJobId, jobId));
         Set<String> skipSlugs = new HashSet<>();
@@ -715,15 +799,15 @@ public class KbIngestServiceImpl implements KbIngestService {
         }
 
         List<String> batchSlugs = collectPlanSlugs(space.getId(), create, enrich);
-        List<String> linkCandidates = linkCandidateBareSlugs(space.getId(), job.getTopic(), batchSlugs);
+        List<String> linkCandidates = linkCandidateBareSlugs(space.getId(), ctx.job.getTopic(), batchSlugs);
         List<String> batchBareSlugs = batchBareNames(batchSlugs);
         String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
-        // 先在内存里生成（含 LLM 调用），单页失败隔离；成功后才在事务内替换，
-        // 避免「先删旧草稿、生成中途失败」导致已有草稿丢失（P1）。
         List<KbIngestDraft> fresh = new ArrayList<>();
         int skipped = 0;
         int failed = 0;
+        int pageIndex = 0;
+
         if (create != null) {
             for (int i = 0; i < create.size(); i++) {
                 JSONObject item = create.getJSONObject(i);
@@ -732,48 +816,69 @@ public class KbIngestServiceImpl implements KbIngestService {
                     relPath = resolveCreateRelPath(space.getId(), item);
                 } catch (Exception e) {
                     failed++;
+                    emitPageDone(sink, null, "failed", e.getMessage());
+                    emitProgress(sink, fresh.size(), skipped, failed, ctx.total);
                     log.warn("[ingest] generate create 项解析失败 job={}: {}", jobId, e.getMessage());
                     continue;
                 }
                 if (skipSlugs.contains(relPath)) {
                     skipped++;
+                    emitPageDone(sink, relPath, "skipped", null);
+                    emitProgress(sink, fresh.size(), skipped, failed, ctx.total);
                     continue;
                 }
+                emitPageStart(sink, pageIndex++, relPath, ACT_CREATE);
                 try {
-                    fresh.add(genCreateDraft(job, space, item, linkCandidates, batchBareSlugs, today, effectiveUseLlm));
+                    fresh.add(genCreateDraft(ctx.job, space, item, linkCandidates, batchBareSlugs, today, effectiveUseLlm));
+                    emitPageDone(sink, relPath, "generated", null);
                 } catch (Exception e) {
                     failed++;
+                    emitPageDone(sink, relPath, "failed", e.getMessage());
                     log.warn("[ingest] generate create 页失败 job={} slug={}: {}", jobId, relPath, e.getMessage());
                 }
+                emitProgress(sink, fresh.size(), skipped, failed, ctx.total);
             }
         }
         if (enrich != null) {
             for (int i = 0; i < enrich.size(); i++) {
                 JSONObject item = enrich.getJSONObject(i);
                 String planSlug = StringUtils.trimToEmpty(item.getString("slug"));
+                String rel = null;
                 if (!planSlug.isEmpty()) {
-                    String rel = resolveExistingRelPath(space.getSpaceCode(), planSlug);
-                    String prospective = rel != null ? rel : typeDir("article") + "/" + planSlug;
+                    String resolved = resolveExistingRelPath(space.getSpaceCode(), planSlug);
+                    String prospective = resolved != null ? resolved : typeDir("article") + "/" + planSlug;
+                    rel = prospective;
                     if (skipSlugs.contains(prospective)) {
                         skipped++;
+                        emitPageDone(sink, prospective, "skipped", null);
+                        emitProgress(sink, fresh.size(), skipped, failed, ctx.total);
                         continue;
                     }
                 }
+                String slugForEvent = rel != null ? rel : planSlug;
+                emitPageStart(sink, pageIndex++, slugForEvent, ACT_ENRICH);
                 try {
-                    fresh.add(genEnrichDraft(job, space, item, linkCandidates, effectiveUseLlm));
+                    fresh.add(genEnrichDraft(ctx.job, space, item, linkCandidates, effectiveUseLlm));
+                    emitPageDone(sink, slugForEvent, "generated", null);
                 } catch (Exception e) {
                     failed++;
+                    emitPageDone(sink, slugForEvent, "failed", e.getMessage());
                     log.warn("[ingest] generate enrich 页失败 job={} slug={}: {}", jobId, planSlug, e.getMessage());
                 }
+                emitProgress(sink, fresh.size(), skipped, failed, ctx.total);
             }
         }
 
-        // 全量模式若全部失败则保留原有草稿，不删除（避免数据丢失）
-        if (!resume && fresh.isEmpty() && !existingDrafts.isEmpty()) {
-            throw new BaseException("本次生成全部失败，已保留原有草稿；请检查 LLM 配置后重试");
-        }
+        GeneratePagesResult result = new GeneratePagesResult();
+        result.fresh = fresh;
+        result.skipped = skipped;
+        result.failed = failed;
+        result.existingDrafts = existingDrafts;
+        return result;
+    }
 
-        // 事务内原子替换：(全量) 删旧 + 插新；(续跑) 覆盖同 slug 旧记录 + 插新
+    private void persistGeneratedDrafts(KbIngestJob job, boolean resume, List<KbIngestDraft> fresh) {
+        Long jobId = job.getId();
         final boolean fResume = resume;
         txTemplate.execute(status -> {
             if (!fResume) {
@@ -793,21 +898,60 @@ public class KbIngestServiceImpl implements KbIngestService {
             jobMapper.updateById(job);
             return null;
         });
+    }
 
+    private IngestGenerateResultVo buildGenerateResult(GeneratePlanContext ctx, boolean resume,
+                                                       GeneratePagesResult pages) {
         IngestGenerateResultVo result = new IngestGenerateResultVo();
-        result.setTotal(total);
-        result.setGenerated(fresh.size());
-        result.setSkipped(skipped);
-        result.setFailed(failed);
+        result.setTotal(ctx.total);
+        result.setGenerated(pages.fresh.size());
+        result.setSkipped(pages.skipped);
+        result.setFailed(pages.failed);
         result.setResume(resume);
-        result.setTemplateMode(llmMode.isTemplateMode());
-        result.setLlmFallback(llmMode.isLlmFallback());
-        result.setLlmFallbackReason(llmMode.getLlmFallbackReason());
-        result.setDrafts(listDrafts(jobId));
-        log.info("[ingest] generate job={} resume={} useLlmGenerate={} effectiveUseLlm={} llmFallback={} generated={} skipped={} failed={}",
-                jobId, resume, useLlmGenerate, effectiveUseLlm, llmMode.isLlmFallback(), fresh.size(), skipped, failed);
+        if (ctx.llmMode != null) {
+            result.setTemplateMode(ctx.llmMode.isTemplateMode());
+            result.setLlmFallback(ctx.llmMode.isLlmFallback());
+            result.setLlmFallbackReason(ctx.llmMode.getLlmFallbackReason());
+        }
+        result.setDrafts(listDrafts(ctx.job.getId()));
         return result;
     }
+
+    private static void emitPageStart(IngestGenerateProgressSink sink, int index, String slug, String action) {
+        if (sink != null) {
+            sink.onPageStart(index, slug, action);
+        }
+    }
+
+    private static void emitPageDone(IngestGenerateProgressSink sink, String slug, String outcome, String message) {
+        if (sink != null && slug != null) {
+            sink.onPageDone(slug, outcome, message);
+        }
+    }
+
+    private static void emitProgress(IngestGenerateProgressSink sink, int generated, int skipped, int failed, int total) {
+        if (sink != null) {
+            sink.onProgress(generated, skipped, failed, total);
+        }
+    }
+
+    private static final class GeneratePlanContext {
+        KbIngestJob job;
+        KbSpace space;
+        JSONObject planObj;
+        JSONArray create;
+        JSONArray enrich;
+        int total;
+        IngestLlmGenerateModeUtil.Result llmMode;
+    }
+
+    private static final class GeneratePagesResult {
+        List<KbIngestDraft> fresh = new ArrayList<>();
+        List<KbIngestDraft> existingDrafts = new ArrayList<>();
+        int skipped;
+        int failed;
+    }
+
 
     private String resolveCreateRelPath(Long spaceId, JSONObject item) {
         Long categoryId = IngestPlanPathResolver.parseCategoryId(item);

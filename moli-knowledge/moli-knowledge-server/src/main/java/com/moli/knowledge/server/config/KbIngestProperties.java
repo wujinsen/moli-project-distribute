@@ -63,4 +63,23 @@ public class KbIngestProperties {
 
     /** T20c · zip 内最多解压文件数。 */
     private int rawUploadZipMaxEntries = 200;
+
+    /** T15f · 异步 generate + SSE。 */
+    private Generate generate = new Generate();
+
+    @Data
+    public static class Generate {
+        /** 是否允许 POST .../generate/start + SSE stream。 */
+        private boolean asyncEnabled = true;
+
+        private int corePoolSize = 2;
+        private int maxPoolSize = 4;
+        private int queueCapacity = 8;
+
+        /** SseEmitter 超时（毫秒）。 */
+        private long sseTimeoutMs = 600_000L;
+
+        /** 终态任务在内存中保留时长（毫秒），供断线重连查询。 */
+        private long taskTtlMs = 1_800_000L;
+    }
 }

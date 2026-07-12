@@ -18,6 +18,7 @@ import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
 import com.moli.knowledge.server.dto.RawPrefixVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
+import com.moli.knowledge.server.support.IngestGenerateProgressSink;
 
 import java.util.List;
 
@@ -48,6 +49,13 @@ public interface KbIngestService {
 
     /** 按 plan 生成草稿；resume=true 时跳过已有草稿（断点续跑）。useLlmGenerate=false 为模板模式（raw 直贴）。 */
     IngestGenerateResultVo generate(Long jobId, boolean resume, boolean useLlmGenerate);
+
+    /** T15f · 与 generate 相同，但推送 ProgressSink（SSE 异步任务用）。 */
+    IngestGenerateResultVo generateWithProgress(Long jobId, boolean resume, boolean useLlmGenerate,
+                                               IngestGenerateProgressSink sink);
+
+    /** T15f · 校验 Plan 并返回应生成页数（start 接口用）。 */
+    int countGeneratePages(Long jobId);
 
     default IngestGenerateResultVo generate(Long jobId, boolean resume) {
         return generate(jobId, resume, true);

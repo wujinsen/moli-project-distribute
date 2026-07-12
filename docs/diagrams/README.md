@@ -19,6 +19,7 @@
 | [`moli-kb-functional-flows.drawio`](moli-kb-functional-flows.drawio) | **功能流程**：Browse / Ask / Sync / Graph·Lint / CLI Ingest / **M6 工作台** |
 | [`moli-kb-category-flow.drawio`](moli-kb-category-flow.drawio) | **分类管理流程**：分类=目录 · 创建/删除/移动/Sync 回填 · groupBy=category |
 | [`moli-kb-ingest-workbench.drawio`](moli-kb-ingest-workbench.drawio) | **M6 Ingest 工作台**（T15 六步状态机 + 架构页） |
+| [`moli-kb-ingest-generate-sse.drawio`](moli-kb-ingest-generate-sse.drawio) | **T15f generate SSE**：start + stream 异步进度 · 同步 POST 兼容 |
 | [`moli-kb-import-entry.drawio`](moli-kb-import-entry.drawio) | **T20 双入口导入**：Editor 浏览器 Tab1/3 · Tab2 Ingest · Sync · 运维兜底虚线 |
 | [`moli-kb-import-entry-api.drawio`](moli-kb-import-entry-api.drawio) | **T20 API 时序**：HTTPS multipart · Linux 磁盘写盘 · 无 Editor SSH |
 | [`moli-kb-wujinsen-image-remediation.drawio`](moli-kb-wujinsen-image-remediation.drawio) | **T22 wujinsen 图片回迁**：Asset API + annex/插图节 · raw `.note_images` → Web 可见 |

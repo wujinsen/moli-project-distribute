@@ -263,6 +263,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | **T15c** ✅ | lint 预检 + **原子 commit**（wiki/log/index/edges） | 交付物 = AGENTS §4 checklist |
 | **T15d** ✅ | commit 后一键 Sync + 批次报告 | 线上可问答 |
 | **T15e** ✅ | enrich patch、断点续跑、批次模板 | 大批量可恢复 |
+| **T15f** ✅ | `generate/start` + SSE `generate/stream` + 前端进度条 | 异步逐页进度；同步 POST 保留兼容 |
 
 ### T15b–d 已完成（2026-06-25）
 
@@ -277,7 +278,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
   - server（新增）：`entity/KbIngestDraft`+`KbIngestCommit` + Mapper、`dto/IngestDraftVo`+`IngestDraftUpdateRequest`+`IngestLintVo`+`IngestCommitResultVo`；`KbIngestService`(+Impl) 扩展 generate/draft CRUD/approve/lint/commit；复用 `KbWikiFileService`、`KbLlmClient`、`KbSyncService`
   - server（改）：`KbIngestController` 增 T15b–d 端点
   - meiling-ui（新增）：`views/knowledge/KnowledgeIngestWorkbenchView.vue`（列表/新建 + Plan/草稿 diff/lint/commit&Sync）；`viewRegistry`、`menuLabel` 注册 `knowledge/ingest/index`；`types`/`api` 增草稿/lint/commit；`i18n` zh/en/ja `knowledge.ingest.*`
-- **已知简化（后续可选）**：generate 为同步调用（无 SSE 进度）；index 更新为追加批次段而非按类型分区插入。
+- **已知简化（后续可选）**：index 更新为追加批次段而非按类型分区插入；SSE 多副本任务表（P2 Redis）待做。
 
 ### T15e 已完成（2026-06-25）
 

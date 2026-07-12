@@ -2242,14 +2242,35 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 | 参数 | 类型 | 默认 | 说明 |
 |------|------|------|------|
 | `resume` | boolean | `false` | `false`=删除旧草稿全量重生成；`true`=断点续跑（跳过已有 content 的页） |
+| `useLlmGenerate` | boolean | `true` | `false`=模板模式（raw 直贴，不调 LLM） |
 
+- **同步**接口（兼容旧前端 / 脚本）；长批次建议改用 §9.4.1a **SSE 异步**。
 - 按当前 plan 调用 PageWriter（create）/ EnrichWriter（enrich）。
-- **PageWriter `related` 约束**（2026-06-24）：frontmatter `related` 仅 **0–5** 个与本页**强相关** slug；候选池 = 同批次 slug + 主题召回（≤25），**禁止**把全库 slug 批量抄进 `related`。lint 预检对超标项报 `related_overflow`（WARN）。
-- **`type=exam`** 新建页写入 `wiki/exams/`（与其它 type 目录映射一致）。
-- 完成后 job 置 `status=reviewing`。
-- 需 **editor** + LLM；超时建议前端设 300s。
+- **PageWriter `related` 约束**（2026-06-24）：frontmatter `related` 仅 **0–5** 个强相关 slug。
+- **`type=exam`** 新建页写入 `wiki/exams/`。
+- 生成过程中 `job.status=generating`，完成后 `reviewing`。
+- 需 **editor** + LLM（模板模式除外）；同步调用建议前端 timeout **300s**。
 
-**响应** `MoliResult<IngestGenerateResultVo>`：
+**响应** `MoliResult<IngestGenerateResultVo>`：字段见下表（含 `drafts` 全量列表）。
+
+#### 9.4.1a 异步生成 + SSE（T15f）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/kb/ingest/jobs/{id}/generate/start` | 立即返回 `taskId`；后台 `@Async` 执行 generate |
+| GET | `/kb/ingest/jobs/{id}/generate/stream?taskId=` | `text/event-stream` 进度流 |
+
+`start` 参数同同步 `generate`。配置 `kb.ingest.generate.async-enabled=false` 时 start 返回错误，请走同步接口。
+
+**SSE 事件**：`started` · `page_start` · `page_done` · `progress` · `complete` · `error`
+
+`complete` 的 `data` 为统计 JSON（**不含** `drafts`）；前端应再调 `GET /drafts`。
+
+`progress` 示例：`{"generated":2,"skipped":1,"failed":0,"done":3,"total":8}`
+
+鉴权：stream 推荐 **fetch + Authorization**（非 EventSource）；经 Gateway 需禁用 SSE 缓冲（见 `docs/design/kb-ingest-generate-sse-design.md` §5）。
+
+#### 9.4.1b 生成结果字段（同步与 SSE complete 共用）
 
 | 字段 | 说明 |
 |------|------|

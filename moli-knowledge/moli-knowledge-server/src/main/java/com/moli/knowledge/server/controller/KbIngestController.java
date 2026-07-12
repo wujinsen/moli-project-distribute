@@ -6,6 +6,7 @@ import com.moli.knowledge.server.dto.IngestCommitResultVo;
 import com.moli.knowledge.server.dto.IngestDraftUpdateRequest;
 import com.moli.knowledge.server.dto.IngestDraftVo;
 import com.moli.knowledge.server.dto.IngestExpressStartVo;
+import com.moli.knowledge.server.dto.IngestGenerateStartVo;
 import com.moli.knowledge.server.dto.IngestGenerateResultVo;
 import com.moli.knowledge.server.dto.IngestJobCreateRequest;
 import com.moli.knowledge.server.dto.IngestJobFromTemplateRequest;
@@ -23,6 +24,7 @@ import com.moli.knowledge.server.dto.RawTreeNodeVo;
 import com.moli.knowledge.server.dto.RawUploadResultVo;
 import com.moli.knowledge.server.config.KbIngestProperties;
 import com.moli.knowledge.server.service.KbIngestService;
+import com.moli.knowledge.server.service.IngestGenerateTaskService;
 import com.moli.knowledge.server.service.KbRawCoverageService;
 import com.moli.knowledge.server.service.KbRawUploadService;
 import io.swagger.annotations.Api;
@@ -38,6 +40,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -53,6 +57,9 @@ public class KbIngestController {
 
     @Resource
     private KbIngestService kbIngestService;
+
+    @Resource
+    private IngestGenerateTaskService ingestGenerateTaskService;
 
     @Resource
     private KbIngestProperties ingestProperties;
@@ -151,11 +158,25 @@ public class KbIngestController {
     }
 
     @PostMapping("/jobs/{id}/generate")
-    @ApiOperation("按 plan 生成草稿；resume=true 断点续跑；useLlmGenerate=false 为模板模式（raw 直贴）")
+    @ApiOperation("按 plan 生成草稿（同步）；resume=true 断点续跑；useLlmGenerate=false 为模板模式（raw 直贴）")
     public MoliResult<IngestGenerateResultVo> generate(@PathVariable Long id,
                                                      @RequestParam(defaultValue = "false") boolean resume,
                                                      @RequestParam(defaultValue = "true") boolean useLlmGenerate) {
         return MoliResult.success(kbIngestService.generate(id, resume, useLlmGenerate));
+    }
+
+    @PostMapping("/jobs/{id}/generate/start")
+    @ApiOperation("T15f · 异步启动多页生成；配合 GET .../generate/stream 订阅 SSE 进度")
+    public MoliResult<IngestGenerateStartVo> generateStart(@PathVariable Long id,
+                                                           @RequestParam(defaultValue = "false") boolean resume,
+                                                           @RequestParam(defaultValue = "true") boolean useLlmGenerate) {
+        return MoliResult.success(ingestGenerateTaskService.start(id, resume, useLlmGenerate));
+    }
+
+    @GetMapping(value = "/jobs/{id}/generate/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ApiOperation("T15f · SSE 订阅生成进度（event: started/page_start/page_done/progress/complete/error）")
+    public SseEmitter generateStream(@PathVariable Long id, @RequestParam String taskId) {
+        return ingestGenerateTaskService.stream(id, taskId);
     }
 
     @GetMapping("/jobs/{id}/drafts")
