@@ -41,19 +41,25 @@ public class OperationRelationQuerySupport {
     private OperationServerMapper operationServerMapper;
 
     public List<Long> resolveServerIdsForProject(Long projectId, Long primaryServerId) {
-        Set<Long> ids = new LinkedHashSet<>(safeList(operationServerLinkMapper.selectServerIdsByProjectId(projectId)));
-        if (primaryServerId != null) {
-            ids.add(primaryServerId);
+        List<Long> linked = safeList(operationServerLinkMapper.selectServerIdsByProjectId(projectId));
+        if (!linked.isEmpty()) {
+            return new ArrayList<>(new LinkedHashSet<>(linked));
         }
-        return new ArrayList<>(ids);
+        if (primaryServerId != null) {
+            return Collections.singletonList(primaryServerId);
+        }
+        return Collections.emptyList();
     }
 
     public List<Long> resolveServerIdsForComponent(Long componentId, Long primaryServerId) {
-        Set<Long> ids = new LinkedHashSet<>(safeList(operationServerLinkMapper.selectServerIdsByComponentId(componentId)));
-        if (primaryServerId != null) {
-            ids.add(primaryServerId);
+        List<Long> linked = safeList(operationServerLinkMapper.selectServerIdsByComponentId(componentId));
+        if (!linked.isEmpty()) {
+            return new ArrayList<>(new LinkedHashSet<>(linked));
         }
-        return new ArrayList<>(ids);
+        if (primaryServerId != null) {
+            return Collections.singletonList(primaryServerId);
+        }
+        return Collections.emptyList();
     }
 
     public List<Long> resolveProjectIdsForServer(Long serverId) {

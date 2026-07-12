@@ -12,11 +12,13 @@ import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerProjectLinkMapper;
 import com.moli.user.center.server.operation.service.OperationProjectLinkService;
+import com.moli.user.center.server.operation.support.OperationServerBindingSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,22 +34,32 @@ public class OperationProjectLinkServiceImpl implements OperationProjectLinkServ
     private OperationServerLinkMapper operationServerLinkMapper;
     @Resource
     private OperationServerProjectLinkMapper operationServerProjectLinkMapper;
+    @Resource
+    private OperationServerBindingSupport serverBindingSupport;
 
     @Override
     public OperationProjectLinksVo getLinks(Long projectId) {
-        requireProject(projectId);
+        OperationProjectDeployInfo project = requireProject(projectId);
         OperationProjectLinksVo vo = new OperationProjectLinksVo();
         vo.setProjectId(projectId);
-        vo.setServerIds(operationServerLinkMapper.selectServerIdsByProjectId(projectId));
+        List<Long> linked = operationServerLinkMapper.selectServerIdsByProjectId(projectId);
+        if (linked == null || linked.isEmpty()) {
+            if (project.getServerId() != null) {
+                linked = Collections.singletonList(project.getServerId());
+            }
+        }
+        vo.setServerIds(linked == null ? new ArrayList<>() : linked);
         return vo;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveLinks(Long projectId, OperationProjectLinksVo links) {
-        requireProject(projectId);
+        OperationProjectDeployInfo project = requireProject(projectId);
         List<Long> serverIds = distinctIds(links == null ? null : links.getServerIds());
         syncLinks(projectId, serverIds, serverIds.isEmpty() ? null : serverIds.get(0));
+        syncPrimaryServer(project, serverIds);
+        operationProjectDeployInfoMapper.updateById(project);
     }
 
     @Override
@@ -104,6 +116,17 @@ public class OperationProjectLinkServiceImpl implements OperationProjectLinkServ
                 throw new BaseException("服务器不存在: " + serverId);
             }
         }
+    }
+
+    private void syncPrimaryServer(OperationProjectDeployInfo project, List<Long> serverIds) {
+        if (serverIds == null || serverIds.isEmpty()) {
+            project.setServerId(null);
+            project.setServerIp(null);
+            project.setInnerIp(null);
+            return;
+        }
+        project.setServerId(serverIds.get(0));
+        serverBindingSupport.bindProject(project);
     }
 
     private OperationProjectDeployInfo requireProject(Long projectId) {

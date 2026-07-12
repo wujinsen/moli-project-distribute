@@ -8,7 +8,6 @@ import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.user.center.server.operation.audit.OperationPortMatrixPortCheck;
 import com.moli.user.center.server.operation.audit.OperationPortMatrixProvider;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
-import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
 import com.moli.user.center.server.operation.service.OperationProjectLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
 import com.moli.user.center.server.operation.support.OperationCrudSupport;
@@ -40,8 +39,6 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     private OperationServerCascadeSupport serverCascadeSupport;
     @Resource
     private OperationPortMatrixProvider portMatrixProvider;
-    @Resource
-    private OperationServerLinkMapper operationServerLinkMapper;
     @Resource
     private OperationProjectLinkService operationProjectLinkService;
     @Resource
@@ -117,16 +114,7 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     private OperationProjectVo toVo(OperationProjectDeployInfo row) {
         OperationProjectVo vo = new OperationProjectVo();
         BeanUtils.copyProperties(row, vo);
-        List<Long> serverIds = operationServerLinkMapper.selectServerIdsByProjectId(row.getId());
-        if (serverIds == null || serverIds.isEmpty()) {
-            if (row.getServerId() != null) {
-                serverIds = new java.util.ArrayList<>();
-                serverIds.add(row.getServerId());
-            }
-        } else if (row.getServerId() != null && !serverIds.contains(row.getServerId())) {
-            serverIds.add(0, row.getServerId());
-        }
-        vo.setServerIds(serverIds);
+        vo.setServerIds(relationQuerySupport.resolveServerIdsForProject(row.getId(), row.getServerId()));
         OperationPortMatrixPortCheck portCheck = portMatrixProvider.check(row.getProjectName(), row.getPort());
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
@@ -157,9 +145,7 @@ public class OperationProjectServiceImpl implements OperationProjectService {
             return;
         }
         if (request.getServerIds() != null && !request.getServerIds().isEmpty()) {
-            if (request.getServerId() == null) {
-                request.setServerId(request.getServerIds().get(0));
-            }
+            request.setServerId(request.getServerIds().get(0));
         }
     }
 }

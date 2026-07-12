@@ -109,6 +109,10 @@ public class OperationRelationServiceImpl implements OperationRelationService {
         if (serverIds == null || serverIds.isEmpty()) {
             return new ArrayList<>();
         }
+        Long effectivePrimary = primaryServerId;
+        if (effectivePrimary == null || !serverIds.contains(effectivePrimary)) {
+            effectivePrimary = serverIds.get(0);
+        }
         List<OperationRelationServerItemVo> items = new ArrayList<>();
         for (OperationServerInfo row : operationServerMapper.selectBatchIds(serverIds)) {
             OperationRelationServerItemVo item = new OperationRelationServerItemVo();
@@ -120,7 +124,7 @@ public class OperationRelationServiceImpl implements OperationRelationService {
             item.setServerRole(row.getServerRole());
             item.setTags(OperationServerTagsSupport.parse(row.getTags()));
             item.setStatus(row.getStatus());
-            item.setPrimary(primaryServerId != null && primaryServerId.equals(row.getId()));
+            item.setPrimary(effectivePrimary.equals(row.getId()));
             items.add(item);
         }
         return items;

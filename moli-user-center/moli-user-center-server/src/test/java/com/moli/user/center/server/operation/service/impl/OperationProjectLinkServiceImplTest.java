@@ -8,6 +8,7 @@ import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMa
 import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerProjectLinkMapper;
+import com.moli.user.center.server.operation.support.OperationServerBindingSupport;
 import com.moli.common.core.IdGenerator;
 import com.moli.common.core.SnowflakeIdWorker;
 import org.junit.Before;
@@ -41,6 +42,8 @@ public class OperationProjectLinkServiceImplTest {
     private OperationServerLinkMapper operationServerLinkMapper;
     @Mock
     private OperationServerProjectLinkMapper operationServerProjectLinkMapper;
+    @Mock
+    private OperationServerBindingSupport serverBindingSupport;
 
     @Before
     public void initIdGenerator() throws Exception {
@@ -58,6 +61,23 @@ public class OperationProjectLinkServiceImplTest {
 
         assertEquals(Long.valueOf(401L), vo.getProjectId());
         assertEquals(Arrays.asList(201L, 202L), vo.getServerIds());
+    }
+
+    @Test
+    public void saveLinks_syncs_primary_server_id() {
+        OperationProjectDeployInfo project = new OperationProjectDeployInfo();
+        project.setId(401L);
+        project.setServerId(202L);
+        when(operationProjectDeployInfoMapper.selectById(401L)).thenReturn(project);
+        when(operationServerMapper.selectById(201L)).thenReturn(server(201L, "127.0.0.1"));
+
+        OperationProjectLinksVo links = new OperationProjectLinksVo();
+        links.setServerIds(Collections.singletonList(201L));
+        linkService.saveLinks(401L, links);
+
+        assertEquals(Long.valueOf(201L), project.getServerId());
+        verify(serverBindingSupport).bindProject(project);
+        verify(operationProjectDeployInfoMapper).updateById(project);
     }
 
     @Test
@@ -82,5 +102,12 @@ public class OperationProjectLinkServiceImplTest {
             fail("expected unknown server");
         } catch (BaseException ignored) {
         }
+    }
+
+    private static OperationServerInfo server(Long id, String ip) {
+        OperationServerInfo server = new OperationServerInfo();
+        server.setId(id);
+        server.setIp(ip);
+        return server;
     }
 }

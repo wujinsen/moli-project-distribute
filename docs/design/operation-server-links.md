@@ -54,7 +54,7 @@
 | `GET` | `/operation/project/{id}` | VO 含 **`serverIds`** |
 | `GET` | `/operation/project/list` | 每行 VO 含 **`serverIds`** |
 | `GET` | `/operation/project/{id}/links` | 返回 `{ projectId, serverIds }` |
-| `PUT` | `/operation/project/{id}/links` | 全量替换 N:N（不修改主表 `server_id`） |
+| `PUT` | `/operation/project/{id}/links` | 全量替换 N:N，并同步主表 `server_id`/`server_ip` 为 `serverIds[0]` |
 
 **`OperationProjectSaveRequest`**（节选）：
 
@@ -80,7 +80,7 @@
 | `POST` / `PUT` | `/operation/component` | body 增 **`serverIds`** |
 | `GET` | `/operation/component/{id}` / `list` | VO 含 **`serverIds`** |
 | `GET` | `/operation/component/{id}/links` | `{ componentId, serverIds }` |
-| `PUT` | `/operation/component/{id}/links` | 全量替换 `operation_server_component` |
+| `PUT` | `/operation/component/{id}/links` | 全量替换 `operation_server_component`，并同步主表 `server_id` |
 
 ### 3.3 服务器侧（已有 · SVR-11）
 

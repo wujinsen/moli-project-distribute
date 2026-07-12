@@ -50,12 +50,21 @@ public class OperationRelationQuerySupportTest {
     }
 
     @Test
-    public void resolveServerIdsForProject_merges_primary_and_nn() {
+    public void resolveServerIdsForProject_uses_nn_when_present() {
         when(operationServerLinkMapper.selectServerIdsByProjectId(401L)).thenReturn(Collections.singletonList(202L));
 
         List<Long> ids = relationQuerySupport.resolveServerIdsForProject(401L, 201L);
 
-        assertEquals(Arrays.asList(202L, 201L), ids);
+        assertEquals(Collections.singletonList(202L), ids);
+    }
+
+    @Test
+    public void resolveServerIdsForProject_falls_back_to_primary_when_nn_empty() {
+        when(operationServerLinkMapper.selectServerIdsByProjectId(401L)).thenReturn(Collections.emptyList());
+
+        List<Long> ids = relationQuerySupport.resolveServerIdsForProject(401L, 201L);
+
+        assertEquals(Collections.singletonList(201L), ids);
     }
 
     @Test

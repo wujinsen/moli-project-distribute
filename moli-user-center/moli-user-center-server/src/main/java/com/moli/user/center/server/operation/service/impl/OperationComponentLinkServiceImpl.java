@@ -11,6 +11,7 @@ import com.moli.user.center.server.operation.mapper.OperationServerComponentLink
 import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import com.moli.user.center.server.operation.service.OperationComponentLinkService;
+import com.moli.user.center.server.operation.support.OperationServerBindingSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,8 @@ public class OperationComponentLinkServiceImpl implements OperationComponentLink
     private OperationServerLinkMapper operationServerLinkMapper;
     @Resource
     private OperationServerComponentLinkMapper operationServerComponentLinkMapper;
+    @Resource
+    private OperationServerBindingSupport serverBindingSupport;
 
     @Override
     public OperationComponentLinksVo getLinks(Long componentId) {
@@ -44,9 +47,11 @@ public class OperationComponentLinkServiceImpl implements OperationComponentLink
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveLinks(Long componentId, OperationComponentLinksVo links) {
-        requireComponent(componentId);
+        OperationComponentDeployInfo component = requireComponent(componentId);
         List<Long> serverIds = distinctIds(links == null ? null : links.getServerIds());
         syncLinks(componentId, serverIds, serverIds.isEmpty() ? null : serverIds.get(0));
+        syncPrimaryServer(component, serverIds);
+        operationComponentDeployInfoMapper.updateById(component);
     }
 
     @Override
@@ -103,6 +108,16 @@ public class OperationComponentLinkServiceImpl implements OperationComponentLink
                 throw new BaseException("服务器不存在: " + serverId);
             }
         }
+    }
+
+    private void syncPrimaryServer(OperationComponentDeployInfo component, List<Long> serverIds) {
+        if (serverIds == null || serverIds.isEmpty()) {
+            component.setServerId(null);
+            component.setServerIp(null);
+            return;
+        }
+        component.setServerId(serverIds.get(0));
+        serverBindingSupport.bindComponent(component);
     }
 
     private OperationComponentDeployInfo requireComponent(Long componentId) {
