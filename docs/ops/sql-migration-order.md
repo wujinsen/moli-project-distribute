@@ -42,7 +42,7 @@
 | 17 | `23_operation_schema_hardening.sql` | 组件 `server_id`、N:N 唯一、查询索引（Phase R1） |
 | 18 | `17_kb_lint_ops_enhance.sql` | KBOPS-8 体检工单 `assignee_id`/`priority` + `kb:ops:dashboard` 动作 |
 | 18 | `24_operation_port_matrix.sql` | 端口矩阵表 + 种子 + 菜单 406 + `operation:port-matrix:*`（SVR-21） |
-| 19 | `25_operation_task_project_id.sql` | `operation_task.project_id` + 索引（Phase R3 P1） |
+| 19 | `25_operation_task_project_id.sql` | `operation_task.project_id` + 索引（Phase R3 P1）；**RelationDrawer / 拓扑关联任务查询依赖此列** |
 | 20 | `26_operation_server_role.sql` | `operation_server_info.server_role` + 索引 + 按名称回填（SVR-23） |
 | 22 | `27_operation_server_tags.sql` | `operation_server_info.tags` JSON 数组 + 环境种子回填（SVR-24）；未执行 26 时可单独跑（`tags` 列接 `environment` 后） |
 | 23 | `29_operation_project_component.sql` | 项目→组件依赖 N:N 表（SVR-26a）；拓扑 `depends_on` 边与 `component-links` API 前置（**已合并进 `moli.sql` 基线**） |
