@@ -226,8 +226,92 @@ bash kb/tools/ci/run_sync.sh lint-all   # exit 0，仅打印问题
 
 ---
 
+## 9. P0-O4 点验：故意制造失败 +「仅显示失败」筛选
+
+> **背景**：`meiling-ui` 脚本 `npm run kb:prd-acceptance` 的 **P0-O4** 会查近 30 条 `GET /kb/sync/logs`；若全无 `status=fail` 行且 `failCount=0`，则 **skip** 并提示本节前述步骤。  
+> **前端已实现**（`KbSyncOpsPanel.vue`）：fail 行玫瑰色、可展开 `message`、日志表头 **「仅显示失败」** 复选框。  
+> **仅在 dev / 预发点验**；勿在生产 wiki 长期留脏文件。
+
+### 9.1 推荐造败法（未分类文档 · 可逆）
+
+在 **`enterprise-kb`** 磁盘 `moli-knowledge/kb/wiki/` 下，于**不存在于 `kb_category.dir_slug` 的一级目录**放一篇测试页（整批 Sync 中止，`kb_sync_log` 写入 `status=fail`）：
+
+```bash
+cd moli-knowledge
+mkdir -p kb/wiki/_p0o4-fail-test
+cat > kb/wiki/_p0o4-fail-test/accept.md <<'EOF'
+---
+title: P0-O4 accept fail sample
+slug: _p0o4-fail-test/accept
+type: guide
+status: draft
+tags: [acceptance]
+sources: []
+created: 2026-07-12
+updated: 2026-07-12
+---
+
+# P0-O4 点验用（测完即删）
+EOF
+```
+
+### 9.2 Web UI 复验（O4）
+
+1. 登录 meiling-ui → **知识库 → 健康体检**（`knowledge/lint/index`）
+2. 空间选 **`enterprise-kb`**
+3. 点击 **触发 Sync**（或 `POST /kb/sync/trigger?spaceId=900000000000000001`）
+4. 期望：
+   - Toast：**「Sync 失败，请查看日志」**
+   - 状态区 `failCount > 0` 或 `lastStatus=fail`
+   - 日志表出现 **玫瑰色** `fail` 行；点行首可 **展开 message**（含「未分类文档」等摘要）
+5. 勾选日志表头 **「仅显示失败」**：
+   - 列表**仅**剩 `status=fail` 行
+   - 若无 fail 行，显示琥珀提示条（`failOnlyEmpty`）
+6. 取消勾选 → 恢复 success + fail 混合列表
+
+### 9.3 API / DB 交叉确认（可选）
+
+```bash
+curl -s "$BASE/kb/sync/logs?spaceId=900000000000000001&pageNum=1&pageSize=30" \
+  -H "Authorization: $TOKEN" | jq '.data.list[] | select(.status=="fail") | {batchNo,status,message}'
+```
+
+```sql
+SELECT batch_no, action, status, LEFT(message, 120) AS msg, create_time
+FROM kb_sync_log
+WHERE space_id = 900000000000000001 AND status = 'fail'
+ORDER BY create_time DESC LIMIT 5;
+```
+
+### 9.4 清理与回归
+
+```bash
+rm -rf kb/wiki/_p0o4-fail-test
+```
+
+健康体检再次 **触发 Sync** → 应 success；`failOnly` 勾选后可为空（琥珀提示）或仅显示历史 fail（若未清理 DB 日志）。
+
+自动化复验（`meiling-ui` 仓库）：
+
+```bash
+npm run kb:prd-acceptance
+```
+
+期望输出含 `✓ P0-O4`（任一空間近 30 条含 fail，或 `status.failCount>0`）。
+
+### 9.5 其它造败方式（备选）
+
+| 方式 | 识别 | 注意 |
+|------|------|------|
+| 单页 DB 约束冲突 | `action=sync` + `status=fail` + 单页 `message` | 需懂 schema，难清理 |
+| 断 MySQL / 错 `kb.sync.script-path` | `action=batch` fail | 影响面大，仅本地 |
+| CI `lint-strict-all` 失败 | CI 红灯，**不一定**写 `kb_sync_log` | 不用于 P0-O4 Web 点验 |
+
+---
+
 ## 变更记录
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-12 | §9 P0-O4：故意造败 +「仅显示失败」UI 点验步骤 |
 | 2026-07-10 | 初稿 KBOPS-A2：失败定位、重跑、三空间 verify、CI lint-strict 门禁 |

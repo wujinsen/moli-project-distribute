@@ -179,9 +179,11 @@ export const getLintScanStatus = (spaceId: string) =>
 
 - [x] 选空间后加载 status + 最近 10 条 log  
 - [x] trigger 成功 → status 刷新、log 新增 success 行  
-- [x] trigger 失败（运维配合制造）→ fail 行可见、Toast  
+- [x] trigger 失败（运维配合制造）→ fail 行可见、Toast、「仅显示失败」筛选  
 - [x] running 时不能重复 trigger  
 - [x] **O9**：展示定时 scan 开关状态 + 最近 scan 时间（只读）
+
+**P0-O4 环境点验**（近 30 条日志无 fail 时脚本会 skip）：见 [`kb-sync-failure-runbook.md` §9](../../ops/kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)。
 
 ---
 
