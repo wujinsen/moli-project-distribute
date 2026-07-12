@@ -25,9 +25,6 @@ public class OperationServerBindingSupport {
         }
         if (row.getServerId() != null) {
             OperationServerInfo server = requireServer(row.getServerId());
-            if (StringUtils.isNotBlank(row.getServerIp()) && !matchesIp(row.getServerIp(), server)) {
-                throw OperationBizException.params("serverIp 与 serverId 不一致，请以 serverId 为准");
-            }
             row.setServerIp(server.getIp());
             row.setInnerIp(server.getInnerIp());
             return;
@@ -49,9 +46,6 @@ public class OperationServerBindingSupport {
         }
         if (row.getServerId() != null) {
             OperationServerInfo server = requireServer(row.getServerId());
-            if (StringUtils.isNotBlank(row.getServerIp()) && !matchesIp(row.getServerIp(), server)) {
-                throw OperationBizException.params("serverIp 与 serverId 不一致，请以 serverId 为准");
-            }
             row.setServerIp(server.getIp());
             return;
         }
@@ -83,9 +77,5 @@ public class OperationServerBindingSupport {
             throw OperationBizException.serverNotFound(serverId);
         }
         return server;
-    }
-
-    private boolean matchesIp(String ip, OperationServerInfo server) {
-        return StringUtils.equals(ip, server.getIp()) || StringUtils.equals(ip, server.getInnerIp());
     }
 }

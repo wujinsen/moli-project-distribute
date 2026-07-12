@@ -1,7 +1,6 @@
 package com.moli.user.center.server.operation.support;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.moli.common.exception.BaseException;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
@@ -53,14 +52,17 @@ public class OperationServerBindingSupportTest {
         assertEquals("172.31.30.10", row.getInnerIp());
     }
 
-    @Test(expected = BaseException.class)
-    public void bindProject_rejects_mismatched_ip_and_serverId() {
-        when(operationServerMapper.selectById(201L)).thenReturn(server(201L, "127.0.0.1", "127.0.0.1"));
+    @Test
+    public void bindProject_overwrites_stale_ip_when_serverId_set() {
+        when(operationServerMapper.selectById(201L)).thenReturn(server(201L, "127.0.0.2", "127.0.0.2"));
 
         OperationProjectDeployInfo row = new OperationProjectDeployInfo();
         row.setServerId(201L);
-        row.setServerIp("10.0.0.1");
+        row.setServerIp("127.0.0.1");
         bindingSupport.bindProject(row);
+
+        assertEquals("127.0.0.2", row.getServerIp());
+        assertEquals("127.0.0.2", row.getInnerIp());
     }
 
     @Test
