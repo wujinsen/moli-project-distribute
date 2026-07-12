@@ -8,6 +8,8 @@ import com.moli.user.center.server.operation.mapper.OperationComponentDeployInfo
 import com.moli.user.center.server.operation.mapper.OperationProjectComponentLinkMapper;
 import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationServerLinkMapper;
+import com.moli.user.center.server.testsupport.MybatisPlusTestSupport;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -37,6 +39,11 @@ public class OperationRelationQuerySupportTest {
     private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Mock
     private OperationComponentDeployInfoMapper operationComponentDeployInfoMapper;
+
+    @Before
+    public void setUp() {
+        MybatisPlusTestSupport.initAll();
+    }
 
     @Test
     public void resolveServerIdsForProject_merges_primary_and_nn() {

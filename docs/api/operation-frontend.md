@@ -773,6 +773,9 @@ async function loadPresets() {
 | S7 | 批量探活 | probe-all 返回 taskId → 轮询 → 刷新列表 | 🔴 待改 |
 | S8 | SSH | 配置私钥后 `sshConfigured=true`；测试连接返回 whoami | ✅ |
 | S9 | 部署中心 | 选服务器 → 启停三件套返回 taskId；轮询进度/日志；上传 jar/zip | ✅ |
+| S10 | 拓扑图 | `GET /operation/topology` 节点/边正确；ECharts 页可筛选聚焦 | 后端 ✅ / UI ⬜ |
+| S11 | 关系导航 | 列表 chips 计数；RelationDrawer 三向关联 + 定位过滤 | 后端 ✅ / UI ⬜ |
+| S26 | 项目依赖组件 | `component-links` GET/PUT；拓扑 `depends_on` 边 | 后端 ✅ / UI ⬜ |
 
 ---
 
@@ -839,7 +842,9 @@ ops:
 
 CVM 上 `ubuntu` 用户需能 `sudo nginx -s reload`（见 `deploy/腾讯云上线流程.md` §14）。
 
-手测用例：[`docs/test/operation-deploy-center-acceptance.md`](../../test/operation-deploy-center-acceptance.md) · 端口矩阵：[`operation-port-matrix-acceptance.md`](../../test/operation-port-matrix-acceptance.md)。
+手测用例：[`docs/test/operation-deploy-center-acceptance.md`](../../test/operation-deploy-center-acceptance.md) · 端口矩阵：[`operation-port-matrix-acceptance.md`](../../test/operation-port-matrix-acceptance.md) · 拓扑/关联：[`operation-relations-topology-acceptance.md`](../../test/operation-relations-topology-acceptance.md)。
+
+自动化（拓扑/关联后端）：`mvn -pl moli-user-center-server -Dtest=Operation*Relation*,Operation*Topology*,OperationProjectComponentLink* test`
 
 ---
 

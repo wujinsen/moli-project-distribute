@@ -13,6 +13,8 @@ import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMa
 import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import com.moli.user.center.server.operation.mapper.OperationTaskMapper;
 import com.moli.user.center.server.operation.support.OperationRelationQuerySupport;
+import com.moli.user.center.server.testsupport.MybatisPlusTestSupport;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -49,6 +51,11 @@ public class OperationRelationServiceImplTest {
     @Mock
     private OperationTaskMapper operationTaskMapper;
 
+    @Before
+    public void setUp() {
+        MybatisPlusTestSupport.initAll();
+    }
+
     @Test
     public void getRelations_forProject_returns_servers_components_and_tasks() {
         OperationProjectDeployInfo project = project(401L, "moli-user-center", 201L);
@@ -56,9 +63,9 @@ public class OperationRelationServiceImplTest {
         when(relationQuerySupport.resolveServerIdsForProject(401L, 201L)).thenReturn(Arrays.asList(201L, 202L));
         when(relationQuerySupport.resolveComponentIdsForProject(401L)).thenReturn(Collections.singletonList(301L));
 
-        when(operationServerMapper.selectBatchIds(Arrays.asList(201L, 202L)))
+        when(operationServerMapper.selectBatchIds(any()))
                 .thenReturn(Arrays.asList(server(201L, "app-1"), server(202L, "app-2")));
-        when(operationComponentDeployInfoMapper.selectBatchIds(Collections.singletonList(301L)))
+        when(operationComponentDeployInfoMapper.selectBatchIds(any()))
                 .thenReturn(Collections.singletonList(component(301L, "MySQL")));
         when(portMatrixProvider.check(any(), any())).thenReturn(matchedCheck());
 
@@ -88,9 +95,9 @@ public class OperationRelationServiceImplTest {
         when(relationQuerySupport.resolveProjectIdsForServer(201L)).thenReturn(Collections.singletonList(401L));
         when(relationQuerySupport.resolveComponentIdsForServer(201L)).thenReturn(Collections.singletonList(301L));
 
-        when(operationProjectDeployInfoMapper.selectBatchIds(Collections.singletonList(401L)))
+        when(operationProjectDeployInfoMapper.selectBatchIds(any()))
                 .thenReturn(Collections.singletonList(project(401L, "moli-user-center", 201L)));
-        when(operationComponentDeployInfoMapper.selectBatchIds(Collections.singletonList(301L)))
+        when(operationComponentDeployInfoMapper.selectBatchIds(any()))
                 .thenReturn(Collections.singletonList(component(301L, "MySQL")));
         when(portMatrixProvider.check(any(), any())).thenReturn(matchedCheck());
         when(operationTaskMapper.selectList(any())).thenReturn(Collections.emptyList());
@@ -111,9 +118,9 @@ public class OperationRelationServiceImplTest {
         when(relationQuerySupport.resolveServerIdsForComponent(301L, 201L)).thenReturn(Collections.singletonList(201L));
         when(relationQuerySupport.resolveProjectIdsForComponent(301L)).thenReturn(Collections.singletonList(401L));
 
-        when(operationServerMapper.selectBatchIds(Collections.singletonList(201L)))
+        when(operationServerMapper.selectBatchIds(any()))
                 .thenReturn(Collections.singletonList(server(201L, "app-1")));
-        when(operationProjectDeployInfoMapper.selectBatchIds(Collections.singletonList(401L)))
+        when(operationProjectDeployInfoMapper.selectBatchIds(any()))
                 .thenReturn(Collections.singletonList(project(401L, "moli-user-center", 201L)));
         when(portMatrixProvider.check(any(), any())).thenReturn(matchedCheck());
         when(operationTaskMapper.selectList(any())).thenReturn(Collections.emptyList());

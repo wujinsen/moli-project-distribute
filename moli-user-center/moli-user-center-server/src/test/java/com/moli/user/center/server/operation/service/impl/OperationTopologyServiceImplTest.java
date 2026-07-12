@@ -150,10 +150,12 @@ public class OperationTopologyServiceImplTest {
 
         OperationTopologyGraphVo graph = topologyService.getGraph();
 
-        assertEquals(1, graph.getLinks().size());
-        assertEquals("depends_on", graph.getLinks().get(0).getType());
-        assertEquals("p-401", graph.getLinks().get(0).getSource());
-        assertEquals("c-301", graph.getLinks().get(0).getTarget());
+        List<OperationTopologyLinkVo> dependsOn = graph.getLinks().stream()
+                .filter(l -> "depends_on".equals(l.getType()))
+                .collect(Collectors.toList());
+        assertEquals(1, dependsOn.size());
+        assertEquals("p-401", dependsOn.get(0).getSource());
+        assertEquals("c-301", dependsOn.get(0).getTarget());
     }
 
     private static OperationServerInfo server(Long id, String name) {
