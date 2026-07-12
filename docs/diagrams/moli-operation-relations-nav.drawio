@@ -1,0 +1,110 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="operation-relations-nav" name="Relations Navigation">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" pageWidth="1500" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="运营管理 · 关联关系导航与搜索（SVR-28）&#xa;三实体 N:N 全景 + 统一 RelationDrawer + 反向过滤" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="680" height="46" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ergroup" value="关系模型（逻辑外键 · 无物理 FK）" style="swimlane;startSize=28;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="680" height="400" as="geometry"/>
+        </mxCell>
+        <mxCell id="n_server" value="operation_server_info&#xa;─────────────&#xa;server_name / ip&#xa;environment / server_role / tags" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="ergroup">
+          <mxGeometry x="240" y="50" width="200" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n_project" value="operation_project_deploy_info&#xa;─────────────&#xa;project_name / port&#xa;server_id（主）/ deploy_running" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="ergroup">
+          <mxGeometry x="30" y="270" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="n_component" value="operation_component_deploy_info&#xa;─────────────&#xa;component_name / port / version&#xa;server_id（主）/ status" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="ergroup">
+          <mxGeometry x="430" y="270" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="er_sp" value="operation_server_project&#xa;（SVR-22 已有）" style="rounded=1;whiteSpace=wrap;html=1;align=center;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="ergroup">
+          <mxGeometry x="60" y="150" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="er_sc" value="operation_server_component&#xa;（SVR-22 已有）" style="rounded=1;whiteSpace=wrap;html=1;align=center;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="ergroup">
+          <mxGeometry x="460" y="150" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="er_pc" value="operation_project_component&#xa;（SVR-26 新表 · 本设计前置）" style="rounded=1;whiteSpace=wrap;html=1;align=center;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="ergroup">
+          <mxGeometry x="250" y="290" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="ee1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.2;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="ergroup" source="er_sp" target="n_server">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ee2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#82b366;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ergroup" source="er_sp" target="n_project">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ee3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="ergroup" source="er_sc" target="n_server">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ee4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#82b366;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ergroup" source="er_sc" target="n_component">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ee5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#b85450;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="ergroup" source="er_pc" target="n_project">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="ee6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#b85450;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="ergroup" source="er_pc" target="n_component">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="er_note" value="operation_task（serverId / projectId 已有）→ 抽屉「最近任务」 · operation_platform_info 按 environment 弱关联（不建表）" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#666666;" vertex="1" parent="ergroup">
+          <mxGeometry x="20" y="365" width="640" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="api" value="后端（moli-user-center :8888）&#xa;─────────────&#xa;GET /operation/relations/{type}/{id}（28b 统一关系 API）&#xa;  → servers[primary标记] / projects / components / recentTasks×5&#xa;列表 VO 计数：serverCount / projectCount / componentCount（28a）&#xa;列表反向过滤：?serverId= ?projectId= ?componentId=（28a）&#xa;GET/PUT /operation/project/{id}/component-links（26a）&#xa;共享读取层 OperationRelationQuerySupport ← SVR-25a 拓扑复用" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="90" width="420" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="drawer" value="RelationDrawer（统一关系抽屉 · 28c）&#xa;─────────────&#xa;实体摘要头 + Tabs：服务器 / 组件 / 项目 / 最近任务&#xa;行内：[详情]（抽屉内漫游+面包屑）· [定位]（跳列表带过滤）&#xa;底部：[在拓扑图中查看 ?focus=] · [编辑关联]" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="300" width="420" height="130" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="pages" value="接入页（全站实体名可点 · 一处组件七页复用）" style="swimlane;startSize=28;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="1160" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1" value="项目管理&#xa;关联列 🖥/🧩 chips&#xa;+组件依赖弹窗&#xa;+反向过滤" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="pages">
+          <mxGeometry x="20" y="45" width="150" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2" value="组件管理&#xa;关联列 🖥/📦 chips&#xa;+反向过滤" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="pages">
+          <mxGeometry x="185" y="45" width="150" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3" value="服务器管理&#xa;SVR-5 拓扑弹窗&#xa;升级为 RelationDrawer&#xa;（吸收 SVR-25d 叠加）" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="pages">
+          <mxGeometry x="350" y="45" width="160" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p4" value="平台管理&#xa;「同环境资产」tab&#xa;environment 弱关联" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="pages">
+          <mxGeometry x="525" y="45" width="150" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p5" value="部署中心&#xa;任务目标机/项目名&#xa;可点开抽屉" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="pages">
+          <mxGeometry x="690" y="45" width="145" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p6" value="端口矩阵&#xa;serviceKey 行尾&#xa;关联 chip" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="pages">
+          <mxGeometry x="850" y="45" width="140" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p7" value="任务历史&#xa;serverId/projectId&#xa;渲染实体名链接" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="pages">
+          <mxGeometry x="1005" y="45" width="140" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="p8" value="拓扑图（SVR-25）：搜索下拉选实体 → 图聚焦 + 打开 RelationDrawer（28f） · 深链 ?focus={s|p|c}-{id}" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#666666;" vertex="1" parent="pages">
+          <mxGeometry x="20" y="150" width="1120" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#d79b00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ergroup" target="api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f1l" value="JDBC 聚合（GROUP BY 计数 · 回退主 server_id）" style="edgeLabel;html=1;align=center;fontSize=10;" vertex="1" connectable="0" parent="f1">
+          <mxGeometry relative="1" as="geometry"><mxPoint y="-12" as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#6c8ebf;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="drawer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f2l" value="经 moli-gateway :21000 /UserCenter/**" style="edgeLabel;html=1;align=center;fontSize=10;" vertex="1" connectable="0" parent="f2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="20" as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#9673a6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="drawer" target="pages">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="f3l" value="七页复用同一抽屉" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#9673a6;" vertex="1" connectable="0" parent="f3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

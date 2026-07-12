@@ -35,6 +35,8 @@
 | [`moli-operation-refactor.drawio`](moli-operation-refactor.drawio) | **运营管理改造目标**：台账四模块 + 部署中心 + operation_task + SSH 状态同步 |
 | [`moli-operation-port-matrix.drawio`](moli-operation-port-matrix.drawio) | **端口矩阵 SVR-21**：DB 表 + Provider 缓存 + 审计/CRUD 双通道 |
 | [`moli-operation-server-links.drawio`](moli-operation-server-links.drawio) | **项目/组件多服务器 SVR-22**：主 `server_id` + N:N 关联表 + API |
+| [`moli-operation-topology-graph.drawio`](moli-operation-topology-graph.drawio) | **服务器拓扑可视化 SVR-25**：全局 ECharts 拓扑图 + 聚合 API + P2 依赖表（设计见 `docs/design/server-topology-visualization.md`） |
+| [`moli-operation-relations-nav.drawio`](moli-operation-relations-nav.drawio) | **关联关系导航 SVR-28**：三实体 N:N 全景 + RelationDrawer + 七页接入（设计见 `docs/design/operation-relations-navigation.md`） |
 
 **三空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
 
