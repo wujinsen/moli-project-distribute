@@ -30,13 +30,13 @@
 
 ~~**W1–W10** 联合走查~~ → ✅ **2026-07-13**（见 [operation-w1-w10-walkthrough.md](test/operation-w1-w10-walkthrough.md) §5 · §5.1）。
 
-### 1.3 可选增强（P3 · 待后端 API）
+### 1.3 可选增强（P3）
 
-| 任务 ID | 阻塞 | 详稿 |
-|---------|------|------|
-| **DC-4** | 8888 任务按 project 聚合 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §1 |
-| **KB-LINT-1/2** | 8090 真分页 + `unassignedOnly` | 同上 §2 |
-| **KBOPS-2** | 8090 Dashboard 专用 API | 同上 §3 |
+| 任务 ID | 后端 API | 前端动作 | 详稿 |
+|---------|----------|----------|------|
+| **DC-4** | ⬜ 待 `8888` | **暂缓** TaskHistoryView 分组 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §1 |
+| **KB-LINT-1/2** | ✅ `8090` 已交付 | 可选收紧服务端分页 | 同上 §2 |
+| **KBOPS-2** | ✅ `8090` 已交付 | **可排期** 单请求 dashboard | 同上 §3 |
 
 ---
 
@@ -65,7 +65,8 @@
 | **KB-O4** | 前端 ✅ · 本地 O4 样本已就绪 |
 | **KB-BROWSE-1** | 前端 ✅ · `npm run kb:prd` P0-browse-v3 |
 | **KB-LLM-DB** | 本地 dev `encryptionReady=true`；生产需 `KB_LLM_CONFIG_SECRET` |
-| **KB-LINT-1/2** · **KBOPS-2** | P3 可选 · [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) |
+| **KB-LINT-1/2** | ✅ 8090 API 已交付；前端可选收紧 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §2 |
+| **KBOPS-2** | ✅ 8090 API 已交付；**前端待接线** dashboard | 同上 §3 |
 
 点验脚本：meiling-ui **`npm run kb:prd`**（文档亦称 `kb:prd-acceptance`）。
 
@@ -91,4 +92,4 @@
 1. ~~**运营** W1–W10~~ ✅ 2026-07-13
 2. **KB** `npm run kb:prd`（8090 secret + O4 UI 点验）
 3. ~~**SSO** F-SSO-1～6~~ ✅ 2026-07-13
-4. 可选：DC-4 · KB-LINT · KBOPS-2（见 P3 handoff）
+4. 可选：**KBOPS-2 前端接线** · KB-LINT 收紧 · DC-4 等 8888 API

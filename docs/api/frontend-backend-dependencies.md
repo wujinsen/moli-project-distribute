@@ -45,7 +45,7 @@
 | 状态 | 含义 | 任务 ID |
 |------|------|---------|
 | 🟢 **点验** | 无新 API；环境 + 走查 | §10/§16、KB-O4、KB-BROWSE-1、KB-LLM-DB、407 SQL |
-| 🟡 **可选开发** | 体验/规模化 | DC-4、KB-LINT-1/2、KBOPS-2（[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md)） |
+| 🟡 **可选开发** | 体验/规模化 | **DC-4**（8888）；**KBOPS-2 前端接线**（8090 API ✅） |
 | ⚪ **已完成** | 前后端已对齐 | S-VO、**W1–W10**、W7–W10、DC-2/3、S-ERR-1、S-DEPLOY-1、create id、**batch deploy**、**SSO-MENU-1** |
 
 ### 2.1 联调点验（无新 API）
@@ -60,13 +60,13 @@
 | **407** | 老库执行 `28_operation_topology_menu.sql` | 本机 dev 库 **已存在** 407 可跳过 |
 | **SSO-MENU-1** | `30_sso_menu_system_id.sql`（老库） | ✅ 走查通过 2026-07-13 · [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md) |
 
-### 2.2 可选排期
+### 2.2 可选排期（P3）
 
-| 任务 ID | 服务 | 后端待做 | 说明 |
-|---------|------|----------|------|
-| **DC-4** | 8888 | `GET /operation/task/groups` 按 project 聚合 | 前端暂缓 · [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
-| **KB-LINT-1/2** | 8090 | 服务端 `unassignedOnly` + 稳定分页 | 前端客户端兜底 · 同上 §2 |
-| **KBOPS-2** | 8090 | `GET /kb/ops/dashboard` 专用 API | 前端多接口聚合 · 同上 §3 |
+| 任务 ID | 服务 | 后端 | 前端 | 详稿 |
+|---------|------|------|------|------|
+| **DC-4** | 8888 | ⬜ `GET /operation/task/groups` | 暂缓 | [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
+| **KB-LINT-1/2** | 8090 | ✅ 分页 + `unassignedOnly` | 可选收紧 | 同上 §2 |
+| **KBOPS-2** | 8090 | ✅ `GET /kb/ops/dashboard` | **可排期接线** | 同上 §3 |
 
 > **说明**：滚动批量重启已由 **`POST /operation/deploy/batch/task`**（`b4ac176a`）覆盖；meiling-ui 任务 **DC-BE-1** 若指同一能力，可标为已交付。  
 > **SSO-MENU-1** 后端 + 前端 + 联合走查 ✅（2026-07-13）；见 §5。
@@ -143,7 +143,7 @@ POST /operation/task/{id}/cancel
 ③ DBA：407 SQL（老库按需）
 ④ ~~W1–W10 联合走查~~ ✅ 2026-07-13
 ⑤ ~~SSO-MENU-1 联合走查~~ ✅ 2026-07-13
-⑥ 可选：DC-4 · KB-LINT · KBOPS-2（P3 handoff）
+⑥ 可选：KBOPS-2 前端接线 · KB-LINT 收紧 · DC-4 等 8888
 ```
 
 ---
@@ -167,7 +167,7 @@ POST /operation/task/{id}/cancel
 · KB_LLM_CONFIG_SECRET · KB-O4 fail · npm run kb:prd
 
 SSO-MENU-1：✅ 已交付（走查 2026-07-13）
-下迭代可选：DC-4/KB-LINT/KBOPS-2=P3 → p3-optional-backend-handoff.md
+下迭代 P3：DC-4=8888待开发；KB-LINT/KBOPS=8090已交付→前端见 p3-optional-backend-handoff.md
 
 详稿：docs/api/frontend-backend-dependencies.md
 ```
@@ -208,8 +208,9 @@ SSO-MENU-1：✅ 已交付（走查 2026-07-13）
 | 项 | 排期 |
 |----|------|
 | **SSO-MENU-1** | ✅ **已交付 + 走查通过**（2026-07-13） |
-| **DC-4** | ⬜ P3 可选 · [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
-| **KB-LINT-1/2** · **KBOPS-2** | ⬜ P3 可选 · 同上 §2–§3 |
+| **DC-4** | ⬜ P3 · 8888 待开发 |
+| **KB-LINT-1/2** | ✅ 8090 已交付 · 前端可选收紧 |
+| **KBOPS-2** | ✅ 8090 已交付 · **前端待接线** |
 
 ### 8.5 联调前置
 
@@ -228,4 +229,4 @@ SSO：☑ 30_sso_menu_system_id.sql  ☑ sso-menu-frontend-walkthrough（2026-07
 | 2026-07-13 | 初版三模块总览 |
 | 2026-07-13 | SSO 设计链入 §4/§5 |
 | 2026-07-13 | **对齐 meiling-ui**：§1.2/§2.0/§8 · 走查稿 · 前端 W7–W10 完工 · §8.4 后端回复落定 |
-| 2026-07-13 | **对齐 meiling-ui**：W1–W10 走查 ✅ · P3 handoff · `kb:prd` 脚本名 |
+| 2026-07-13 | **P3 状态更正**：KB-LINT/KBOPS 8090 ✅；仅 DC-4 待 8888；前端 handoff 改版 |
