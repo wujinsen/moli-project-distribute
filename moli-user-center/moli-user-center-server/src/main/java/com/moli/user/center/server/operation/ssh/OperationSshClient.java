@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -86,6 +87,10 @@ public class OperationSshClient {
         }
         Properties config = new Properties();
         config.put("StrictHostKeyChecking", sshProperties.isStrictHostKeyChecking() ? "yes" : "no");
+        // 大文件 SFTP 传输时防止 NAT/防火墙因空闲断开
+        config.put("ServerAliveInterval", "30");
+        // 提升 SFTP 吞吐（mwiede/jsch）
+        config.put("max_input_buffer_size", "131072");
         session.setConfig(config);
         session.connect(sshProperties.getConnectTimeoutMs());
         return session;
@@ -195,13 +200,33 @@ public class OperationSshClient {
     }
 
     /**
-     * 上传文件到远端路径（自动创建父目录），progress 可空。
+     * 上传本地文件到远端（比 InputStream 流式 put 快，接近 scp 吞吐）。
+     */
+    public void sftpPutFile(OperationSshSession session, Path localPath, String remotePath, SftpProgressMonitor progress) {
+        ChannelSftp sftp = null;
+        try {
+            sftp = openSftp(session);
+            ensureRemoteDir(sftp, remotePath);
+            String local = toSftpLocalPath(localPath);
+            if (progress != null) {
+                sftp.put(local, remotePath, progress, ChannelSftp.OVERWRITE);
+            } else {
+                sftp.put(local, remotePath, ChannelSftp.OVERWRITE);
+            }
+        } catch (Exception e) {
+            throw new BaseException("SFTP 上传失败: " + e.getMessage());
+        } finally {
+            disconnectQuietly(sftp);
+        }
+    }
+
+    /**
+     * 上传流到远端路径（自动创建父目录），progress 可空。小文件/内存内容用；大文件请用 {@link #sftpPutFile}。
      */
     public void sftpPut(OperationSshSession session, InputStream data, String remotePath, SftpProgressMonitor progress) {
         ChannelSftp sftp = null;
         try {
-            sftp = (ChannelSftp) session.getSession().openChannel("sftp");
-            sftp.connect(sshProperties.getConnectTimeoutMs());
+            sftp = openSftp(session);
             ensureRemoteDir(sftp, remotePath);
             if (progress != null) {
                 sftp.put(data, remotePath, progress, ChannelSftp.OVERWRITE);
@@ -211,10 +236,25 @@ public class OperationSshClient {
         } catch (Exception e) {
             throw new BaseException("SFTP 上传失败: " + e.getMessage());
         } finally {
-            if (sftp != null && sftp.isConnected()) {
-                sftp.disconnect();
-            }
+            disconnectQuietly(sftp);
         }
+    }
+
+    private ChannelSftp openSftp(OperationSshSession session) throws Exception {
+        ChannelSftp sftp = (ChannelSftp) session.getSession().openChannel("sftp");
+        sftp.connect(sshProperties.getConnectTimeoutMs());
+        return sftp;
+    }
+
+    private static void disconnectQuietly(ChannelSftp sftp) {
+        if (sftp != null && sftp.isConnected()) {
+            sftp.disconnect();
+        }
+    }
+
+    /** JSch 在 Windows 上要求正斜杠绝对路径。 */
+    private static String toSftpLocalPath(Path localPath) {
+        return localPath.toAbsolutePath().normalize().toString().replace('\\', '/');
     }
 
     /**

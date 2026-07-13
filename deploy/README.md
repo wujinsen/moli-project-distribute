@@ -4,7 +4,8 @@
 
 | 云平台 | 正文 | 系统 |
 |--------|------|------|
-| **腾讯云 CVM** | **[`腾讯云上线流程.md`](腾讯云上线流程.md)** | Ubuntu 22.04 / 24.04 |
+| **腾讯云 CVM** | **[`腾讯云上线流程.md`](腾讯云上线流程.md)** | Ubuntu · 完整上线 |
+| **腾讯云 CVM** | [`docs/ops/tencent-cloud-cvm-bootstrap.md`](../docs/ops/tencent-cloud-cvm-bootstrap.md) | Ubuntu · **仅基础环境安装** |
 | **AWS EC2** | [`上线流程.md`](上线流程.md) | Amazon Linux |
 
 工程索引：[`docs/ops/tencent-cloud-release-runbook.md`](../docs/ops/tencent-cloud-release-runbook.md)（腾讯）· [`docs/ops/v1-release-runbook.md`](../docs/ops/v1-release-runbook.md)（通用）

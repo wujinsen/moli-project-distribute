@@ -45,4 +45,4 @@
 
 ## [2026-07-13] implement | ask 作用域/精排优化 → golden hit@8=100%（M03/M06/E01 修复）
 ## [2026-07-13] implement | chunk 切段 v1：sync_to_db 写 kb_document_chunk + /kb/ask 按段召回（+ eval 回归）
-## [2026-07-13] create | 知识库 chunk 切段规范 → develop/知识库-chunk切段规范（+ enrich 知识库服务/Meilisearch规划/技术方案索引；kb/eval README 链入）
+## [2026-07-13] docs | 腾讯云 CVM 基础环境安装 → docs/ops/tencent-cloud-cvm-bootstrap.md + enrich wiki/腾讯云生产部署指南、deploy/腾讯云上线流程 §3.0

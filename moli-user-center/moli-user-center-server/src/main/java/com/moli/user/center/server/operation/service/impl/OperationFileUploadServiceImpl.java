@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -99,9 +98,7 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
             try (OperationSshSession session = sshClient.connect(server)) {
                 context.appendLine("[SSH] 已连接 " + session.getHost());
                 context.appendLine("[SFTP] 上传 → " + remotePath + " (" + humanSize(size) + ")");
-                try (InputStream in = Files.newInputStream(temp)) {
-                    sshClient.sftpPut(session, in, remotePath, new TaskProgressMonitor(context, size));
-                }
+                sshClient.sftpPutFile(session, temp, remotePath, new TaskProgressMonitor(context, size));
                 context.setProgress(UPLOAD_PROGRESS_CAP);
                 context.appendLine("[SFTP] 上传完成");
                 executePostAction(context, session, remotePath, spec);
@@ -210,7 +207,7 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
         }
     }
 
-    private String humanSize(long bytes) {
+    private static String humanSize(long bytes) {
         if (bytes >= 1024 * 1024) {
             return String.format(Locale.ROOT, "%.1fMB", bytes / 1024.0 / 1024.0);
         }
@@ -231,10 +228,13 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
     }
 
     private static class TaskProgressMonitor implements SftpProgressMonitor {
+        private static final long LOG_INTERVAL_MS = 3000;
+
         private final OperationTaskContext context;
         private final long total;
         private long transferred;
         private int lastPercent = -1;
+        private long lastLogTime;
 
         TaskProgressMonitor(OperationTaskContext context, long total) {
             this.context = context;
@@ -244,15 +244,22 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
         @Override
         public void init(int op, String src, String dest, long max) {
             context.setProgress(1);
+            lastLogTime = System.currentTimeMillis();
         }
 
         @Override
         public boolean count(long count) {
             transferred += count;
             int percent = (int) (transferred * UPLOAD_PROGRESS_CAP / total);
+            long now = System.currentTimeMillis();
             if (percent != lastPercent) {
                 lastPercent = percent;
                 context.setProgress(Math.min(UPLOAD_PROGRESS_CAP, percent));
+                lastLogTime = now;
+            } else if (now - lastLogTime >= LOG_INTERVAL_MS) {
+                lastLogTime = now;
+                context.appendLine("[SFTP] 已传 " + humanSize(transferred) + " / " + humanSize(total)
+                        + "（" + percent + "%）");
             }
             return true;
         }
