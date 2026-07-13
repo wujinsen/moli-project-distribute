@@ -1,29 +1,21 @@
 # 前端缺口与联调索引
 
-> **更新**：2026-07-13 · **运营 W1–W10 走查 ✅** · **KB 点验 ✅**（`kb:prd` 16/17）· **SSO-MENU-1 全量走查通过**  
+> **更新**：2026-07-13 · **运营 W1–W10 ✅** · **P3 前后端 ✅** · **KB 点验 ✅**（`kb:prd` **17/17**）· **SSO-MENU-1 ✅**  
 > **走查稿**：[test/operation-w1-w10-walkthrough.md](test/operation-w1-w10-walkthrough.md)  
-> **给后端**：[api/frontend-backend-dependencies.md](api/frontend-backend-dependencies.md) §7–§8  
+> **跨模块**：[api/frontend-backend-dependencies.md](api/frontend-backend-dependencies.md) §7–§8  
 > **前端仓库索引**：[`meiling-ui/docs/frontend-gaps.md`](../../meiling-ui/docs/frontend-gaps.md)
 
 ---
 
-## 0. 给前端（一键开工 · 2026-07-13）
+## 0. 给前端（2026-07-13 · ✅ 已完工）
 
-**后端已全部就绪，无 API 阻塞。** 主入口：[p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §0。
+| 任务 | 状态 | 落点 |
+|------|------|------|
+| **DC-4** | ✅ | `listTaskGroupsApi` · `TaskHistoryView.vue` |
+| **KBOPS-2** | ✅ | `getKbOpsDashboardApi` · `KnowledgeOpsDashboardView.vue` |
+| **KB-LINT-1/2** | ✅ | `kbLint.ts` 服务端分页信任 · `KbLintIssuesPanel.vue` |
 
-| 优先级 | 任务 | 服务 | 落点 |
-|--------|------|------|------|
-| ① | **DC-4** 任务历史分组 | `:8888` | `listTaskGroupsApi` · `TaskHistoryView.vue` |
-| ② | **KBOPS-2** Dashboard 单请求 | `:8090` | `GET /kb/ops/dashboard` |
-| ③ | **KB-LINT** 分页收紧 | `:8090` | `kbLint.ts` · 质量 Tab |
-
-**本地前置**：重启 `:8888`（含 `755abd43` DC-4）、`:8090`（含 `38570430` kb 路径修复）后再联调。
-
-```
-详稿：docs/api/p3-optional-backend-handoff.md §0.1（可贴进 meiling-ui 对话）
-运营契约：operation-frontend.md §11.2.1 · 验收：test/operation-task-groups-acceptance.md
-KB 点验：npm run kb:prd ✅ 16/17（2026-07-13）
-```
+详稿：[p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §6 · meiling-ui commit `a7b6fa9`。
 
 ---
 
@@ -50,15 +42,21 @@ KB 点验：npm run kb:prd ✅ 16/17（2026-07-13）
 
 ~~**W1–W10** 联合走查~~ → ✅ **2026-07-13**（见 [operation-w1-w10-walkthrough.md](test/operation-w1-w10-walkthrough.md) §5 · §5.1）。
 
-### 1.3 可选增强（P3 · 后端均已交付 · 前端可排期）
+### 1.3 P3 增强（2026-07-13 · 前后端 ✅）
 
-| 任务 ID | 后端 API | 前端动作 | 详稿 |
-|---------|----------|----------|------|
-| **DC-4** | ✅ `8888` `GET /operation/task/groups` | ✅ **已接线** TaskHistoryView 分组 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §1 |
-| **KB-LINT-1/2** | ✅ `8090` 已交付 | ✅ 分页收紧 | 同上 §2 |
-| **KBOPS-2** | ✅ `8090` 已交付 | ✅ dashboard 单请求 + 降级 | 同上 §3 |
+| 任务 ID | 后端 API | 前端 | 详稿 |
+|---------|----------|------|------|
+| **DC-4** | ✅ `8888` `GET /operation/task/groups`（`755abd43`） | ✅ `TaskHistoryView` 分组 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §1 |
+| **KB-LINT-1/2** | ✅ `8090` 分页 + `unassignedOnly` | ✅ 服务端分页信任 | 同上 §2 |
+| **KBOPS-2** | ✅ `8090` `GET /kb/ops/dashboard` | ✅ 单请求 + legacy 降级 | 同上 §3 |
 
-> **给前端**：复制 [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §0 或 §0.1 即可开工。
+### 1.4 运维剩余（非前后端代码）
+
+| 项 | 负责方 | 说明 |
+|----|--------|------|
+| **共享环境部署** | 运维 | `origin/ci/kb-sync-multi-space-gate` 已 push（含 `b4ac176a` / `755abd43` / `38570430`）；共享 `:8888`/`:8090` 需 **install + 重启 jar** |
+| **`kb_llm_call_log`** | DBA | 共享/生产 MySQL 执行 [`docs/sql/18_kb_llm_call_log.sql`](sql/18_kb_llm_call_log.sql)；dev 本机已补表；缺表时 dashboard 500 → 前端降级 |
+| **菜单 407** | DBA | 老库 `28_operation_topology_menu.sql`（dev 已有可跳过） |
 
 ---
 
@@ -91,9 +89,9 @@ KB 点验：npm run kb:prd ✅ 16/17（2026-07-13）
 | **KB-GOV-LLM** | ✅ **REG-llm-on** + **REG-llm-off**（2026-07-13 · 17/17） |
 | **KB-LINT-1/2** | ✅ 8090 + **前端收紧** | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §2 |
 | **KBOPS-2** | ✅ 8090 + **前端 dashboard 接线** | 同上 §3 |
-| **DC-4** | ✅ 8888 + **TaskHistoryView 分组** | 同上 §1 |
+| **KB-O4 清理** | ✅ dev 样本目录已删 · Sync success（`batch=20260713181714`） | [kb-sync-failure-runbook.md](ops/kb-sync-failure-runbook.md) §9.4 |
 
-点验脚本：meiling-ui **`npm run kb:prd`**（2026-07-13 · **17/17**）。
+点验脚本：meiling-ui **`npm run kb:prd`**（2026-07-13 · **17/17**）。**运维**：共享库补 `18_kb_llm_call_log.sql` → dashboard 单请求免降级。
 
 ---
 

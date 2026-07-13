@@ -190,8 +190,9 @@
 | **后端 API** | ✅ 主线完成 | 四台账、部署中心、端口矩阵、拓扑/关系读取层、component-links |
 | **后端增强** | ⬜ 可选 | `deploy_running` 全量远程化；relations 分实体权限 |
 | **后端 2026-07-13** | ✅ | `POST` project/component create 返回 `id`；`moli-service.sh` 扩展 order/bi |
-| **前端 meiling-ui** | ✅ **主线完成** | S0–S13 · SVR-21d · **SVR-25/26b/28**；详见 [`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md) |
-| **联合验收** | 🔵 待点验 | handoff §5 smoke + [`operation-relations-topology-acceptance.md`](../test/operation-relations-topology-acceptance.md) §5 |
+| **前端 meiling-ui** | ✅ **主线 + P3** | W1–W10 · **DC-4** 分组 · 详 [`operation-frontend-handoff.md`](../api/operation-frontend-handoff.md) |
+| **共享部署** | ☐ 待运维 | `origin/ci/kb-sync-multi-space-gate` 已 push（`b4ac176a`/`755abd43`）；共享 `:8888` 待 install+重启 |
+| **联合验收** | ✅ W1–W10 | [operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)；拓扑关系验收可选 |
 | **本地联调** | ⚠️ 常漏配 | `ops.upload/command/deploy.enabled` 默认 false；大文件勿经 Gateway；SSH + `OPS_SECRET_KEY` |
 | **缺陷修复** | ✅ 2026-07-13 | 见 §5.2（关联计数虚高、`serverIp` 与 `serverId` 不一致报错） |
 

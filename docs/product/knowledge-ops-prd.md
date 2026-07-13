@@ -1,6 +1,6 @@
 # 知识库 · 内容管道运维 PRD（KBOPS）
 
-> **状态**：draft · 2026-07-09  
+> **状态**：active · 2026-07-13（前后端 + P3 点验对齐）  
 > **技术设计**：[`docs/design/kb-ops-roadmap.md`](../design/kb-ops-roadmap.md)  
 > **前端对接**：[`docs/api/knowledge-ops-frontend.md`](../api/knowledge-ops-frontend.md)  
 > **操作 SOP**：[`docs/ops/knowledge-workbench-operations.md`](../ops/knowledge-workbench-operations.md) · [`wiki-moli/ops/wiki同步指南.md`](../../moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md)  
@@ -54,15 +54,15 @@
 
 ## 3. 产品结构
 
-### 3.1 菜单与页面（现有 + 待补）
+### 3.1 菜单与页面（2026-07-13 · 前后端 ✅）
 
 | 菜单 | 路由 | 状态 | KBOPS 关联 |
 |------|------|------|------------|
-| 健康体检 | `knowledge/lint/index` | ✅ 已有 | 增强 Sync 状态、失败展示（O1–O4） |
-| Wiki 治理 | `knowledge/wiki-govern/index` | 🔵 MVP | **T16f / KBOPS-6** 全按钮 |
-| Ingest 工作台 | `knowledge/ingest/index` | 🔵 部分 | **T20f** Tab1/3 |
-| 系统管理 → 知识库 LLM | `system/kb-llm` | 🔵 待做 | **T19d / KBOPS-7** |
-| （P2）运维看板 | `knowledge/ops/dashboard` | 📋 规划 | KBOPS-9 |
+| 健康体检 | `knowledge/lint/index` | ✅ | O1–O4 · O5–O9（Sync + 工单） |
+| Wiki 治理 | `knowledge/wiki-govern/index` | ✅ | **T16f / KBOPS-6** 全按钮 |
+| Ingest 工作台 | `knowledge/ingest/index` | ✅ | **T20f** Tab1/2/3 |
+| 系统管理 → 知识库 LLM | `system/kb-llm` | ✅ | **T19d / KBOPS-7** |
+| 运维看板 | `knowledge/ops/dashboard` | ✅ | **KBOPS-9** · `GET /kb/ops/dashboard` |
 
 ### 3.2 管道总览
 
@@ -171,25 +171,33 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 ### 8.1 P0 发布门槛
 
-- [x] **故意制造 Sync 失败** → 日志 `status=fail`，前端可见 — 2026-07-13 meiling-ui `kb:prd` **P0-O4** `enterprise-kb` fail 行（步骤：[kb-sync-failure-runbook.md §9](../ops/kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)）
-  - [x] fail 行玫瑰色 + 可展开 `message`（HTTP 探针 ✅；UI 随 O4 样本可复验）
-  - [x] 日志表 **「仅显示失败」** 筛选（前端已实现）
-  - [ ] 清理测试文件后重跑 Sync 恢复 success（运维按需）
-- [ ] 同空间并发 trigger → 第二个有明确提示  
-- [ ] 空间 admin 在无平台权限时行为与文档一致  
+- [x] **故意制造 Sync 失败** → 日志 `status=fail`，前端可见 — 2026-07-13 `kb:prd` **P0-O4**
+  - [x] fail 行玫瑰色 + 可展开 `message`
+  - [x] 日志表 **「仅显示失败」** 筛选
+  - [x] 清理测试目录后重跑 Sync 恢复 success — 2026-07-13 dev（`batch=20260713181714`）
+- [x] 同空间并发 trigger → 第二个有明确提示（KBOPS-2 Redis 锁 + O2 前端）
+- [ ] 空间 admin 在无平台权限时行为与文档一致（按需复验 ACL）
 
 ### 8.2 P1 发布门槛
 
-- [ ] Wiki 治理：script-fix / auto-fix / merge-hint / syncAfter 可点通  
-- [ ] 平台 LLM：保存、脱敏展示、test 连通  
-- [ ] Ingest Tab1 上传 raw + Tab3 成品 import（T20f）  
-- [ ] commit/publish 后 nextSteps 跳转治理/体检  
+- [x] Wiki 治理：script-fix / auto-fix / merge-hint / syncAfter 可点通 — **T16f** · `kb:prd` 走查
+- [x] 平台 LLM：保存、脱敏展示、test 连通 — **T19d**
+- [x] Ingest Tab1 上传 raw + Tab3 成品 import — **T20f**
+- [x] commit/publish 后 nextSteps 跳转治理/体检
 
 ### 8.3 回归场景
 
-- [ ] sync-all 后三空间 browse 抽样 3 slug  
-- [ ] 治理修复 → Sync → 体检 scan 工单减少  
-- [ ] LLM 关闭时治理页 AI 按钮 disabled + 文案  
+- [ ] sync-all 后三空间 browse 抽样 3 slug（生产 cron 开启后）
+- [ ] 治理修复 → Sync → 体检 scan 工单减少（按需人工回归）
+- [x] LLM 关闭时治理页 AI 按钮 disabled + 文案 — **REG-llm-off** · `kb:prd` 17/17
+
+### 8.4 运维剩余（非功能开发）
+
+| 项 | 负责方 | 说明 |
+|----|--------|------|
+| **`kb_llm_call_log`** | DBA | 共享/生产执行 [`docs/sql/18_kb_llm_call_log.sql`](../sql/18_kb_llm_call_log.sql)；dev 已补；缺表 dashboard 500 → 前端降级 |
+| **生产 cron / 告警** | 运维 | `kb.sync.schedule-enabled` · `kb.lint.schedule-enabled` · `kb.sync.alert.*` |
+| **`KB_LLM_CONFIG_SECRET`** | 运维 | 生产注入真实 secret |
 
 ---
 
@@ -213,6 +221,7 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-13 | §3.1/§8 前后端对齐：`kb:prd` 17/17 · P3 · O4 清理 · `kb_llm_call_log` 运维说明 |
 | 2026-07-13 | §8.1 O4 ✅：`kb:prd` P0-O4 `enterprise-kb` fail 行 |
 | 2026-07-12 | §8.1 P0 造败点验链至 kb-sync-failure-runbook §9 |
 | 2026-07-09 | 初稿：KBOPS P0–P2 + 前端 O 项 + 工程补充 A1–A3 |

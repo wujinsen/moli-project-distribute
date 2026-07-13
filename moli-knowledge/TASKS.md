@@ -1,6 +1,6 @@
 # 企业知识库 · 待办任务清单（可并行开工）
 
-> 更新：2026-07-12
+> 更新：2026-07-13
 > 用途：每个任务**自包含、文件边界清晰**，可在不同对话框/工作区并行开工，尽量不互相冲突。
 > 范式与分工见 [`kb/ROADMAP.md`](kb/ROADMAP.md)；表结构见 [`../docs/sql/KNOWLEDGE_SCHEMA.md`](../docs/sql/KNOWLEDGE_SCHEMA.md)。
 >
@@ -18,7 +18,7 @@
 | 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
 | kb 知识 | ✅ wiki + wiki-moli + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
 | 后端工作台 | ✅ T14…T19 · **T20a–e + T20c/d P1** | — |
-| 前端 meiling-ui | ✅ T6 浏览/问答 · T14 编辑 · T15 Ingest · **T16f** 治理 · **O1–O9** 健康体检 · **T19d** LLM · **T20f** 导入 Tab · **Dashboard** | 图谱大图 UX 调优 · 生产 cron/告警/LLM Secret 配置 |
+| 前端 meiling-ui | ✅ T6…T20f · **P3**（DC-4/KBOPS-2/KB-LINT）· `kb:prd` **17/17** | 图谱 UX · **共享库 `kb_llm_call_log`** · 生产 cron/告警/secret |
 
 ---
 

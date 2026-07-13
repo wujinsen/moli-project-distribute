@@ -1,6 +1,6 @@
 # 知识库运维 · 子域规划（内容管道运维）
 
-> 更新：2026-07-12 · 状态：**P0/P1/P2 后端 + meiling-ui 前端均已落地**（KBOPS-1~10 · O1–O9 · T16f · T19d · T20f · Dashboard）；待办仅剩 **生产运维配置**（cron / 告警 webhook / `KB_LLM_CONFIG_SECRET`）与部署后探针复验  
+> 更新：2026-07-13 · 状态：**P0/P1/P2 前后端均已落地**；运维剩余：**共享库 `18_kb_llm_call_log.sql`** · 生产 cron/告警/secret · 共享 jar 部署
 > **产品 PRD**：[`docs/product/knowledge-ops-prd.md`](../product/knowledge-ops-prd.md) · **前端对接**：[`docs/api/knowledge-ops-frontend.md`](../api/knowledge-ops-frontend.md) · meiling-ui 副本 [`meiling-ui/docs/api/knowledge-ops-frontend.md`](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §0  
 > 归属：`moli-knowledge` · `kb_sync_log` / `kb_lint_issue` / `kb_platform_llm_config`
 > 边界：**只管知识库内容管道运维**（wiki→DB 同步、体检、LLM 配置）；服务器/基础设施运维见 [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md)（另一条独立路线，互不重叠）
@@ -96,7 +96,7 @@
 | `kb_sync_log` | Sync 审计 | ✅ KBOPS-1 `status/message`；O1 读 `action=batch` 汇总行 |
 | `kb_lint_issue` | 体检工单 | ✅ KBOPS-8 assignee/priority + 批量 API + 定时 scan |
 | `kb_platform_llm_config` | 平台 LLM 单例 | 已就绪（T19） |
-| `kb_llm_call_log`（新） | LLM 调用审计 | KBOPS-9 可选 |
+| `kb_llm_call_log`（新） | LLM 调用审计 | ✅ DDL [`18_kb_llm_call_log.sql`](../sql/18_kb_llm_call_log.sql) · dev 已建 · 共享/生产待执行 |
 
 关键接口见 `docs/api/KNOWLEDGE_API.md` §3.5（LLM）、§4（体检/Sync）、§8.6（治理）。
 

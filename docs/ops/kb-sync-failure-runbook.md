@@ -291,7 +291,17 @@ ORDER BY create_time DESC LIMIT 5;
 rm -rf kb/wiki/_p0o4-fail-test
 ```
 
-健康体检再次 **触发 Sync** → 应 success；`failOnly` 勾选后可为空（琥珀提示）或仅显示历史 fail（若未清理 DB 日志）。
+健康体检再次 **触发 Sync** → 应 success。
+
+**清理回归（2026-07-13 · dev）**：
+
+```bash
+rm -rf kb/wiki/_p0o4-fail-test   # 本机已不存在
+python kb/tools/sync_to_db.py --host 127.0.0.1 --user root --password ... --db moli --space enterprise-kb
+# → batch=20260713181714 fail=0 delete=1
+```
+
+历史 `kb_sync_log` 中 `status=fail` 行**可保留**（仍可用于 P0-O4 探针）；不影响当前 Sync 状态。
 
 自动化复验（`meiling-ui` 仓库）：
 
@@ -302,7 +312,7 @@ npm run kb:prd
 
 期望输出含 `✅ [P0-O4]`（任一空间近 30 条含 fail，或 `status.failCount>0`）。
 
-**最近通过（2026-07-13）**：`enterprise-kb` 日志含 `status=fail`；全脚本 **16/17**（仅 `REG-llm-off` 跳过）。日志：`meiling-ui/kb-prd-acceptance.log`。
+**最近通过（2026-07-13）**：`enterprise-kb` 日志含 `status=fail`；全脚本 **17/17**（含 REG-llm-off merge 探针）。日志：`meiling-ui/kb-prd-acceptance.log`。
 
 ### 9.5 其它造败方式（备选）
 
@@ -318,6 +328,7 @@ npm run kb:prd
 
 | 日期 | 说明 |
 |------|------|
-| 2026-07-13 | §9.4：`kb:prd` 16/17 通过；P0-O4 `enterprise-kb` fail 行命中 |
+| 2026-07-13 | §9.4：dev O4 样本已删 · Sync success `20260713181714` |
+| 2026-07-13 | §9.4：`kb:prd` 17/17 通过 |
 | 2026-07-12 | §9 P0-O4：故意造败 +「仅显示失败」UI 点验步骤 |
 | 2026-07-10 | 初稿 KBOPS-A2：失败定位、重跑、三空间 verify、CI lint-strict 门禁 |

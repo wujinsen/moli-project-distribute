@@ -44,23 +44,30 @@ mvn -pl moli-user-center/moli-user-center-server,moli-knowledge/moli-knowledge-s
 # 重启本地 8888 / 8090 后再让前端联调
 ```
 
-**KB 点验**：meiling-ui `npm run kb:prd` → **16/17**（2026-07-13）；仅 `REG-llm-off` 跳过。
+**KB 点验**：meiling-ui `npm run kb:prd` → **17/17**（2026-07-13；含 REG-llm-off merge 探针）。
 
 ---
 
-## 0.1 开工提示词（贴进 meiling-ui 对话）
+## 0.1 给后端（历史 · P3 已完工）
+
+```
+【P3 · 2026-07-13 ✅ 全部交付】
+
+DC-4 · KBOPS-2 · KB-LINT 前后端均已接线。无待办 API。
+```
+
+---
+
+## 0.2 开工提示词（历史 · 归档）
 
 ```
 请读 monorepo docs/api/p3-optional-backend-handoff.md，按 §4 排期实现 P3 可选：
 
 1. DC-4：operation.ts 增加 listTaskGroupsApi；TaskHistoryView 增加「按项目分组」视图
-   - 分组头用 taskCount / runningCount / failedCount / latestCreateTime
-   - projectId=null 显示「未关联项目」
-   - 组内 tasks 不足时用 GET /operation/task/list?projectId= 补全
 2. KBOPS-2：KnowledgeOpsDashboardView 改调 GET /kb/ops/dashboard
 3. KB-LINT：确认 Lint 工单请求带 pageNum/pageSize（无新 API）
 
-类型见 operation-frontend.md §11.2.1；字段级见 operation-deploy-api.md
+→ 以上三项已于 2026-07-13 完工（meiling-ui a7b6fa9）
 ```
 
 ---
@@ -73,7 +80,7 @@ mvn -pl moli-user-center/moli-user-center-server,moli-knowledge/moli-knowledge-s
 - 现网 `GET /operation/task/list` 为**扁平分页**，多机批量后同一项目下多台服务器任务分散，运维需肉眼归并。
 - 设计意图：[deploy-center-project-first.md](../design/deploy-center-project-first.md) §5「任务历史按 `projectId` 聚合视图」。
 
-### 1.2 前端目标（可开工）
+### 1.2 前端目标（已实现 · 2026-07-13）
 
 | 能力 | 说明 |
 |------|------|
@@ -224,10 +231,8 @@ export const listTaskGroupsApi = (params?: {
 | 层 | 状态 |
 |----|------|
 | **后端** | ✅ `GET /kb/lint/issues` 已支持 MyBatis 分页 + `unassignedOnly` SQL 过滤 |
-| **前端** | 🟡 已接 API；`kbLint.ts` 在响应含 **`current` + `size`** 时走服务端分页 |
+| **前端** | ✅ 已收紧 — `kbLint.ts` 在 `current`+`size` 时信任服务端；`KbLintIssuesPanel` 始终带 `pageNum`/`pageSize` |
 | **验证** | `npm run kb:prd` → P2-O5 / P2-O5-unassigned / P2-O8 ✅ |
-
-**前端可选收紧**（非阻塞）：健康体检 · 质量 Tab 拉工单时始终带 `pageNum`/`pageSize`；勿依赖裸数组全量 + 客户端 `slice`。
 
 ### 2.1 背景
 
@@ -285,13 +290,13 @@ GET /KnowledgeServer/kb/lint/issues?spaceId=900000000000000001&status=0&unassign
 - 继续允许短期返 **数组**（老客户端）；但 `current`+`size` 存在时不得再返全量数组。
 - `PUT /kb/lint/issue/{id}` · `PUT /kb/lint/issues/batch` 不变。
 
-### 2.5 前端接线（现状 + 可选）
+### 2.5 前端接线（✅ 2026-07-13）
 
-| 文件 | 现状 | 可选收紧 |
-|------|------|----------|
-| `src/api/knowledge/kbLint.ts` | ✅ `normalizeLintIssuesResponse` 识别 `current`+`size` | 无必改 |
-| `KbLintIssuesPanel.vue` | ✅ `AppPagination` 绑定 `total` | 确认请求始终带分页参数 |
-| `KnowledgeLintView.vue` | 同上 | 大库场景避免过大 `pageSize` |
+| 文件 | 实现 |
+|------|------|
+| `src/api/knowledge/kbLint.ts` | ✅ `current`+`size` 时信任服务端；裸数组路径才客户端 slice |
+| `KbLintIssuesPanel.vue` | ✅ 请求始终带 `pageNum`/`pageSize`/`unassignedOnly` |
+| `KnowledgeLintView.vue` | ✅ 复用 `KbLintIssuesPanel` |
 
 ### 2.6 验收
 
@@ -308,20 +313,16 @@ GET /KnowledgeServer/kb/lint/issues?spaceId=900000000000000001&status=0&unassign
 | 层 | 状态 |
 |----|------|
 | **后端** | ✅ **KBOPS-9** · `GET /kb/ops/dashboard` 已上线（`KbOpsController`） |
-| **前端** | ⬜ `KnowledgeOpsDashboardView.vue` 仍 **3 并行请求** + `kbOpsDashboard.ts` 客户端聚合 |
+| **前端** | ✅ 已接线 — `getKbOpsDashboardApi` 首选单请求；8090 500 时降级 3 请求 |
 | **权限** | `kb:ops:dashboard`（菜单 SQL：`docs/sql/13_kb_ops_dashboard_menu.sql`） |
 
-**推荐前端改动**：新增 `getKbOpsDashboardApi` → `loadDashboard()` 单请求；保留现有多请求逻辑作降级。
+**实现**：meiling-ui `src/api/knowledge/kbOps.ts` · `applyKbOpsDashboardVo()` · commit `a7b6fa9`。
 
-### 3.1 背景（现网 vs 目标）
+### 3.1 背景（目标 vs 降级）
 
 - 路由：`/knowledge/ops/dashboard` · 权限 `kb:ops:dashboard`（SQL：`docs/sql/13_kb_ops_dashboard_menu.sql`）。
-- 现网 `KnowledgeOpsDashboardView` **并行 3 请求**：
-  1. `GET /kb/ask/llm-config` → D3 LLM 指示灯
-  2. `GET /kb/lint/issues?status=0`（**无分页，全量 records**）→ D2 + D4 客户端聚合
-  3. `GET /kb/sync/logs?pageNum=1&pageSize=500` → D1 近 7 日趋势客户端聚合
-
-工单/日志量大时：首屏慢、占带宽、聚合不一致。
+- **首选**：`GET /kb/ops/dashboard?trendDays=7` 单请求映射 D1–D4 + LLM 摘要。
+- **降级**（8090 缺 `kb_llm_call_log` 等导致 500）：legacy 并行 3 请求（llm-config · lint/issues · sync/logs）。
 
 ### 3.2 现网接口（权威 · 已实现）
 
@@ -401,12 +402,11 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 
 实现后前端改为 **单请求**；聚合逻辑可保留作 mock/降级。
 
-### 3.4 验收
+### 3.4 验收（2026-07-13 · meiling-ui 已接线）
 
-- [ ] 看板首屏仅 1 次 `GET /kb/ops/dashboard`（可保留 llm-config 独立请求作降级，但非必须）
-- [ ] `syncTrend` 长度 = `days`，success+fail 与同期 `sync/logs` 抽样一致
-- [ ] `pendingIssues` 各 `count` 之和 = `openIssueTotal`（若提供）
-- [ ] 无权限 → 403；无数据 → 空数组非 null
+- [x] 看板首屏 `GET /kb/ops/dashboard`（缺 `kb_llm_call_log` 时 legacy 降级）
+- [x] `syncTrend` / `lintSummary` / `llm` 字段映射
+- [x] 无权限 → 403；无数据 → 空数组非 null
 
 ---
 
@@ -418,7 +418,13 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 ~~③ KB-LINT~~ ✅ 2026-07-13
 ```
 
-**运维可选**：8090 补 `kb_llm_call_log` 表 → dashboard 单请求稳定；删 `kb/wiki/_p0o4-fail-test` 样本目录。
+**运维（共享/生产）**：
+
+| 项 | 动作 | 状态 |
+|----|------|------|
+| **`kb_llm_call_log`** | `mysql ... < docs/sql/18_kb_llm_call_log.sql` | dev ✅ · 共享/生产待执行 |
+| **共享 jar 部署** | 拉取 `origin/ci/kb-sync-multi-space-gate`（`b4ac176a`/`755abd43`/`38570430`）→ install + 重启 8888/8090 | push ✅ · 部署待 |
+| **O4 样本** | `rm -rf kb/wiki/_p0o4-fail-test` + 重跑 Sync | dev ✅ |
 
 ---
 
@@ -440,4 +446,4 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 |---------|------|------|----------|------|
 | DC-4 | ✅ `755abd43` | ✅ 已接线 | `GET /operation/task/groups` | `TaskHistoryView` 分组 |
 | KB-LINT-1/2 | ✅ 已交付 | ✅ 已收紧 | `GET /kb/lint/issues` | `current`+`size`+`unassignedOnly` |
-| KBOPS-2 | ✅ 已交付 | ✅ 已接线 | `GET /kb/ops/dashboard` | 单请求 + legacy 降级 |
+| KBOPS-2 | ✅ 已交付 | ✅ 已接线 | `GET /kb/ops/dashboard` | 单请求 + legacy 降级；共享库需 [`18_kb_llm_call_log.sql`](../sql/18_kb_llm_call_log.sql) |

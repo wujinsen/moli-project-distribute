@@ -21,7 +21,7 @@
 | **任务历史分组（DC-4）** | ✅ `GET /operation/task/groups` · 见 [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
 | **detail `*Count` 与 list 一致** | ✅ **`toVo()` 统一派生** · [operation-frontend-handoff.md](operation-frontend-handoff.md) |
 | **order / bi 远程启停** | ✅ `presets.serviceKeys` 含五服务；`moli-service.sh` 已扩展 |
-| **阻塞项** | **无**；P3 三项 API 已交付 → [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §0 |
+| **阻塞项** | **无**；P3 前后端 ✅；共享环境待 **jar 部署**（代码已 push） |
 
 本地：`admin`/`123456` · Vite `5141` → `8888` · 后端 smoke 2026-07-13 通过 · 见 [走查稿](../test/operation-w1-w10-walkthrough.md)。
 
@@ -130,6 +130,7 @@ export const cancelOperationTaskApi = (taskId: number) =>
 | 2026-07-13 | server create 返回 id + 批量 deploy/links | `POST /operation/server` → Long；`POST /deploy/batch/task`；`GET .../links/batch` |
 | 2026-07-13 | 任务取消 | `POST /operation/task/{id}/cancel`；`status=cancelled` |
 | 2026-07-13 | 反向关联对称 + reconcile | `resolveProjectIdsForServer` 与 N:N 对称；`GET /operation/audit/reconcile-relations` |
+| 2026-07-13 | **DC-4** `755abd43` · **push** `origin/ci/kb-sync-multi-space-gate`（`b4ac176a` 含） |
 | 2026-07-13 | **W1–W10 走查 ✅** · 对齐 meiling-ui frontend-gaps / P3 handoff |
 
 ---

@@ -205,19 +205,17 @@ Ingest 列表里 raw 可能显示：
 
 **绿色「已使用模板入库」只表示草稿生成成功**；若随后 commit 报错，**磁盘不会有新文件**（勿在 `wiki-jp-exam/fe/` 等路径空等）。
 
-### 2.7 T20 双入口导入（规划 · Editor 浏览器）
+### 2.7 T20 双入口导入（2026-07-13 · 前后端 ✅）
 
-> 设计：[`docs/design/kb-import-entry-design.md`](../design/kb-import-entry-design.md) · PRD：[`knowledge-import-entry-prd.md`](../product/knowledge-import-entry-prd.md)
+> 设计：[`docs/design/kb-import-entry-design.md`](../design/kb-import-entry-design.md) · 前端契约：[kb-import-entry-frontend.md](../api/kb-import-entry-frontend.md)
 
-**Editor 不需要 SSH**。服务已部署在 Linux 上时，上传 = 浏览器 → 网关 → `knowledge-server` 写**同机** `kb/raw` 或 `kb/wiki*`。
+| 入口 | Tab | Editor 操作 | 状态 |
+|------|-----|-------------|------|
+| raw 投喂 | Tab1 | 选 prefix · 上传 md → 自动跳 Tab2 Ingest | ✅ **T20f** |
+| 选源入库 | Tab2 | 勾选 raw → Express/Expert → commit → Sync | ✅ |
+| 成品 wiki | Tab3 | 选空间+分类 · 上传 md → 默认 Sync | ✅ **T20f** |
 
-| 入口 | Tab | Editor 操作 | T20 状态 |
-|------|-----|-------------|----------|
-| raw 投喂 | Tab1 | 选 prefix · 上传 md → 自动跳 Tab2 Ingest | 🔵 待实现 |
-| 选源入库 | Tab2 | 勾选 raw → Express/Expert → commit → Sync | ✅ 已有 |
-| 成品 wiki | Tab3 | 选空间+分类 · 上传 md → 默认 Sync | 🔵 待实现 |
-
-**T20 上线前**：Editor 只能 Tab2（且 raw 须已在服务器磁盘，常来自 Git 部署）或 Wiki 编辑单篇。**运维** bulk 语料可用 rsync/git 直写磁盘，不属于 Editor 常规 SOP。
+点验：`npm run kb:prd` 17/17 · meiling-ui commit `a7b6fa9`（P3 批次）。
 
 ---
 
@@ -233,30 +231,22 @@ Ingest 列表里 raw 可能显示：
 
 **禁止**：在治理页批量 `enrich`（会 append 章节，不能修 metadata/断链）。enrich 仅用于 T14 单页编辑或 Ingest Plan。
 
-### 3.2 当前 Web 页 vs 完整能力（T16f 差距）
+### 3.2 Web 页能力（T16f · 2026-07-13 ✅）
 
-> **结论**：后端 **T16a/e/g 已齐**；meiling-ui 当前多为 **「① Lint + ② AI 批量修复」两步 MVP**，与产品五步链路不一致。  
-> 完整按钮清单见 [`wiki-govern-frontend.md` §8](../api/wiki-govern-frontend.md#8-按钮与调用顺序)。
+> **结论**：后端 **T16a/e/g** + meiling-ui **T16f** 全按钮已接线。  
+> 按钮清单与调用顺序：[wiki-govern-frontend.md §8](../api/wiki-govern-frontend.md#8-按钮与调用顺序) · 点验 `kb:prd` 17/17。
 
-#### 步骤对照（产品 vs 现 UI vs 你怎么补）
+| 产品步骤 | 后端 API | Web 页 |
+|----------|----------|--------|
+| ① 文件 Lint | `POST /kb/wiki-moli/lint-space` | ✅ 开始 Lint |
+| ②a 脚本修复 | `POST /kb/wiki-moli/govern/script-fix` | ✅ |
+| ②b AI 批量修复 | `POST /kb/wiki-moli/govern/ai-batch-fix` | ✅ |
+| ②c 一键修复 | `POST /kb/wiki-moli/govern/auto-fix` | ✅（`relintAfter` / `syncAfter`） |
+| ③ dup 合并提示 | `POST /kb/wiki-moli/govern/merge-hint` | ✅ |
+| ④ 再 Lint / 摘要 | auto-fix 或再调 lint-space | ✅ |
+| ⑤ Sync | `syncAfter` 或 `KbSyncOpsPanel` | ✅ |
 
-| 产品步骤 | 后端 API | 现 Web 页 | 缺口补法 |
-|----------|----------|-----------|----------|
-| ① 文件 Lint | `POST /kb/wiki-moli/lint-space` | ✅ 一般有「开始 Lint」 | — |
-| ②a **脚本修复**（metadata） | `POST /kb/wiki-moli/govern/script-fix` | ❌ **无按钮** | Swagger / §3.4 curl **③** |
-| ②b AI 批量修复 | `POST /kb/wiki-moli/govern/ai-batch-fix` | ✅「开始批量 AI 修复」 | — |
-| ②c **一键修复**（脚本→AI→再 Lint） | `POST /kb/wiki-moli/govern/auto-fix` | ❌ **无按钮** | Swagger / §3.4 curl **④** |
-| ③ dup 合并提示 | `POST /kb/wiki-moli/govern/merge-hint` | ❌ 多仅「编辑」链接 | Swagger；或单页编辑 |
-| ④ **再 Lint / before→after** | auto-fix 内 `relintAfter` 或再调 lint-space | ❌ 无独立复检区 | auto-fix 或手动再 Lint |
-| ⑤ **Sync** | `syncAfter` 或 `POST /kb/sync/trigger` | ❌ 常无勾选 | 健康体检 · Wiki 同步 Tab 或 §3.4 **⑥** |
-
-**现 UI 常见形态**（你看到的「只有 2 步」）：
-
-```
-① Lint 结果 + 勾选
-② 批量修复（仅 AI 修复 Tab +「需手改 N 条」）
-   （缺少：脚本修复 / 一键修复 / merge-hint / Sync / 复检摘要）
-```
+**LLM 关闭**：治理页 AI 按钮 disabled + 文案（`REG-llm-off` 探针通过）。
 
 #### issue.kind 归类（前端易错）
 
@@ -269,10 +259,10 @@ Ingest 列表里 raw 可能显示：
 | `dup_slug` | **仅人工** | ✅ 手改 | merge-hint + 编辑页 |
 | `slug_mismatch` | **脚本**（不是手改） | ❌ 与 dup_slug 一并提示手改 | **script-fix** |
 
-#### UI 未接全时的推荐闭环（Swagger）
+#### Swagger 兜底（仅 API 排障）
 
 ```
-lint-space → script-fix → ai-batch-fix（或 auto-fix 一次做完前两者+relint）
+lint-space → script-fix → ai-batch-fix（或 auto-fix）
 → 手改 dup_slug → 再 lint-space → sync/trigger → 健康体检
 ```
 
@@ -447,14 +437,14 @@ POST /kb/sync/trigger
 - [ ] 健康体检 / `GET /kb/lint` 与文件一致
 - [ ] （可选）`git diff` 检查 index/log/edges
 
-**P0 · Sync 失败 UI（O4 / P0-O4）** — ✅ 2026-07-13 HTTP 探针通过（`kb:prd` P0-O4）  
-见 **[kb-sync-failure-runbook.md §9](kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)**：
+**P0 · Sync 失败 UI（O4 / P0-O4）** — ✅ 2026-07-13（`kb:prd` P0-O4 + 清理回归）
 
-- [x] 在 `wiki/_p0o4-fail-test/` 放未分类测试页 → 触发 Sync 失败（dev 样本已存在）
-- [ ] 健康体检日志表：fail 行着色 + 展开 message + Toast（浏览器复验可选）
-- [ ] 勾选 **「仅显示失败」** 仅见 fail 行（浏览器复验可选）
-- [ ] 删除测试目录后重跑 Sync 成功（运维按需清理）
-- [x] `meiling-ui` 执行 `npm run kb:prd` → **P0-O4** ✅ 2026-07-13
+- [x] 在 `wiki/_p0o4-fail-test/` 造败 → 触发 Sync 失败（历史点验）
+- [x] fail 行着色 + 展开 message +「仅显示失败」筛选（`kb:prd`）
+- [x] 删除测试目录后重跑 Sync success — dev `batch=20260713181714`
+- [x] `npm run kb:prd` → **17/17** ✅ 2026-07-13
+
+见 **[kb-sync-failure-runbook.md §9](kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)**。
 
 ---
 
@@ -512,7 +502,8 @@ Web 抽检：[`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-
 
 | 日期 | 说明 |
 |------|------|
-| 2026-07-13 | §5 P0-O4：`kb:prd` 16/17 通过 |
+| 2026-07-13 | §2.7/§3.2 前后端对齐（T16f/T20f ✅）；§5 O4 清理回归 |
+| 2026-07-13 | §5 P0-O4：`kb:prd` **17/17** 通过（含 REG-llm-off merge 探针） |
 | 2026-07-12 | §9 P0-O4 点验；§5 总验收增加 O4 勾选项 |
 | 2026-07-06 | §2.7 T20：Editor 浏览器上传、SSH 仅运维兜底 |
 | 2026-07-06 | §8 对齐生产：raw-asset-bundle + deploy 脚本；Sync 与插图分包 |

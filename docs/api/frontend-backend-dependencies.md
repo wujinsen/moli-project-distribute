@@ -12,8 +12,8 @@
 
 | 模块 | 端口 | 阻塞新 API？ | 后端现在要做什么 |
 |------|------|--------------|------------------|
-| **运营管理** | `8888` | **否** | **W1–W10 走查 ✅**（2026-07-13）；共享环境需 push+部署 `b4ac176a` |
-| **知识库** | `8090` | **否** | ✅ **点验 + P3 前端接线完成**（2026-07-13 · `kb:prd` **17/17**） |
+| **运营管理** | `8888` | **否** | **W1–W10 + P3 ✅**；`origin` 已 push（`b4ac176a`/`755abd43`）；**共享环境待部署 jar** |
+| **知识库** | `8090` | **否** | ✅ **点验 + P3 前端接线**（`kb:prd` **17/17**）；共享库待补 `kb_llm_call_log` |
 | **SSO** | user-center | **否** | **SSO-MENU-1 已交付**（走查 ✅ [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md)） |
 
 ### 1.1 已与前端对齐（勿再 Breaking）
@@ -109,15 +109,15 @@ POST /operation/task/{id}/cancel
 
 ## 4. 知识库（8090）
 
-| 配置 / 数据 | 用途 |
-|-------------|------|
-| **`KB_LLM_CONFIG_SECRET`** | 平台 LLM Key 加密入库 |
-| **KB-O4 fail 样本** | `kb/wiki/_p0o4-fail-test/`（dev 可逆；**测完删除**） |
-| facet 多选 | `kbTypes` / `categoryIds` 逗号分隔 · [KNOWLEDGE_API.md §2.1.3](KNOWLEDGE_API.md#213-浏览管理页筛选-ui-规范体裁--分类--平行双-facet) |
+| 配置 / 数据 | 用途 | 状态（2026-07-13） |
+|-------------|------|-------------------|
+| **`KB_LLM_CONFIG_SECRET`** | 平台 LLM Key 加密入库 | dev ✅ · 生产待注入 |
+| **`kb_llm_call_log` 表** | Dashboard LLM 调用率（`GET /kb/ops/dashboard`） | dev ✅ · 共享/生产执行 [`18_kb_llm_call_log.sql`](../sql/18_kb_llm_call_log.sql) |
+| facet 多选 | `kbTypes` / `categoryIds` 逗号分隔 | ✅ [KNOWLEDGE_API.md §2.1.3](KNOWLEDGE_API.md#213-浏览管理页筛选-ui-规范体裁--分类--平行双-facet) |
 
-**点验结果（2026-07-13）**：meiling-ui `npm run kb:prd` → **17/17**（含 **REG-llm-off** merge 探针）。O4 样本目录测完可删；历史 `kb_sync_log` fail 行仍可验 P0-O4。
+**点验结果（2026-07-13）**：meiling-ui `npm run kb:prd` → **17/17**（含 **REG-llm-off**）。P0-O4 样本目录已清理；dev Sync `batch=20260713181714` success。
 
-**运维备注**：`GET /kb/ops/dashboard` 若报 `kb_llm_call_log` 表不存在，需执行 KB LLM 调用日志 DDL 或接受前端 legacy 降级。
+**Dashboard**：前端 `getKbOpsDashboardApi` 已接线；缺 `kb_llm_call_log` 时 8090 返回 500 → 前端 **legacy 三请求降级**（可接受，建议 DBA 补表）。
 
 ---
 
@@ -143,12 +143,11 @@ POST /operation/task/{id}/cancel
 ## 6. 建议处理顺序
 
 ```text
-① 8888：push/deploy b4ac176a（共享环境）或本地 install+重启
-② ~~8090：KB 点验~~ ✅ 2026-07-13（`npm run kb:prd` **17/17**）
-③ DBA：407 SQL（老库按需）
-④ ~~W1–W10 联合走查~~ ✅ 2026-07-13
-⑤ ~~SSO-MENU-1 联合走查~~ ✅ 2026-07-13
-⑥ ~~P3 前端接线~~ ✅ 2026-07-13（DC-4 · KBOPS-2 · KB-LINT）→ [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §6
+① ~~push~~ ✅ `origin/ci/kb-sync-multi-space-gate`（`e6e7eafd..9f5699f0`，含 b4ac176a/755abd43/38570430）
+② 共享环境：install + 重启 8888/8090 jar
+③ DBA：18_kb_llm_call_log.sql（共享/生产）· 407 SQL（老库按需）
+④ ~~KB 点验~~ ✅ 2026-07-13（`kb:prd` 17/17）
+⑤ ~~W1–W10 / SSO / P3 前端~~ ✅ 2026-07-13
 ```
 
 ---
@@ -159,21 +158,17 @@ POST /operation/task/{id}/cancel
 【meiling-ui · 后端配合 · 2026-07-13】
 
 运营（8888）：
-· 前端 + 后端 W1–W10 走查 ✅（2026-07-13）
-· 后端 commit b4ac176a（本地；共享环境需 push+部署）
-· 走查稿：monorepo docs/test/operation-w1-w10-walkthrough.md §5
+· W1–W10 + P3（DC-4 分组）前后端 ✅（2026-07-13）
+· 代码已 push：origin/ci/kb-sync-multi-space-gate（b4ac176a · 755abd43）
+· 共享环境待：mvn install + 重启 jar
 
-关键 API（勿 Breaking）：
-· toVo() *Count · POST project/component/server → data=id
-· POST /operation/deploy/batch/task · POST /operation/task/{id}/cancel
-· 新建服务器 body 字段 ip（非 serverIp）
-
-8090 点验：✅ 2026-07-13 npm run kb:prd（17/17）
-8888：✅ GET /operation/task/groups（DC-4 API）
-P3 前端：✅ DC-4 TaskHistoryView · KBOPS-2 dashboard · KB-LINT 分页收紧（2026-07-13）
+8090 知识库：
+· kb:prd 17/17 ✅
+· P3：KBOPS-2 dashboard 单请求 + KB-LINT 分页 ✅
+· 运维：共享 MySQL 执行 docs/sql/18_kb_llm_call_log.sql（dev 已补；缺表 dashboard 500→降级）
+· O4 样本已清理；dev Sync success
 
 SSO-MENU-1：✅ 已交付（走查 2026-07-13）
-运维可选：补 kb_llm_call_log 表 → dashboard 单请求免降级；删 wiki/_p0o4-fail-test 样本目录
 
 详稿：docs/api/frontend-backend-dependencies.md
 ```
@@ -195,20 +190,22 @@ SSO-MENU-1：✅ 已交付（走查 2026-07-13）
 
 | 项 | 状态 |
 |----|------|
-| **`b4ac176a`**（本地 commit） | server create id · `toVo()` · batch/links · **cancel** · handoff 文档 |
-| **`ebf16fd7`** | project/component create id · order/bi deploy |
-| **远程** | 分支 ahead 38 · **`b4ac176a` 未 push** |
+| **`b4ac176a`** | batch deploy · cancel · `toVo()` `*Count` |
+| **`755abd43`** | DC-4 `GET /operation/task/groups` |
+| **`38570430`** | `KbRepoPathUtil` 统一 kb 路径（8090） |
+| **远程** | ✅ **已 push** `origin/ci/kb-sync-multi-space-gate` → `9f5699f0`（2026-07-13） |
 
-**结论**：共享环境 last push jar **不全**；本地 `mvn -pl moli-user-center-server -am install` + 重启 → **可联调 W1–W10**。
+**结论**：共享环境拉取该分支后 **install + 重启** 8888/8090，即可与 meiling-ui 走查/P3 对齐。
 
 ### 8.3 ② 8090 点验环境
 
 | 项 | 状态 |
 |----|------|
 | 功能 API | facet · Lint 分页 · chunk ask ✅ |
-| **本地 P0** | secret + O4 · `encryptionReady=true` ✅ · **`kb:prd` 17/17** ✅ 2026-07-13 |
-| **Dashboard** | `GET /kb/ops/dashboard` ✅；缺 `kb_llm_call_log` 时 500 → 前端 legacy 降级 |
-| **生产** | 运维注入真实 secret + 定时任务 |
+| **本地 P0** | secret ✅ · `kb:prd` **17/17** ✅ · O4 样本已清理 · Sync success |
+| **`kb_llm_call_log`** | dev 表已建 ✅ · 共享/生产执行 `docs/sql/18_kb_llm_call_log.sql` |
+| **Dashboard** | 前端单请求已接线；有表 → 200；缺表 → 500 → legacy 降级 |
+| **生产** | 运维注入 secret + 开 cron/告警 webhook |
 
 ### 8.4 ③ 下迭代（后端已回复）
 
@@ -222,8 +219,8 @@ SSO-MENU-1：✅ 已交付（走查 2026-07-13）
 ### 8.5 联调前置
 
 ```text
-8888：☑ task/groups（DC-4）  ☑ W1–W10 走查（2026-07-13）
-8090：☑ kb:prd（2026-07-13 · 17/17）
+8888：☑ 已 push（b4ac176a/755abd43）  ☐ 共享 jar 部署
+8090：☑ kb:prd 17/17  ☑ dev kb_llm_call_log  ☐ 共享库 DDL + jar 部署
 P3：☑ meiling-ui DC-4/KBOPS/KB-LINT（2026-07-13）
 ```
 
@@ -236,6 +233,4 @@ P3：☑ meiling-ui DC-4/KBOPS/KB-LINT（2026-07-13）
 | 2026-07-13 | 初版三模块总览 |
 | 2026-07-13 | SSO 设计链入 §4/§5 |
 | 2026-07-13 | **对齐 meiling-ui**：§1.2/§2.0/§8 · 走查稿 · 前端 W7–W10 完工 · §8.4 后端回复落定 |
-| 2026-07-13 | **KB 点验通过**：meiling-ui `npm run kb:prd` 16/17（P0-O4/O9/browse · O5–O8） |
-| 2026-07-13 | **P3 前端开工**：DC-4/KBOPS/KB-LINT 三项后端均已交付；handoff §0 可复制给前端 |
-| 2026-07-13 | **P3 前端完工对齐**：meiling-ui DC-4/KBOPS/KB-LINT；`kb:prd` **17/17** |
+| 2026-07-13 | **P3 前后端完工对齐**：meiling-ui DC-4/KBOPS/KB-LINT；`kb:prd` **17/17**（含 REG-llm-off）；运维 push `9f5699f0` |

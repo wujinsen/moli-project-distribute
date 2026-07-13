@@ -65,6 +65,7 @@
 | 表 | 说明 |
 |----|------|
 | `kb_platform_llm_config` | 平台级 LLM 单例（`id=1`）：provider/base-url/加密 api-key/model；Web **系统管理 → 知识库 LLM** 维护 |
+| `kb_llm_call_log` | LLM 调用审计（KBOPS-9 Dashboard 调用率）；DDL [`18_kb_llm_call_log.sql`](18_kb_llm_call_log.sql) · **未合并** `scripts/moli.sql` 基线 |
 
 > **向量库刻意不建**：ROADMAP §五把向量/ES 列为「按需」。先用 MySQL `ngram` 全文索引，文档量过千且召回变差时再外置 Meilisearch/ES/向量库，届时新增 `kb_chunk`/`kb_embedding` 即可，不影响现有表。
 

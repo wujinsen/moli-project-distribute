@@ -264,13 +264,11 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 【P3 · 2026-07-13 ✅ 前后端完工】
 
 ① DC-4：TaskHistoryView 分组 · GET /operation/task/groups
-② KBOPS-2：GET /kb/ops/dashboard（缺 kb_llm_call_log 时前端降级）
+② KBOPS-2：GET /kb/ops/dashboard（共享库补 18_kb_llm_call_log.sql 免降级）
 ③ KB-LINT：服务端分页信任
 
-KB：npm run kb:prd 17/17
-
-详稿：docs/api/p3-optional-backend-handoff.md §6
-索引：docs/frontend-gaps.md §0
+共享：origin 已 push（b4ac176a/755abd43）· 待 install+重启 jar
+KB：npm run kb:prd 17/17 · dev O4 样本已清理
 ```
 
 ### 7.3 相关

@@ -10,16 +10,15 @@
 
 ## 1. 背景与目标
 
-### 1.1 现状（2026-07-06）
+### 1.1 现状（2026-07-13）
 
 | 能力 | 后端 | 前端 | 缺口 |
 |------|------|------|------|
 | raw 目录树（只读） | ✅ `GET /kb/ingest/raw-tree` | ✅ Ingest Tab2 | — |
-| Ingest Plan / commit / Sync | ✅ T15+T18 | ✅ 部分 | — |
-| Wiki 单篇编辑写盘 | ✅ `PUT /kb/wiki/page` | ✅ Wiki 编辑 | 无批量/向导 |
-| **Web 上传 raw** | ✅ T20a/c | 🔵 Tab1 UI | Tab1 浏览器上传 / zip → 服务写 `kb/raw/` |
-| **Web 成品 wiki 导入** | ✅ T20b/c/e | 🔵 Tab3 UI | Tab3 浏览器上传 → 直写 `kb/wiki*/` + Sync |
-| 文档管理「新建」 | ✅ PUT（T14） | ⚠️ T14e 未全量部署 | 与 Tab3 复用落盘规则 |
+| Ingest Plan / commit / Sync | ✅ T15+T18 | ✅ Tab2 | — |
+| Wiki 单篇编辑写盘 | ✅ `PUT /kb/wiki/page` | ✅ Wiki 编辑 | — |
+| **Web 上传 raw** | ✅ T20a/c | ✅ **Tab1**（T20f） | — |
+| **Web 成品 wiki 导入** | ✅ T20b/c/e | ✅ **Tab3**（T20f） | — |
 
 用户心智与 PRD 一致：**两条正路**——待加工走 raw + Ingest；终稿 md 直写 wiki + Sync。
 

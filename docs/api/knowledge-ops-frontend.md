@@ -19,9 +19,9 @@
 | T16f Wiki 治理 | ✅ | `KnowledgeWikiGovernView.vue` |
 | T19d 平台 LLM | ✅ | `system/kb-llm/index.vue` |
 | T20f Ingest 三 Tab | ✅ | `KnowledgeIngestWorkbenchView.vue` |
-| KBOPS-9 Dashboard | ✅ | `KnowledgeOpsDashboardView.vue` |
+| KBOPS-9 Dashboard | ✅ | `KnowledgeOpsDashboardView.vue` · `getKbOpsDashboardApi` |
 
-**点验（2026-07-13）**：meiling-ui `npm run kb:prd` **16/17**（P0-O4 · P0-O9 · browse-v3 · O5–O8 · REG-llm-on）。仅 **REG-llm-off** 需关 LLM 后 UI 点验。
+**点验（2026-07-13）**：meiling-ui `npm run kb:prd` **17/17**（含 REG-llm-off merge 探针）。
 
 **剩余（非前端）**：生产开 `kb.sync.schedule-enabled` / `kb.lint.schedule-enabled`、告警 webhook；生产环境注入真实 `KB_LLM_CONFIG_SECRET`。
 
@@ -36,7 +36,7 @@
 | **P0** | Wiki 治理全链路 | `knowledge/wiki-govern/index` | [wiki-govern-frontend.md](wiki-govern-frontend.md) | ✅ | ✅ **T16f** |
 | **P1** | 平台 LLM 设置 | `system/kb-llm` | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | ✅ T19 | ✅ **T19d** |
 | **P1** | Ingest 三 Tab | `knowledge/ingest/index` | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | ✅ T20a/b/e | ✅ **T20f** |
-| **P2** | 运维 Dashboard | `knowledge/ops/dashboard` | **本文 §8** | ✅ KBOPS-9 | ✅ 前端聚合 |
+| **P2** | 运维 Dashboard | `knowledge/ops/dashboard` | **本文 §8** | ✅ KBOPS-9 | ✅ 单请求 + legacy 降级 |
 
 **建议迭代顺序（已完成）**：O1–O4 + O9 → O5–O8 → T16f → T19d → T20f → Dashboard。E2E：`meiling-ui` 仓库 `npm run kb:e2e` + `kb:e2e:extended`。
 
@@ -295,19 +295,20 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 
 ---
 
-## 8. P2 · 运维 Dashboard（KBOPS-9） ✅ 后端 · 🟡 前端可接线
+## 8. P2 · 运维 Dashboard（KBOPS-9） ✅ 前后端
 
 **路由**：`knowledge/ops/dashboard` · perm `kb:ops:dashboard` · `KnowledgeOpsDashboardView.vue`
 
-| 区块 | 现网数据源 | 推荐改接 |
-|------|------------|----------|
-| D1 Sync 趋势 | `GET /kb/sync/logs` + 客户端聚合 | `GET /kb/ops/dashboard` → `syncTrend` |
-| D2 待处理工单 | `GET /kb/lint/issues?status=0` 全量 | `lintSummary.openByType` |
-| D3 LLM 可用 | `GET /kb/ask/llm-config` | `dashboard.llm`（可保留降级） |
-| D4 断链 Top | lint issues 客户端聚合 | `lintSummary.topBrokenLinks` |
+| 区块 | 数据源（2026-07-13 · meiling-ui 已接线） |
+|------|------------------------------------------|
+| D1 Sync 趋势 | `GET /kb/ops/dashboard` → `syncTrend`（降级 sync/logs 聚合） |
+| D2 待处理工单 | `lintSummary.openByType` |
+| D3 LLM 可用 | `dashboard.llm` |
+| D4 断链 Top | `lintSummary.topBrokenLinks` |
 
-**后端** `GET /kb/ops/dashboard` ✅（参数 **`trendDays`**，非 `days`）。  
-**前端 P3**：[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §3 · 新增 `getKbOpsDashboardApi` 替换 `loadDashboard()` 三请求。
+**后端** `GET /kb/ops/dashboard` ✅（**`trendDays`**，默认 7）。  
+**前端** ✅ `getKbOpsDashboardApi`（commit `a7b6fa9`）；缺 `kb_llm_call_log` 时 legacy 降级。  
+**详稿**：[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §3 · meiling-ui [knowledge-ops-frontend.md](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §8。
 
 ---
 
@@ -318,7 +319,8 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 | `kb.ingest.commit-auto-sync` | `true` | publish 后可能已 Sync，O1 仍要展示最后批次 |
 | `kb.sync.schedule-enabled` | `false` | 定时 Sync 默认关 |
 | `kb.lint.schedule-enabled` | `false` | 定时 DB scan 落库默认关；**Web 只读展示**（O9），改 yml/Nacos |
-| `kb.sync.space-code` | 单空间 | KBOPS-4 后可能变多空间 |
+| `kb.sync.space-code` | 单空间 | KBOPS-4 后可能变多空间列表 |
+| `kb.llm.call-log-enabled` | `true` | 写 `kb_llm_call_log`；缺表时 dashboard 500 → 前端降级；DDL：`docs/sql/18_kb_llm_call_log.sql` |
 
 详表见 PRD §6、运维 `wiki同步指南`。
 
@@ -386,6 +388,7 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-13 | §8 Dashboard 前后端 ✅；§9 增 `kb_llm_call_log` DDL 说明；P3 对齐 `frontend-gaps` |
 | 2026-07-12 | §0 前端落地摘要；§1/§3.7/§8/§10 标 ✅；O7 统一 `PUT /kb/lint/issues/batch`；与 TASKS.md / meiling-ui §0 对齐 |
 | 2026-07-12 | §3.5 增 O9 · `GET /kb/lint/scan/status`（定时 scan 只读展示） |
 | 2026-07-09 | 初稿：O1–O4 Sync UI、排期、Dashboard 规划、与 T16f/T19d/T20f 交叉引用 |

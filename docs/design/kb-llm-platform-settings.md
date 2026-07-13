@@ -1,6 +1,6 @@
 # 知识库 LLM · 平台系统设置（T19 设计）
 
-> 更新：2026-06-28 · 状态：**T19 后端已完成（T19d 前端待做）**  
+> 更新：2026-07-13 · 状态：**T19 后端 + T19d 前端 ✅**（`kb:prd` REG-llm-on/off）  
 > API 契约（规划）：[`docs/api/KNOWLEDGE_API.md`](../api/KNOWLEDGE_API.md) §3.5  
 > DDL：`docs/sql/11_kb_platform_llm_config.sql`  
 > 任务跟踪：[`moli-knowledge/TASKS.md`](../../moli-knowledge/TASKS.md) **T19**
