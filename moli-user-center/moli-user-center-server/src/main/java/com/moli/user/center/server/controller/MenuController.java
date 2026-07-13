@@ -1,10 +1,8 @@
 package com.moli.user.center.server.controller;
 
-import com.moli.common.constant.CommonConstant;
-import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
+import com.moli.common.constant.PermissionConstants;
 import com.moli.user.center.common.domain.entity.SysMenu;
-import com.moli.user.center.common.domain.entity.SysUser;
 import com.moli.user.center.common.domain.vo.MenuVo;
 import com.moli.user.center.server.config.util.ShiroUtils;
 import com.moli.user.center.server.mapper.MenuMapper;
@@ -32,16 +30,10 @@ public class MenuController {
 
 
     @GetMapping("getRouters")
-    @ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
+    @ApiOperation(value = "获取菜单列表", notes = "运行时路由；门户开启时按 Session currentSystemId 与 sys_menu.system_id 过滤")
     public MoliResult<List<MenuVo>> getRouters() {
         Long userId = ShiroUtils.getUserInfo().getId();
-        SysUser sysUser = ShiroUtils.getUserInfo();
-        if (CommonConstant.hasFullPermission(sysUser.getUserName())) {
-            return MoliResult.success(menuService.getMenuTreeAll());
-        }
-        List<MenuVo> menuVoList = menuService.selectMenuTreeByUserId(userId);
-
-        return MoliResult.success(menuVoList);
+        return MoliResult.success(menuService.resolveRoutersForCurrentSystem(userId));
     }
 
 

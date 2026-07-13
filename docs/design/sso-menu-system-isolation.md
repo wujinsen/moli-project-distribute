@@ -1,6 +1,6 @@
 # SSO · 菜单按系统隔离（技术设计）
 
-> **状态**：design · 2026-07-13 · **Q3/Q5 已定案（2026-07-13）**  
+> **状态**：implemented P0/P1 · **走查通过** · 2026-07-13 · **Q3/Q5 已定案**  
 > **问题域**：多系统门户 `sys_system` 已落地，运行时菜单未按当前系统过滤，切换系统后侧栏「串台」。  
 > **流程图**：[`docs/diagrams/moli-sso-menu-flow.drawio`](../diagrams/moli-sso-menu-flow.drawio) · PNG 见 [`docs/diagrams/png/moli-sso-menu-flow.png`](../diagrams/png/moli-sso-menu-flow.png)（需导出）  
 > **SQL 草案**：[`docs/sql/30_sso_menu_system_id.sql`](../sql/30_sso_menu_system_id.sql)  

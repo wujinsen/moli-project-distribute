@@ -107,6 +107,7 @@ operation_project_deploy_info ──► operation_project_component ──► op
 | `perms` | 权限标识，如 `system:user:list` |
 | `path` / `component` / `route_name` | 前端路由 |
 | `parent_id` | 树结构 |
+| `system_id` | 所属 `sys_system.id`；NULL=全系统共享；运行时 `getRouters` 按 Session `currentSystemId` 过滤（SSO-MENU-1） |
 
 ### 4.3 `sys_system`
 

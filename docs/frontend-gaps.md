@@ -1,6 +1,6 @@
 # 前端缺口与联调索引
 
-> **更新**：2026-07-13 · **运营 W1–W10 前端已完工** · **SSO-MENU-1 前端可开工**  
+> **更新**：2026-07-13 · **运营 W1–W10 前端已完工** · **SSO-MENU-1 联合走查通过**  
 > **走查稿**：[test/operation-w1-w10-walkthrough.md](test/operation-w1-w10-walkthrough.md)  
 > **给后端**：[api/frontend-backend-dependencies.md](api/frontend-backend-dependencies.md) §7–§8  
 > **前端仓库索引**：[`meiling-ui/docs/frontend-gaps.md`](../../meiling-ui/docs/frontend-gaps.md)
@@ -37,15 +37,25 @@
 
 ---
 
-## 二、SSO 菜单隔离（SSO-MENU-1 · 2026-07-13 可开工）
+## 二、SSO 菜单隔离（SSO-MENU-1 · 2026-07-13 ✅）
+
+### 2.1 已完成（代码 + 走查）
 
 | 任务 | 说明 |
 |------|------|
-| **F-SSO-1～6** | 守卫 · `reloadRoutesFromServer` · enter/switch 刷新 · Q5 知识库双入口 |
+| **后端 P0/P1** | `sys_menu.system_id` · `resolveRoutersForCurrentSystem` · Q3/Q5 backfill |
+| **F-SSO-1～6** | 守卫 · `reloadRoutesFromServer` · enter/switch · tab 清空 · Q5 知识库双入口 |
+| **S3～S7、S10** | API + UI 联合走查通过（2026-07-13） |
 
 契约：[api/sso-menu-frontend-handoff.md](api/sso-menu-frontend-handoff.md) · 走查：[test/sso-menu-frontend-walkthrough.md](test/sso-menu-frontend-walkthrough.md)
 
-**依赖**：全量 E2E 需后端 `system_id` 过滤；前端守卫逻辑可先行。
+### 2.2 可选补测（边界 · 非阻塞）
+
+| 项 | 说明 |
+|----|------|
+| **S1** | `sso.enabled=false` 全量菜单回归 |
+| **S2** | 仅一条 INTERNAL 自动 enter |
+| **S8 / S9** | 角色仅勾子菜单 · 祖先补齐 |
 
 ---
 
@@ -77,5 +87,5 @@
 
 1. **运营** W1–W10（`:8888` commit `b4ac176a` + 重启）
 2. **KB** `kb:prd-acceptance`（8090 secret + O4）
-3. **SSO** F-SSO-1～6（与后端 P0 并行）· [sso-menu-frontend-handoff.md](api/sso-menu-frontend-handoff.md)
-4. 可选：DC-4 · KB-LINT
+3. ~~**SSO** F-SSO-1～6~~ ✅ 2026-07-13
+4. 可选：DC-4 · KB-LINT · S1/S2/S8/S9 边界补测

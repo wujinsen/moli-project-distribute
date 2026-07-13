@@ -657,47 +657,62 @@ CREATE TABLE `sys_menu`  (
   `status` int NULL DEFAULT NULL COMMENT '1启用 0禁用',
   `icon` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '图标',
   `order_num` int NULL DEFAULT NULL COMMENT '显示顺序',
+  `system_id` bigint NULL DEFAULT NULL COMMENT '所属业务系统 sys_system.id；NULL=全系统共享',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_sys_menu_parent_id`(`parent_id` ASC) USING BTREE
+  INDEX `idx_sys_menu_parent_id`(`parent_id` ASC) USING BTREE,
+  INDEX `idx_sys_menu_system_id`(`system_id` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
 -- ----------------------------
-INSERT INTO `sys_menu` VALUES (1, NULL, NULL, 1, '2026-06-11 02:18:14', '系统管理', 'System', 'システム', 0, 'system', NULL, 'System', 'M', NULL, 1, 'system', 2);
-INSERT INTO `sys_menu` VALUES (2, NULL, NULL, NULL, NULL, '用户管理', 'Users', 'ユーザー管理', 1, 'user', 'system/user/index', NULL, 'C', 'system:user:list', 1, 'user', 1);
-INSERT INTO `sys_menu` VALUES (3, NULL, NULL, NULL, NULL, '角色管理', 'Roles', 'ロール管理', 1, 'role', 'system/role/index', NULL, 'C', 'system:role:list', 1, 'peoples', 2);
-INSERT INTO `sys_menu` VALUES (4, NULL, NULL, NULL, NULL, '菜单管理', 'Menus', 'メニュー管理', 1, 'menu', 'system/menu/index', NULL, 'C', 'system:menu:list', 1, 'tree-table', 3);
-INSERT INTO `sys_menu` VALUES (5, NULL, NULL, NULL, NULL, '部门管理', 'Departments', '部署管理', 1, 'dept', 'system/dept/index', NULL, 'C', 'system:dept:list', 1, 'tree', 4);
-INSERT INTO `sys_menu` VALUES (6, NULL, NULL, NULL, NULL, '岗位管理', 'Posts', 'ポスト管理', 1, 'post', 'system/post/index', NULL, 'C', 'system:post:list', 1, 'post', 5);
-INSERT INTO `sys_menu` VALUES (7, NULL, NULL, NULL, NULL, '字典管理', 'Dictionary', '辞書管理', 1, 'dict', 'system/dict/index', NULL, 'C', 'system:dict:list', 1, 'dict', 6);
-INSERT INTO `sys_menu` VALUES (8, NULL, NULL, NULL, NULL, '参数设置', 'Parameters', 'パラメータ', 1, 'config', 'system/config/index', NULL, 'C', 'system:config:list', 1, 'edit', 7);
-INSERT INTO `sys_menu` VALUES (9, NULL, NULL, NULL, NULL, '通知公告', 'Notices', 'お知らせ', 1, 'notice', 'system/notice/index', NULL, 'C', 'system:notice:list', 1, 'message', 8);
-INSERT INTO `sys_menu` VALUES (400, NULL, NULL, NULL, NULL, '运营管理', 'Operations', '運用管理', 0, 'operation', NULL, NULL, 'M', NULL, 1, 'guide', 4);
-INSERT INTO `sys_menu` VALUES (401, NULL, NULL, NULL, NULL, '项目管理', 'Projects', 'プロジェクト', 400, 'project', 'operation/project/index', NULL, 'C', 'operation:project:list', 1, 'example', 1);
-INSERT INTO `sys_menu` VALUES (402, NULL, NULL, NULL, NULL, '服务器管理', 'Servers', 'サーバー', 400, 'server', 'operation/server/index', NULL, 'C', 'operation:server:list', 1, 'server', 2);
-INSERT INTO `sys_menu` VALUES (403, NULL, NULL, NULL, NULL, '平台管理', 'Platforms', 'プラットフォーム', 400, 'platform', 'operation/platform/index', NULL, 'C', 'operation:platform:list', 1, 'tree', 3);
-INSERT INTO `sys_menu` VALUES (404, NULL, NULL, NULL, NULL, '组件管理', 'Components', 'コンポーネント', 400, 'component', 'operation/component/index', NULL, 'C', 'operation:component:list', 1, 'component', 4);
-INSERT INTO `sys_menu` VALUES (405, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '部署中心', 'Deploy Center', 'デプロイセンター', 400, 'deploy', 'operation/deploy/index', 'OperationDeployCenter', 'C', 'operation:server:list', 1, 'upload', 5);
-INSERT INTO `sys_menu` VALUES (406, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '端口矩阵', 'Port Matrix', 'ポートマトリクス', 400, 'port-matrix', 'operation/port-matrix/index', 'OperationPortMatrix', 'C', 'operation:port-matrix:list', 1, 'table', 6);
-INSERT INTO `sys_menu` VALUES (407, 1, '2026-07-12 00:00:00', 1, '2026-07-12 00:00:00', '拓扑图', 'Topology', 'トポロジ図', 400, 'topology', 'operation/topology/index', 'OperationTopology', 'C', 'operation:server:list', 1, 'git-branch', 7);
-INSERT INTO `sys_menu` VALUES (500, NULL, NULL, 2, '2026-06-09 21:58:01', 'ChatGPT', 'ChatGPT', 'ChatGPT', 0, 'chatgpt', NULL, 'Chatgpt', 'M', NULL, 0, 'message', 5);
-INSERT INTO `sys_menu` VALUES (501, NULL, NULL, 2, '2026-06-09 21:58:08', '智能对话', 'AI Chat', 'AI対話', 500, 'completion', 'chatgpt/completion/index', NULL, 'C', 'chatgpt:completion:list', 0, 'message', 1);
-INSERT INTO `sys_menu` VALUES (600, NULL, NULL, 1, '2026-06-09 23:00:34', '烛龙', 'Candlelight', '燭龍データ', 0, 'candlelight', NULL, NULL, 'M', NULL, 1, 'chart', 6);
-INSERT INTO `sys_menu` VALUES (601, NULL, NULL, NULL, NULL, 'BI分析', 'BI', 'BI分析', 600, 'bi', 'CandlelightDragon/bi/index', NULL, 'C', 'candlelight:bi:list', 1, 'chart', 1);
-INSERT INTO `sys_menu` VALUES (602, NULL, NULL, NULL, NULL, '数据驾驶舱', 'Cockpit', 'コックピット', 600, 'cockpit', 'CandlelightDragon/cockpit/index', NULL, 'C', 'candlelight:cockpit:list', 1, 'dashboard', 2);
-INSERT INTO `sys_menu` VALUES (603, NULL, NULL, NULL, NULL, '用户画像', 'User Portrait', 'ユーザーピクチャ', 600, 'userportrait', 'CandlelightDragon/userportrait/index', NULL, 'C', 'candlelight:userportrait:list', 1, 'user', 3);
-INSERT INTO `sys_menu` VALUES (700, NULL, NULL, 1, '2026-06-11 02:19:30', '洞察与控制', 'Insight & Control', '洞察と制御', 0, 'insight', NULL, 'Insight', 'M', NULL, 1, 'chart', 7);
-INSERT INTO `sys_menu` VALUES (701, NULL, NULL, NULL, NULL, '报表', 'Reports', 'レポート', 700, 'reports', 'meiling/reports/index', NULL, 'C', 'meiling:reports:list', 1, 'documentation', 1);
-INSERT INTO `sys_menu` VALUES (702, NULL, NULL, NULL, NULL, 'Pulse', 'Pulse', 'Pulse', 700, 'pulse', 'meiling/pulse/index', NULL, 'C', 'meiling:pulse:list', 1, 'message', 2);
-INSERT INTO `sys_menu` VALUES (703, NULL, NULL, NULL, NULL, '工作流', 'Workflows', 'ワークフロー', 700, 'workflows', 'meiling/workflows/index', NULL, 'C', 'meiling:workflows:list', 1, 'guide', 3);
-INSERT INTO `sys_menu` VALUES (800, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '身份与门户', 'Identity & Portal', 'マルチシステム', 0, 'portal', NULL, 'Portal', 'M', NULL, 1, 'guide', 1);
-INSERT INTO `sys_menu` VALUES (810, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '安全审计', 'Security Audit', '監査ログ', 0, 'audit', NULL, 'Audit', 'M', NULL, 1, 'monitor', 9);
-INSERT INTO `sys_menu` VALUES (719698282376331264, 1, '2026-06-09 23:44:02', 1, '2026-06-09 23:44:47', '操作日志', '', '', 810, 'operlog', 'system/operlog/index', NULL, 'C', 'system:operlog:list', 1, 'monitor', 1);
-INSERT INTO `sys_menu` VALUES (719706422979330048, 1, '2026-06-10 00:16:23', NULL, NULL, '登录日志', '', '', 810, 'loginlog', 'system/loginlog/index', NULL, 'C', 'system:loginlog:list', 1, 'monitor', 2);
-INSERT INTO `sys_menu` VALUES (720069615614427136, 1, '2026-06-11 00:19:35', 1, '2026-06-11 00:19:57', '系统注册', '', '', 800, 'system', 'system/system/index', 'SystemRegistry', 'C', 'system:system:list', 1, 'system', 1);
-INSERT INTO `sys_menu` VALUES (720092589008617472, 1, '2026-06-11 01:50:52', 1, '2026-06-11 01:51:24', '分配系统', '', '', 800, 'system-user', 'system/system-user/index', 'SystemUserAssign', 'C', 'system:user:list', 1, 'system', 2);
-INSERT INTO `sys_menu` VALUES (720092589008617473, NULL, '2026-06-11 18:47:37', NULL, NULL, '动作目录', NULL, NULL, 1, 'action', 'system/action/index', 'ActionManage', 'C', 'system:menu:list', 1, NULL, 4);
+INSERT INTO `sys_menu` VALUES (1, NULL, NULL, 1, '2026-06-11 02:18:14', '系统管理', 'System', 'システム', 0, 'system', NULL, 'System', 'M', NULL, 1, 'system', 2, NULL);
+INSERT INTO `sys_menu` VALUES (2, NULL, NULL, NULL, NULL, '用户管理', 'Users', 'ユーザー管理', 1, 'user', 'system/user/index', NULL, 'C', 'system:user:list', 1, 'user', 1, NULL);
+INSERT INTO `sys_menu` VALUES (3, NULL, NULL, NULL, NULL, '角色管理', 'Roles', 'ロール管理', 1, 'role', 'system/role/index', NULL, 'C', 'system:role:list', 1, 'peoples', 2, NULL);
+INSERT INTO `sys_menu` VALUES (4, NULL, NULL, NULL, NULL, '菜单管理', 'Menus', 'メニュー管理', 1, 'menu', 'system/menu/index', NULL, 'C', 'system:menu:list', 1, 'tree-table', 3, NULL);
+INSERT INTO `sys_menu` VALUES (5, NULL, NULL, NULL, NULL, '部门管理', 'Departments', '部署管理', 1, 'dept', 'system/dept/index', NULL, 'C', 'system:dept:list', 1, 'tree', 4, NULL);
+INSERT INTO `sys_menu` VALUES (6, NULL, NULL, NULL, NULL, '岗位管理', 'Posts', 'ポスト管理', 1, 'post', 'system/post/index', NULL, 'C', 'system:post:list', 1, 'post', 5, NULL);
+INSERT INTO `sys_menu` VALUES (7, NULL, NULL, NULL, NULL, '字典管理', 'Dictionary', '辞書管理', 1, 'dict', 'system/dict/index', NULL, 'C', 'system:dict:list', 1, 'dict', 6, NULL);
+INSERT INTO `sys_menu` VALUES (8, NULL, NULL, NULL, NULL, '参数设置', 'Parameters', 'パラメータ', 1, 'config', 'system/config/index', NULL, 'C', 'system:config:list', 1, 'edit', 7, NULL);
+INSERT INTO `sys_menu` VALUES (9, NULL, NULL, NULL, NULL, '通知公告', 'Notices', 'お知らせ', 1, 'notice', 'system/notice/index', NULL, 'C', 'system:notice:list', 1, 'message', 8, NULL);
+INSERT INTO `sys_menu` VALUES (400, NULL, NULL, NULL, NULL, '运营管理', 'Operations', '運用管理', 0, 'operation', NULL, NULL, 'M', NULL, 1, 'guide', 4, NULL);
+INSERT INTO `sys_menu` VALUES (401, NULL, NULL, NULL, NULL, '项目管理', 'Projects', 'プロジェクト', 400, 'project', 'operation/project/index', NULL, 'C', 'operation:project:list', 1, 'example', 1, NULL);
+INSERT INTO `sys_menu` VALUES (402, NULL, NULL, NULL, NULL, '服务器管理', 'Servers', 'サーバー', 400, 'server', 'operation/server/index', NULL, 'C', 'operation:server:list', 1, 'server', 2, NULL);
+INSERT INTO `sys_menu` VALUES (403, NULL, NULL, NULL, NULL, '平台管理', 'Platforms', 'プラットフォーム', 400, 'platform', 'operation/platform/index', NULL, 'C', 'operation:platform:list', 1, 'tree', 3, NULL);
+INSERT INTO `sys_menu` VALUES (404, NULL, NULL, NULL, NULL, '组件管理', 'Components', 'コンポーネント', 400, 'component', 'operation/component/index', NULL, 'C', 'operation:component:list', 1, 'component', 4, NULL);
+INSERT INTO `sys_menu` VALUES (405, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '部署中心', 'Deploy Center', 'デプロイセンター', 400, 'deploy', 'operation/deploy/index', 'OperationDeployCenter', 'C', 'operation:server:list', 1, 'upload', 5, NULL);
+INSERT INTO `sys_menu` VALUES (406, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '端口矩阵', 'Port Matrix', 'ポートマトリクス', 400, 'port-matrix', 'operation/port-matrix/index', 'OperationPortMatrix', 'C', 'operation:port-matrix:list', 1, 'table', 6, NULL);
+INSERT INTO `sys_menu` VALUES (407, 1, '2026-07-12 00:00:00', 1, '2026-07-12 00:00:00', '拓扑图', 'Topology', 'トポロジ図', 400, 'topology', 'operation/topology/index', 'OperationTopology', 'C', 'operation:server:list', 1, 'git-branch', 7, NULL);
+INSERT INTO `sys_menu` VALUES (500, NULL, NULL, 2, '2026-06-09 21:58:01', 'ChatGPT', 'ChatGPT', 'ChatGPT', 0, 'chatgpt', NULL, 'Chatgpt', 'M', NULL, 0, 'message', 5, NULL);
+INSERT INTO `sys_menu` VALUES (501, NULL, NULL, 2, '2026-06-09 21:58:08', '智能对话', 'AI Chat', 'AI対話', 500, 'completion', 'chatgpt/completion/index', NULL, 'C', 'chatgpt:completion:list', 0, 'message', 1, NULL);
+INSERT INTO `sys_menu` VALUES (600, NULL, NULL, 1, '2026-06-09 23:00:34', '烛龙', 'Candlelight', '燭龍データ', 0, 'candlelight', NULL, NULL, 'M', NULL, 1, 'chart', 6, NULL);
+INSERT INTO `sys_menu` VALUES (601, NULL, NULL, NULL, NULL, 'BI分析', 'BI', 'BI分析', 600, 'bi', 'CandlelightDragon/bi/index', NULL, 'C', 'candlelight:bi:list', 1, 'chart', 1, NULL);
+INSERT INTO `sys_menu` VALUES (602, NULL, NULL, NULL, NULL, '数据驾驶舱', 'Cockpit', 'コックピット', 600, 'cockpit', 'CandlelightDragon/cockpit/index', NULL, 'C', 'candlelight:cockpit:list', 1, 'dashboard', 2, NULL);
+INSERT INTO `sys_menu` VALUES (603, NULL, NULL, NULL, NULL, '用户画像', 'User Portrait', 'ユーザーピクチャ', 600, 'userportrait', 'CandlelightDragon/userportrait/index', NULL, 'C', 'candlelight:userportrait:list', 1, 'user', 3, NULL);
+INSERT INTO `sys_menu` VALUES (700, NULL, NULL, 1, '2026-06-11 02:19:30', '洞察与控制', 'Insight & Control', '洞察と制御', 0, 'insight', NULL, 'Insight', 'M', NULL, 1, 'chart', 7, NULL);
+INSERT INTO `sys_menu` VALUES (701, NULL, NULL, NULL, NULL, '报表', 'Reports', 'レポート', 700, 'reports', 'meiling/reports/index', NULL, 'C', 'meiling:reports:list', 1, 'documentation', 1, NULL);
+INSERT INTO `sys_menu` VALUES (702, NULL, NULL, NULL, NULL, 'Pulse', 'Pulse', 'Pulse', 700, 'pulse', 'meiling/pulse/index', NULL, 'C', 'meiling:pulse:list', 1, 'message', 2, NULL);
+INSERT INTO `sys_menu` VALUES (703, NULL, NULL, NULL, NULL, '工作流', 'Workflows', 'ワークフロー', 700, 'workflows', 'meiling/workflows/index', NULL, 'C', 'meiling:workflows:list', 1, 'guide', 3, NULL);
+INSERT INTO `sys_menu` VALUES (800, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '身份与门户', 'Identity & Portal', 'マルチシステム', 0, 'portal', NULL, 'Portal', 'M', NULL, 1, 'guide', 1, NULL);
+INSERT INTO `sys_menu` VALUES (810, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '安全审计', 'Security Audit', '監査ログ', 0, 'audit', NULL, 'Audit', 'M', NULL, 1, 'monitor', 9, NULL);
+INSERT INTO `sys_menu` VALUES (719698282376331264, 1, '2026-06-09 23:44:02', 1, '2026-06-09 23:44:47', '操作日志', '', '', 810, 'operlog', 'system/operlog/index', NULL, 'C', 'system:operlog:list', 1, 'monitor', 1, NULL);
+INSERT INTO `sys_menu` VALUES (719706422979330048, 1, '2026-06-10 00:16:23', NULL, NULL, '登录日志', '', '', 810, 'loginlog', 'system/loginlog/index', NULL, 'C', 'system:loginlog:list', 1, 'monitor', 2, NULL);
+INSERT INTO `sys_menu` VALUES (720069615614427136, 1, '2026-06-11 00:19:35', 1, '2026-06-11 00:19:57', '系统注册', '', '', 800, 'system', 'system/system/index', 'SystemRegistry', 'C', 'system:system:list', 1, 'system', 1, NULL);
+INSERT INTO `sys_menu` VALUES (720092589008617472, 1, '2026-06-11 01:50:52', 1, '2026-06-11 01:51:24', '分配系统', '', '', 800, 'system-user', 'system/system-user/index', 'SystemUserAssign', 'C', 'system:user:list', 1, 'system', 2, NULL);
+INSERT INTO `sys_menu` VALUES (720092589008617473, NULL, '2026-06-11 18:47:37', NULL, NULL, '动作目录', NULL, NULL, 1, 'action', 'system/action/index', 'ActionManage', 'C', 'system:menu:list', 1, NULL, 4, NULL);
+
+-- SSO-MENU-1 · sys_menu.system_id backfill（设计 docs/design/sso-menu-system-isolation.md · Q5-A 900→moli-admin）
+SET @SYS_MOLI_ADMIN := 1;
+SET @SYS_AI_COPILOT := 4;
+SET @SYS_BI_REPORT := 6;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 1 OR (`parent_id` = 1 AND `id` NOT IN (800, 810));
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 800 OR `parent_id` = 800;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 810 OR `parent_id` = 810;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 400 OR `parent_id` = 400;
+UPDATE `sys_menu` SET `system_id` = @SYS_AI_COPILOT WHERE `id` = 500 OR `parent_id` = 500;
+UPDATE `sys_menu` SET `system_id` = @SYS_BI_REPORT WHERE `id` = 600 OR `parent_id` = 600;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 700 OR `parent_id` = 700;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 900 OR `parent_id` = 900;
 
 -- ----------------------------
 -- Table structure for sys_operation_log

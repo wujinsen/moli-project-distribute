@@ -14,7 +14,7 @@
 |------|------|--------------|------------------|
 | **运营管理** | `8888` | **否** | **联合走查 W1–W10**（前端 ✅；见走查稿） |
 | **知识库** | `8090` | **部分**（规模化/Lint） | **P0 点验** + `KB_LLM_CONFIG_SECRET`；本地 dev 已可验 |
-| **SSO** | user-center | **是（P2 架构）** | `SSO-MENU-1`：设计见 [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) |
+| **SSO** | user-center | **否** | **SSO-MENU-1 已交付**（走查 ✅ [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md)） |
 
 ### 1.1 已与前端对齐（勿再 Breaking）
 
@@ -46,8 +46,7 @@
 |------|------|---------|
 | 🟢 **点验** | 无新 API；环境 + 走查 | W1–W10、§10/§16、KB-O4、KB-BROWSE-1、KB-LLM-DB、407 SQL |
 | 🟡 **可选开发** | 体验/规模化 | DC-4、KB-LINT-1/2、KBOPS-2 |
-| 🔴 **架构** | 前端无法单独完成 | SSO-MENU-1 |
-| ⚪ **已完成** | 前后端已对齐 | S-VO、W7–W10、DC-2/3、S-ERR-1、S-DEPLOY-1、create id、**batch deploy** |
+| ⚪ **已完成** | 前后端已对齐 | S-VO、W7–W10、DC-2/3、S-ERR-1、S-DEPLOY-1、create id、**batch deploy**、**SSO-MENU-1** |
 
 ### 2.1 联调点验（无新 API）
 
@@ -59,6 +58,7 @@
 | **KB-O4** | sync fail 样本 | `kb:prd-acceptance` P0-O4 · [kb-sync-failure-runbook.md](../ops/kb-sync-failure-runbook.md) §9 |
 | **KB-LLM-DB** | **`KB_LLM_CONFIG_SECRET`** | `GET /kb/platform/llm-config` → `encryptionReady=true` |
 | **407** | 老库执行 `28_operation_topology_menu.sql` | 本机 dev 库 **已存在** 407 可跳过 |
+| **SSO-MENU-1** | `30_sso_menu_system_id.sql`（老库） | ✅ 走查通过 2026-07-13 · [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md) |
 
 ### 2.2 可选排期
 
@@ -67,9 +67,9 @@
 | **DC-4** | 8888 | `task/list` 按 project 聚合 VO | 前端未开工 |
 | **KB-LINT-1/2** | 8090 | 服务端 `unassignedOnly` + 稳定分页 | 前端客户端兜底可用 |
 | **KBOPS-2** | 8090 | Dashboard 专用 API | 前端多接口聚合可用 |
-| **SSO-MENU-1** | user-center | `system_id` + `getRouters` 过滤 | **前端可并行** · [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md) |
 
-> **说明**：滚动批量重启已由 **`POST /operation/deploy/batch/task`**（`b4ac176a`）覆盖；meiling-ui 任务 **DC-BE-1** 若指同一能力，可标为已交付。
+> **说明**：滚动批量重启已由 **`POST /operation/deploy/batch/task`**（`b4ac176a`）覆盖；meiling-ui 任务 **DC-BE-1** 若指同一能力，可标为已交付。  
+> **SSO-MENU-1** 后端 + 前端 + 联合走查 ✅（2026-07-13）；见 §5。
 
 ### 2.3 纯前端 ✅（2026-07-13）
 
@@ -120,8 +120,8 @@ POST /operation/task/{id}/cancel
 
 | 文档 | 读者 |
 |------|------|
-| **[sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md)** | **meiling-ui 开工（F-SSO-1～6）** |
-| [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md) | 联合走查勾选 |
+| **[sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md)** | **F-SSO-1～6 契约（前后端已落地）** |
+| [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md) | 走查记录（✅ 2026-07-13） |
 | [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) | 后端设计 · SQL |
 
 **已定案（2026-07-13）**：
@@ -131,7 +131,7 @@ POST /operation/task/{id}/cancel
 | **Q3** | 门户开启且未 `enter` → `getRouters` 返回 **`[]`**；前端跳选系统 |
 | **Q5** | 900 段 **`system_id=1`**（admin 内嵌）；`moli-knowledge`(39) 保留 EXTERNAL `redirectUrl` 第二入口 |
 
-**分工**：后端 P0/P1（`system_id` 列 + 过滤）与前端 P2（守卫 + `reloadRoutesFromServer`）可并行；全量 E2E 需双方合入。
+**分工**：后端 **P0/P1 ✅**；前端 **F-SSO-1～6 ✅**；**联合走查 ✅**（2026-07-13）。老库执行 `docs/sql/30_sso_menu_system_id.sql` 或新 `moli.sql` 基线。
 
 ---
 
@@ -141,7 +141,8 @@ POST /operation/task/{id}/cancel
 ① 8888：push/deploy b4ac176a（共享环境）或本地 install+重启 → W1–W10 走查
 ② 8090：KB_LLM_CONFIG_SECRET + KB-O4 → kb:prd-acceptance
 ③ DBA：407 SQL（老库按需）
-④ 可选：DC-4 · KB-LINT · KBOPS-2 · SSO-MENU-1
+④ ~~SSO-MENU-1 联合走查~~ ✅ 2026-07-13
+⑤ 可选：DC-4 · KB-LINT · KBOPS-2
 ```
 
 ---
@@ -164,7 +165,8 @@ POST /operation/task/{id}/cancel
 8090 点验：
 · KB_LLM_CONFIG_SECRET · KB-O4 fail · npm run kb:prd-acceptance
 
-下迭代（已答）：SSO-MENU-1=P2；DC-4/KB-LINT/KBOPS-2=P3 可选
+SSO-MENU-1：✅ 已交付（走查 2026-07-13）
+下迭代可选：DC-4/KB-LINT/KBOPS-2=P3
 
 详稿：docs/api/frontend-backend-dependencies.md
 ```
@@ -179,7 +181,7 @@ POST /operation/task/{id}/cancel
 |------|------|
 | **运营** | **无 API 阻塞**；待 W1–W10 **联合走查** |
 | **知识库** | **点验级**；本地 secret + O4 已就绪 |
-| **SSO** | **P2 架构**；设计+SQL 草案已出 |
+| **SSO** | **已交付**；F-SSO-1～6 + S3～S7/S10 走查 ✅（2026-07-13） |
 | **文档↔代码** | **一致**（与 meiling-ui `frontend-gaps` / handoff 互引） |
 
 ### 8.2 ① 8888 版本与联调
@@ -204,7 +206,7 @@ POST /operation/task/{id}/cancel
 
 | 项 | 排期 |
 |----|------|
-| **SSO-MENU-1** | ✅ **纳入下迭代 P2**（设计已出，约 2–3 人日） |
+| **SSO-MENU-1** | ✅ **已交付 + 走查通过**（2026-07-13） |
 | **DC-4** | ⬜ P3 可选 |
 | **KB-LINT-1/2** · **KBOPS-2** | ⬜ P3 可选 |
 
@@ -212,6 +214,7 @@ POST /operation/task/{id}/cancel
 
 ```text
 8888：□ install+重启  □ VITE_USE_MOCK_AUTH=false  □ 走查稿 W1–W10
+SSO：☑ 30_sso_menu_system_id.sql  ☑ sso-menu-frontend-walkthrough（2026-07-13）
 8090：□ KB_LLM_CONFIG_SECRET  □ KB-O4  □ kb:prd-acceptance
 ```
 
@@ -224,3 +227,4 @@ POST /operation/task/{id}/cancel
 | 2026-07-13 | 初版三模块总览 |
 | 2026-07-13 | SSO 设计链入 §4/§5 |
 | 2026-07-13 | **对齐 meiling-ui**：§1.2/§2.0/§8 · 走查稿 · 前端 W7–W10 完工 · §8.4 后端回复落定 |
+| 2026-07-13 | **SSO-MENU-1 走查通过**：handoff/gaps/dependencies 状态同步 |

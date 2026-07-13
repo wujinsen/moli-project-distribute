@@ -242,10 +242,7 @@ public class LoginController {
     }
 
     private List<MenuVo> resolveMenus(SysUser user) {
-        if (CommonConstant.hasFullPermission(user.getUserName())) {
-            return menuService.getMenuTreeAll();
-        }
-        return menuService.selectMenuTreeByUserId(user.getId());
+        return menuService.resolveRoutersForCurrentSystem(user.getId());
     }
 
     private boolean isInternalSystem(SystemVo system) {

@@ -48,6 +48,7 @@
 | 23 | `29_operation_project_component.sql` | 项目→组件依赖 N:N 表（SVR-26a）；拓扑 `depends_on` 边与 `component-links` API 前置（**已合并进 `moli.sql` 基线**） |
 | 24 | `28_operation_topology_menu.sql` | 拓扑图菜单 407（SVR-25c）；perms 复用 `operation:server:list`（**已合并进 `moli.sql` 基线**） |
 | 25 | `29_kb_document_chunk.sql` | 知识库切段表 `kb_document_chunk` + ngram 全文（`/kb/ask` 按段召回） |
+| 26 | `30_sso_menu_system_id.sql` | SSO-MENU-1 · `sys_menu.system_id` + 段位 backfill（**已合并进 `moli.sql` 基线**） |
 
 ---
 
