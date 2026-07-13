@@ -45,7 +45,7 @@
 | 状态 | 含义 | 任务 ID |
 |------|------|---------|
 | 🟢 **点验** | 无新 API；环境 + 走查 | §10/§16、KB-O4、KB-BROWSE-1、KB-LLM-DB、407 SQL |
-| 🟡 **可选开发** | 体验/规模化 | **DC-4**（8888）；**KBOPS-2 前端接线**（8090 API ✅） |
+| 🟡 **可选开发** | 体验/规模化 · **P3 三项后端均已交付** | **DC-4** · **KBOPS-2** · KB-LINT 收紧（前端接线） |
 | ⚪ **已完成** | 前后端已对齐 | S-VO、**W1–W10**、W7–W10、DC-2/3、S-ERR-1、S-DEPLOY-1、create id、**batch deploy**、**SSO-MENU-1** |
 
 ### 2.1 联调点验（无新 API）
@@ -64,7 +64,7 @@
 
 | 任务 ID | 服务 | 后端 | 前端 | 详稿 |
 |---------|------|------|------|------|
-| **DC-4** | 8888 | ⬜ `GET /operation/task/groups` | 暂缓 | [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
+| **DC-4** | 8888 | ✅ `GET /operation/task/groups` | **可开工** | [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
 | **KB-LINT-1/2** | 8090 | ✅ 分页 + `unassignedOnly` | 可选收紧 | 同上 §2 |
 | **KBOPS-2** | 8090 | ✅ `GET /kb/ops/dashboard` | **可排期接线** | 同上 §3 |
 
@@ -88,6 +88,7 @@ DC-3 · S-ERR-1 · S-DEPLOY-1 · S-VO · W7–W10
 - list / `GET /{id}`：`*Count` 与 `serverIds` 同源 `toVo()`
 - `POST` create → **Long id**；`PUT/GET .../links` 同步主表
 - `POST /operation/deploy/batch/task` · `POST /operation/task/{id}/cancel`
+- **`GET /operation/task/groups`**（DC-4 · 按项目分组分页）
 - 错误码 **10101–10109** 稳定；**10107** 可带 `data=taskId`
 
 ### 3.2 后端 smoke
@@ -143,7 +144,7 @@ POST /operation/task/{id}/cancel
 ③ DBA：407 SQL（老库按需）
 ④ ~~W1–W10 联合走查~~ ✅ 2026-07-13
 ⑤ ~~SSO-MENU-1 联合走查~~ ✅ 2026-07-13
-⑥ 可选：KBOPS-2 前端接线 · KB-LINT 收紧 · DC-4 等 8888
+⑥ P3 前端接线（三项 API 已就绪）：DC-4 · KBOPS-2 · KB-LINT 收紧 → [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §0
 ```
 
 ---
@@ -167,7 +168,10 @@ POST /operation/task/{id}/cancel
 · KB_LLM_CONFIG_SECRET · KB-O4 fail · npm run kb:prd
 
 SSO-MENU-1：✅ 已交付（走查 2026-07-13）
-下迭代 P3：DC-4=8888待开发；KB-LINT/KBOPS=8090已交付→前端见 p3-optional-backend-handoff.md
+P3 可选（三项后端均已交付）：前端见 p3-optional-backend-handoff.md §0
+· DC-4 GET /operation/task/groups（8888）
+· KBOPS-2 GET /kb/ops/dashboard（8090）
+· KB-LINT 分页收紧（8090，无新 API）
 
 详稿：docs/api/frontend-backend-dependencies.md
 ```
@@ -208,7 +212,7 @@ SSO-MENU-1：✅ 已交付（走查 2026-07-13）
 | 项 | 排期 |
 |----|------|
 | **SSO-MENU-1** | ✅ **已交付 + 走查通过**（2026-07-13） |
-| **DC-4** | ⬜ P3 · 8888 待开发 |
+| **DC-4** | ✅ P3 · 8888 已交付 · **前端待接线** |
 | **KB-LINT-1/2** | ✅ 8090 已交付 · 前端可选收紧 |
 | **KBOPS-2** | ✅ 8090 已交付 · **前端待接线** |
 
@@ -229,4 +233,4 @@ SSO：☑ 30_sso_menu_system_id.sql  ☑ sso-menu-frontend-walkthrough（2026-07
 | 2026-07-13 | 初版三模块总览 |
 | 2026-07-13 | SSO 设计链入 §4/§5 |
 | 2026-07-13 | **对齐 meiling-ui**：§1.2/§2.0/§8 · 走查稿 · 前端 W7–W10 完工 · §8.4 后端回复落定 |
-| 2026-07-13 | **P3 状态更正**：KB-LINT/KBOPS 8090 ✅；仅 DC-4 待 8888；前端 handoff 改版 |
+| 2026-07-13 | **P3 前端开工**：DC-4/KBOPS/KB-LINT 三项后端均已交付；handoff §0 可复制给前端 |

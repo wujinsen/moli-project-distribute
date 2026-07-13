@@ -799,6 +799,7 @@ async function loadPresets() {
 | `getDeployStatusApi` | GET | `/operation/deploy/{key}/status?serverId=` | 远程/本机进程状态 |
 | `createDeployTaskApi` | POST | `/operation/deploy/{key}/{action}/task?serverId=&projectId=` | 异步启停，返回 `taskId` |
 | `getTaskApi` | GET | `/operation/task/{id}?logOffset=` | 轮询进度 + 增量日志 |
+| `listTaskGroupsApi` | GET | `/operation/task/groups` | 任务历史按项目分组（DC-4）；分页在组维度 |
 | `getDeployPresetsApi` | GET | `/operation/deploy/presets?serverId=` | 常用路径 + 快捷后置动作（替代前端硬编码） |
 | `createCommandTaskApi` | POST JSON | `/operation/command/exec/task` | 远程 shell；body `{ serverId, command, workDir? }` → `taskId` |
 | `uploadFileApi` | POST multipart | `/operation/file/upload` | `file, serverId, targetPath, postAction, postCommand?` |
@@ -811,11 +812,46 @@ async function loadPresets() {
 
 **生产**：所有 deploy/file/command API **必须**带 `serverId`（`allow-local` 默认 false）。
 
+#### 11.2.1 任务历史分组（DC-4）
+
+```typescript
+export type OperationTaskProjectGroup = {
+  projectId: number | null      // null → 前端显示「未关联项目」
+  projectName: string | null
+  taskCount: number
+  runningCount: number            // pending + running
+  failedCount: number
+  successCount: number
+  latestCreateTime?: string
+  tasks: OperationTask[]          // createTime 降序，条数受 tasksPerGroup 限制
+}
+
+// OperationTask 字段与 GET /operation/task/list 行一致
+export type OperationTask = {
+  id: number
+  taskType?: string
+  serverId?: number
+  projectId?: number
+  serviceKey?: string
+  action?: string
+  targetName?: string
+  status?: string
+  progress?: number
+  message?: string
+  createTime?: string
+  finishTime?: string
+  finished?: boolean
+}
+```
+
+Query：`pageNum` · `pageSize` · `tasksPerGroup`（默认 20）· `taskType` · `projectId` · `serverId` · `status`
+
 ### 11.3 前端页面
 
 | 文件 | 说明 |
 |------|------|
 | `views/operation/DeployCenterView.vue` | 选服务器 · 三件套启停 · **手输路径上传** · **远程命令** |
+| `views/operation/TaskHistoryView.vue` | 任务历史 · **DC-4 分组视图**（`listTaskGroupsApi`）· 平铺 `list` 保留 |
 | `components/operation/ServerSshModal.vue` | SSH 凭据 + **upload_allowed_roots** |
 | `components/operation/DeployTaskDrawer.vue` | 任务进度条 + 日志终端 |
 | `composables/useOperationTaskPoll.ts` | 1.5s 轮询 `getTaskApi` |

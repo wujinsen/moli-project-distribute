@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.exception.BaseException;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationTask;
+import com.moli.user.center.common.domain.vo.OperationTaskProjectGroupVo;
 import com.moli.user.center.common.domain.vo.OperationTaskVo;
 import com.moli.user.center.server.operation.config.OperationTaskProperties;
+import com.moli.user.center.server.operation.mapper.OperationProjectDeployInfoMapper;
 import com.moli.user.center.server.operation.mapper.OperationTaskMapper;
 import com.moli.user.center.server.operation.service.OperationTaskService;
 import com.moli.user.center.server.operation.task.OperationTaskContext;
@@ -21,8 +24,13 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,6 +49,8 @@ public class OperationTaskServiceImpl implements OperationTaskService {
 
     @Resource
     private OperationTaskMapper operationTaskMapper;
+    @Resource
+    private OperationProjectDeployInfoMapper operationProjectDeployInfoMapper;
     @Resource
     private OperationTaskProperties taskProperties;
 
@@ -258,16 +268,7 @@ public class OperationTaskServiceImpl implements OperationTaskService {
     @Override
     public PageRes<OperationTaskVo> list(String taskType, Long serverId, Long projectId,
                                          Integer pageNum, Integer pageSize) {
-        LambdaQueryWrapper<OperationTask> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(taskType)) {
-            wrapper.eq(OperationTask::getTaskType, taskType);
-        }
-        if (serverId != null) {
-            wrapper.eq(OperationTask::getServerId, serverId);
-        }
-        if (projectId != null) {
-            wrapper.eq(OperationTask::getProjectId, projectId);
-        }
+        LambdaQueryWrapper<OperationTask> wrapper = buildListFilterWrapper(taskType, serverId, projectId, null);
         // 列表不携带大字段日志
         wrapper.select(OperationTask.class, f -> !"task_log".equals(f.getColumn()));
         wrapper.orderByDesc(OperationTask::getCreateTime);
@@ -283,6 +284,143 @@ public class OperationTaskServiceImpl implements OperationTaskService {
         result.setPageSize((int) page.getSize());
         result.setList(page.getRecords().stream().map(this::toListVo).collect(Collectors.toList()));
         return result;
+    }
+
+    @Override
+    public PageRes<OperationTaskProjectGroupVo> listGroups(String taskType, Long serverId, Long projectId,
+                                                           String status, Integer pageNum, Integer pageSize,
+                                                           Integer tasksPerGroup) {
+        LambdaQueryWrapper<OperationTask> wrapper = buildListFilterWrapper(taskType, serverId, projectId, status);
+        wrapper.select(OperationTask.class, f -> !"task_log".equals(f.getColumn()));
+        wrapper.orderByDesc(OperationTask::getCreateTime);
+
+        List<OperationTask> allTasks = operationTaskMapper.selectList(wrapper);
+        Map<Long, List<OperationTask>> grouped = new HashMap<>();
+        for (OperationTask task : allTasks) {
+            grouped.computeIfAbsent(task.getProjectId(), ignored -> new ArrayList<>()).add(task);
+        }
+
+        List<ProjectGroupBucket> buckets = new ArrayList<>();
+        for (Map.Entry<Long, List<OperationTask>> entry : grouped.entrySet()) {
+            List<OperationTask> tasks = entry.getValue();
+            tasks.sort(Comparator.comparing(OperationTask::getCreateTime,
+                    Comparator.nullsLast(Comparator.reverseOrder())));
+            ProjectGroupBucket bucket = new ProjectGroupBucket();
+            bucket.projectId = entry.getKey();
+            bucket.tasks = tasks;
+            bucket.latestCreateTime = tasks.stream()
+                    .map(OperationTask::getCreateTime)
+                    .filter(Objects::nonNull)
+                    .max(Date::compareTo)
+                    .orElse(null);
+            bucket.taskCount = tasks.size();
+            bucket.runningCount = (int) tasks.stream()
+                    .filter(t -> OperationTaskStatus.PENDING.equals(t.getStatus())
+                            || OperationTaskStatus.RUNNING.equals(t.getStatus()))
+                    .count();
+            bucket.failedCount = (int) tasks.stream()
+                    .filter(t -> OperationTaskStatus.FAILED.equals(t.getStatus()))
+                    .count();
+            bucket.successCount = (int) tasks.stream()
+                    .filter(t -> OperationTaskStatus.SUCCESS.equals(t.getStatus()))
+                    .count();
+            buckets.add(bucket);
+        }
+
+        buckets.sort(Comparator
+                .comparing(ProjectGroupBucket::getLatestCreateTime,
+                        Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(ProjectGroupBucket::getProjectId,
+                        Comparator.nullsLast(Comparator.reverseOrder())));
+
+        int pn = pageNum == null ? 1 : pageNum;
+        int ps = pageSize == null ? 10 : pageSize;
+        int total = buckets.size();
+        int from = Math.max(0, (pn - 1) * ps);
+        List<ProjectGroupBucket> pageBuckets = from >= total
+                ? new ArrayList<>()
+                : buckets.subList(from, Math.min(from + ps, total));
+
+        Map<Long, String> projectNames = loadProjectNames(pageBuckets);
+        int perGroup = tasksPerGroup == null ? 20 : Math.max(1, tasksPerGroup);
+
+        PageRes<OperationTaskProjectGroupVo> result = new PageRes<>();
+        result.setTotal(total);
+        result.setPageNum(pn);
+        result.setPageSize(ps);
+        result.setList(pageBuckets.stream().map(bucket -> toGroupVo(bucket, projectNames, perGroup))
+                .collect(Collectors.toList()));
+        return result;
+    }
+
+    private LambdaQueryWrapper<OperationTask> buildListFilterWrapper(String taskType, Long serverId,
+                                                                     Long projectId, String status) {
+        LambdaQueryWrapper<OperationTask> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.isNotBlank(taskType)) {
+            wrapper.eq(OperationTask::getTaskType, taskType);
+        }
+        if (serverId != null) {
+            wrapper.eq(OperationTask::getServerId, serverId);
+        }
+        if (projectId != null) {
+            wrapper.eq(OperationTask::getProjectId, projectId);
+        }
+        if (StringUtils.isNotBlank(status)) {
+            wrapper.eq(OperationTask::getStatus, status);
+        }
+        return wrapper;
+    }
+
+    private Map<Long, String> loadProjectNames(List<ProjectGroupBucket> pageBuckets) {
+        List<Long> projectIds = pageBuckets.stream()
+                .map(ProjectGroupBucket::getProjectId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (projectIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        return operationProjectDeployInfoMapper.selectBatchIds(projectIds).stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(
+                        OperationProjectDeployInfo::getId,
+                        OperationProjectDeployInfo::getProjectName,
+                        (a, b) -> a));
+    }
+
+    private OperationTaskProjectGroupVo toGroupVo(ProjectGroupBucket bucket, Map<Long, String> projectNames,
+                                                  int tasksPerGroup) {
+        OperationTaskProjectGroupVo vo = new OperationTaskProjectGroupVo();
+        vo.setProjectId(bucket.projectId);
+        vo.setProjectName(bucket.projectId == null ? null : projectNames.get(bucket.projectId));
+        vo.setTaskCount(bucket.taskCount);
+        vo.setRunningCount(bucket.runningCount);
+        vo.setFailedCount(bucket.failedCount);
+        vo.setSuccessCount(bucket.successCount);
+        vo.setLatestCreateTime(bucket.latestCreateTime);
+        vo.setTasks(bucket.tasks.stream()
+                .limit(tasksPerGroup)
+                .map(this::toListVo)
+                .collect(Collectors.toList()));
+        return vo;
+    }
+
+    private static final class ProjectGroupBucket {
+        private Long projectId;
+        private List<OperationTask> tasks;
+        private Date latestCreateTime;
+        private int taskCount;
+        private int runningCount;
+        private int failedCount;
+        private int successCount;
+
+        private Date getLatestCreateTime() {
+            return latestCreateTime;
+        }
+
+        private Long getProjectId() {
+            return projectId;
+        }
     }
 
     private OperationTaskVo toListVo(OperationTask task) {

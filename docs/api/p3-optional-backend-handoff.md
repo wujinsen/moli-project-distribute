@@ -7,39 +7,53 @@
 
 | 任务 ID | 服务 | 前端落点 | 后端 API | 前端动作 |
 |---------|------|----------|----------|----------|
-| **DC-4** | `8888` | `TaskHistoryView.vue` | ⬜ **待开发** | **暂缓** — 等 `GET /operation/task/groups` |
+| **DC-4** | `8888` | `TaskHistoryView.vue` | ✅ **已交付** | **可开工** — `GET /operation/task/groups` |
 | **KB-LINT-1/2** | `8090` | `kbLint.ts` · `KbLintIssuesPanel.vue` | ✅ **已交付** | **可选收紧** — 信任服务端分页（见 §2） |
 | **KBOPS-2** | `8090` | `KnowledgeOpsDashboardView.vue` | ✅ **已交付**（KBOPS-9） | **可排期** — 改单请求 `GET /kb/ops/dashboard`（见 §3） |
 
-**结论**：8090 两项 **API 已就绪**；8888 **仅 DC-4 仍缺后端**。前端可按上表排期，无需等 8090。
+**结论**：P3 三项 **后端均已交付**；前端按 §4 排期接线，**无 API 阻塞**。
 
 ---
 
-## 0. 给前端一句话（可复制）
+## 0. 给前端一句话（可复制 · 开工）
 
 ```
-【meiling-ui · P3 可选 · 2026-07-13】
+【meiling-ui · P3 可选 · 2026-07-13 · 三项后端均已交付】
 
-8090 已就绪，可开工：
-1) KBOPS-2：KnowledgeOpsDashboardView 改调 GET /kb/ops/dashboard（单请求，见 p3 handoff §3）
-2) KB-LINT：质量 Tab 已兼容服务端分页；确认 unassignedOnly + pageNum 走服务端分支即可
+请读：moli-project-distribute/docs/api/p3-optional-backend-handoff.md
 
-8888 仍待后端：
-3) DC-4：TaskHistoryView 分组视图 — 等 GET /operation/task/groups，暂缓
+① DC-4（8888 · 优先）
+   · 文件：src/api/operation.ts → listTaskGroupsApi
+   · 页面：TaskHistoryView.vue — 平铺/按项目分组切换 + 手风琴
+   · API：GET /operation/task/groups（分页在「项目组」维度，见 §1）
+   · 权限：operation:server:list（与现 task/list 一致）
+   · 前置：:8888 user-center 重启后含 DC-4 代码
 
-详稿：moli-project-distribute/docs/api/p3-optional-backend-handoff.md
-缺口：docs/frontend-gaps.md §1.3 · §三
+② KBOPS-2（8090）
+   · KnowledgeOpsDashboardView 改单请求 GET /kb/ops/dashboard（§3）
+
+③ KB-LINT（8090 · 可选收紧）
+   · kbLint.ts 已兼容服务端分页；质量 Tab 始终带 pageNum/pageSize（§2）
+
+契约：operation-frontend.md §11.2.1 · operation-deploy-api.md §task/groups
+缺口索引：docs/frontend-gaps.md §1.3 · §三
 ```
 
 ---
 
-## 0.1 给后端（仅 DC-4）
+## 0.1 开工提示词（贴进 meiling-ui 对话）
 
 ```
-【P3 · 仅剩 DC-4 · 8888】
+请读 monorepo docs/api/p3-optional-backend-handoff.md，按 §4 排期实现 P3 可选：
 
-请评估 GET /operation/task/groups（方案 A，见 p3-optional-backend-handoff.md §1）。
-KB-LINT / KBOPS Dashboard API 8090 已上线，前端自行接线。
+1. DC-4：operation.ts 增加 listTaskGroupsApi；TaskHistoryView 增加「按项目分组」视图
+   - 分组头用 taskCount / runningCount / failedCount / latestCreateTime
+   - projectId=null 显示「未关联项目」
+   - 组内 tasks 不足时用 GET /operation/task/list?projectId= 补全
+2. KBOPS-2：KnowledgeOpsDashboardView 改调 GET /kb/ops/dashboard
+3. KB-LINT：确认 Lint 工单请求带 pageNum/pageSize（无新 API）
+
+类型见 operation-frontend.md §11.2.1；字段级见 operation-deploy-api.md
 ```
 
 ---
@@ -52,7 +66,7 @@ KB-LINT / KBOPS Dashboard API 8090 已上线，前端自行接线。
 - 现网 `GET /operation/task/list` 为**扁平分页**，多机批量后同一项目下多台服务器任务分散，运维需肉眼归并。
 - 设计意图：[deploy-center-project-first.md](../design/deploy-center-project-first.md) §5「任务历史按 `projectId` 聚合视图」。
 
-### 1.2 前端目标（API 就绪后）
+### 1.2 前端目标（可开工）
 
 | 能力 | 说明 |
 |------|------|
@@ -118,22 +132,81 @@ GET /operation/task/list?groupBy=project
 
 - **勿 Breaking** `GET /operation/task/list` 扁平语义。
 - `deploy_batch` 父任务：建议 `projectId` 有值、`serverId` 可空；子任务若单独落库需可筛入同一 `projectId` 组。
-- 权限：与 `operation:task:list`（或现 task list 同等权限）一致。
+- 权限：`operation:server:list`（与 `GET /operation/task/list` 一致）
 
-### 1.5 前端接线（API 就绪后）
+**请求示例**：
+
+```http
+GET /operation/task/groups?pageNum=1&pageSize=10&tasksPerGroup=20
+Authorization: Bearer <token>
+```
+
+**响应片段**（`MoliResult<PageRes<OperationTaskProjectGroup>>`）：
+
+```json
+{
+  "code": 200,
+  "data": {
+    "total": 3,
+    "pageNum": 1,
+    "pageSize": 10,
+    "list": [
+      {
+        "projectId": 731708402010423296,
+        "projectName": "moli-user-center",
+        "taskCount": 12,
+        "runningCount": 1,
+        "failedCount": 2,
+        "successCount": 9,
+        "latestCreateTime": "2026-07-13T10:00:00.000+00:00",
+        "tasks": [ { "id": 99, "taskType": "deploy", "status": "running", "projectId": 731708402010423296 } ]
+      },
+      {
+        "projectId": null,
+        "projectName": null,
+        "taskCount": 5,
+        "runningCount": 0,
+        "failedCount": 0,
+        "successCount": 5,
+        "latestCreateTime": "2026-07-12T08:00:00.000+00:00",
+        "tasks": [ { "id": 1, "taskType": "health_probe", "status": "success", "projectId": null } ]
+      }
+    ]
+  }
+}
+```
+
+> `runningCount` = `pending` + `running`；`cancelled` 计入 `taskCount` 但不计入 success/failed/running 三计数。
+
+### 1.5 前端接线
 
 | 文件 | 改动 |
 |------|------|
-| `src/api/operation.ts` | `listTaskGroupsApi` |
-| `src/views/operation/TaskHistoryView.vue` | 平铺/分组切换 · 手风琴 UI |
+| `src/api/operation.ts` | `listTaskGroupsApi`（见下方签名） |
+| `src/views/operation/TaskHistoryView.vue` | 平铺/分组切换 · 手风琴 UI · 路由 `?projectId=` 保留 |
 | `src/i18n/locales/{zh,en,ja}.ts` | `operation.taskHistory.groupByProject` 等 |
+
+```typescript
+export const listTaskGroupsApi = (params?: {
+  pageNum?: number
+  pageSize?: number
+  tasksPerGroup?: number
+  taskType?: string
+  projectId?: number
+  serverId?: number
+  status?: string
+}) => request<PageRes<OperationTaskProjectGroup>>(`${OP}/task/groups`, { params })
+```
 
 ### 1.6 验收
 
-- [ ] 部署中心选项目 → 任务历史带 `projectId` → 分组视图仅 1 组或平铺一致
-- [ ] 多项目账号：分组头 `taskCount` 与组内 `list?projectId=` 总数一致
-- [ ] 无 `projectId` 任务进入「未关联项目」组
-- [ ] 分页：`total` 为组数，翻页不串组
+手测 + 单测见 [`docs/test/operation-task-groups-acceptance.md`](../test/operation-task-groups-acceptance.md)。
+
+- [ ] 部署中心选项目 → 任务历史带 `projectId` → 分组视图仅 1 组或平铺一致（FE-4）
+- [ ] 多项目账号：分组头 `taskCount` 与 `list?projectId=` 总数一致（GR-13）
+- [ ] 无 `projectId` 任务进入「未关联项目」组（GR-4）
+- [ ] 分页：`total` 为组数，翻页不串组（GR-2 / FE-5）
+- [ ] `mvn -Dtest=OperationTaskServiceImplTest,OperationRemoteDeployControllersApiTest test` 通过
 
 ---
 
@@ -333,10 +406,12 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 ## 4. 建议前端排期（2026-07-13）
 
 ```text
-① KBOPS-2 前端接线（8090 API 已就绪）— 单请求 dashboard，减首屏 3 往返
-② KB-LINT 可选收紧 — 确认分页参数；无新 API
-③ DC-4 — 等 8888 GET /operation/task/groups 后再做 TaskHistoryView 分组
+① DC-4（8888 · 建议优先）— listTaskGroupsApi + TaskHistoryView 分组视图
+② KBOPS-2（8090）— KnowledgeOpsDashboardView 单请求 GET /kb/ops/dashboard
+③ KB-LINT（8090 · 可选）— 确认分页参数；无新 API
 ```
+
+**前置**：`:8888` 重启含 DC-4 代码；`:8090` 已在跑即可。
 
 ---
 
@@ -356,6 +431,6 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 
 | 任务 ID | 后端 | 前端 | 接口路径 | 备注 |
 |---------|------|------|----------|------|
-| DC-4 | ⬜ 待开发 | ⬜ 暂缓 | `GET /operation/task/groups` | 方案 A |
+| DC-4 | ✅ 已交付 | ⬜ 待接线 | `GET /operation/task/groups` | 方案 A |
 | KB-LINT-1/2 | ✅ 已交付 | 🟡 可选收紧 | `GET /kb/lint/issues` | `current`+`size`+`unassignedOnly` |
 | KBOPS-2 | ✅ 已交付 | ⬜ 待接线 | `GET /kb/ops/dashboard` | 实现 ID=KBOPS-9；参数 `trendDays` |

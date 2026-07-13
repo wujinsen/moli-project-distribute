@@ -18,6 +18,7 @@
 | **批量滚动重启** | ✅ `POST /operation/deploy/batch/task` |
 | **批量 links** | ✅ `GET .../project|component/links/batch?ids=` |
 | **任务取消** | ✅ `POST /operation/task/{id}/cancel` |
+| **任务历史分组（DC-4）** | ✅ `GET /operation/task/groups` · 见 [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
 | **detail `*Count` 与 list 一致** | ✅ **`toVo()` 统一派生** · [operation-frontend-handoff.md](operation-frontend-handoff.md) |
 | **order / bi 远程启停** | ✅ `presets.serviceKeys` 含五服务；`moli-service.sh` 已扩展 |
 | **阻塞项** | **无**（W1–W10 走查 ✅ 2026-07-13） |

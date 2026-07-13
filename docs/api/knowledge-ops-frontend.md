@@ -293,18 +293,19 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 
 ---
 
-## 8. P2 · 运维 Dashboard（KBOPS-9） ✅
+## 8. P2 · 运维 Dashboard（KBOPS-9） ✅ 后端 · 🟡 前端可接线
 
 **路由**：`knowledge/ops/dashboard` · perm `kb:ops:dashboard` · `KnowledgeOpsDashboardView.vue`
 
-| 区块 | 数据源 | 说明 |
-|------|--------|------|
-| Sync 趋势 | `GET /kb/sync/logs` 聚合 | 近 7 日 success/fail 计数 |
-| 待处理工单 | `GET /kb/lint/issues?resolved=0` | 按 space / issueType |
-| LLM 可用 | `GET /kb/ask/llm-config` | available 灯 |
-| （可选）断链 Top N | lint issues `broken_link` | P2 |
+| 区块 | 现网数据源 | 推荐改接 |
+|------|------------|----------|
+| D1 Sync 趋势 | `GET /kb/sync/logs` + 客户端聚合 | `GET /kb/ops/dashboard` → `syncTrend` |
+| D2 待处理工单 | `GET /kb/lint/issues?status=0` 全量 | `lintSummary.openByType` |
+| D3 LLM 可用 | `GET /kb/ask/llm-config` | `dashboard.llm`（可保留降级） |
+| D4 断链 Top | lint issues 客户端聚合 | `lintSummary.topBrokenLinks` |
 
-后端 `GET /kb/ops/dashboard` ✅；前端 D1–D4 由 `kbOpsDashboard.ts` 聚合现有 logs/issues/llm-config 接口实现。
+**后端** `GET /kb/ops/dashboard` ✅（参数 **`trendDays`**，非 `days`）。  
+**前端 P3**：[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §3 · 新增 `getKbOpsDashboardApi` 替换 `loadDashboard()` 三请求。
 
 ---
 

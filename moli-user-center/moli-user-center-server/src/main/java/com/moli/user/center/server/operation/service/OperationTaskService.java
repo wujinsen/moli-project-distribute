@@ -2,6 +2,7 @@ package com.moli.user.center.server.operation.service;
 
 import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.entity.OperationTask;
+import com.moli.user.center.common.domain.vo.OperationTaskProjectGroupVo;
 import com.moli.user.center.common.domain.vo.OperationTaskVo;
 import com.moli.user.center.server.operation.task.OperationTaskJob;
 
@@ -23,6 +24,11 @@ public interface OperationTaskService {
     /** 任务历史分页。 */
     PageRes<OperationTaskVo> list(String taskType, Long serverId, Long projectId,
                                  Integer pageNum, Integer pageSize);
+
+    /** 任务历史按项目分组分页（分页维度为项目组）。 */
+    PageRes<OperationTaskProjectGroupVo> listGroups(String taskType, Long serverId, Long projectId,
+                                                    String status, Integer pageNum, Integer pageSize,
+                                                    Integer tasksPerGroup);
 
     /**
      * 协作式取消：pending / running 可取消；success / failed / cancelled 拒绝。

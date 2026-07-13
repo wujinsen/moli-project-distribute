@@ -264,6 +264,7 @@
 - `GET /operation/task/{id}?logOffset=`：`operation:server:list`；轮询进度与增量日志
 - `POST /operation/task/{id}/cancel`：`operation:server:list`；协作式取消 pending/running
 - `GET /operation/task/list`：`operation:server:list`；分页历史（不含大段 log）；可按 `projectId` 过滤
+- `GET /operation/task/groups`：`operation:server:list`；按 `projectId` 分组分页（`tasksPerGroup` 控制组内条数）；可选 `status` 过滤
 
 ### 运维健康 `OperationHealthController`（前缀 `/operation/health`，1个）
 

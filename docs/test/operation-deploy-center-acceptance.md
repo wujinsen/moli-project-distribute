@@ -2,7 +2,8 @@
 
 > 模块：`moli-user-center-server` + `meiling-ui`  
 > 契约：[`docs/api/operation-frontend.md`](../api/operation-frontend.md) §11  
-> 自动化：`mvn -Dtest=Operation*Remote*,Operation*Task*,Operation*Upload*,OperationSsh*,OperationShellGuard* test`（user-center-server）
+> 自动化：`mvn -Dtest=Operation*Remote*,Operation*Task*,Operation*Upload*,OperationSsh*,OperationShellGuard* test`（user-center-server）  
+> **DC-4 分组专项**：[operation-task-groups-acceptance.md](operation-task-groups-acceptance.md)
 
 ## 0. 前置条件
 
@@ -35,6 +36,7 @@
 | TASK-1 | 轮询增量日志 | `GET /operation/task/{id}?logOffset=0` 后 offset=上次 `nextLogOffset` | `logChunk` 仅为新增段；`finished=false` 时 status=running |
 | TASK-2 | 任务完成 | 任务 success/failed 后最后一次轮询 | `finished=true`；progress=100（成功）或失败摘要 |
 | TASK-3 | 任务历史 | `GET /operation/task/list?taskType=deploy` | 分页列表**不含** `task_log` 大字段 |
+| TASK-G1 | **按项目分组（DC-4）** | `GET /operation/task/groups` | `total` 为组数；组内含 `taskCount`/`tasks[]`；详见 [operation-task-groups-acceptance.md](operation-task-groups-acceptance.md) |
 | TASK-4 | 互斥锁 | 同一 server+service 连续点两次 restart | 第二次提示「已有任务在执行」 |
 | TASK-5 | 前端抽屉 | 部署中心启停后打开任务抽屉 | 1.5s 轮询；日志自动追加；完成后停止轮询 |
 

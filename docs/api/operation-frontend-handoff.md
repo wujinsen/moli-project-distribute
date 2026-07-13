@@ -227,6 +227,7 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 
 | 模块 | 文档 | 阻塞 |
 |------|------|------|
+| **P3 可选** | [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) | **无**（DC-4/KBOPS/KB-LINT 后端 ✅；前端待接线） |
 | 知识库 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | 环境配置 |
 | SSO | [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md) | F-SSO-1～6 · Q3/Q5 已定案 |
 
@@ -255,6 +256,19 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 3. §4 对齐 src/api/operation.ts
 4. 跑 §5 W1–W10
 后端 :8888 已重启最新 user-center 后再测
+```
+
+### 7.4 P3 可选开工（2026-07-13 · 可复制给前端）
+
+```
+【P3 可选 · meiling-ui 可排期】
+详稿：docs/api/p3-optional-backend-handoff.md §0 / §0.1
+
+① DC-4：listTaskGroupsApi + TaskHistoryView 分组视图（8888）
+② KBOPS-2：KnowledgeOpsDashboardView → GET /kb/ops/dashboard（8090）
+③ KB-LINT：质量 Tab 确认服务端分页参数（8090，无新 API）
+
+类型：operation-frontend.md §11.2.1
 ```
 
 ### 7.3 相关

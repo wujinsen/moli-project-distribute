@@ -5,6 +5,7 @@ import com.moli.common.core.MoliResult;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
+import com.moli.user.center.common.domain.vo.OperationTaskProjectGroupVo;
 import com.moli.user.center.common.domain.vo.OperationTaskVo;
 import com.moli.user.center.server.operation.service.OperationTaskService;
 import io.swagger.annotations.Api;
@@ -50,6 +51,21 @@ public class OperationTaskController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         return MoliResult.success(operationTaskService.list(taskType, serverId, projectId, pageNum, pageSize));
+    }
+
+    @GetMapping("/groups")
+    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
+    @ApiOperation(value = "任务历史按项目分组", notes = "分页在项目组维度；组内含最近 tasksPerGroup 条任务")
+    public MoliResult<PageRes<OperationTaskProjectGroupVo>> groups(
+            @RequestParam(required = false) String taskType,
+            @RequestParam(required = false) Long serverId,
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "20") Integer tasksPerGroup) {
+        return MoliResult.success(operationTaskService.listGroups(
+                taskType, serverId, projectId, status, pageNum, pageSize, tasksPerGroup));
     }
 
     @PostMapping("/{id}/cancel")

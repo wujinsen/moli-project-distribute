@@ -3,6 +3,8 @@ package com.moli.user.center.server.api;
 import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.vo.OperationServerSshVo;
 import com.moli.user.center.common.domain.vo.OperationSshTestVo;
+import com.moli.user.center.common.domain.vo.OperationTaskProjectGroupVo;
+import com.moli.user.center.common.domain.vo.OperationTaskProjectGroupVo;
 import com.moli.user.center.common.domain.vo.OperationTaskVo;
 import com.moli.user.center.common.domain.dto.operation.OperationCommandExecRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationDeployTaskRequest;
@@ -34,6 +36,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -82,6 +85,24 @@ public class OperationRemoteDeployControllersApiTest extends AbstractApiTest {
     public void GET_operation_task_list() {
         when(operationTaskService.list(null, null, null, 1, 10)).thenReturn(new PageRes<>());
         ControllerTestSupport.assertSuccess(taskController.list(null, null, null, 1, 10));
+    }
+
+    @Test
+    public void GET_operation_task_groups() {
+        when(operationTaskService.listGroups(null, null, null, null, 1, 10, 20))
+                .thenReturn(new PageRes<OperationTaskProjectGroupVo>());
+        ControllerTestSupport.assertSuccess(taskController.groups(null, null, null, null, 1, 10, 20));
+    }
+
+    @Test
+    public void GET_operation_task_groups_forwards_query_params() {
+        PageRes<OperationTaskProjectGroupVo> page = new PageRes<>();
+        page.setTotal(1);
+        when(operationTaskService.listGroups("deploy", 204L, 501L, "running", 2, 5, 10))
+                .thenReturn(page);
+        ControllerTestSupport.assertSuccess(
+                taskController.groups("deploy", 204L, 501L, "running", 2, 5, 10));
+        verify(operationTaskService).listGroups("deploy", 204L, 501L, "running", 2, 5, 10);
     }
 
     @Test

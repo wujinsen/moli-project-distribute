@@ -183,6 +183,12 @@ ops:
   - 批量 deploy / 探活等在**步骤间隙**响应取消；单次 SSH 须等当前命令结束后才退出
   - 日志含 `[CANCEL]` 行；`message` 为「用户取消」
 
+### `GET /operation/task/groups`
+
+- **权限**：`operation:server:list`
+- **查询**：`taskType`、`serverId`、**`projectId`**、**`status`**、`pageNum`、`pageSize`、**`tasksPerGroup`**（默认 20）
+- **说明**：分页维度为**项目组**；`total` 为组数；组内 `tasks` 按 `createTime` 降序，条数受 `tasksPerGroup` 限制；`projectId=null` 为「未关联项目」组
+
 ### `GET /operation/task/list`
 
 - **权限**：`operation:server:list`
