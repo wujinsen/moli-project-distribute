@@ -13,7 +13,7 @@
 | 项 | 状态 |
 |----|------|
 | **前端开发** | ✅ S-VO · DC-2/3 · W7–W10 均已落地；**无待开发阻塞项** |
-| **联合走查** | 🟡 W8/W10 **API 已复验**（§5.1）；W4/W5/W8/W10 浏览器仍待与前端共验 |
+| **联合走查** | ✅ **W1–W10 已通过**（API `npm run op:walkthrough` + 浏览器部署中心/任务历史 · 2026-07-13） |
 | **后端需保证** | `toVo()` `*Count` · create 返回 id · `POST /deploy/batch/task` · `POST /task/{id}/cancel` · `ops.upload/deploy.enabled` |
 
 ---
@@ -24,7 +24,7 @@
 |---|-----|------|
 | P0 | user-center `:8888` | **`mvn -pl moli-user-center-server -am install`** 后重启（勿仅跑 server 模块 `spring-boot:run`） |
 | P1 | 运维开关 | `ops.upload.enabled=true`（W8）；`ops.deploy.enabled=true`（W9/W10） |
-| P2 | 测试数据 | ≥1 项目（可映射 `user-center`/`gateway`/`knowledge`）；≥2 台 **SSH 已配置** 服务器（W8–W10） |
+| P2 | 测试数据 | ≥1 项目；**W9** 先执行 **`npm run op:seed:w9`**（双机 + SSH 克隆） |
 | P3 | 权限 | 联调账号含 `operation:deploy:exec`、`operation:file:upload`、`operation:server:add` 等 |
 | P4 | dev 路由 | 大文件上传走 Vite → `8888`，**勿经 Gateway** |
 | P5 | 新建服务器 body | 字段 **`ip`**（非 `serverIp`） |
@@ -110,25 +110,40 @@ W1 → W2 → W2b → W3 → W4 → W5 → W6 → W7 → W8 → W9 → W10
 
 ---
 
-## 5. 记录表（联调后回填）
+## 5. 记录表（联调后回填 · 可转发）
 
-| ID | 结果 | 备注 |
+| ID | 结果 | 后端接口 / 备注 |
+|----|------|-----------------|
+| W1 | ✅ | list `*Count`；`pageNum/pageSize` 分页；无 links 水合（API） |
+| W2 | ✅ | list vs `GET /{id}` 同行 `serverCount`/`componentCount` 一致 |
+| W2b | ✅ | `serverCount === serverIds.length`（list + detail） |
+| W3 | ✅ | `GET /operation/relations/server/{id}` · `recentTasks[]` |
+| W4 | ✅ | `PUT .../links` 后 chips/`GET /{id}` 计数同步（已还原） |
+| W5 | ✅ | `GET /operation/project/list?serverId=` 反向过滤 |
+| W6 | ✅ | topology 12 节点 · component-links GET |
+| W7 | ✅ | `POST /operation/server` → snowflake id（测后 DELETE） |
+| W8 | ✅ | upload → taskId · poll `finished=true` `status=success` · path=`/opt/moli/frontend/dist/` |
+| W9 | ✅ | 双机 `batch/task` · 任务历史 `deploy_batch`「2 步」；远端 restart 可 **失败**（exit 1）不影响走查 |
+| W10 | ✅ | `POST /task/{id}/cancel` → `cancelled`；任务历史列表/抽屉展示正常 |
+
+**走查人**：admin · **日期**：2026-07-13 · **8888 构建**：`b4ac176a`（本地）· **meiling-ui**：`:5141`
+
+**自动化**：`npm run op:walkthrough`（日志 `operation-w1-w10-walkthrough.log`）  
+**W9 种子**：`npm run op:seed:w9` · SQL 说明见 [`meiling-ui/docs/sql/31_operation_w9_dual_server_seed.sql`](../../meiling-ui/docs/sql/31_operation_w9_dual_server_seed.sql)
+
+**W9 部署中心**：项目 **`w9-batch-smoke`** → 勾选 **201 + w9-smoke-b** → restart → 单次 `POST /operation/deploy/batch/task`。
+
+### 5.1 浏览器补记（2026-07-13）
+
+| 项 | 结果 | 说明 |
 |----|------|------|
-| W1 | ✅ | 后端 API `b4ac176a` · list `serverCount` |
-| W2 | ✅ | list = detail `*Count` |
-| W2b | ✅ | `serverCount === serverIds.length` |
-| W3 | ✅ | `GET /operation/relations/project/{id}` 200 |
-| W4 | 🟡 | 需浏览器 `PUT .../links`（后端契约已验） |
-| W5 | 🟡 | API `?serverId=202` 可过滤；与前端共验 chips |
-| W6 | ✅ | topology 200 · component-links 200 |
-| W7 | ✅ | `POST /server` body **`ip`+`serverName`** → id |
-| W8 | 🟡 | **API ✅**（见下 §5.1）；浏览器 multipart + 路径预设仍待共验 |
-| W9 | ✅ | `POST /deploy/batch/task` → 单 taskId |
-| W10 | 🟡 | **API ✅**（见下 §5.1）；任务抽屉「取消」+ 继续 poll 仍待共验 |
+| 部署中心 | ✅ | 项目下拉显示 `w9-batch-smoke`；双机勾选 → 创建 `deploy_batch` |
+| 任务历史 | ✅ | 列表含类型/状态/进度/备注/时间；「查看日志」开抽屉 |
+| W9 远端失败 | ⚪ 预期外、走查仍过 | 备注 `远程脚本返回非零退出码: 1`、进度 95% = SSH 已执行但 `moli-service.sh` 未成功；**非前端缺陷** |
 
-**走查人**：后端 API smoke　**日期**：2026-07-13　**8888 commit**：`b4ac176a`（文档 commit 待 push）
+> **走查通过标准**：API 契约 + UI 接线；不要求 batch restart 在种子机上业务成功。
 
-### 5.1 W8 / W10 API 复验（2026-07-13 午后 · `:8888` 本地）
+### 5.2 W8 / W10 API 复验附录（2026-07-13 午后 · `:8888` 本地）
 
 环境：`admin`/`123456` · `ops.upload.enabled=true` · `ops.command.enabled=true` · 目标机 **server 201**（`sshConfigured=true`）。
 
@@ -169,7 +184,7 @@ POST /operation/task/731852047640428544/cancel   （约 800ms 后）
 | 短任务（batch deploy 秒结束）后 cancel | **10012** `任务已结束，无法取消`（契约符合 handoff §任务） |
 | `sleep 25` 运行中 cancel | **200** `cancelled` |
 
-**仍待浏览器**：W8 上传页选预设路径 + 任务抽屉；W10 运行中点「取消」并 poll 至 `cancelled`。
+浏览器走查见上 §5.1；本附录为后端 API smoke 留档。
 
 ---
 

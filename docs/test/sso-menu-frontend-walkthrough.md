@@ -1,6 +1,6 @@
 # SSO-MENU-1 · 前端走查清单（meiling-ui）
 
-> **更新**：2026-07-13 · **联合走查通过**（F-SSO-1～6 · S3～S7/S10 ✅；S1/S2/S8/S9 边界项未测）  
+> **更新**：2026-07-13 · **联合走查 + 边界项全部通过**（F-SSO-1～6 · S1～S10 ✅）  
 > **读者**：meiling-ui 前端、user-center 后端联调  
 > **契约**：[sso-menu-frontend-handoff.md](../api/sso-menu-frontend-handoff.md)  
 > **前端镜像**：[meiling-ui/docs/test/sso-menu-frontend-walkthrough.md](../../meiling-ui/docs/test/sso-menu-frontend-walkthrough.md)  
@@ -30,20 +30,20 @@
 | F-SSO-4 | ✅ | SystemSwitcher 切换后 tab 全部消失（手验 2026-07-13） |
 | F-SSO-5 | ✅ | 多系统 login `menuVoList=[]` → 选系统页 |
 | F-SSO-6 | ✅ | admin 侧栏有 Knowledge Base；无 ChatGPT/BI |
-| S1 | ⬜ | 需 `sso.enabled=false` |
-| S2 | ⬜ | 需仅一条 INTERNAL 种子 |
+| S1 | ✅ | API：`sso.enabled=false` 重启 8888；admin login `portal=false` `menuVoList=7` `getRouters=7` |
+| S2 | ✅ | API：huangli 仅 system_id=1；login 自动 `current=moli-admin` `menuVoList=1` |
 | S3 | ✅ | enter admin：6 顶栏；无 500/600；有 900 |
 | S4 | ✅ | switch→admin 后 `getRouters` 恢复 6 项 |
 | S5 | ✅ | enter 39：`redirectUrl` + `getRouters=[]` |
 | S6 | ✅ | admin 运行时无 500/600；zhangsan 仅 1 顶栏 |
 | S7 | ✅ | `getMenuTreeAll` count=8 |
-| S8 | ⬜ | 需角色仅勾子菜单账号 |
-| S9 | ⬜ | 需专测角色 |
+| S8 | ✅ | API：zhangsan `dict_list_only_smoke` enter admin → parent id=1 + child id=7 only |
+| S9 | ✅ | API：role 临时仅 401 → parent 400 + child 401；menu7 祖先补齐同 S8 |
 | S10 | ✅ | 未 enter `getRouters=[]` |
 
 **走查人**：superadmin / admin · **日期**：2026-07-13 · **8888**：本地 dev · **meiling-ui**：`:5141`
 
-**结论**：主链路（login → 选系统 → enter → SystemSwitcher 切换 → 菜单隔离 + tab 清空）**已通过**；S1/S2/S8/S9 为配置/角色边界，不阻塞交付。
+**结论**：主链路 + 边界项（门户关闭、单 INTERNAL 自动 enter、子菜单祖先补齐）**均已通过**（2026-07-13 API 冒烟）。
 
 ---
 
@@ -139,7 +139,12 @@
 ## 6. 自动化冒烟（可选复跑）
 
 ```powershell
+# 主链路 S3～S7/S10
 powershell -File docs/test/_sso_walkthrough_api.ps1
+
+# 边界 S1/S2/S8/S9（S1 需先以 -Dsso.enabled=false 重启 8888，测完恢复 true）
+powershell -File docs/test/_sso_walkthrough_boundary.ps1 -SkipS1   # 门户开启时跳过 S1
+powershell -File docs/test/_sso_walkthrough_boundary.ps1           # 门户关闭实例上全量跑
 ```
 
-前置：`system_id` 已 backfill（46/47）· `Authorization` 头传 login `token` · `sso.enabled=true`。
+前置：`system_id` 已 backfill（46/47）· `Authorization` 头传 login `token` · 默认 `sso.enabled=true`。S1 临时：`mvn spring-boot:run -Dspring-boot.run.jvmArguments=-Dsso.enabled=false`。

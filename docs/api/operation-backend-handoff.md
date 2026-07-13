@@ -1,6 +1,6 @@
 # 运营管理 · 后端联调通知（给 meiling-ui 前端）
 
-> **更新**：2026-07-13 · **commit `b4ac176a`** · **前端 W7–W10 已对接** · 待联合走查  
+> **更新**：2026-07-13 · **commit `b4ac176a`** · **前端 W7–W10 已对接** · **W1–W10 走查 ✅**  
 > **走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)  
 > **前端开工**：[operation-frontend-handoff.md](operation-frontend-handoff.md) · **完整契约**：[operation-frontend.md](operation-frontend.md)  
 > **meiling-ui 交付稿**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)
@@ -20,7 +20,7 @@
 | **任务取消** | ✅ `POST /operation/task/{id}/cancel` |
 | **detail `*Count` 与 list 一致** | ✅ **`toVo()` 统一派生** · [operation-frontend-handoff.md](operation-frontend-handoff.md) |
 | **order / bi 远程启停** | ✅ `presets.serviceKeys` 含五服务；`moli-service.sh` 已扩展 |
-| **阻塞项** | **无**（待 W1–W10 联合走查） |
+| **阻塞项** | **无**（W1–W10 走查 ✅ 2026-07-13） |
 
 本地：`admin`/`123456` · Vite `5141` → `8888` · 后端 smoke 2026-07-13 通过 · 见 [走查稿](../test/operation-w1-w10-walkthrough.md)。
 
@@ -129,7 +129,7 @@ export const cancelOperationTaskApi = (taskId: number) =>
 | 2026-07-13 | server create 返回 id + 批量 deploy/links | `POST /operation/server` → Long；`POST /deploy/batch/task`；`GET .../links/batch` |
 | 2026-07-13 | 任务取消 | `POST /operation/task/{id}/cancel`；`status=cancelled` |
 | 2026-07-13 | 反向关联对称 + reconcile | `resolveProjectIdsForServer` 与 N:N 对称；`GET /operation/audit/reconcile-relations` |
-| 2026-07-13 | **`b4ac176a`** · 文档对齐 meiling-ui | 走查稿 · dependencies §8 · 前端 W7–W10 完工 |
+| 2026-07-13 | **W1–W10 走查 ✅** · 对齐 meiling-ui frontend-gaps / P3 handoff |
 
 ---
 

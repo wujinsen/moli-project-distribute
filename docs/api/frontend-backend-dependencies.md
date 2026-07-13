@@ -1,7 +1,7 @@
 # 前端 → 后端依赖清单（meiling-ui · 2026-07-13）
 
 > **读者**：user-center / knowledge-server 后端、DBA、运维  
-> **前端仓库**：`meiling-ui`（**W7–W10 · S-VO 代码已完工**，待联合走查）  
+> **前端仓库**：`meiling-ui`（**W1–W10 走查 ✅** · 2026-07-13）  
 > **走查稿**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)  
 > **前端交付（meiling-ui 侧）**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
 > **契约权威**：本仓库 [operation-frontend-handoff.md](operation-frontend-handoff.md) · [operation-backend-handoff.md](operation-backend-handoff.md)
@@ -12,7 +12,7 @@
 
 | 模块 | 端口 | 阻塞新 API？ | 后端现在要做什么 |
 |------|------|--------------|------------------|
-| **运营管理** | `8888` | **否** | **联合走查 W1–W10**（前端 ✅；见走查稿） |
+| **运营管理** | `8888` | **否** | **W1–W10 走查 ✅**（2026-07-13）；共享环境需 push+部署 `b4ac176a` |
 | **知识库** | `8090` | **部分**（规模化/Lint） | **P0 点验** + `KB_LLM_CONFIG_SECRET`；本地 dev 已可验 |
 | **SSO** | user-center | **否** | **SSO-MENU-1 已交付**（走查 ✅ [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md)） |
 
@@ -44,9 +44,9 @@
 
 | 状态 | 含义 | 任务 ID |
 |------|------|---------|
-| 🟢 **点验** | 无新 API；环境 + 走查 | W1–W10、§10/§16、KB-O4、KB-BROWSE-1、KB-LLM-DB、407 SQL |
-| 🟡 **可选开发** | 体验/规模化 | DC-4、KB-LINT-1/2、KBOPS-2 |
-| ⚪ **已完成** | 前后端已对齐 | S-VO、W7–W10、DC-2/3、S-ERR-1、S-DEPLOY-1、create id、**batch deploy**、**SSO-MENU-1** |
+| 🟢 **点验** | 无新 API；环境 + 走查 | §10/§16、KB-O4、KB-BROWSE-1、KB-LLM-DB、407 SQL |
+| 🟡 **可选开发** | 体验/规模化 | DC-4、KB-LINT-1/2、KBOPS-2（[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md)） |
+| ⚪ **已完成** | 前后端已对齐 | S-VO、**W1–W10**、W7–W10、DC-2/3、S-ERR-1、S-DEPLOY-1、create id、**batch deploy**、**SSO-MENU-1** |
 
 ### 2.1 联调点验（无新 API）
 
@@ -55,7 +55,7 @@
 | **W1–W6** | `:8888` 含 `toVo()` | 走查稿 §2 |
 | **W7–W10** | batch/task · cancel · upload | 走查稿 §3 |
 | **§10/§16** | 同上；upload dev 走 **8888** | [operation-frontend.md](operation-frontend.md) §10 |
-| **KB-O4** | sync fail 样本 | `kb:prd-acceptance` P0-O4 · [kb-sync-failure-runbook.md](../ops/kb-sync-failure-runbook.md) §9 |
+| **KB-O4** | sync fail 样本 | `npm run kb:prd` P0-O4 · [kb-sync-failure-runbook.md](../ops/kb-sync-failure-runbook.md) §9 |
 | **KB-LLM-DB** | **`KB_LLM_CONFIG_SECRET`** | `GET /kb/platform/llm-config` → `encryptionReady=true` |
 | **407** | 老库执行 `28_operation_topology_menu.sql` | 本机 dev 库 **已存在** 407 可跳过 |
 | **SSO-MENU-1** | `30_sso_menu_system_id.sql`（老库） | ✅ 走查通过 2026-07-13 · [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md) |
@@ -64,9 +64,9 @@
 
 | 任务 ID | 服务 | 后端待做 | 说明 |
 |---------|------|----------|------|
-| **DC-4** | 8888 | `task/list` 按 project 聚合 VO | 前端未开工 |
-| **KB-LINT-1/2** | 8090 | 服务端 `unassignedOnly` + 稳定分页 | 前端客户端兜底可用 |
-| **KBOPS-2** | 8090 | Dashboard 专用 API | 前端多接口聚合可用 |
+| **DC-4** | 8888 | `GET /operation/task/groups` 按 project 聚合 | 前端暂缓 · [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
+| **KB-LINT-1/2** | 8090 | 服务端 `unassignedOnly` + 稳定分页 | 前端客户端兜底 · 同上 §2 |
+| **KBOPS-2** | 8090 | `GET /kb/ops/dashboard` 专用 API | 前端多接口聚合 · 同上 §3 |
 
 > **说明**：滚动批量重启已由 **`POST /operation/deploy/batch/task`**（`b4ac176a`）覆盖；meiling-ui 任务 **DC-BE-1** 若指同一能力，可标为已交付。  
 > **SSO-MENU-1** 后端 + 前端 + 联合走查 ✅（2026-07-13）；见 §5。
@@ -138,11 +138,12 @@ POST /operation/task/{id}/cancel
 ## 6. 建议处理顺序
 
 ```text
-① 8888：push/deploy b4ac176a（共享环境）或本地 install+重启 → W1–W10 走查
-② 8090：KB_LLM_CONFIG_SECRET + KB-O4 → kb:prd-acceptance
+① 8888：push/deploy b4ac176a（共享环境）或本地 install+重启
+② 8090：KB_LLM_CONFIG_SECRET + KB-O4 → npm run kb:prd
 ③ DBA：407 SQL（老库按需）
-④ ~~SSO-MENU-1 联合走查~~ ✅ 2026-07-13
-⑤ 可选：DC-4 · KB-LINT · KBOPS-2
+④ ~~W1–W10 联合走查~~ ✅ 2026-07-13
+⑤ ~~SSO-MENU-1 联合走查~~ ✅ 2026-07-13
+⑥ 可选：DC-4 · KB-LINT · KBOPS-2（P3 handoff）
 ```
 
 ---
@@ -153,9 +154,9 @@ POST /operation/task/{id}/cancel
 【meiling-ui · 后端配合 · 2026-07-13】
 
 运营（8888）：
-· 前端代码已完工：S-VO · DC-2/3 · W7–W10
+· 前端 + 后端 W1–W10 走查 ✅（2026-07-13）
 · 后端 commit b4ac176a（本地；共享环境需 push+部署）
-· 联合走查：monorepo docs/test/operation-w1-w10-walkthrough.md
+· 走查稿：monorepo docs/test/operation-w1-w10-walkthrough.md §5
 
 关键 API（勿 Breaking）：
 · toVo() *Count · POST project/component/server → data=id
@@ -163,10 +164,10 @@ POST /operation/task/{id}/cancel
 · 新建服务器 body 字段 ip（非 serverIp）
 
 8090 点验：
-· KB_LLM_CONFIG_SECRET · KB-O4 fail · npm run kb:prd-acceptance
+· KB_LLM_CONFIG_SECRET · KB-O4 fail · npm run kb:prd
 
 SSO-MENU-1：✅ 已交付（走查 2026-07-13）
-下迭代可选：DC-4/KB-LINT/KBOPS-2=P3
+下迭代可选：DC-4/KB-LINT/KBOPS-2=P3 → p3-optional-backend-handoff.md
 
 详稿：docs/api/frontend-backend-dependencies.md
 ```
@@ -179,7 +180,7 @@ SSO-MENU-1：✅ 已交付（走查 2026-07-13）
 
 | 维度 | 评估 |
 |------|------|
-| **运营** | **无 API 阻塞**；待 W1–W10 **联合走查** |
+| **运营** | **无 API 阻塞**；**W1–W10 走查 ✅**（2026-07-13） |
 | **知识库** | **点验级**；本地 secret + O4 已就绪 |
 | **SSO** | **已交付**；F-SSO-1～6 + S3～S7/S10 走查 ✅（2026-07-13） |
 | **文档↔代码** | **一致**（与 meiling-ui `frontend-gaps` / handoff 互引） |
@@ -207,15 +208,15 @@ SSO-MENU-1：✅ 已交付（走查 2026-07-13）
 | 项 | 排期 |
 |----|------|
 | **SSO-MENU-1** | ✅ **已交付 + 走查通过**（2026-07-13） |
-| **DC-4** | ⬜ P3 可选 |
-| **KB-LINT-1/2** · **KBOPS-2** | ⬜ P3 可选 |
+| **DC-4** | ⬜ P3 可选 · [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
+| **KB-LINT-1/2** · **KBOPS-2** | ⬜ P3 可选 · 同上 §2–§3 |
 
 ### 8.5 联调前置
 
 ```text
-8888：□ install+重启  □ VITE_USE_MOCK_AUTH=false  □ 走查稿 W1–W10
+8888：☑ W1–W10 走查（2026-07-13）  □ push+部署 b4ac176a（共享环境）
 SSO：☑ 30_sso_menu_system_id.sql  ☑ sso-menu-frontend-walkthrough（2026-07-13）
-8090：□ KB_LLM_CONFIG_SECRET  □ KB-O4  □ kb:prd-acceptance
+8090：□ KB_LLM_CONFIG_SECRET  □ KB-O4 UI 点验  □ npm run kb:prd
 ```
 
 ---
@@ -227,4 +228,4 @@ SSO：☑ 30_sso_menu_system_id.sql  ☑ sso-menu-frontend-walkthrough（2026-07
 | 2026-07-13 | 初版三模块总览 |
 | 2026-07-13 | SSO 设计链入 §4/§5 |
 | 2026-07-13 | **对齐 meiling-ui**：§1.2/§2.0/§8 · 走查稿 · 前端 W7–W10 完工 · §8.4 后端回复落定 |
-| 2026-07-13 | **SSO-MENU-1 走查通过**：handoff/gaps/dependencies 状态同步 |
+| 2026-07-13 | **对齐 meiling-ui**：W1–W10 走查 ✅ · P3 handoff · `kb:prd` 脚本名 |

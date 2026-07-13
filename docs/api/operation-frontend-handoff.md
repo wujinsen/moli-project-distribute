@@ -1,6 +1,6 @@
 # 运营管理 · 前端开工手册（meiling-ui）
 
-> **更新**：2026-07-13（**S-VO + W7–W10 前端已完工** · 待联合走查）  
+> **更新**：2026-07-13（**S-VO + W7–W10 前端已完工** · **W1–W10 走查 ✅**）  
 > **后端**：commit **`b4ac176a`** · `:8888` 无 API 阻塞  
 > **走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md) · meiling-ui 交付稿 [`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
 > **给后端**：[frontend-backend-dependencies.md](frontend-backend-dependencies.md) · [operation-backend-handoff.md](operation-backend-handoff.md)
@@ -29,7 +29,7 @@
 | **批量滚动重启** | ✅ batch/task | ✅ W9 |
 | **任务取消** | ✅ cancel | ✅ W10 |
 | **上传轮询** | ✅ upload→taskId | ✅ W8 |
-| **联合走查** | 参与勾选 | 🟡 [走查稿](../test/operation-w1-w10-walkthrough.md) |
+| **联合走查** | ✅ W1–W10（2026-07-13 · [走查稿](../test/operation-w1-w10-walkthrough.md) §5） |
 
 ---
 
