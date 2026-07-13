@@ -54,9 +54,9 @@ KB 点验：npm run kb:prd ✅ 16/17（2026-07-13）
 
 | 任务 ID | 后端 API | 前端动作 | 详稿 |
 |---------|----------|----------|------|
-| **DC-4** | ✅ `8888` `GET /operation/task/groups` | **可开工** TaskHistoryView 分组视图 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §1 |
-| **KB-LINT-1/2** | ✅ `8090` 已交付 | 可选收紧服务端分页 | 同上 §2 |
-| **KBOPS-2** | ✅ `8090` 已交付 | **可开工** 单请求 dashboard | 同上 §3 |
+| **DC-4** | ✅ `8888` `GET /operation/task/groups` | ✅ **已接线** TaskHistoryView 分组 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §1 |
+| **KB-LINT-1/2** | ✅ `8090` 已交付 | ✅ 分页收紧 | 同上 §2 |
+| **KBOPS-2** | ✅ `8090` 已交付 | ✅ dashboard 单请求 + 降级 | 同上 §3 |
 
 > **给前端**：复制 [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §0 或 §0.1 即可开工。
 
@@ -88,11 +88,12 @@ KB 点验：npm run kb:prd ✅ 16/17（2026-07-13）
 | **KB-BROWSE-1** | ✅ 2026-07-13 **P0-browse-v3** |
 | **KB-LLM-DB** | ✅ 2026-07-13 `encryptionReady=true` · **REG-llm-on** |
 | **KB-LINT-SCAN** | ✅ 2026-07-13 **P0-O9** · O5–O8 |
-| **KB-GOV-LLM** | ✅ **REG-llm-on**；⏭ REG-llm-off UI（关 LLM 后可选） |
-| **KB-LINT-1/2** | ✅ 8090 API 已交付；前端可选收紧 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §2 |
-| **KBOPS-2** | ✅ 8090 API 已交付；**前端待接线** dashboard | 同上 §3 |
+| **KB-GOV-LLM** | ✅ **REG-llm-on** + **REG-llm-off**（2026-07-13 · 17/17） |
+| **KB-LINT-1/2** | ✅ 8090 + **前端收紧** | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §2 |
+| **KBOPS-2** | ✅ 8090 + **前端 dashboard 接线** | 同上 §3 |
+| **DC-4** | ✅ 8888 + **TaskHistoryView 分组** | 同上 §1 |
 
-点验脚本：meiling-ui **`npm run kb:prd`**（2026-07-13 · **16/17**；日志 `kb-prd-acceptance.log`）。
+点验脚本：meiling-ui **`npm run kb:prd`**（2026-07-13 · **17/17**）。
 
 ---
 
@@ -114,6 +115,6 @@ KB 点验：npm run kb:prd ✅ 16/17（2026-07-13）
 ## 五、建议顺序
 
 1. ~~**运营** W1–W10~~ ✅ 2026-07-13
-2. ~~**KB** `npm run kb:prd`~~ ✅ 2026-07-13（16/17）
+2. ~~**KB** `npm run kb:prd`~~ ✅ 2026-07-13（17/17）
 3. ~~**SSO** F-SSO-1～6~~ ✅ 2026-07-13
-4. **P3 可选（三项 API 已就绪）**：DC-4 TaskHistoryView 分组 → KBOPS-2 dashboard → KB-LINT 收紧（见 [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §4）
+4. ~~**P3 可选**~~ ✅ 2026-07-13（DC-4 · KBOPS-2 · KB-LINT）

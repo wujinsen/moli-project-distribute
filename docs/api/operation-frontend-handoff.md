@@ -227,7 +227,7 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 
 | 模块 | 文档 | 阻塞 |
 |------|------|------|
-| **P3 可选** | [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) | **无**（DC-4/KBOPS/KB-LINT 后端 ✅；前端待接线） |
+| **P3 可选** | [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) | **无**（DC-4/KBOPS/KB-LINT **前后端 ✅** 2026-07-13） |
 | 知识库 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | 环境配置 |
 | SSO | [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md) | F-SSO-1～6 · Q3/Q5 已定案 |
 
@@ -258,25 +258,19 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 后端 :8888 已重启最新 user-center 后再测
 ```
 
-### 7.4 P3 可选开工（2026-07-13 · 可复制给前端）
+### 7.4 P3 可选（2026-07-13 · ✅ meiling-ui 已接线）
 
 ```
-【meiling-ui · P3 可排期 · 后端已全部交付 · 2026-07-13】
+【P3 · 2026-07-13 ✅ 前后端完工】
 
-① DC-4（8888 · 优先）
-   listTaskGroupsApi + TaskHistoryView 分组视图
-   GET /operation/task/groups · 验收 test/operation-task-groups-acceptance.md
-   前置：user-center 重启含 755abd43
+① DC-4：TaskHistoryView 分组 · GET /operation/task/groups
+② KBOPS-2：GET /kb/ops/dashboard（缺 kb_llm_call_log 时前端降级）
+③ KB-LINT：服务端分页信任
 
-② KBOPS-2（8090）
-   KnowledgeOpsDashboardView → GET /kb/ops/dashboard（参数 trendDays）
+KB：npm run kb:prd 17/17
 
-③ KB-LINT（8090 · 可选）
-   质量 Tab 确认 pageNum/pageSize 走服务端分页
-
-详稿：docs/api/p3-optional-backend-handoff.md §0 / §0.1
+详稿：docs/api/p3-optional-backend-handoff.md §6
 索引：docs/frontend-gaps.md §0
-KB 点验：npm run kb:prd ✅ 16/17
 ```
 
 ### 7.3 相关

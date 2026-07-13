@@ -7,37 +7,26 @@
 
 | 任务 ID | 服务 | 前端落点 | 后端 API | 前端动作 |
 |---------|------|----------|----------|----------|
-| **DC-4** | `8888` | `TaskHistoryView.vue` | ✅ **已交付** | **可开工** — `GET /operation/task/groups` |
-| **KB-LINT-1/2** | `8090` | `kbLint.ts` · `KbLintIssuesPanel.vue` | ✅ **已交付** | **可选收紧** — 信任服务端分页（见 §2） |
-| **KBOPS-2** | `8090` | `KnowledgeOpsDashboardView.vue` | ✅ **已交付**（KBOPS-9） | **可排期** — 改单请求 `GET /kb/ops/dashboard`（见 §3） |
+| **DC-4** | `8888` | `TaskHistoryView.vue` | ✅ **已交付** | ✅ **已接线** — `listTaskGroupsApi` + 分组视图 |
+| **KB-LINT-1/2** | `8090` | `kbLint.ts` · `KbLintIssuesPanel.vue` | ✅ **已交付** | ✅ **已收紧** — 信任服务端分页 |
+| **KBOPS-2** | `8090` | `KnowledgeOpsDashboardView.vue` | ✅ **已交付**（KBOPS-9） | ✅ **已接线** — `getKbOpsDashboardApi` + legacy 降级 |
 
-**结论**：P3 三项 **后端均已交付**；**KB 点验 ✅**（2026-07-13 meiling-ui `kb:prd` 16/17）。前端按 §4 排期接线，**无 API 阻塞**。
+**结论**：P3 三项 **前后端均已交付**（2026-07-13）。KB 点验 **`npm run kb:prd` 17/17**。
 
 ---
 
-## 0. 给前端一句话（可复制 · 开工）
+## 0. 给前端一句话（可复制 · 2026-07-13 已完工）
 
 ```
-【meiling-ui · P3 可选 · 2026-07-13 · 三项后端均已交付】
+【meiling-ui · P3 · 2026-07-13 ✅ 三项已接线】
 
-请读：moli-project-distribute/docs/api/p3-optional-backend-handoff.md
+① DC-4：TaskHistoryView 平铺/按项目分组 · listTaskGroupsApi
+② KBOPS-2：KnowledgeOpsDashboardView · getKbOpsDashboardApi（失败降级 3 请求）
+③ KB-LINT：kbLint.ts 服务端分页信任
 
-① DC-4（8888 · 优先）
-   · 文件：src/api/operation.ts → listTaskGroupsApi
-   · 页面：TaskHistoryView.vue — 平铺/按项目分组切换 + 手风琴
-   · API：GET /operation/task/groups（分页在「项目组」维度，见 §1）
-   · 权限：operation:server:list（与现 task/list 一致）
-   · 前置：:8888 user-center 重启后含 DC-4 代码
+KB 点验：npm run kb:prd 17/17（含 REG-llm-off merge 探针）
 
-② KBOPS-2（8090）
-   · KnowledgeOpsDashboardView 改单请求 GET /kb/ops/dashboard（§3）
-
-③ KB-LINT（8090 · 可选收紧）
-   · kbLint.ts 已兼容服务端分页；质量 Tab 始终带 pageNum/pageSize（§2）
-
-契约：operation-frontend.md §11.2.1 · operation-deploy-api.md §task/groups
-验收：docs/test/operation-task-groups-acceptance.md
-缺口索引：docs/frontend-gaps.md §0 · §1.3 · §三
+详稿：meiling-ui/docs/api/p3-optional-backend-handoff.md §6
 ```
 
 ---
@@ -424,12 +413,12 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 ## 4. 建议前端排期（2026-07-13）
 
 ```text
-① DC-4（8888 · 建议优先）— listTaskGroupsApi + TaskHistoryView 分组视图
-② KBOPS-2（8090）— KnowledgeOpsDashboardView 单请求 GET /kb/ops/dashboard
-③ KB-LINT（8090 · 可选）— 确认分页参数；无新 API
+~~① DC-4~~ ✅ 2026-07-13
+~~② KBOPS-2~~ ✅ 2026-07-13
+~~③ KB-LINT~~ ✅ 2026-07-13
 ```
 
-**前置**：`:8888` 重启含 commit `755abd43`；`:8090` 重启含 commit `38570430`（kb 路径与 sync 脚本）。
+**运维可选**：8090 补 `kb_llm_call_log` 表 → dashboard 单请求稳定；删 `kb/wiki/_p0o4-fail-test` 样本目录。
 
 ---
 
@@ -449,6 +438,6 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 
 | 任务 ID | 后端 | 前端 | 接口路径 | 备注 |
 |---------|------|------|----------|------|
-| DC-4 | ✅ `755abd43` | ⬜ 待接线 | `GET /operation/task/groups` | 验收见 [operation-task-groups-acceptance.md](../test/operation-task-groups-acceptance.md) |
-| KB-LINT-1/2 | ✅ 已交付 | 🟡 可选收紧 | `GET /kb/lint/issues` | `current`+`size`+`unassignedOnly` |
-| KBOPS-2 | ✅ 已交付 | ⬜ 待接线 | `GET /kb/ops/dashboard` | 实现 ID=KBOPS-9；参数 `trendDays` |
+| DC-4 | ✅ `755abd43` | ✅ 已接线 | `GET /operation/task/groups` | `TaskHistoryView` 分组 |
+| KB-LINT-1/2 | ✅ 已交付 | ✅ 已收紧 | `GET /kb/lint/issues` | `current`+`size`+`unassignedOnly` |
+| KBOPS-2 | ✅ 已交付 | ✅ 已接线 | `GET /kb/ops/dashboard` | 单请求 + legacy 降级 |
