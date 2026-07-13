@@ -53,6 +53,20 @@ public class OperationProjectLinkServiceImpl implements OperationProjectLinkServ
     }
 
     @Override
+    public List<OperationProjectLinksVo> getLinksBatch(List<Long> projectIds) {
+        List<OperationProjectLinksVo> items = new ArrayList<>();
+        if (projectIds == null) {
+            return items;
+        }
+        for (Long projectId : projectIds) {
+            if (projectId != null) {
+                items.add(getLinks(projectId));
+            }
+        }
+        return items;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveLinks(Long projectId, OperationProjectLinksVo links) {
         OperationProjectDeployInfo project = requireProject(projectId);

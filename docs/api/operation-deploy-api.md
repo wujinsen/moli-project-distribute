@@ -168,16 +168,25 @@ ops:
 |------|------|
 | `serverId` | 目标服务器 |
 | `projectId` | 关联项目（deploy 可选） |
-| `status` | `pending` / `running` / `success` / `failed` |
+| `status` | `pending` / `running` / `success` / `failed` / **`cancelled`** |
 | `progress` | 0–100 |
 | `logChunk` | 自 `logOffset` 起的增量日志 |
 | `nextLogOffset` | 下次轮询传入 |
-| `finished` | 是否终态 |
+| `finished` | 是否终态（含 `cancelled`） |
+
+### `POST /operation/task/{id}/cancel`
+
+- **权限**：`operation:server:list`（与轮询一致）
+- **行为**：`pending` / `running` **协作式取消**；`success` / `failed` / `cancelled` 返回错误「任务已结束，无法取消」
+- **响应**：`OperationTaskVo`（取消请求后的快照；运行中任务可能稍后才是终态 `cancelled`）
+- **说明**：
+  - 批量 deploy / 探活等在**步骤间隙**响应取消；单次 SSH 须等当前命令结束后才退出
+  - 日志含 `[CANCEL]` 行；`message` 为「用户取消」
 
 ### `GET /operation/task/list`
 
 - **权限**：`operation:server:list`
-- **查询**：`taskType`（`deploy`/`upload`/`command`/`health_probe`）、`serverId`、**`projectId`**、`pageNum`、`pageSize`
+- **查询**：`taskType`（`deploy` / `deploy_batch` / `upload` / `command` / `health_probe`）、`serverId`、**`projectId`**、`pageNum`、`pageSize`
 - **说明**：列表**不含** `task_log` 大字段
 
 ### `GET /operation/task/{id}/poll?logOffset={n}`
@@ -223,6 +232,22 @@ ops:
 - **action**：`start` · `stop` · `restart`
 - **projectId**（可选）：关联 `operation_project_deploy_info.id`；须与 `serviceKey` 映射一致；若项目已绑 `serverId` 则自动回填/校验
 - **响应**：`data: taskId`（Long）；任务表写入 `project_id`
+
+### `POST /operation/deploy/batch/task`
+
+- **权限**：`operation:deploy:exec` + `operation:server:list`
+- **Content-Type**：`application/json`
+- **请求体** `OperationDeployBatchTaskRequest`：
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `steps` | 是 | 1~32 步；每步同单任务 `OperationDeployTaskRequest`（`serviceKey` / `action` / `serverId` / `projectId`） |
+| `projectId` | 否 | 批次级项目；步骤未传 `projectId` 时回填 |
+| `stopOnFailure` | 否 | 默认 `true`；某步失败是否中断后续 |
+| `intervalSeconds` | 否 | 步骤间隔秒数 0~300，默认 0（滚动重启） |
+
+- **行为**：创建 **单父任务**（`taskType=deploy_batch`），顺序执行各步 SSH/本机启停；全局锁 `deploy_batch:global`
+- **响应**：`data: taskId`（Long）；轮询 `GET /operation/task/{id}` 查看 `[BATCH]` 分段日志
 
 ---
 

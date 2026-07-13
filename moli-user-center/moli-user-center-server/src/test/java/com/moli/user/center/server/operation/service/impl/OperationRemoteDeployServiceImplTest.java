@@ -1,6 +1,7 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.moli.common.exception.BaseException;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployBatchTaskRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationDeployTaskRequest;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.entity.OperationTask;
@@ -26,6 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -169,6 +171,28 @@ public class OperationRemoteDeployServiceImplTest {
         Long taskId = remoteDeployService.createDeployTask(taskRequest(204L, "knowledge", "stop"));
 
         assertEquals(Long.valueOf(9002L), taskId);
+    }
+
+    @Test
+    public void createBatchDeployTask_returns_task_id() {
+        OperationDeployBatchTaskRequest batch = new OperationDeployBatchTaskRequest();
+        batch.setSteps(Arrays.asList(
+                taskRequest(null, "gateway", "restart"),
+                taskRequest(204L, "user-center", "restart")));
+        OperationServerInfo server = new OperationServerInfo();
+        server.setId(204L);
+        server.setServerName("moli-backend-pro");
+        when(operationServerService.requireEntity(204L)).thenReturn(server);
+
+        OperationTask task = new OperationTask();
+        task.setId(9100L);
+        when(operationTaskService.create(eq("deploy_batch"), eq(null), eq(null), eq(null), eq("batch"), anyString()))
+                .thenReturn(task);
+        doAnswer(invocation -> null).when(operationTaskService).submit(eq(9100L), eq("deploy_batch:global"), any());
+
+        Long taskId = remoteDeployService.createBatchDeployTask(batch);
+
+        assertEquals(Long.valueOf(9100L), taskId);
     }
 
     @Test

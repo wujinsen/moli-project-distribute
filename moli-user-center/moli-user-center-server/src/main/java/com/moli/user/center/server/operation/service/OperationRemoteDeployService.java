@@ -1,5 +1,6 @@
 package com.moli.user.center.server.operation.service;
 
+import com.moli.user.center.common.domain.dto.operation.OperationDeployBatchTaskRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationDeployTaskRequest;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
 
@@ -13,6 +14,12 @@ public interface OperationRemoteDeployService {
      * @return taskId
      */
     Long createDeployTask(OperationDeployTaskRequest request);
+
+    /**
+     * 创建批量滚动启停任务（单父任务顺序执行 steps）。
+     * @return taskId
+     */
+    Long createBatchDeployTask(OperationDeployBatchTaskRequest request);
 
     /**
      * 远程同步只读动作（status / logs），SSH 执行后直接返回输出。

@@ -102,17 +102,33 @@ public class OperationRelationQuerySupportTest {
     }
 
     @Test
-    public void resolveProjectIdsForServer_merges_nn_and_primary_server_id() {
+    public void resolveProjectIdsForServer_ignores_primary_when_nn_points_elsewhere() {
         when(operationServerLinkMapper.selectProjectIdsByServerId(201L)).thenReturn(Collections.singletonList(402L));
 
-        OperationProjectDeployInfo primary = new OperationProjectDeployInfo();
-        primary.setId(401L);
+        OperationProjectDeployInfo stalePrimary = new OperationProjectDeployInfo();
+        stalePrimary.setId(401L);
         when(operationProjectDeployInfoMapper.selectList(any(LambdaQueryWrapper.class)))
-                .thenReturn(Collections.singletonList(primary));
+                .thenReturn(Collections.singletonList(stalePrimary));
+        when(operationServerLinkMapper.selectServerIdsByProjectId(401L)).thenReturn(Collections.singletonList(202L));
 
         List<Long> ids = relationQuerySupport.resolveProjectIdsForServer(201L);
 
-        assertEquals(Arrays.asList(402L, 401L), ids);
+        assertEquals(Collections.singletonList(402L), ids);
+    }
+
+    @Test
+    public void resolveProjectIdsForServer_includes_primary_when_nn_empty() {
+        when(operationServerLinkMapper.selectProjectIdsByServerId(201L)).thenReturn(Collections.emptyList());
+
+        OperationProjectDeployInfo primaryOnly = new OperationProjectDeployInfo();
+        primaryOnly.setId(401L);
+        when(operationProjectDeployInfoMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Collections.singletonList(primaryOnly));
+        when(operationServerLinkMapper.selectServerIdsByProjectId(401L)).thenReturn(Collections.emptyList());
+
+        List<Long> ids = relationQuerySupport.resolveProjectIdsForServer(201L);
+
+        assertEquals(Collections.singletonList(401L), ids);
     }
 
     @Test

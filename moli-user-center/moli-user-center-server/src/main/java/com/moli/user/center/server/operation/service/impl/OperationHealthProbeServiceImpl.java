@@ -36,6 +36,7 @@ import com.moli.user.center.server.operation.support.OperationHealthProbeExecuto
 
 import com.moli.user.center.server.operation.support.OperationMapperBatchSupport;
 
+import com.moli.user.center.server.operation.task.OperationTaskCancelledException;
 import com.moli.user.center.server.operation.task.OperationTaskContext;
 
 import lombok.extern.slf4j.Slf4j;
@@ -117,9 +118,15 @@ public class OperationHealthProbeServiceImpl implements OperationHealthProbeServ
     @Override
 
     public OperationHealthProbeResultVo probeAll() {
-
-        return executeProbeAll(null);
-
+        try {
+            return executeProbeAll(null);
+        } catch (OperationTaskCancelledException e) {
+            throw new IllegalStateException("sync probe cannot be cancelled", e);
+        } catch (BaseException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BaseException(e.getMessage());
+        }
     }
 
 
@@ -139,7 +146,7 @@ public class OperationHealthProbeServiceImpl implements OperationHealthProbeServ
 
 
 
-    private OperationHealthProbeResultVo executeProbeAll(OperationTaskContext context) {
+    private OperationHealthProbeResultVo executeProbeAll(OperationTaskContext context) throws Exception {
 
         OperationHealthProbeResultVo result = new OperationHealthProbeResultVo();
 
@@ -159,7 +166,7 @@ public class OperationHealthProbeServiceImpl implements OperationHealthProbeServ
 
         append(context, "[PROBE] 服务器探活完成: " + servers.size());
 
-
+        throwIfCancelled(context);
 
         List<OperationComponentDeployInfo> components = operationComponentDeployInfoMapper.selectList(null);
 
@@ -173,7 +180,7 @@ public class OperationHealthProbeServiceImpl implements OperationHealthProbeServ
 
         append(context, "[PROBE] 组件探活完成: " + components.size());
 
-
+        throwIfCancelled(context);
 
         List<OperationProjectDeployInfo> projects = operationProjectDeployInfoMapper.selectList(null);
 
@@ -397,6 +404,12 @@ public class OperationHealthProbeServiceImpl implements OperationHealthProbeServ
 
         }
 
+    }
+
+    private static void throwIfCancelled(OperationTaskContext context) throws OperationTaskCancelledException {
+        if (context != null) {
+            context.throwIfCancelled();
+        }
     }
 
 

@@ -19,7 +19,7 @@ public class OperationTaskVo {
     private String action;
     private String targetName;
 
-    @ApiModelProperty("pending / running / success / failed")
+    @ApiModelProperty("pending / running / success / failed / cancelled")
     private String status;
 
     @ApiModelProperty("进度 0-100")
@@ -34,7 +34,7 @@ public class OperationTaskVo {
     @ApiModelProperty("下次轮询应传入的 logOffset")
     private Integer nextLogOffset;
 
-    @ApiModelProperty("任务是否已结束（success/failed）")
+    @ApiModelProperty("任务是否已结束（success/failed/cancelled）")
     private Boolean finished;
 
     private Date createTime;

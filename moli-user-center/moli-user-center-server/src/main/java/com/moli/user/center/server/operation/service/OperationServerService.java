@@ -19,7 +19,7 @@ public interface OperationServerService {
 
     OperationServerVo getById(Long id);
 
-    void create(OperationServerSaveRequest request);
+    Long create(OperationServerSaveRequest request);
 
     void update(OperationServerSaveRequest request);
 

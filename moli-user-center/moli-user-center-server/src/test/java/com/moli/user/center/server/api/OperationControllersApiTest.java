@@ -2,6 +2,8 @@ package com.moli.user.center.server.api;
 
 import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.dto.operation.OperationComponentSaveRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployBatchTaskRequest;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployTaskRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationPlatformSaveRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationServerSaveRequest;
@@ -42,6 +44,7 @@ import com.moli.user.center.server.operation.service.OperationAuditService;
 import com.moli.user.center.server.operation.service.OperationServerService;
 import com.moli.user.center.server.operation.service.OperationStatsService;
 import com.moli.user.center.server.operation.support.OperationDeployLocalPolicy;
+import com.moli.user.center.server.operation.support.OperationDtoValidationSupport;
 import com.moli.user.center.server.testsupport.AbstractApiTest;
 import com.moli.user.center.server.testsupport.ControllerTestSupport;
 import org.junit.Test;
@@ -51,8 +54,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OperationControllersApiTest extends AbstractApiTest {
@@ -102,6 +109,8 @@ public class OperationControllersApiTest extends AbstractApiTest {
     private OperationComponentLinkService operationComponentLinkService;
     @Mock
     private OperationHealthProbeService operationHealthProbeService;
+    @Mock
+    private OperationDtoValidationSupport dtoValidation;
 
     @org.junit.Before
     public void stubDeployLocalPolicy() {
@@ -163,7 +172,7 @@ public class OperationControllersApiTest extends AbstractApiTest {
 
     @Test
     public void POST_operation_server_insert() {
-        doNothing().when(operationServerService).create(any());
+        when(operationServerService.create(any())).thenReturn(501L);
         OperationServerSaveRequest req = new OperationServerSaveRequest();
         req.setServerName("dev");
         req.setIp("127.0.0.1");
@@ -256,6 +265,14 @@ public class OperationControllersApiTest extends AbstractApiTest {
     }
 
     @Test
+    public void GET_operation_project_links_batch() {
+        when(dtoValidation.batchIds("401,402")).thenReturn(Arrays.asList(401L, 402L));
+        when(operationProjectLinkService.getLinksBatch(any()))
+                .thenReturn(Collections.singletonList(new OperationProjectLinksVo()));
+        ControllerTestSupport.assertSuccess(projectController.linksBatch("401,402"));
+    }
+
+    @Test
     public void PUT_operation_project_links() {
         doNothing().when(operationProjectLinkService).saveLinks(any(), any());
         ControllerTestSupport.assertSuccess(projectController.saveLinks(401L, new OperationProjectLinksVo()));
@@ -320,6 +337,14 @@ public class OperationControllersApiTest extends AbstractApiTest {
     }
 
     @Test
+    public void GET_operation_component_links_batch() {
+        when(dtoValidation.batchIds("306,307")).thenReturn(Arrays.asList(306L, 307L));
+        when(operationComponentLinkService.getLinksBatch(any()))
+                .thenReturn(Collections.singletonList(new OperationComponentLinksVo()));
+        ControllerTestSupport.assertSuccess(componentController.linksBatch("306,307"));
+    }
+
+    @Test
     public void PUT_operation_component_links() {
         doNothing().when(operationComponentLinkService).saveLinks(any(), any());
         ControllerTestSupport.assertSuccess(componentController.saveLinks(306L, new OperationComponentLinksVo()));
@@ -349,6 +374,18 @@ public class OperationControllersApiTest extends AbstractApiTest {
         vo.setRunning(true);
         when(operationDeployService.execute("user-center", "restart", null)).thenReturn(vo);
         ControllerTestSupport.assertSuccess(deployController.execute("user-center", "restart", null, null));
+    }
+
+    @Test
+    public void POST_operation_deploy_batch_task() {
+        OperationDeployBatchTaskRequest batch = new OperationDeployBatchTaskRequest();
+        OperationDeployTaskRequest step = new OperationDeployTaskRequest();
+        step.setServiceKey("user-center");
+        step.setAction("restart");
+        batch.setSteps(Collections.singletonList(step));
+        when(dtoValidation.validate(batch)).thenReturn(batch);
+        when(operationRemoteDeployService.createBatchDeployTask(batch)).thenReturn(9100L);
+        ControllerTestSupport.assertSuccess(deployController.createBatchTask(batch));
     }
 
     @Test

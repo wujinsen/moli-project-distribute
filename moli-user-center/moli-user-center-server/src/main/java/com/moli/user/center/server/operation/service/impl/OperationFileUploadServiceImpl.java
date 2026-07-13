@@ -94,6 +94,7 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
     private void runUpload(OperationTaskContext context, OperationServerInfo server,
                            Path temp, long size, String remotePath, PostActionSpec spec) throws Exception {
         try {
+            context.throwIfCancelled();
             context.appendLine("[SSH] 连接 " + server.getServerName() + " ...");
             try (OperationSshSession session = sshClient.connect(server)) {
                 context.appendLine("[SSH] 已连接 " + session.getHost());

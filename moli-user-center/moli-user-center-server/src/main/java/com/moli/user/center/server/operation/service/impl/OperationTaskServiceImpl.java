@@ -10,6 +10,7 @@ import com.moli.user.center.server.operation.config.OperationTaskProperties;
 import com.moli.user.center.server.operation.mapper.OperationTaskMapper;
 import com.moli.user.center.server.operation.service.OperationTaskService;
 import com.moli.user.center.server.operation.task.OperationTaskContext;
+import com.moli.user.center.server.operation.task.OperationTaskCancelledException;
 import com.moli.user.center.server.operation.task.OperationTaskJob;
 import com.moli.user.center.server.operation.task.OperationTaskStatus;
 import org.apache.commons.lang3.StringUtils;
@@ -112,21 +113,48 @@ public class OperationTaskServiceImpl implements OperationTaskService {
     }
 
     private void runJob(Long taskId, String lockKey, LiveContext context, OperationTaskJob job) {
+        if (context.isCancelled()) {
+            finishCancelled(taskId, context);
+            cleanup(taskId, lockKey);
+            return;
+        }
         updateStatus(taskId, OperationTaskStatus.RUNNING, null);
         context.status = OperationTaskStatus.RUNNING;
         try {
             job.run(context);
-            context.status = OperationTaskStatus.SUCCESS;
-            context.progress = 100;
-            finish(taskId, context, OperationTaskStatus.SUCCESS, "执行成功");
+            if (context.isCancelled()) {
+                finishCancelled(taskId, context);
+            } else {
+                context.status = OperationTaskStatus.SUCCESS;
+                context.progress = 100;
+                finish(taskId, context, OperationTaskStatus.SUCCESS, "执行成功");
+            }
+        } catch (OperationTaskCancelledException e) {
+            finishCancelled(taskId, context);
         } catch (Exception e) {
             log.warn("operation task {} failed", taskId, e);
-            context.appendLine("[ERROR] " + e.getMessage());
-            context.status = OperationTaskStatus.FAILED;
-            finish(taskId, context, OperationTaskStatus.FAILED, StringUtils.abbreviate(e.getMessage(), 500));
+            if (context.isCancelled()) {
+                finishCancelled(taskId, context);
+            } else {
+                context.appendLine("[ERROR] " + e.getMessage());
+                context.status = OperationTaskStatus.FAILED;
+                finish(taskId, context, OperationTaskStatus.FAILED, StringUtils.abbreviate(e.getMessage(), 500));
+            }
         } finally {
             cleanup(taskId, lockKey);
         }
+    }
+
+    private void finishCancelled(Long taskId, LiveContext context) {
+        context.appendLine("[CANCEL] 任务已取消");
+        context.status = OperationTaskStatus.CANCELLED;
+        finish(taskId, context, OperationTaskStatus.CANCELLED, "用户取消");
+    }
+
+    private static boolean isTerminalStatus(String status) {
+        return OperationTaskStatus.SUCCESS.equals(status)
+                || OperationTaskStatus.FAILED.equals(status)
+                || OperationTaskStatus.CANCELLED.equals(status);
     }
 
     private void cleanup(Long taskId, String lockKey) {
@@ -165,6 +193,32 @@ public class OperationTaskServiceImpl implements OperationTaskService {
     }
 
     @Override
+    public OperationTaskVo cancel(Long taskId) {
+        OperationTask task = requireTask(taskId);
+        if (isTerminalStatus(task.getStatus())) {
+            throw new BaseException("任务已结束，无法取消");
+        }
+        LiveContext live = liveTasks.get(taskId);
+        if (live != null) {
+            live.requestCancel();
+            live.appendLine("[CANCEL] 用户请求取消任务");
+        } else if (OperationTaskStatus.PENDING.equals(task.getStatus())
+                || OperationTaskStatus.RUNNING.equals(task.getStatus())) {
+            markCancelled(taskId, "用户取消");
+        }
+        return poll(taskId, 0);
+    }
+
+    private void markCancelled(Long taskId, String message) {
+        OperationTask row = new OperationTask();
+        row.setId(taskId);
+        row.setStatus(OperationTaskStatus.CANCELLED);
+        row.setMessage(StringUtils.abbreviate(message, 500));
+        row.setFinishTime(new Date());
+        operationTaskMapper.updateById(row);
+    }
+
+    @Override
     public OperationTaskVo poll(Long taskId, int logOffset) {
         LiveContext live = liveTasks.get(taskId);
         OperationTask task = requireTask(taskId);
@@ -197,8 +251,7 @@ public class OperationTaskServiceImpl implements OperationTaskService {
         }
         vo.setLogChunk(fullLog.substring(offset));
         vo.setNextLogOffset(fullLog.length());
-        vo.setFinished(OperationTaskStatus.SUCCESS.equals(vo.getStatus())
-                || OperationTaskStatus.FAILED.equals(vo.getStatus()));
+        vo.setFinished(isTerminalStatus(vo.getStatus()));
         return vo;
     }
 
@@ -246,8 +299,7 @@ public class OperationTaskServiceImpl implements OperationTaskService {
         vo.setMessage(task.getMessage());
         vo.setCreateTime(task.getCreateTime());
         vo.setFinishTime(task.getFinishTime());
-        vo.setFinished(OperationTaskStatus.SUCCESS.equals(task.getStatus())
-                || OperationTaskStatus.FAILED.equals(task.getStatus()));
+        vo.setFinished(isTerminalStatus(task.getStatus()));
         return vo;
     }
 
@@ -268,10 +320,28 @@ public class OperationTaskServiceImpl implements OperationTaskService {
         private final StringBuilder buffer = new StringBuilder();
         private volatile int progress;
         private volatile String status = OperationTaskStatus.PENDING;
+        private volatile boolean cancelRequested;
         private volatile long lastFlush;
 
         LiveContext(Long taskId) {
             this.taskId = taskId;
+        }
+
+        void requestCancel() {
+            cancelRequested = true;
+            status = OperationTaskStatus.CANCELLED;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return cancelRequested;
+        }
+
+        @Override
+        public void throwIfCancelled() throws OperationTaskCancelledException {
+            if (cancelRequested) {
+                throw new OperationTaskCancelledException();
+            }
         }
 
         @Override

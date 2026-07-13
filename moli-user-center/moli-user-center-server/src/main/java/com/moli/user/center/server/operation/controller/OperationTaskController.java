@@ -2,6 +2,8 @@ package com.moli.user.center.server.operation.controller;
 
 import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
+import com.moli.common.enums.BusinessTypeEnum;
+import com.moli.common.log.MoliLog;
 import com.moli.common.page.PageRes;
 import com.moli.user.center.common.domain.vo.OperationTaskVo;
 import com.moli.user.center.server.operation.service.OperationTaskService;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,5 +50,13 @@ public class OperationTaskController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         return MoliResult.success(operationTaskService.list(taskType, serverId, projectId, pageNum, pageSize));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @RequiresPermissions(PermissionConstants.OPERATION_SERVER_LIST)
+    @MoliLog(title = "取消运维任务", businessType = BusinessTypeEnum.OTHER)
+    @ApiOperation(value = "取消任务", notes = "pending/running 协作式取消；success/failed/cancelled 返回错误")
+    public MoliResult<OperationTaskVo> cancel(@PathVariable Long id) {
+        return MoliResult.success(operationTaskService.cancel(id));
     }
 }

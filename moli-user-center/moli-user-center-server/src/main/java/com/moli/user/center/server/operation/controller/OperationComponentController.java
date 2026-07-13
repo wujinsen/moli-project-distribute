@@ -6,12 +6,14 @@ import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.dto.operation.OperationComponentSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
+import com.moli.user.center.common.domain.vo.OperationComponentLinksBatchVo;
 import com.moli.user.center.common.domain.vo.OperationComponentLinksVo;
 import com.moli.user.center.common.domain.vo.OperationComponentVo;
 import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
 import com.moli.common.page.PageRes;
 import com.moli.user.center.server.operation.service.OperationComponentLinkService;
 import com.moli.user.center.server.operation.service.OperationComponentService;
+import com.moli.user.center.server.operation.support.OperationDtoValidationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,8 @@ public class OperationComponentController {
     private OperationComponentService operationComponentService;
     @Resource
     private OperationComponentLinkService operationComponentLinkService;
+    @Resource
+    private OperationDtoValidationSupport dtoValidation;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_COMPONENT_LIST)
@@ -87,6 +91,15 @@ public class OperationComponentController {
     public MoliResult<Boolean> remove(@PathVariable Long[] ids) {
         operationComponentService.deleteByIds(ids);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    @GetMapping(value = "/links/batch")
+    @RequiresPermissions(PermissionConstants.OPERATION_COMPONENT_LIST)
+    @ApiOperation(value = "批量查询组件关联服务器", notes = "ids 逗号分隔，最多 50 个")
+    public MoliResult<OperationComponentLinksBatchVo> linksBatch(@RequestParam String ids) {
+        OperationComponentLinksBatchVo vo = new OperationComponentLinksBatchVo();
+        vo.setItems(operationComponentLinkService.getLinksBatch(dtoValidation.batchIds(ids)));
+        return MoliResult.success(vo);
     }
 
     @GetMapping(value = "/{id}/links")

@@ -3,7 +3,9 @@ package com.moli.user.center.server.operation.controller;
 import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.user.center.common.domain.vo.OperationPortAuditVo;
+import com.moli.user.center.common.domain.vo.OperationRelationReconcileVo;
 import com.moli.user.center.server.operation.service.OperationAuditService;
+import com.moli.user.center.server.operation.service.OperationRelationRepairService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +24,20 @@ public class OperationAuditController {
 
     @Resource
     private OperationAuditService operationAuditService;
+    @Resource
+    private OperationRelationRepairService operationRelationRepairService;
 
     @GetMapping("/port-matrix")
     @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
     @ApiOperation(value = "端口矩阵校验", notes = "对照 production-checklist 端口表校验项目/组件台账")
     public MoliResult<OperationPortAuditVo> portMatrix() {
         return MoliResult.success(operationAuditService.auditPortMatrix());
+    }
+
+    @GetMapping("/reconcile-relations")
+    @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
+    @ApiOperation(value = "关联主表对齐", notes = "将项目/组件主表 server_id 与 N:N 首台对齐，修复历史脏数据")
+    public MoliResult<OperationRelationReconcileVo> reconcileRelations() {
+        return MoliResult.success(operationRelationRepairService.reconcilePrimaryServers());
     }
 }

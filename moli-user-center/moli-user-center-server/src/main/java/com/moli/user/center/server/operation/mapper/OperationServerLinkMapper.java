@@ -20,4 +20,10 @@ public interface OperationServerLinkMapper {
 
     @Select("SELECT server_id FROM operation_server_component WHERE component_id = #{componentId}")
     List<Long> selectServerIdsByComponentId(@Param("componentId") Long componentId);
+
+    @Select("SELECT DISTINCT project_id FROM operation_server_project")
+    List<Long> selectDistinctProjectIdsWithLinks();
+
+    @Select("SELECT DISTINCT component_id FROM operation_server_component")
+    List<Long> selectDistinctComponentIdsWithLinks();
 }

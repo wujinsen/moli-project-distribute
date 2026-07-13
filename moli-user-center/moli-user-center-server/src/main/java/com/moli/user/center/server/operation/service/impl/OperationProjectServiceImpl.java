@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class OperationProjectServiceImpl implements OperationProjectService {
@@ -65,7 +62,6 @@ public class OperationProjectServiceImpl implements OperationProjectService {
         wrapper.orderByDesc(OperationProjectDeployInfo::getCreateTime);
         PageRes<OperationProjectVo> page = crudSupport.selectPage(operationProjectDeployInfoMapper, wrapper,
                 query.getPageNum(), query.getPageSize(), this::toVo);
-        fillRelationCounts(page.getList());
         return page;
     }
 
@@ -115,30 +111,16 @@ public class OperationProjectServiceImpl implements OperationProjectService {
     private OperationProjectVo toVo(OperationProjectDeployInfo row) {
         OperationProjectVo vo = new OperationProjectVo();
         BeanUtils.copyProperties(row, vo);
-        vo.setServerIds(relationQuerySupport.resolveServerIdsForProject(row.getId(), row.getServerId()));
+        List<Long> serverIds = relationQuerySupport.resolveServerIdsForProject(row.getId(), row.getServerId());
+        vo.setServerIds(serverIds);
+        vo.setServerCount(serverIds.size());
+        vo.setComponentCount(relationQuerySupport.resolveComponentIdsForProject(row.getId()).size());
         OperationPortMatrixPortCheck portCheck = portMatrixProvider.check(row.getProjectName(), row.getPort());
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
         vo.setDeployRunning(row.getDeployRunning());
         vo.setLastDeployCheckTime(row.getLastDeployCheckTime());
         return vo;
-    }
-
-    private void fillRelationCounts(List<OperationProjectVo> list) {
-        if (list == null || list.isEmpty()) {
-            return;
-        }
-        List<Long> ids = list.stream().map(OperationProjectVo::getId).collect(Collectors.toList());
-        Map<Long, Long> primaryByProject = new HashMap<>();
-        for (OperationProjectVo vo : list) {
-            primaryByProject.put(vo.getId(), vo.getServerId());
-        }
-        Map<Long, Integer> serverCounts = relationQuerySupport.countServersByProjectIds(ids, primaryByProject);
-        Map<Long, Integer> componentCounts = relationQuerySupport.countComponentsByProjectIds(ids);
-        for (OperationProjectVo vo : list) {
-            vo.setServerCount(serverCounts.getOrDefault(vo.getId(), 0));
-            vo.setComponentCount(componentCounts.getOrDefault(vo.getId(), 0));
-        }
     }
 
     private void applyPrimaryServerFromList(OperationProjectSaveRequest request) {

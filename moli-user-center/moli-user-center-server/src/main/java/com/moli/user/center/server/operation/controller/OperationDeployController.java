@@ -4,6 +4,7 @@ import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.common.enums.BusinessTypeEnum;
 import com.moli.common.log.MoliLog;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployBatchTaskRequest;
 import com.moli.user.center.common.domain.vo.OperationDeployPresetsVo;
 import com.moli.user.center.common.domain.vo.OperationDeployStatusVo;
 import com.moli.user.center.server.operation.support.OperationDeployLocalPolicy;
@@ -19,11 +20,13 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/operation/deploy")
@@ -93,5 +96,14 @@ public class OperationDeployController {
             @RequestParam(required = false) Long projectId) {
         return MoliResult.success(operationRemoteDeployService.createDeployTask(
                 dtoValidation.deployTask(serviceKey, action, serverId, projectId)));
+    }
+
+    @PostMapping("/batch/task")
+    @RequiresPermissions(value = {PermissionConstants.OPERATION_DEPLOY_EXEC, PermissionConstants.OPERATION_SERVER_LIST},
+            logical = Logical.AND)
+    @MoliLog(title = "创建批量滚动重启任务", businessType = BusinessTypeEnum.OTHER)
+    @ApiOperation(value = "创建批量滚动重启任务", notes = "单父任务顺序执行 steps；返回 taskId，轮询 GET /operation/task/{id}")
+    public MoliResult<Long> createBatchTask(@Valid @RequestBody OperationDeployBatchTaskRequest request) {
+        return MoliResult.success(operationRemoteDeployService.createBatchDeployTask(dtoValidation.validate(request)));
     }
 }

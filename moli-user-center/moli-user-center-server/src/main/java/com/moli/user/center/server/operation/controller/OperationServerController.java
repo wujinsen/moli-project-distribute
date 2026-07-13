@@ -53,9 +53,8 @@ public class OperationServerController {
     @RequiresPermissions(value = {PermissionConstants.OPERATION_SERVER_ADD, PermissionConstants.OPERATION_SERVER_LIST}, logical = Logical.AND)
     @MoliLog(title = "添加服务器", businessType = BusinessTypeEnum.INSERT)
     @ApiOperation(value = "添加服务器", notes = "添加服务器")
-    public MoliResult<Boolean> insert(@Valid @RequestBody OperationServerSaveRequest request) {
-        operationServerService.create(request);
-        return MoliResult.success(Boolean.TRUE);
+    public MoliResult<Long> insert(@Valid @RequestBody OperationServerSaveRequest request) {
+        return MoliResult.success(operationServerService.create(request));
     }
 
     @PutMapping

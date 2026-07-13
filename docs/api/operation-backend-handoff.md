@@ -1,7 +1,8 @@
 # 运营管理 · 后端联调通知（给 meiling-ui 前端）
 
 > **更新**：2026-07-13 · **user-center `:8888` 已联调通过**  
-> **前端对接专稿**：[operation-frontend.md](operation-frontend.md) · **meiling-ui 副本**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
+> **前端开工**：[operation-frontend-handoff.md](operation-frontend-handoff.md) · **完整契约**：[operation-frontend.md](operation-frontend.md)  
+> **meiling-ui 副本**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
 > **HTTP 索引**：[user-center-api-map.md](user-center-api-map.md) §4
 
 ---
@@ -13,7 +14,11 @@
 | **拓扑 / 关系 / component-links API** | ✅ 可联调（SVR-25a/26a/28a/28b） |
 | **多服务器 links 同步（L7/L8）** | ✅ `PUT .../links` 同步主表 `server_id` / `server_ip` / `innerIp` |
 | **create 带 `serverIds`** | ✅ `POST` body 写 N:N + 主 `serverId` 对齐 `serverIds[0]` |
-| **`POST` 返回新建 id** | ✅ **Breaking**：`data` 为 **Long**，不再是 `boolean` |
+| **create 返回新建 id** | ✅ **Breaking**：`data` 为 **Long**，不再是 `boolean`（**含 `POST /operation/server`**） |
+| **批量滚动重启** | ✅ `POST /operation/deploy/batch/task` |
+| **批量 links** | ✅ `GET .../project|component/links/batch?ids=` |
+| **任务取消** | ✅ `POST /operation/task/{id}/cancel` |
+| **detail `*Count` 与 list 一致** | ✅ **`toVo()` 统一派生** · [operation-frontend-handoff.md](operation-frontend-handoff.md) |
 | **order / bi 远程启停** | ✅ `presets.serviceKeys` 含五服务；`moli-service.sh` 已扩展 |
 | **阻塞项** | **无** |
 
@@ -23,7 +28,7 @@
 
 ## 2. Breaking · 前端必改
 
-### 2.1 `POST /operation/project` · `POST /operation/component`
+### 2.1 `POST /operation/project` · `POST /operation/component` · `POST /operation/server`
 
 | 变更前 | 变更后 |
 |--------|--------|
@@ -38,9 +43,29 @@ export const addProjectApi = (body: OperationProjectSave) =>
 
 export const addComponentApi = (body: OperationComponentSave) =>
   request<number>(`${OP}/component`, { method: 'POST', data: body })
+
+export const addServerApi = (body: OperationServerSave) =>
+  request<number>(`${OP}/server`, { method: 'POST', data: body })
 ```
 
 create 成功后可直接 `PUT /operation/project/{id}/links`（若 body 已带 `serverIds` 通常不必再补）。
+
+**批量滚动重启**（替代 N 次单任务扇出）：
+
+```typescript
+export const createDeployBatchTaskApi = (body: OperationDeployBatchTaskRequest) =>
+  request<number>(`${OP}/deploy/batch/task`, { method: 'POST', data: body })
+```
+
+**批量 links**（列表页减轻 N+1，仍勿用于 chips 计数）：
+
+```typescript
+export const getProjectLinksBatchApi = (ids: number[]) =>
+  request<{ items: OperationProjectLinksVo[] }>(`${OP}/project/links/batch`, { params: { ids: ids.join(',') } })
+
+export const cancelOperationTaskApi = (taskId: number) =>
+  request<OperationTaskVo>(`${OP}/task/${taskId}/cancel`, { method: 'POST' })
+```
 
 ### 2.2 其它接口不变
 
@@ -56,8 +81,10 @@ create 成功后可直接 `PUT /operation/project/{id}/links`（若 body 已带 
 | `PUT .../links` 全量替换 | 同步主表；**不再**报「serverIp 与 serverId 不一致」 |
 | `GET .../links` | 有序 `serverIds`；无关联 `[]` |
 | `GET /operation/relations/project/{id}` | N:N 非空时 **仅 N:N 计数**；无幽灵第二台 |
+| `GET /operation/relations/server/{id}` | **对称**：项目 N:N 非空时不再用残留主表 `server_id` 计入该机 |
+| `GET /operation/audit/reconcile-relations` | 一次性把主表 `server_id` 对齐到 N:N 首台（修历史脏数据） |
 
-**注意**：`serverCount` / `componentCount` 仅在 **`GET .../list`** 回填；`GET /{id}` 详情无计数字段——chips 请用列表或 relations。
+**注意**：`serverCount` / `componentCount` 在 **`toVo()` 内与 `serverIds` 同源派生**（list / detail / checkHealth 凡走 `toVo` 均一致）；`serverCount === serverIds.length`。
 
 ---
 
@@ -66,9 +93,14 @@ create 成功后可直接 `PUT /operation/project/{id}/links`（若 body 已带 
 | 项 | 说明 |
 |----|------|
 | `GET /operation/deploy/presets` | `serviceKeys`: user-center, gateway, knowledge, **order**, **bi** |
-| 远程启停 | 目标机需 `deploy/linux/moli-service.sh`（已支持五 key） |
+| **上传** | `POST /operation/file/upload` → `taskId`；需 `ops.upload.enabled=true` + SSH |
+| **批量重启** | `POST /operation/deploy/batch/task`（`steps[]` / `intervalSeconds`） |
+| **任务取消** | `POST /operation/task/{id}/cancel` → `status=cancelled` |
+| 远程启停 | 目标机 `deploy/linux/moli-service.sh` |
 | dev 配置 | `ops.upload/command/deploy.enabled=true`；大文件 **勿经 Gateway** |
 | `serverId` | 生产必传；`10109` = 未传 serverId 且 `allow-local=false` |
+
+前端对接详见 [operation-frontend-handoff.md §3](operation-frontend-handoff.md#3-部署中心与异步任务2026-07-13-新增)。
 
 ---
 
@@ -79,7 +111,7 @@ create 成功后可直接 `PUT /operation/project/{id}/links`（若 body 已带 
 3. **新建项目** · Network 看 `POST /operation/project` → `data` 为数字 id
 4. **RelationDrawer** · `GET /operation/relations/...` 含 deployRunning / recentTasks
 5. **拓扑图** · `GET /operation/topology` 可渲染
-6. **部署中心** · presets 五服务；选项目 + 多机扇出（DC-2）
+6. **部署中心** · 上传 `POST /file/upload` → taskId；多机用 `POST /deploy/batch/task`；任务可 cancel
 
 验收用例：[operation-relations-topology-acceptance.md](../test/operation-relations-topology-acceptance.md) §5。
 
@@ -91,3 +123,17 @@ create 成功后可直接 `PUT /operation/project/{id}/links`（若 body 已带 
 |------|----------|------|
 | 2026-07-13 | links 同步修复 | `ab70ed3d` · `68142cbf` |
 | 2026-07-13 | create 返回 id + order/bi 脚本 | 本轮 commit |
+| 2026-07-13 | 详情 VO 关系计数 | **`toVo()` 统一派生 `*Count`**；前端 [operation-frontend-handoff.md](operation-frontend-handoff.md) §0 |
+| 2026-07-13 | server create 返回 id + 批量 deploy/links | `POST /operation/server` → Long；`POST /deploy/batch/task`；`GET .../links/batch` |
+| 2026-07-13 | 任务取消 | `POST /operation/task/{id}/cancel`；`status=cancelled` |
+| 2026-07-13 | 反向关联对称 + reconcile | `resolveProjectIdsForServer` 与 N:N 对称；`GET /operation/audit/reconcile-relations` |
+
+---
+
+## 7. 剩余后端依赖（给后端同学）
+
+Breaking（create 返回 id）已对齐。运营 / 知识库 / SSO **剩余契约、环境、排期**见：
+
+**[frontend-backend-dependencies.md](frontend-backend-dependencies.md)**（§2 运营 VO/smoke/DBA · §3 知识库 · §4 SSO 菜单隔离 · §5 处理顺序）
+
+索引入口：[frontend-gaps.md](../frontend-gaps.md)

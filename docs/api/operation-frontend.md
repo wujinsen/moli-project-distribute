@@ -1,8 +1,8 @@
 # 服务器运维 · 运营管理 · 前端对接说明（meiling-ui）
 
 > **读者**：meiling-ui 前端（菜单「运营管理」· 驾驶舱 ops 页）。  
-> **更新**：2026-07-13 · **后端联调通知（给前端）**：[operation-backend-handoff.md](operation-backend-handoff.md)  
-> **meiling-ui 权威副本**：[`meiling-ui/docs/api/operation-frontend.md`](../../meiling-ui/docs/api/operation-frontend.md) · handoff：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
+> **更新**：2026-07-13 · **前端开工**：[operation-frontend-handoff.md](operation-frontend-handoff.md) · **后端通知**：[operation-backend-handoff.md](operation-backend-handoff.md)  
+> **meiling-ui 副本**：[`meiling-ui/docs/api/operation-frontend.md`](../../meiling-ui/docs/api/operation-frontend.md) · handoff：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)（与 monorepo 同步）  
 > **技术规划**：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md)  
 > **HTTP 契约索引**：[user-center-api-map.md](user-center-api-map.md) §4  
 > **端口矩阵权威**：[production-checklist.md](../ops/production-checklist.md) §2  
@@ -309,7 +309,7 @@ export type OperationComponentSave = {
 }
 ```
 
-**列表/详情 VO** 回填 `serverIds`；N:N 为空时回退为 `[serverId]`。
+**列表/详情/探活 VO** 均在服务端 **`toVo()`** 内赋值 `serverIds` 与 `*Count`（2026-07-13）；**`serverCount === serverIds.length` 恒等**。N:N 为空时 `serverIds` 回退 `[serverId]`。前端见 [operation-frontend-handoff.md §0–§2](operation-frontend-handoff.md)。
 
 | ID | UI | 状态 |
 |----|-----|------|
@@ -345,13 +345,15 @@ export type OperationProjectComponentLinks = {
 
 #### 5.7.1 列表关系计数 + 反向过滤（SVR-28a）
 
-列表 VO 增量字段：
+**凡经 `toVo()` 的响应**（`GET .../list` 每行、`GET /{id}`、行内 `check` 返回 VO）均含下列字段，**同一套派生逻辑**：
 
 | 页 | 字段 |
 |----|------|
-| 项目 | `serverCount`、`componentCount` |
-| 组件 | `serverCount`、`projectCount` |
+| 项目 | `serverCount`、`componentCount`（`serverCount === serverIds.length`） |
+| 组件 | `serverCount`、`projectCount`（`serverCount === serverIds.length`） |
 | 服务器 | `projectCount`、`componentCount` |
+
+列表 VO 字段（与详情相同）：
 
 反向过滤 query（可与 `environment` 等叠加）：
 
@@ -898,8 +900,67 @@ export interface PortMatrixSaveRequest {
 
 ---
 
+## 15. 关系计数 VO（S-VO · 2026-07-13 · `toVo()` 统一派生）
+
+> **前端必读**：[operation-frontend-handoff.md §0](operation-frontend-handoff.md#0-给前端一句话2026-07-13) · [§2 S-VO](operation-frontend-handoff.md#2-本轮前端任务s-vo--关系计数) · [§3 部署/任务](operation-frontend-handoff.md#3-部署中心与异步任务2026-07-13-新增)
+
+### 15.1 后端行为（前端可依赖）
+
+| 实现 | 说明 |
+|------|------|
+| `Operation*ServiceImpl.toVo()` | 组装 `serverIds` 后 **`serverCount = serverIds.size()`**；`componentCount` / `projectCount` 同源 `resolve*Ids` |
+| 已删除 | `fillRelationCounts()` 第二套批量回填（避免 list/detail 分叉） |
+| 覆盖 API | `GET .../list`、`GET /{id}`、`POST .../check` 等凡 `map(toVo)` 的入口 |
+
+### 15.2 字段表
+
+| API | 字段 |
+|-----|------|
+| `GET /operation/project/{id}` · list 行 | `serverIds`、`serverCount`、`componentCount` |
+| `GET /operation/component/{id}` · list 行 | `serverIds`、`serverCount`、`projectCount` |
+| `GET /operation/server/{id}` · list 行 | `projectCount`、`componentCount` |
+
+### 15.3 前端任务
+
+| ID | 说明 |
+|----|------|
+| **S-VO-1** | `types/operation.ts` — `*Count` 与 list 同型 |
+| **S-VO-2** | 详情/chips 用 `row.serverCount`，**勿** links 水合计数 |
+| **S-VO-3** | `enrichRowsWithLinks` 仅关联弹窗 |
+| **S-VO-4** | Chips：`row.serverCount`（兼容：`?? row.serverIds?.length`） |
+| **S-VO-5** | `PUT links` 后 `listXxxApi()` 刷新 |
+
+验收：LC-1b · W1–W2b · [operation-relations-topology-acceptance.md](../test/operation-relations-topology-acceptance.md)
+
+---
+
+## 16. 浏览器走查与未做可选项
+
+### 16.1 走查（运营 · 建议每轮发版前）
+
+| ID | 引用 | 说明 |
+|----|------|------|
+| §10 验收总表 | 本文 §10 | S0–S11、S26 回归 |
+| handoff §5 | [operation-backend-handoff.md](operation-backend-handoff.md) | 6 条 smoke |
+| S-VO W1–W10 | [operation-frontend-handoff.md §5](operation-frontend-handoff.md#5-浏览器走查) | S-VO + 上传 + batch + cancel |
+| 部署中心 | [operation-deploy-center-acceptance.md](../test/operation-deploy-center-acceptance.md) | SSH/启停/上传/命令 |
+| 拓扑/关联 | [operation-relations-topology-acceptance.md](../test/operation-relations-topology-acceptance.md) §5 | UI 点验 |
+
+### 16.2 后端已交付 · 前端待对接（2026-07-13）
+
+| 项 | 前端动作 | 文档 |
+|----|----------|------|
+| `POST /operation/server` 返回 id | `addServerApi` → `number` | handoff §3.1 |
+| 批量滚动重启 | `createDeployBatchTaskApi` | handoff §3.3 |
+| 批量 links | 可选减 N+1 | handoff §3.5 |
+| 任务取消 | 任务面板「取消」按钮 | handoff §3.4 |
+| SSO 菜单按系统 | **等后端** | dependencies §4 |
+
+---
+
 ## 12. 相关
 
+- **前端开工手册**：[operation-frontend-handoff.md](operation-frontend-handoff.md)
 - **部署中心 HTTP 契约（后端）**：[operation-deploy-api.md](operation-deploy-api.md)
 - **端口矩阵 HTTP 契约（SVR-21）**：[operation-port-matrix-api.md](operation-port-matrix-api.md)
 - 后端路线图：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md)

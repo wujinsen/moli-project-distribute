@@ -13,6 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -78,6 +81,33 @@ public class OperationTaskServiceImplTest {
     public void poll_throws_when_task_missing() {
         when(operationTaskMapper.selectById(404L)).thenReturn(null);
         operationTaskService.poll(404L, 0);
+    }
+
+    @Test
+    public void cancel_marks_pending_task_cancelled_before_run() throws Exception {
+        OperationTask row = taskRow(10L, OperationTaskStatus.PENDING, 0, "");
+        when(operationTaskMapper.selectById(10L)).thenReturn(row);
+
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        operationTaskService.submit(10L, "lock:test", context -> {
+            started.countDown();
+            release.await(5, TimeUnit.SECONDS);
+        });
+
+        started.await(3, TimeUnit.SECONDS);
+        OperationTaskVo cancelled = operationTaskService.cancel(10L);
+        assertEquals(OperationTaskStatus.CANCELLED, cancelled.getStatus());
+        assertTrue(cancelled.getFinished());
+        release.countDown();
+        Thread.sleep(200);
+    }
+
+    @Test(expected = BaseException.class)
+    public void cancel_rejects_finished_task() {
+        OperationTask row = taskRow(11L, OperationTaskStatus.SUCCESS, 100, "");
+        when(operationTaskMapper.selectById(11L)).thenReturn(row);
+        operationTaskService.cancel(11L);
     }
 
     private static OperationTask taskRow(Long id, String status, int progress, String log) {

@@ -33,8 +33,11 @@
 | ID | 场景 | 步骤 | 期望 |
 |----|------|------|------|
 | LC-1 | 项目计数 | `GET /operation/project/list` | 每行含 `serverCount`、`componentCount`；与 N:N+主 `server_id` 一致 |
-| LC-2 | 组件计数 | `GET /operation/component/list` | 每行含 `serverCount`、`projectCount` |
+| LC-1b | 项目详情计数 | `GET /operation/project/{id}` | `serverCount === serverIds.length`；与 list 同行 `serverCount` 一致 |
+| LC-2 | 组件计数 | `GET /operation/component/list` | 每行含 `serverCount`、`projectCount`；`serverCount === serverIds.length` |
+| LC-2b | 组件详情计数 | `GET /operation/component/{id}` | 同上恒等式；与 list 一致 |
 | LC-3 | 服务器计数 | `GET /operation/server/list` | 每行含 `projectCount`、`componentCount` |
+| LC-3b | 服务器详情计数 | `GET /operation/server/{id}` | 含 `projectCount`、`componentCount` |
 | LC-4 | 按服务器筛项目 | `GET /operation/project/list?serverId=201` | 仅返回关联 201 的项目（含 N:N 与主 `server_id`） |
 | LC-5 | 按组件筛项目 | `GET /operation/project/list?componentId=301` | 仅返回依赖 MySQL 的项目 |
 | LC-6 | 按项目筛组件 | `GET /operation/component/list?projectId=401` | 仅返回被项目 401 依赖的组件 |
@@ -81,7 +84,7 @@
 | UI-2 | RelationDrawer | 调 `GET /operation/relations/...`；Tab 切换；「定位」带 query 过滤 |
 | UI-3 | 拓扑页 | `OperationTopologyGraphView` 渲染 `GET /operation/topology`；`?focus=` 深链 |
 | UI-4 | 项目依赖弹窗 | `OperationProjectComponentLinksModal` · `PUT .../component-links` 全量保存 |
-| UI-5 | 关联保存回归 | 弹窗只选 1 台后 `serverCount=1`；无「幽灵第二台」（后端 §2.3 同步） |
+| UI-5 | 关联保存回归 | 弹窗只选 1 台后 `serverCount=1`；详情 `GET /{id}` 同行 `serverCount=1`；无「幽灵第二台」 |
 
 ---
 

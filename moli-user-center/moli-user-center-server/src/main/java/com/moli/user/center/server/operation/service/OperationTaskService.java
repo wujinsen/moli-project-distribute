@@ -23,4 +23,10 @@ public interface OperationTaskService {
     /** 任务历史分页。 */
     PageRes<OperationTaskVo> list(String taskType, Long serverId, Long projectId,
                                  Integer pageNum, Integer pageSize);
+
+    /**
+     * 协作式取消：pending / running 可取消；success / failed / cancelled 拒绝。
+     * @return 取消后的任务快照（与 poll 字段一致，不含增量 logOffset 语义）
+     */
+    OperationTaskVo cancel(Long taskId);
 }

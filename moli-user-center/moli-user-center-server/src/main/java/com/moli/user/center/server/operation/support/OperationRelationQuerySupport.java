@@ -67,7 +67,11 @@ public class OperationRelationQuerySupport {
         LambdaQueryWrapper<OperationProjectDeployInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(OperationProjectDeployInfo::getServerId, serverId);
         wrapper.select(OperationProjectDeployInfo::getId);
-        operationProjectDeployInfoMapper.selectList(wrapper).forEach(row -> ids.add(row.getId()));
+        for (OperationProjectDeployInfo row : operationProjectDeployInfoMapper.selectList(wrapper)) {
+            if (!hasProjectServerLinks(row.getId())) {
+                ids.add(row.getId());
+            }
+        }
         return new ArrayList<>(ids);
     }
 
@@ -76,7 +80,11 @@ public class OperationRelationQuerySupport {
         LambdaQueryWrapper<OperationComponentDeployInfo> byServerId = new LambdaQueryWrapper<>();
         byServerId.eq(OperationComponentDeployInfo::getServerId, serverId);
         byServerId.select(OperationComponentDeployInfo::getId);
-        operationComponentDeployInfoMapper.selectList(byServerId).forEach(row -> ids.add(row.getId()));
+        for (OperationComponentDeployInfo row : operationComponentDeployInfoMapper.selectList(byServerId)) {
+            if (!hasComponentServerLinks(row.getId())) {
+                ids.add(row.getId());
+            }
+        }
 
         OperationServerInfo server = operationServerMapper.selectById(serverId);
         if (server != null) {
@@ -85,7 +93,11 @@ public class OperationRelationQuerySupport {
                 LambdaQueryWrapper<OperationComponentDeployInfo> byIp = new LambdaQueryWrapper<>();
                 byIp.in(OperationComponentDeployInfo::getServerIp, serverIps);
                 byIp.select(OperationComponentDeployInfo::getId);
-                operationComponentDeployInfoMapper.selectList(byIp).forEach(row -> ids.add(row.getId()));
+                for (OperationComponentDeployInfo row : operationComponentDeployInfoMapper.selectList(byIp)) {
+                    if (!hasComponentServerLinks(row.getId())) {
+                        ids.add(row.getId());
+                    }
+                }
             }
         }
         return new ArrayList<>(ids);
@@ -175,10 +187,11 @@ public class OperationRelationQuerySupport {
         if (serverId == null) {
             return;
         }
-        wrapper.and(w -> w.eq(OperationProjectDeployInfo::getServerId, serverId)
-                .or()
-                .inSql(OperationProjectDeployInfo::getId,
-                        "SELECT project_id FROM operation_server_project WHERE server_id = " + serverId));
+        wrapper.and(w -> w.inSql(OperationProjectDeployInfo::getId,
+                        "SELECT project_id FROM operation_server_project WHERE server_id = " + serverId)
+                .or(o -> o.eq(OperationProjectDeployInfo::getServerId, serverId)
+                        .notInSql(OperationProjectDeployInfo::getId,
+                                "SELECT project_id FROM operation_server_project")));
     }
 
     public void applyProjectComponentFilter(LambdaQueryWrapper<OperationProjectDeployInfo> wrapper, Long componentId) {
@@ -193,10 +206,11 @@ public class OperationRelationQuerySupport {
         if (serverId == null) {
             return;
         }
-        wrapper.and(w -> w.eq(OperationComponentDeployInfo::getServerId, serverId)
-                .or()
-                .inSql(OperationComponentDeployInfo::getId,
-                        "SELECT component_id FROM operation_server_component WHERE server_id = " + serverId));
+        wrapper.and(w -> w.inSql(OperationComponentDeployInfo::getId,
+                        "SELECT component_id FROM operation_server_component WHERE server_id = " + serverId)
+                .or(o -> o.eq(OperationComponentDeployInfo::getServerId, serverId)
+                        .notInSql(OperationComponentDeployInfo::getId,
+                                "SELECT component_id FROM operation_server_component")));
     }
 
     public void applyComponentProjectFilter(LambdaQueryWrapper<OperationComponentDeployInfo> wrapper, Long projectId) {
@@ -215,7 +229,8 @@ public class OperationRelationQuerySupport {
                         "SELECT server_id FROM operation_server_project WHERE project_id = " + projectId)
                 .or()
                 .inSql(OperationServerInfo::getId,
-                        "SELECT server_id FROM operation_project_deploy_info WHERE id = " + projectId + " AND server_id IS NOT NULL"));
+                        "SELECT server_id FROM operation_project_deploy_info WHERE id = " + projectId
+                                + " AND server_id IS NOT NULL AND id NOT IN (SELECT project_id FROM operation_server_project)"));
     }
 
     public void applyServerComponentFilter(LambdaQueryWrapper<OperationServerInfo> wrapper, Long componentId) {
@@ -226,7 +241,8 @@ public class OperationRelationQuerySupport {
                         "SELECT server_id FROM operation_server_component WHERE component_id = " + componentId)
                 .or()
                 .inSql(OperationServerInfo::getId,
-                        "SELECT server_id FROM operation_component_deploy_info WHERE id = " + componentId + " AND server_id IS NOT NULL"));
+                        "SELECT server_id FROM operation_component_deploy_info WHERE id = " + componentId
+                                + " AND server_id IS NOT NULL AND id NOT IN (SELECT component_id FROM operation_server_component)"));
     }
 
     private static Map<Long, Integer> initZeroCounts(Collection<Long> ids) {
@@ -238,6 +254,14 @@ public class OperationRelationQuerySupport {
             counts.put(id, 0);
         }
         return counts;
+    }
+
+    private boolean hasProjectServerLinks(Long projectId) {
+        return !safeList(operationServerLinkMapper.selectServerIdsByProjectId(projectId)).isEmpty();
+    }
+
+    private boolean hasComponentServerLinks(Long componentId) {
+        return !safeList(operationServerLinkMapper.selectServerIdsByComponentId(componentId)).isEmpty();
     }
 
     private static List<String> collectServerIps(OperationServerInfo server) {

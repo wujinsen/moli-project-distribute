@@ -7,12 +7,14 @@ import com.moli.common.log.MoliLog;
 import com.moli.user.center.common.domain.dto.operation.OperationProjectSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.vo.OperationProjectComponentLinksVo;
+import com.moli.user.center.common.domain.vo.OperationProjectLinksBatchVo;
 import com.moli.user.center.common.domain.vo.OperationProjectLinksVo;
 import com.moli.user.center.common.domain.vo.OperationProjectVo;
 import com.moli.common.page.PageRes;
 import com.moli.user.center.server.operation.service.OperationProjectComponentLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectLinkService;
 import com.moli.user.center.server.operation.service.OperationProjectService;
+import com.moli.user.center.server.operation.support.OperationDtoValidationSupport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,8 @@ public class OperationProjectController {
     private OperationProjectLinkService operationProjectLinkService;
     @Resource
     private OperationProjectComponentLinkService operationProjectComponentLinkService;
+    @Resource
+    private OperationDtoValidationSupport dtoValidation;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
@@ -74,6 +78,15 @@ public class OperationProjectController {
     public MoliResult<Boolean> remove(@PathVariable Long[] ids) {
         operationProjectService.deleteByIds(ids);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    @GetMapping(value = "/links/batch")
+    @RequiresPermissions(PermissionConstants.OPERATION_PROJECT_LIST)
+    @ApiOperation(value = "批量查询项目关联服务器", notes = "ids 逗号分隔，最多 50 个")
+    public MoliResult<OperationProjectLinksBatchVo> linksBatch(@RequestParam String ids) {
+        OperationProjectLinksBatchVo vo = new OperationProjectLinksBatchVo();
+        vo.setItems(operationProjectLinkService.getLinksBatch(dtoValidation.batchIds(ids)));
+        return MoliResult.success(vo);
     }
 
     @GetMapping(value = "/{id}/links")

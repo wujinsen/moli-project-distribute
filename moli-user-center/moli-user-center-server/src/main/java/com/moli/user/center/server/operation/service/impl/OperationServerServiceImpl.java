@@ -89,7 +89,6 @@ public class OperationServerServiceImpl implements OperationServerService {
         wrapper.orderByDesc(OperationServerInfo::getCreateTime);
         PageRes<OperationServerVo> page = crudSupport.selectPage(operationServerMapper, wrapper,
                 query.getPageNum(), query.getPageSize(), this::toVo);
-        fillRelationCounts(page.getList());
         return page;
     }
 
@@ -113,7 +112,7 @@ public class OperationServerServiceImpl implements OperationServerService {
     }
 
     @Override
-    public void create(OperationServerSaveRequest request) {
+    public Long create(OperationServerSaveRequest request) {
         OperationServerInfo row = OperationSaveRequestMapper.toEntity(request);
         assertUniqueIp(row, null);
         if (row.getStatus() == null) {
@@ -123,6 +122,7 @@ public class OperationServerServiceImpl implements OperationServerService {
             row.setServerRole(OperationServerRoles.APP);
         }
         operationServerMapper.insert(row);
+        return row.getId();
     }
 
     @Override
@@ -240,22 +240,11 @@ public class OperationServerServiceImpl implements OperationServerService {
         OperationServerVo vo = new OperationServerVo();
         BeanUtils.copyProperties(row, vo);
         vo.setTags(OperationServerTagsSupport.parse(row.getTags()));
+        vo.setProjectCount(relationQuerySupport.resolveProjectIdsForServer(row.getId()).size());
+        vo.setComponentCount(relationQuerySupport.resolveComponentIdsForServer(row.getId()).size());
         // 私钥/密码不回显，仅暴露是否已配置
         vo.setSshConfigured(row.getSshAuthType() != null
                 && (StringUtils.isNotBlank(row.getSshPrivateKey()) || StringUtils.isNotBlank(row.getSshPassphrase())));
         return vo;
-    }
-
-    private void fillRelationCounts(List<OperationServerVo> list) {
-        if (list == null || list.isEmpty()) {
-            return;
-        }
-        List<Long> ids = list.stream().map(OperationServerVo::getId).collect(Collectors.toList());
-        Map<Long, Integer> projectCounts = relationQuerySupport.countProjectsByServerIds(ids);
-        Map<Long, Integer> componentCounts = relationQuerySupport.countComponentsByServerIds(ids);
-        for (OperationServerVo vo : list) {
-            vo.setProjectCount(projectCounts.getOrDefault(vo.getId(), 0));
-            vo.setComponentCount(componentCounts.getOrDefault(vo.getId(), 0));
-        }
     }
 }

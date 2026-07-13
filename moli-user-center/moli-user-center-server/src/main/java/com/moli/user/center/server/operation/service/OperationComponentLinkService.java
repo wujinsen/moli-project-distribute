@@ -8,6 +8,8 @@ public interface OperationComponentLinkService {
 
     OperationComponentLinksVo getLinks(Long componentId);
 
+    List<OperationComponentLinksVo> getLinksBatch(List<Long> componentIds);
+
     void saveLinks(Long componentId, OperationComponentLinksVo links);
 
     /** 保存组件时同步 N:N；serverIds 为空则仅保留主 serverId 关联 */

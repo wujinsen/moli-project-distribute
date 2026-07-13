@@ -45,6 +45,20 @@ public class OperationComponentLinkServiceImpl implements OperationComponentLink
     }
 
     @Override
+    public List<OperationComponentLinksVo> getLinksBatch(List<Long> componentIds) {
+        List<OperationComponentLinksVo> items = new ArrayList<>();
+        if (componentIds == null) {
+            return items;
+        }
+        for (Long componentId : componentIds) {
+            if (componentId != null) {
+                items.add(getLinks(componentId));
+            }
+        }
+        return items;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveLinks(Long componentId, OperationComponentLinksVo links) {
         OperationComponentDeployInfo component = requireComponent(componentId);

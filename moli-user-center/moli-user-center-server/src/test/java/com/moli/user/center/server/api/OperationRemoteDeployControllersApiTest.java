@@ -85,6 +85,15 @@ public class OperationRemoteDeployControllersApiTest extends AbstractApiTest {
     }
 
     @Test
+    public void POST_operation_task_cancel() {
+        OperationTaskVo vo = new OperationTaskVo();
+        vo.setStatus("cancelled");
+        vo.setFinished(true);
+        when(operationTaskService.cancel(42L)).thenReturn(vo);
+        ControllerTestSupport.assertSuccess(taskController.cancel(42L));
+    }
+
+    @Test
     public void POST_operation_deploy_create_task() {
         OperationDeployTaskRequest req = new OperationDeployTaskRequest();
         req.setServiceKey("user-center");

@@ -14,4 +14,14 @@ public interface OperationTaskContext {
 
     /** 当前进度。 */
     int getProgress();
+
+    /** 是否已请求取消（协作式；长耗时 SSH 等须执行体主动检查）。 */
+    boolean isCancelled();
+
+    /** 若已请求取消则抛出 {@link OperationTaskCancelledException}。 */
+    default void throwIfCancelled() throws OperationTaskCancelledException {
+        if (isCancelled()) {
+            throw new OperationTaskCancelledException();
+        }
+    }
 }

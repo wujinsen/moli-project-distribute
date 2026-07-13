@@ -68,3 +68,9 @@ swagger:
 ops:
   secret:
     key: your-local-dev-secret
+  command:
+    enabled: true
+  deploy:
+    enabled: true                # 若要用 restartService 后置
+  upload:
+    enabled: true

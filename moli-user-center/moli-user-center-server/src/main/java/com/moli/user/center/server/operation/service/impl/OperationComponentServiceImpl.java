@@ -26,10 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class OperationComponentServiceImpl implements OperationComponentService {
@@ -72,7 +69,6 @@ public class OperationComponentServiceImpl implements OperationComponentService 
         wrapper.orderByDesc(OperationComponentDeployInfo::getCreateTime);
         PageRes<OperationComponentVo> page = crudSupport.selectPage(operationComponentDeployInfoMapper, wrapper,
                 query.getPageNum(), query.getPageSize(), this::toVo);
-        fillRelationCounts(page.getList());
         return page;
     }
 
@@ -143,28 +139,14 @@ public class OperationComponentServiceImpl implements OperationComponentService 
         vo.setPasswordMask(secretCrudSupport.passwordMask(row.getPassword()));
         vo.setStatus(row.getStatus());
         vo.setLastCheckTime(row.getLastCheckTime());
-        vo.setServerIds(relationQuerySupport.resolveServerIdsForComponent(row.getId(), row.getServerId()));
+        List<Long> serverIds = relationQuerySupport.resolveServerIdsForComponent(row.getId(), row.getServerId());
+        vo.setServerIds(serverIds);
+        vo.setServerCount(serverIds.size());
+        vo.setProjectCount(relationQuerySupport.resolveProjectIdsForComponent(row.getId()).size());
         OperationPortMatrixPortCheck portCheck = portMatrixProvider.check(row.getComponentName(), row.getPort());
         vo.setExpectedPort(portCheck.expectedPort);
         vo.setPortMatchStatus(portCheck.status);
         return vo;
-    }
-
-    private void fillRelationCounts(List<OperationComponentVo> list) {
-        if (list == null || list.isEmpty()) {
-            return;
-        }
-        List<Long> ids = list.stream().map(OperationComponentVo::getId).collect(Collectors.toList());
-        Map<Long, Long> primaryByComponent = new HashMap<>();
-        for (OperationComponentVo vo : list) {
-            primaryByComponent.put(vo.getId(), vo.getServerId());
-        }
-        Map<Long, Integer> serverCounts = relationQuerySupport.countServersByComponentIds(ids, primaryByComponent);
-        Map<Long, Integer> projectCounts = relationQuerySupport.countProjectsByComponentIds(ids);
-        for (OperationComponentVo vo : list) {
-            vo.setServerCount(serverCounts.getOrDefault(vo.getId(), 0));
-            vo.setProjectCount(projectCounts.getOrDefault(vo.getId(), 0));
-        }
     }
 
     private void applyPrimaryServerFromList(OperationComponentSaveRequest request) {

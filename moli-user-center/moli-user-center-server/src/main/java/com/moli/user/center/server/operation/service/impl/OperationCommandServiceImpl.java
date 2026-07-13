@@ -52,6 +52,7 @@ public class OperationCommandServiceImpl implements OperationCommandService {
 
     private void runCommand(com.moli.user.center.server.operation.task.OperationTaskContext context,
                             OperationServerInfo server, String remoteCommand) throws Exception {
+        context.throwIfCancelled();
         context.appendLine("[SSH] 连接 " + server.getServerName() + " ...");
         try (OperationSshSession session = sshClient.connect(server)) {
             context.appendLine("[SSH] 已连接 " + session.getHost());

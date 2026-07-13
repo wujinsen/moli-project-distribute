@@ -1,6 +1,7 @@
 package com.moli.user.center.server.operation.service.impl;
 
 import com.moli.common.exception.BaseException;
+import com.moli.user.center.common.domain.dto.operation.OperationDeployBatchTaskRequest;
 import com.moli.user.center.common.domain.dto.operation.OperationDeployConstants;
 import com.moli.user.center.common.domain.dto.operation.OperationDeployTaskRequest;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
@@ -27,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -38,6 +40,8 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
 
     private static final Set<String> TASK_ACTIONS = OperationDeployConstants.TASK_ACTIONS;
     private static final Set<String> READ_ONLY_ACTIONS = OperationDeployConstants.READ_ONLY_ACTIONS;
+    private static final String TASK_TYPE_BATCH = "deploy_batch";
+    private static final String BATCH_LOCK_KEY = "deploy_batch:global";
 
     @Resource
     private OperationDeployProperties deployProperties;
@@ -87,7 +91,88 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
         return task.getId();
     }
 
-    private void runLocal(OperationTaskContext context, String key, String act) {
+    @Override
+    public Long createBatchDeployTask(OperationDeployBatchTaskRequest batch) {
+        if (!deployProperties.isEnabled()) {
+            throw OperationBizException.deployDisabled();
+        }
+        List<OperationDeployTaskRequest> steps = batch.getSteps();
+        Long batchProjectId = batch.getProjectId();
+        for (OperationDeployTaskRequest step : steps) {
+            if (step.getProjectId() == null && batchProjectId != null) {
+                step.setProjectId(batchProjectId);
+            }
+            String act = normalizeAction(step.getAction());
+            if (!TASK_ACTIONS.contains(act)) {
+                throw OperationBizException.params("批量任务每步仅支持 start/stop/restart，当前: " + act);
+            }
+            deployTaskProjectSupport.resolve(step);
+            deployLocalPolicy.requireAllowLocalWhenNoServer(step.getServerId());
+        }
+
+        int total = steps.size();
+        String target = "批量滚动重启 " + total + " 步";
+        OperationTask task = operationTaskService.create(
+                TASK_TYPE_BATCH, null, batchProjectId, null, "batch", target);
+        boolean stopOnFailure = !Boolean.FALSE.equals(batch.getStopOnFailure());
+        int intervalSeconds = batch.getIntervalSeconds() != null ? batch.getIntervalSeconds() : 0;
+
+        operationTaskService.submit(task.getId(), BATCH_LOCK_KEY, context ->
+                executeBatchDeploy(context, steps, stopOnFailure, intervalSeconds));
+        return task.getId();
+    }
+
+    private void executeBatchDeploy(OperationTaskContext context, List<OperationDeployTaskRequest> steps,
+                                    boolean stopOnFailure, int intervalSeconds) throws Exception {
+        int total = steps.size();
+        context.appendLine("[BATCH] 开始批量滚动重启，共 " + total + " 步");
+        int succeeded = 0;
+        int failed = 0;
+        for (int i = 0; i < total; i++) {
+            context.throwIfCancelled();
+            OperationDeployTaskRequest stepReq = steps.get(i);
+            OperationDeployTaskProjectSupport.DeployTaskBinding binding = deployTaskProjectSupport.resolve(stepReq);
+            String key = binding.getServiceKey();
+            String act = normalizeAction(stepReq.getAction());
+            int stepNo = i + 1;
+            context.appendLine("");
+            context.appendLine("[BATCH] --- 步骤 " + stepNo + "/" + total + ": " + key + " " + act + " ---");
+            context.setProgress(Math.max(1, (i * 100) / total));
+            try {
+                Long serverId = binding.getServerId();
+                OperationServerInfo server = serverId != null ? operationServerService.requireEntity(serverId) : null;
+                if (server == null) {
+                    runLocal(context, key, act);
+                } else {
+                    runRemote(context, server, key, act);
+                }
+                succeeded++;
+                context.appendLine("[BATCH] 步骤 " + stepNo + " 成功");
+            } catch (Exception e) {
+                failed++;
+                context.appendLine("[BATCH] 步骤 " + stepNo + " 失败: "
+                        + StringUtils.defaultString(e.getMessage(), e.getClass().getSimpleName()));
+                if (stopOnFailure) {
+                    if (e instanceof BaseException) {
+                        throw (BaseException) e;
+                    }
+                    throw new BaseException(e.getMessage());
+                }
+            }
+            context.setProgress(((i + 1) * 100) / total);
+            if (i < total - 1 && intervalSeconds > 0) {
+                context.appendLine("[BATCH] 等待 " + intervalSeconds + " 秒...");
+                sleepWithCancel(context, intervalSeconds);
+            }
+        }
+        context.appendLine("[BATCH] 完成：成功 " + succeeded + "，失败 " + failed);
+        if (failed > 0) {
+            throw new BaseException("批量任务部分失败：" + failed + "/" + total);
+        }
+    }
+
+    private void runLocal(OperationTaskContext context, String key, String act) throws Exception {
+        context.throwIfCancelled();
         context.appendLine("[本机] 执行 moli-service.sh " + key + " " + act);
         context.setProgress(20);
         OperationDeployStatusVo vo = operationDeployService.execute(key, act, null);
@@ -105,6 +190,7 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
 
     private void runRemote(OperationTaskContext context, OperationServerInfo server,
                            String key, String act) throws Exception {
+        context.throwIfCancelled();
         context.appendLine("[SSH] 连接 " + server.getServerName() + " ...");
         context.setProgress(10);
         try (OperationSshSession session = sshClient.connect(server)) {
@@ -229,5 +315,13 @@ public class OperationRemoteDeployServiceImpl implements OperationRemoteDeploySe
             throw OperationBizException.params("action 不能为空");
         }
         return act;
+    }
+
+    private static void sleepWithCancel(OperationTaskContext context, int intervalSeconds)
+            throws Exception {
+        for (int s = 0; s < intervalSeconds; s++) {
+            context.throwIfCancelled();
+            Thread.sleep(1000L);
+        }
     }
 }

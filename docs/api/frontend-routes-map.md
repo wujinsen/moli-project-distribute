@@ -80,7 +80,7 @@ Authorization: {token}  # 后续请求
 | `GET/PUT /operation/project/{id}/component-links` | 项目组件依赖（SVR-26a） | `operation:project:*` |
 | `POST /operation/health/probe-all` | 批量探活 | `operation:server:list` |
 
-**前端对接**：[operation-frontend.md](operation-frontend.md) · **meiling-ui handoff**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md) · **HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)
+**前端对接**：[operation-frontend.md](operation-frontend.md) · **前端开工**：[operation-frontend-handoff.md](operation-frontend-handoff.md) · **HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)
 
 ---
 
