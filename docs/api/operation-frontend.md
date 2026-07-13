@@ -942,19 +942,21 @@ export interface PortMatrixSaveRequest {
 |----|------|------|
 | §10 验收总表 | 本文 §10 | S0–S11、S26 回归 |
 | handoff §5 | [operation-backend-handoff.md](operation-backend-handoff.md) | 6 条 smoke |
-| S-VO W1–W10 | [operation-frontend-handoff.md §5](operation-frontend-handoff.md#5-浏览器走查) | S-VO + 上传 + batch + cancel |
+| S-VO W1–W10 | [operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md) | S-VO + 上传 + batch + cancel |
 | 部署中心 | [operation-deploy-center-acceptance.md](../test/operation-deploy-center-acceptance.md) | SSH/启停/上传/命令 |
 | 拓扑/关联 | [operation-relations-topology-acceptance.md](../test/operation-relations-topology-acceptance.md) §5 | UI 点验 |
 
-### 16.2 后端已交付 · 前端待对接（2026-07-13）
+### 16.2 前后端对齐状态（2026-07-13）
 
-| 项 | 前端动作 | 文档 |
-|----|----------|------|
-| `POST /operation/server` 返回 id | `addServerApi` → `number` | handoff §3.1 |
-| 批量滚动重启 | `createDeployBatchTaskApi` | handoff §3.3 |
-| 批量 links | 可选减 N+1 | handoff §3.5 |
-| 任务取消 | 任务面板「取消」按钮 | handoff §3.4 |
-| SSO 菜单按系统 | **等后端** | dependencies §4 |
+| 项 | 后端 | 前端（meiling-ui） |
+|----|------|-------------------|
+| `POST /operation/server` 返回 id | ✅ `b4ac176a` | ✅ W7 |
+| 批量滚动重启 | ✅ batch/task | ✅ W9 |
+| 批量 links | ✅ 可选 | 可选 |
+| 任务取消 | ✅ cancel | ✅ W10 |
+| S-VO `*Count` | ✅ `toVo()` | ✅ W1–W6 |
+| **联合走查** | 参与 | 🟡 [走查稿](../test/operation-w1-w10-walkthrough.md) |
+| SSO 菜单按系统 | 设计已出 | 等 P2 实现 |
 
 ---
 

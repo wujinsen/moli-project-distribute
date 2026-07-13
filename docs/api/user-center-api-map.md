@@ -149,6 +149,17 @@
 
 ## 4. 运维域接口
 
+### 4.0 前端依赖与 links 契约（2026-07-13）
+
+| 项 | 状态 | 说明 |
+|----|------|------|
+| `PUT .../project\|component/links` 同步主表 | ✅ | N:N 全量替换 + `server_id`/`server_ip` 对齐首台 |
+| `GET .../links` 与 list `serverIds` | ✅ | N:N 为空时回退 `[serverId]`；与 `OperationRelationQuerySupport` 一致 |
+| `serverCount` / `componentCount` | ✅ 凡 `toVo()` 出口 | **`toVo()` 派生**；`serverCount === serverIds.length`；前端 [operation-frontend-handoff.md](operation-frontend-handoff.md) §0 |
+| 历史脏数据 | 运维一次性 | `GET /operation/audit/reconcile-relations` |
+
+**给后端总览**：[frontend-backend-dependencies.md](frontend-backend-dependencies.md) · [frontend-gaps.md](../frontend-gaps.md)
+
 ### 平台管理 `OperationPlatformController`（前缀 `/operation/platform`，6个）
 
 - `GET /operation/platform/list`：`operation:platform:list`；返回 `OperationPlatformVo`（含 `passwordConfigured` / `passwordMask`，无明文）
@@ -159,9 +170,9 @@
 ### 服务器管理 `OperationServerController`（前缀 `/operation/server`，11个）
 
 - `GET /operation/server/list`：`operation:server:list`；返回 `OperationServerVo`（含 `status` / `lastCheckTime` / `projectCount` / `componentCount` / `tags` / `serverRole`）；支持 `projectId`、`componentId` 反向过滤
-- `POST /operation/server`：`operation:server:add` + `list`
+- `POST /operation/server`：`operation:server:add` + `list`；**响应 `data` 为新建 `id`（Long）**
 - `PUT /operation/server`：`operation:server:edit` + `list`
-- `GET /operation/server/{id}`：`operation:server:list`
+- `GET /operation/server/{id}`：`operation:server:list`；返回 VO（含 **`projectCount` / `componentCount`**）
 - `DELETE /operation/server/{ids}`：`operation:server:remove` + `list`
 - `GET /operation/server/{id}/links`：`operation:server:list`；N:N 项目/组件 ID
 - ~~`GET /operation/server/{id}/topology`~~：**已删除**（SVR-5）；改用 `GET /operation/relations/server/{id}`
@@ -177,9 +188,10 @@
 - `POST /operation/project`：`operation:project:add` + `list`；body 可传 `serverIds[]`，同步 `operation_server_project`；**响应 `data` 为新建 `id`（Long）**
 - `POST /operation/component`：同上对称；**响应 `data` 为新建 `id`（Long）**
 - `PUT /operation/project`：`operation:project:edit` + `list`
-- `GET /operation/project/{id}`：`operation:project:list`；返回 VO（含 `serverIds`）
+- `GET /operation/project/{id}`：`operation:project:list`；返回 VO（含 `serverIds`、**`serverCount` / `componentCount`**）
 - `DELETE /operation/project/{ids}`：`operation:project:remove` + `list`
 - `GET /operation/project/{id}/links`：`operation:project:list`；返回 `{ projectId, serverIds }`
+- `GET /operation/project/links/batch?ids=`：`operation:project:list`；逗号分隔最多 50；返回 `{ items: OperationProjectLinksVo[] }`
 - `PUT /operation/project/{id}/links`：`operation:project:edit` + `list`；全量替换 N:N，**并同步主表 `server_id`/`server_ip` 为 `serverIds[0]`**（2026-07-13）
 - `GET /operation/project/{id}/component-links`：`operation:project:list`；返回 `{ projectId, componentIds }`（SVR-26a）
 - `PUT /operation/project/{id}/component-links`：`operation:project:edit` + `list`；全量替换 `operation_project_component`
@@ -189,11 +201,12 @@
 - `GET /operation/component/list`：`operation:component:list`；返回 `OperationComponentVo`（含 `serverIds` / `serverCount` / `projectCount` / `status` / `lastCheckTime`）；支持 `serverId`（含 N:N）、`projectId` 反向过滤
 - `POST /operation/component`：`operation:component:add` + `list`；body 可传 `serverIds[]`
 - `PUT /operation/component`：`operation:component:edit` + `list`
-- `GET /operation/component/{id}`：`operation:component:list`；返回 VO（含 `serverIds`）
+- `GET /operation/component/{id}`：`operation:component:list`；返回 VO（含 `serverIds`、**`serverCount` / `projectCount`**）
 - `GET /operation/component/{id}/secret`：`operation:secret:view`
 - `DELETE /operation/component/{ids}`：`operation:component:remove` + `list`
 - `POST /operation/component/{id}/check`：`operation:component:list`；TCP 探活，更新并返回 `OperationComponentVo`
 - `GET /operation/component/{id}/links`：`operation:component:list`；返回 `{ componentId, serverIds }`
+- `GET /operation/component/links/batch?ids=`：`operation:component:list`；逗号分隔最多 50；返回 `{ items: OperationComponentLinksVo[] }`
 - `PUT /operation/component/{id}/links`：`operation:component:edit` + `list`；全量替换 N:N，**并同步主表 `server_id`**（2026-07-13）
 
 > **前端对接专稿**：[operation-frontend.md](operation-frontend.md) · **后端联调通知（给前端）**：[operation-backend-handoff.md](operation-backend-handoff.md)
@@ -236,6 +249,7 @@
 - `GET /operation/deploy/{serviceKey}/status?serverId=`：`operation:server:list`；SSH 远程或（`allow-local=true` 且 serverId 空）本机 status
 - `POST /operation/deploy/{serviceKey}/{action}`：`operation:deploy:exec` + `list`；同步执行（少用）
 - `POST /operation/deploy/{serviceKey}/{action}/task?serverId=&projectId=`：`operation:deploy:exec` + `list`；异步启停，返回 `taskId`；可选 `projectId` 关联项目台账
+- `POST /operation/deploy/batch/task`：`operation:deploy:exec` + `list`；JSON 批量滚动重启（`steps[]` / `stopOnFailure` / `intervalSeconds`）→ 单父 `deploy_batch` 任务
 
 **`OperationFileController`**（`/operation/file`）
 
@@ -248,6 +262,7 @@
 **`OperationTaskController`**（`/operation/task`）
 
 - `GET /operation/task/{id}?logOffset=`：`operation:server:list`；轮询进度与增量日志
+- `POST /operation/task/{id}/cancel`：`operation:server:list`；协作式取消 pending/running
 - `GET /operation/task/list`：`operation:server:list`；分页历史（不含大段 log）；可按 `projectId` 过滤
 
 ### 运维健康 `OperationHealthController`（前缀 `/operation/health`，1个）

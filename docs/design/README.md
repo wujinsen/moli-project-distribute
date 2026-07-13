@@ -15,7 +15,7 @@
 | 内容 | wiki 目录 |
 |------|-----------|
 | 跨模块概念（RBAC、秒杀、网关） | `concepts/` |
-| **用户中心** | [`user-center-overview.md`](user-center-overview.md) · [`user-center-detailed-design.md`](user-center-detailed-design.md) · [`portal-system-group.md`](portal-system-group.md) |
+| **用户中心** | [`user-center-overview.md`](user-center-overview.md) · [`user-center-detailed-design.md`](user-center-detailed-design.md) · [`portal-system-group.md`](portal-system-group.md) · [`sso-menu-system-isolation.md`](sso-menu-system-isolation.md) |
 | **订单 · 秒杀** | [`order-seckill-design.md`](order-seckill-design.md) |
 | **知识库 LLM 平台设置（T19）** | [`kb-llm-platform-settings.md`](kb-llm-platform-settings.md) · 前端 [`../api/kb-llm-platform-frontend.md`](../api/kb-llm-platform-frontend.md) |
 | **知识库双入口导入（T20）** | [`kb-import-entry-design.md`](kb-import-entry-design.md) · 产品 [`../product/knowledge-import-entry-prd.md`](../product/knowledge-import-entry-prd.md) |

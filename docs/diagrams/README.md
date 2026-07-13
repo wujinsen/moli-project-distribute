@@ -37,6 +37,7 @@
 | [`moli-operation-server-links.drawio`](moli-operation-server-links.drawio) | **项目/组件多服务器 SVR-22**：主 `server_id` + N:N 关联表 + API |
 | [`moli-operation-topology-graph.drawio`](moli-operation-topology-graph.drawio) | **服务器拓扑可视化 SVR-25**：全局 ECharts 拓扑图 + 聚合 API + P2 依赖表（设计见 `docs/design/server-topology-visualization.md`） |
 | [`moli-operation-relations-nav.drawio`](moli-operation-relations-nav.drawio) | **关联关系导航 SVR-28**：三实体 N:N 全景 + RelationDrawer + 七页接入（设计见 `docs/design/operation-relations-navigation.md`） |
+| [`moli-sso-menu-flow.drawio`](moli-sso-menu-flow.drawio) | **SSO 菜单按系统隔离**：login → enter/switch → getRouters 过滤（设计见 `docs/design/sso-menu-system-isolation.md`） |
 
 **三空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
 

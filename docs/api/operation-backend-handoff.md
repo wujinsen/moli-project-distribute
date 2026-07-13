@@ -1,9 +1,9 @@
 # 运营管理 · 后端联调通知（给 meiling-ui 前端）
 
-> **更新**：2026-07-13 · **user-center `:8888` 已联调通过**  
+> **更新**：2026-07-13 · **commit `b4ac176a`** · **前端 W7–W10 已对接** · 待联合走查  
+> **走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)  
 > **前端开工**：[operation-frontend-handoff.md](operation-frontend-handoff.md) · **完整契约**：[operation-frontend.md](operation-frontend.md)  
-> **meiling-ui 副本**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
-> **HTTP 索引**：[user-center-api-map.md](user-center-api-map.md) §4
+> **meiling-ui 交付稿**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)
 
 ---
 
@@ -20,13 +20,15 @@
 | **任务取消** | ✅ `POST /operation/task/{id}/cancel` |
 | **detail `*Count` 与 list 一致** | ✅ **`toVo()` 统一派生** · [operation-frontend-handoff.md](operation-frontend-handoff.md) |
 | **order / bi 远程启停** | ✅ `presets.serviceKeys` 含五服务；`moli-service.sh` 已扩展 |
-| **阻塞项** | **无** |
+| **阻塞项** | **无**（待 W1–W10 联合走查） |
 
-本地 smoke：`admin`/`123456` · Vite `http://127.0.0.1:5141` → proxy `8888` · 2026-07-13 通过。
+本地：`admin`/`123456` · Vite `5141` → `8888` · 后端 smoke 2026-07-13 通过 · 见 [走查稿](../test/operation-w1-w10-walkthrough.md)。
 
 ---
 
-## 2. Breaking · 前端必改
+## 2. Breaking · 前端已对齐（2026-07-13 ✅）
+
+> meiling-ui 已改 `addProjectApi` / `addComponentApi` / `addServerApi` → `request<number | string>`；本节供契约留存与回归。
 
 ### 2.1 `POST /operation/project` · `POST /operation/component` · `POST /operation/server`
 
@@ -127,6 +129,7 @@ export const cancelOperationTaskApi = (taskId: number) =>
 | 2026-07-13 | server create 返回 id + 批量 deploy/links | `POST /operation/server` → Long；`POST /deploy/batch/task`；`GET .../links/batch` |
 | 2026-07-13 | 任务取消 | `POST /operation/task/{id}/cancel`；`status=cancelled` |
 | 2026-07-13 | 反向关联对称 + reconcile | `resolveProjectIdsForServer` 与 N:N 对称；`GET /operation/audit/reconcile-relations` |
+| 2026-07-13 | **`b4ac176a`** · 文档对齐 meiling-ui | 走查稿 · dependencies §8 · 前端 W7–W10 完工 |
 
 ---
 
@@ -134,6 +137,6 @@ export const cancelOperationTaskApi = (taskId: number) =>
 
 Breaking（create 返回 id）已对齐。运营 / 知识库 / SSO **剩余契约、环境、排期**见：
 
-**[frontend-backend-dependencies.md](frontend-backend-dependencies.md)**（§2 运营 VO/smoke/DBA · §3 知识库 · §4 SSO 菜单隔离 · §5 处理顺序）
+**[frontend-backend-dependencies.md](frontend-backend-dependencies.md)**（§2 任务矩阵 · §7 转发 · §8 评估与后端回复）
 
 索引入口：[frontend-gaps.md](../frontend-gaps.md)

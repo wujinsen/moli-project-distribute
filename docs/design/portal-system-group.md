@@ -32,3 +32,4 @@
 
 - [`user-center-api-map.md`](../api/user-center-api-map.md) §2 SystemController
 - [`user-center-overview.md`](user-center-overview.md) §3.3
+- [`sso-menu-system-isolation.md`](sso-menu-system-isolation.md) — 运行时菜单按 `sys_menu.system_id` 与 Session `currentSystemId` 过滤（消除串台）

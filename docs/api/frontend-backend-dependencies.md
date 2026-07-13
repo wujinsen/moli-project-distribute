@@ -1,182 +1,214 @@
 # 前端 → 后端依赖清单（meiling-ui · 2026-07-13）
 
 > **读者**：user-center / knowledge-server 后端、DBA、运维  
-> **前端开工** → **[operation-frontend-handoff.md](operation-frontend-handoff.md)**（S-VO 任务 + 走查）· 索引 [frontend-gaps.md](../frontend-gaps.md)  
-> **前端状态**：meiling-ui 主线已联调；本文汇总**三模块阻塞、运维配置与后端已交付项**；前端落地见 handoff  
-> **Breaking 已对齐**：`POST /operation/project`、`POST /operation/component`、**`POST /operation/server`** 的 `data` 已为新建 **Long id**（见 [operation-backend-handoff.md](operation-backend-handoff.md)）
-
-**相关入口**：[operation-frontend.md](operation-frontend.md) · [KNOWLEDGE_API.md](KNOWLEDGE_API.md) · [user-center-api-map.md](user-center-api-map.md)
-
----
-
-## 0. 给前端同学（可立即开工）
-
-| 任务 | 文档 | 后端依赖 |
-|------|------|----------|
-| **S-VO 关系计数** | [operation-frontend-handoff.md §2](operation-frontend-handoff.md#2-本轮前端任务s-vo--关系计数) | ✅ `toVo()` 派生 |
-| **部署中心增强** | [operation-frontend-handoff.md §3](operation-frontend-handoff.md#3-部署中心与异步任务2026-07-13-新增) | ✅ upload / batch/task / cancel |
-| **create 返回 id** | handoff §3.1 · §4 | ✅ project/component/**server** |
-| Phase R 收尾 | [operation-frontend.md §13](operation-frontend.md#13-phase-r-改造--前端必改2026-07-11) | ✅ |
-| 浏览器走查 | handoff §5（W1–W10） | ✅ |
-| 知识库 facet / Lint 分页 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | ✅ |
-| SSO 菜单隔离 | [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) · 本文 §4 | ⬜ 等后端 P0 |
-
-**转发前端**：见 [operation-frontend-handoff.md §7.1](operation-frontend-handoff.md#71-转发前端可复制)
-
-**本地**：重启 user-center 后发版/meiling-ui proxy `8888` 后再跑 handoff §5（W1–W10）。
+> **前端仓库**：`meiling-ui`（**W7–W10 · S-VO 代码已完工**，待联合走查）  
+> **走查稿**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)  
+> **前端交付（meiling-ui 侧）**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
+> **契约权威**：本仓库 [operation-frontend-handoff.md](operation-frontend-handoff.md) · [operation-backend-handoff.md](operation-backend-handoff.md)
 
 ---
 
-## 1. 总览：三模块阻塞情况
+## 1. 总览
 
-| 模块 | 端口 / 网关 | 前端状态 | 后端阻塞 | 说明 |
-|------|-------------|----------|----------|------|
-| **运营管理** | user-center `:8888` | ✅ 主线完成 | **无** | 后端契约已齐（S-VO、deploy、cancel）；前端对接见 handoff §2–§3 |
-| **知识库** | knowledge `:8090` | ✅ 主线完成 | **环境/配置** | 功能 API 已落地；生产需 `KB_LLM_CONFIG_SECRET`、定时 sync/lint、浏览 facet 多选已对接 |
-| **SSO / 多系统** | user-center `:8888` | 🔵 待后端 | **菜单按系统隔离** | `getRouters` 未按 `sys_menu.system_id` 过滤；切换系统后菜单可能串台 |
+| 模块 | 端口 | 阻塞新 API？ | 后端现在要做什么 |
+|------|------|--------------|------------------|
+| **运营管理** | `8888` | **否** | **联合走查 W1–W10**（前端 ✅；见走查稿） |
+| **知识库** | `8090` | **部分**（规模化/Lint） | **P0 点验** + `KB_LLM_CONFIG_SECRET`；本地 dev 已可验 |
+| **SSO** | user-center | **是（P2 架构）** | `SSO-MENU-1`：设计见 [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) |
 
-**本地联调基线**：Vite `http://127.0.0.1:5141` → proxy `8888` / `8090`；账号 `admin`/`123456` 或 `superadmin`/`aa123456`。
+### 1.1 已与前端对齐（勿再 Breaking）
 
----
+| 项 | 日期 | 后端勿改 |
+|----|------|----------|
+| `POST /operation/project`、`/component`、**`/server`** → `data` 为新建 **id** | 2026-07-13 | 勿退回 `boolean` |
+| `toVo()` 统一 `*Count`；list / `GET /{id}` / check 一致 | 2026-07-13 | `serverCount === serverIds.length` |
+| 前端 **S-VO**：chips 用 VO 计数，**不**批量 `GET .../links` | 2026-07-13 | links 仅关联弹窗 |
 
-## 2. 运营管理（user-center · 8888）
+### 1.2 前端已完工、后端无需排期（对照）
 
-> 权威契约：[operation-frontend.md](operation-frontend.md) · [operation-deploy-api.md](operation-deploy-api.md) · [operation-backend-handoff.md](operation-backend-handoff.md)
+| 任务 ID | 说明 |
+|---------|------|
+| **S-VO** | 三管理页去掉 links 水合 |
+| **DC-2** / **DC-3** | 部署中心项目优先 · 追加台账机 |
+| **S-ERR-1** | 10101–10109 i18n Toast |
+| **S-DEPLOY-1** | order/bi 项目名映射 |
+| **W7–W10** | server create id · batch deploy · upload · task cancel |
 
-### 2.1 VO 字段契约（2026-07-13 · `toVo()` 统一派生）
-
-| 字段 | list / detail / check | 前端 |
-|------|----------------------|------|
-| `serverCount` / `componentCount`（项目） | ✅ 同源 `toVo()` | **`row.serverCount`**；恒等 `serverIds.length` |
-| `serverCount` / `projectCount`（组件） | ✅ | 同上 |
-| `projectCount` / `componentCount`（服务器） | ✅ | 同上 |
-| `serverIds` | ✅ | 关联弹窗仍 `GET .../links` |
-| `POST /operation/server` 响应 | ✅ **Long id**（2026-07-13，对齐 project/component） |
-
-**实现**：`OperationProjectServiceImpl.toVo()` 等 — `serverCount = resolveServerIds(...).size()`；已移除 `fillRelationCounts` 分叉逻辑。
-
-### 2.2 Smoke 清单（浏览器 · 后端配合项）
-
-| # | 场景 | 通过标准 | 后端注意 |
-|---|------|----------|----------|
-| 1 | 项目关联 1 台 | list `serverCount=1`；`GET /operation/relations/project/{id}` servers=1 | links 同步主表 |
-| 2 | 新建项目 | `POST` 响应 `data` 为数字 id | Breaking 已上线 |
-| 3 | 部署中心五服务 | `GET /operation/deploy/presets` 含 order/bi | 目标机 `moli-service.sh` |
-| 4 | 远程启停 | 返回 `taskId`；轮询 `GET /operation/task/{id}` | `OPS_DEPLOY_ENABLED=true` |
-| 5 | 拓扑图 | `GET /operation/topology` 200 | 菜单 407 或 supplement 路由 |
-| 6 | 生产 serverId | 未传 serverId → **10109** | `allow-local=false` |
-| 7 | 新建服务器 | `POST /operation/server` → `data` 为数字 id | Breaking 与 project/component 一致 |
-| 8 | 上传并发布 | `POST /operation/file/upload` → `taskId`；轮询至 `finished` | `OPS_UPLOAD_ENABLED=true` + SSH |
-| 9 | 批量滚动重启 | `POST /operation/deploy/batch/task` → 单 taskId；日志 `[BATCH]` | 替代 N 次单任务扇出 |
-| 10 | 任务取消 | `POST /operation/task/{id}/cancel` → `status=cancelled` | 协作式；SSH 中须等当前步结束 |
-
-完整走查：[operation-frontend-handoff.md §5](operation-frontend-handoff.md#5-浏览器走查)（W1–W10）· [operation-relations-topology-acceptance.md](../test/operation-relations-topology-acceptance.md) · [operation-deploy-center-acceptance.md](../test/operation-deploy-center-acceptance.md)。
-
-### 2.3 DBA / 运维事项
-
-| 项 | 脚本 / 配置 | 说明 |
-|----|-------------|------|
-| 拓扑菜单 | `docs/sql/28_operation_topology_menu.sql` | 老库未执行时前端用 **supplement 路由** 兜底任务历史/拓扑 |
-| 部署中心三开关 | `OPS_DEPLOY_ENABLED` / `OPS_UPLOAD_ENABLED` / `OPS_COMMAND_ENABLED` | 默认 false，本地联调常漏配 |
-| SSH 密钥 | `OPS_SECRET_KEY` | 远程 deploy/upload/command 必填 |
-| SQL 顺序 | [sql-migration-order.md](../ops/sql-migration-order.md) | 17→28 按序；新环境可用 `moli.sql` 一次建库 |
-
-### 2.4 后端已交付 · 前端待对接（2026-07-13）
-
-| 优先级 | 项 | 状态 / 前端动作 |
-|--------|-----|----------------|
-| P1 | 详情 VO 计数字段（`toVo()`） | ✅ 后端 · 前端用 `row.serverCount`（handoff §2） |
-| P2 | 批量滚动重启 | ✅ `POST /operation/deploy/batch/task` · 前端 `createDeployBatchTaskApi`（handoff §3.3） |
-| P2 | `POST /operation/server` 返回 id | ✅ · 前端 `addServerApi` → `number`（handoff §3.1） |
-| P3 | 批量 links | ✅ `GET .../links/batch?ids=`（最多 50）· 可选减 N+1，**勿**用于 chips（handoff §3.5） |
-| P3 | 任务取消 | ✅ `POST /operation/task/{id}/cancel` · 前端任务面板加取消（handoff §3.4） |
-| — | `deploy_running` 全量 SSH 同步 | ⬜ 路线图 R3.2 · `ops.deploy.status-sync-mode=ssh` |
+**联合走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)
 
 ---
 
-## 3. 知识库（knowledge-server · 8090）
+## 2. 按任务 ID
 
-> 权威契约：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) · 运维：[knowledge-ops-frontend.md](knowledge-ops-frontend.md)
+### 2.0 状态矩阵
 
-### 3.1 环境部署（后端 / 运维）
+| 状态 | 含义 | 任务 ID |
+|------|------|---------|
+| 🟢 **点验** | 无新 API；环境 + 走查 | W1–W10、§10/§16、KB-O4、KB-BROWSE-1、KB-LLM-DB、407 SQL |
+| 🟡 **可选开发** | 体验/规模化 | DC-4、KB-LINT-1/2、KBOPS-2 |
+| 🔴 **架构** | 前端无法单独完成 | SSO-MENU-1 |
+| ⚪ **已完成** | 前后端已对齐 | S-VO、W7–W10、DC-2/3、S-ERR-1、S-DEPLOY-1、create id、**batch deploy** |
 
-| 配置项 | 用途 | 未配影响 |
-|--------|------|----------|
-| **`KB_LLM_CONFIG_SECRET`** | LLM api-key AES 落库 | PUT 平台 LLM 带新 key 失败；`encryptionReady=false` |
-| `kb.sync.schedule-enabled` | 定时 wiki→DB sync | 仅手动 Sync |
-| `kb.lint.schedule-enabled` | 定时扫描落库 | 体检工单需手动「扫描并落库」 |
-| 告警 webhook | sync/lint 失败通知 | 运维无自动告警 |
-| Gateway 大文件 | 上传 / Ingest | **勿经 21000**；直连 8090 或调高超时 |
+### 2.1 联调点验（无新 API）
 
-本地：`moli-knowledge-server` 默认 **8090**；chunk 召回 `kb.search.chunk-enabled: true`（可选）。
+| 任务 ID | 后端动作 | 通过标准 |
+|---------|----------|----------|
+| **W1–W6** | `:8888` 含 `toVo()` | 走查稿 §2 |
+| **W7–W10** | batch/task · cancel · upload | 走查稿 §3 |
+| **§10/§16** | 同上；upload dev 走 **8888** | [operation-frontend.md](operation-frontend.md) §10 |
+| **KB-O4** | sync fail 样本 | `kb:prd-acceptance` P0-O4 · [kb-sync-failure-runbook.md](../ops/kb-sync-failure-runbook.md) §9 |
+| **KB-LLM-DB** | **`KB_LLM_CONFIG_SECRET`** | `GET /kb/platform/llm-config` → `encryptionReady=true` |
+| **407** | 老库执行 `28_operation_topology_menu.sql` | 本机 dev 库 **已存在** 407 可跳过 |
 
-### 3.2 Lint 分页（O8 · 已对接）
+### 2.2 可选排期
 
-| API | 说明 |
-|-----|------|
-| `GET /kb/lint/issues?pageNum&pageSize` | 服务端分页；前端 `KbLintIssuesPanel` 已用 |
-| `GET /kb/lint/issue-types` | 类型筛选下拉 |
-| `PUT /kb/lint/issues/batch` | 批量状态变更 |
+| 任务 ID | 服务 | 后端待做 | 说明 |
+|---------|------|----------|------|
+| **DC-4** | 8888 | `task/list` 按 project 聚合 VO | 前端未开工 |
+| **KB-LINT-1/2** | 8090 | 服务端 `unassignedOnly` + 稳定分页 | 前端客户端兜底可用 |
+| **KBOPS-2** | 8090 | Dashboard 专用 API | 前端多接口聚合可用 |
+| **SSO-MENU-1** | user-center | `system_id` + `getRouters` 过滤 | P2 · 设计已出 |
 
-**后端无需改契约**；若旧环境仍返回全量数组，前端可客户端 slice 兼容。
+> **说明**：滚动批量重启已由 **`POST /operation/deploy/batch/task`**（`b4ac176a`）覆盖；meiling-ui 任务 **DC-BE-1** 若指同一能力，可标为已交付。
 
-### 3.3 浏览多选 facet（v3 · 已对接）
+### 2.3 纯前端 ✅（2026-07-13）
 
-平行双 facet + 多选联动，契约见 [KNOWLEDGE_API.md §2.1.3](KNOWLEDGE_API.md#213-浏览管理页筛选-ui-规范体裁--分类--平行双-facet)：
+DC-3 · S-ERR-1 · S-DEPLOY-1 · S-VO · W7–W10
 
-| 场景 | 请求 |
+---
+
+## 3. 运营管理（8888）
+
+> [operation-backend-handoff.md](operation-backend-handoff.md) · [user-center-api-map.md](user-center-api-map.md) §4
+
+### 3.1 请持续保证
+
+- `GET /operation/relations/{type}/{id}`：`recentTasks[]`、`deployRunning`、`portMatchStatus`
+- `GET /operation/topology`：全图四数组 + 链接
+- list / `GET /{id}`：`*Count` 与 `serverIds` 同源 `toVo()`
+- `POST` create → **Long id**；`PUT/GET .../links` 同步主表
+- `POST /operation/deploy/batch/task` · `POST /operation/task/{id}/cancel`
+- 错误码 **10101–10109** 稳定；**10107** 可带 `data=taskId`
+
+### 3.2 后端 smoke
+
+```http
+GET /operation/project/list
+GET /operation/project/{id}
+# serverCount === serverIds.length
+
+GET /operation/topology
+POST /operation/deploy/batch/task
+POST /operation/task/{id}/cancel
+```
+
+---
+
+## 4. 知识库（8090）
+
+| 配置 / 数据 | 用途 |
+|-------------|------|
+| **`KB_LLM_CONFIG_SECRET`** | 平台 LLM Key 加密入库 |
+| **KB-O4 fail 样本** | `kb/wiki/_p0o4-fail-test/`（dev 可逆） |
+| facet 多选 | `kbTypes` / `categoryIds` 逗号分隔 · [KNOWLEDGE_API.md §2.1.3](KNOWLEDGE_API.md#213-浏览管理页筛选-ui-规范体裁--分类--平行双-facet) |
+
+**本地 dev（2026-07-13）**：`application-dev.yml` 已设 secret 默认 + sync 脚本路径 `../kb/tools/`；8090 重启后 `encryptionReady=true`，Sync 可造 fail。
+
+---
+
+## 5. SSO（SSO-MENU-1）
+
+权威设计：[sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) · SQL：`docs/sql/30_sso_menu_system_id.sql`  
+**不挡**运营/KB 主流程；挡多系统门户菜单隔离。
+
+---
+
+## 6. 建议处理顺序
+
+```text
+① 8888：push/deploy b4ac176a（共享环境）或本地 install+重启 → W1–W10 走查
+② 8090：KB_LLM_CONFIG_SECRET + KB-O4 → kb:prd-acceptance
+③ DBA：407 SQL（老库按需）
+④ 可选：DC-4 · KB-LINT · KBOPS-2 · SSO-MENU-1
+```
+
+---
+
+## 7. 转发（可复制）
+
+```
+【meiling-ui · 后端配合 · 2026-07-13】
+
+运营（8888）：
+· 前端代码已完工：S-VO · DC-2/3 · W7–W10
+· 后端 commit b4ac176a（本地；共享环境需 push+部署）
+· 联合走查：monorepo docs/test/operation-w1-w10-walkthrough.md
+
+关键 API（勿 Breaking）：
+· toVo() *Count · POST project/component/server → data=id
+· POST /operation/deploy/batch/task · POST /operation/task/{id}/cancel
+· 新建服务器 body 字段 ip（非 serverIp）
+
+8090 点验：
+· KB_LLM_CONFIG_SECRET · KB-O4 fail · npm run kb:prd-acceptance
+
+下迭代（已答）：SSO-MENU-1=P2；DC-4/KB-LINT/KBOPS-2=P3 可选
+
+详稿：docs/api/frontend-backend-dependencies.md
+```
+
+---
+
+## 8. 评估与后端回复（§8.4）
+
+### 8.1 结论
+
+| 维度 | 评估 |
 |------|------|
-| 体裁多选 | `GET /kb/document/search?kbTypes=a,b` |
-| 分类多选 | `GET /kb/document/search?categoryIds=1,2` |
-| 联动计数 | 体裁已选 → `/kb/index?kbTypes=…`；分类已选 → `/kb/index/types?categoryIds=…` |
+| **运营** | **无 API 阻塞**；待 W1–W10 **联合走查** |
+| **知识库** | **点验级**；本地 secret + O4 已就绪 |
+| **SSO** | **P2 架构**；设计+SQL 草案已出 |
+| **文档↔代码** | **一致**（与 meiling-ui `frontend-gaps` / handoff 互引） |
 
-**后端**：`KbDocumentFilterSupport` 已支持 `List` 绑定；facet 仍只返回 `count>0` 分组。  
-**可选后续**：Meilisearch `facetDistribution`（规划文档 `知识库-meilisearch接入规划`），接口形状不变。
+### 8.2 ① 8888 版本与联调
 
-### 3.4 知识库 smoke（节选）
+| 项 | 状态 |
+|----|------|
+| **`b4ac176a`**（本地 commit） | server create id · `toVo()` · batch/links · **cancel** · handoff 文档 |
+| **`ebf16fd7`** | project/component create id · order/bi deploy |
+| **远程** | 分支 ahead 38 · **`b4ac176a` 未 push** |
 
-| # | 场景 | API |
-|---|------|-----|
-| K1 | 空间/分类树 | `GET /kb/space/mine`、`GET /kb/index` |
-| K2 | 问答 | `POST /kb/ask`（chunk 召回可开） |
-| K3 | LLM 平台 | `GET /kb/platform/llm` · `encryptionReady` |
-| K4 | Sync | Web「Wiki 同步」或 `sync_to_db.py` |
-| K5 | 体检分页 | `GET /kb/lint/issues?pageNum=1&pageSize=20` |
+**结论**：共享环境 last push jar **不全**；本地 `mvn -pl moli-user-center-server -am install` + 重启 → **可联调 W1–W10**。
 
----
+### 8.3 ② 8090 点验环境
 
-## 4. SSO · 按系统隔离菜单
+| 项 | 状态 |
+|----|------|
+| 功能 API | facet · Lint 分页 · chunk ask ✅ |
+| **本地 P0** | `KB_LLM_CONFIG_SECRET` dev 默认 · O4 样本 · `encryptionReady=true` ✅ |
+| **生产** | 运维注入真实 secret + 定时任务 |
 
-> **权威设计**：[sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md)（数据模型 · 过滤算法 · SQL `30_sso_menu_system_id.sql` · 发布阶段）  
-> 现状：`GET /menu/getRouters` 按角色拉全量树，**未**按 Session `currentSystemId` / `sys_menu.system_id` 过滤 → 切换系统菜单串台。
+### 8.4 ③ 下迭代（后端已回复）
 
-| 阶段 | 负责 | 要点 |
-|------|------|------|
-| P0 | user-center + DBA | `system_id` 列 + `MenuService.resolveRoutersForCurrentSystem`；门户关闭不过滤 |
-| P1 | DBA | 按段位 backfill（1/400/500/600/800/900 → `sys_system.id`） |
-| P2 | meiling-ui | `enter`/`switch` 后重拉 `getRouters` 并清动态路由缓存 |
+| 项 | 排期 |
+|----|------|
+| **SSO-MENU-1** | ✅ **纳入下迭代 P2**（设计已出，约 2–3 人日） |
+| **DC-4** | ⬜ P3 可选 |
+| **KB-LINT-1/2** · **KBOPS-2** | ⬜ P3 可选 |
 
-菜单段位：[frontend-routes-map.md](frontend-routes-map.md) · 门户分组：[portal-system-group.md](../design/portal-system-group.md)。
+### 8.5 联调前置
 
----
-
-## 5. 建议处理顺序
-
-| 顺序 | 负责 | 项 | 理由 |
-|------|------|-----|------|
-| **1** | 运维/DBA | 运营 SQL 28、三开关、`OPS_SECRET_KEY` | unblock 部署中心与拓扑浏览器走查 |
-| **2** | **meiling-ui** | **S-VO + 部署中心对接 + 走查 W1–W10** | [operation-frontend-handoff.md](operation-frontend-handoff.md) §2–§5 · 后端 ✅ |
-| **3** | 运维 | `KB_LLM_CONFIG_SECRET` + knowledge 定时任务 | 生产 LLM 与 sync/lint 闭环 |
-| **4** | user-center | SSO `getRouters` + `sys_menu.system_id`（§4） | 多系统菜单隔离 |
-| **5** | **meiling-ui** | batch/task、upload 轮询、task cancel（§2.4） | 部署中心产品化；后端 API 已就绪 |
+```text
+8888：□ install+重启  □ VITE_USE_MOCK_AUTH=false  □ 走查稿 W1–W10
+8090：□ KB_LLM_CONFIG_SECRET  □ KB-O4  □ kb:prd-acceptance
+```
 
 ---
 
-## 6. 变更记录
+## 9. 变更记录
 
 | 日期 | 说明 |
 |------|------|
-| 2026-07-13 | 初版：三模块总览 + 运营 VO/smoke/DBA + 知识库环境/facet + SSO 菜单隔离 |
-| 2026-07-13 | 详情 `*Count` 后端 ✅；新增 [operation-frontend-handoff.md](operation-frontend-handoff.md) · §0 给前端 |
-| 2026-07-13 | **`toVo()` 统一派生**；移除 `fillRelationCounts`；文档同步 handoff §0、§7.1 |
-| 2026-07-13 | SSO 菜单隔离权威设计 [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) · §4 精简 |
+| 2026-07-13 | 初版三模块总览 |
+| 2026-07-13 | SSO 设计链入 §4/§5 |
+| 2026-07-13 | **对齐 meiling-ui**：§1.2/§2.0/§8 · 走查稿 · 前端 W7–W10 完工 · §8.4 后端回复落定 |

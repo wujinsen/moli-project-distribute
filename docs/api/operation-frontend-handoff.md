@@ -1,9 +1,9 @@
 # 运营管理 · 前端开工手册（meiling-ui）
 
-> **更新**：2026-07-13（**S-VO + 部署中心增强 + 任务取消**）  
-> **后端 `:8888` 无阻塞，可开工**  
-> **完整契约**：[operation-frontend.md](operation-frontend.md) · **后端通知**：[operation-backend-handoff.md](operation-backend-handoff.md)  
-> **三模块总览**：[frontend-backend-dependencies.md](frontend-backend-dependencies.md) · 索引 [frontend-gaps.md](../frontend-gaps.md)
+> **更新**：2026-07-13（**S-VO + W7–W10 前端已完工** · 待联合走查）  
+> **后端**：commit **`b4ac176a`** · `:8888` 无 API 阻塞  
+> **走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md) · meiling-ui 交付稿 [`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
+> **给后端**：[frontend-backend-dependencies.md](frontend-backend-dependencies.md) · [operation-backend-handoff.md](operation-backend-handoff.md)
 
 本地：`http://127.0.0.1:5141` → proxy `8888` · `admin`/`123456`  
 **前置**：重启 user-center `:8888`（含 `toVo` 计数、批量 deploy、任务取消等 2026-07-13 改动）
@@ -20,18 +20,16 @@
 
 ---
 
-## 1. 后端已就绪（不用再等）
+## 1. 后端已就绪 · 前端已对接（2026-07-13）
 
-| 项 | 状态 | 前端动作 |
-|----|------|----------|
-| `POST` project/component/**server** 返回 **id** | ✅ Breaking | `addXxxApi` → `request<number>` |
-| `PUT .../links` 同步主表 | ✅ | 保存关联后刷新 list |
-| **list + detail 均含 `*Count`** | ✅ `toVo()` | 见 §2；去掉 links 水合计数 |
-| **批量滚动重启** | ✅ | `POST /operation/deploy/batch/task` 替代 N 次单任务 |
-| **批量 links** | ✅ 可选 | 关联弹窗/批量编辑用；chips 仍用 `serverCount` |
-| **任务取消** | ✅ | 任务面板加「取消」→ `POST .../cancel` |
-| relations / topology / deploy / upload | ✅ | 走查见 §5 |
-| 阻塞项 | **无** | SSO 菜单隔离另线 |
+| 项 | 后端 | 前端（meiling-ui） |
+|----|------|-------------------|
+| `POST` project/component/**server** 返回 **id** | ✅ | ✅ W7 |
+| **list + detail `*Count`** | ✅ `toVo()` | ✅ S-VO W1–W6 |
+| **批量滚动重启** | ✅ batch/task | ✅ W9 |
+| **任务取消** | ✅ cancel | ✅ W10 |
+| **上传轮询** | ✅ upload→taskId | ✅ W8 |
+| **联合走查** | 参与勾选 | 🟡 [走查稿](../test/operation-w1-w10-walkthrough.md) |
 
 ---
 
@@ -221,7 +219,7 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 | **W9** | 批量滚动重启 | `POST /deploy/batch/task` → 单 taskId；日志 `[BATCH]` 多步 |
 | **W10** | 取消任务 | 运行中点取消 → `status=cancelled`，`finished=true` |
 
-验收：[operation-relations-topology-acceptance.md](../test/operation-relations-topology-acceptance.md) · [operation-deploy-center-acceptance.md](../test/operation-deploy-center-acceptance.md)
+验收：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md) · [operation-relations-topology-acceptance.md](../test/operation-relations-topology-acceptance.md) · [operation-deploy-center-acceptance.md](../test/operation-deploy-center-acceptance.md)
 
 ---
 
@@ -236,20 +234,16 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 
 ## 7. 转发与开工
 
-### 7.1 转发前端（可复制）
+### 7.1 转发（联合走查 · 可复制）
 
 ```
-【运营 · 2026-07-13 后端已就绪】请读 monorepo docs/api/operation-frontend-handoff.md
+【运营 · 2026-07-13 前后端对齐】
+后端：commit b4ac176a · :8888 install+重启 · ops.upload/deploy.enabled=true
+前端：meiling-ui W1–W10 代码已完工
 
-必做：
-1. S-VO：row.serverCount，勿 links 水合计数（§2）
-2. addProject/addComponent/addServer → request<number>
-3. 部署中心：上传 POST /operation/file/upload → taskId 轮询（§3.2）
-4. 多机重启：改用 POST /operation/deploy/batch/task（§3.3）
-5. 任务面板：POST /operation/task/{id}/cancel（§3.4）
-
-本地：重启 user-center :8888；ops.upload/deploy.enabled=true
-走查：§5 W1–W10
+联合走查：monorepo docs/test/operation-w1-w10-walkthrough.md（§5 记录表）
+契约：docs/api/operation-frontend-handoff.md · operation-frontend.md §10/§16
+跨模块：docs/api/frontend-backend-dependencies.md §7
 ```
 
 ### 7.2 开工提示词（meiling-ui 对话）

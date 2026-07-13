@@ -81,7 +81,8 @@ kb:
     temperature: 0.3
     timeout-seconds: 90
     # T19 · 平台 DB 存 api-key 时的 AES 密钥（32 字节 Base64 或任意字符串 SHA-256）
-    config-secret: ${KB_LLM_CONFIG_SECRET:}
+    # 生产须设环境变量 KB_LLM_CONFIG_SECRET；本地 dev 默认占位，勿用于生产
+    config-secret: ${KB_LLM_CONFIG_SECRET:moli-dev-kb-llm-config-secret-local}
     call-log-enabled: true
   search:
     # fulltext：用 kb_document 上 ngram 全文索引 ftx_kb_document（MATCH AGAINST）；like：旧三字段 LIKE
@@ -93,7 +94,8 @@ kb:
   sync:
     enabled: true
     python: python
-    script-path: moli-knowledge/kb/tools/sync_to_db.py
+    # spring-boot:run 时 cwd=moli-knowledge-server，脚本在 ../kb/tools
+    script-path: ../kb/tools/sync_to_db.py
     space-code: enterprise-kb
     timeout-seconds: 300
     lock-enabled: true
@@ -115,15 +117,15 @@ kb:
   wiki:
     # Web 在线编辑（T14）读写 kb/wiki* markdown 文件
     enabled: true
-    # kb/ 根目录（相对进程 cwd 或绝对路径），需指向部署机 git wiki 目录
-    root: moli-knowledge/kb
+    # kb/ 根目录（相对进程 cwd=moli-knowledge-server）
+    root: ../kb
     # space_code → wiki 子目录（相对 root）
     space-dirs:
       enterprise-kb: wiki
       moli-ops-manual: wiki-moli
       jp-fe-ap-exam: wiki-jp-exam
     max-bytes: 2097152
-    lint-script-path: moli-knowledge/kb/tools/lint.py
+    lint-script-path: ../kb/tools/lint.py
     lint-timeout-seconds: 120
     # T22 R0 inline 图片：slug=java/foo → java/foo.assets/
     asset-subdir-suffix: .assets
