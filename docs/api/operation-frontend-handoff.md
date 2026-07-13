@@ -261,14 +261,22 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 ### 7.4 P3 可选开工（2026-07-13 · 可复制给前端）
 
 ```
-【P3 可选 · meiling-ui 可排期】
+【meiling-ui · P3 可排期 · 后端已全部交付 · 2026-07-13】
+
+① DC-4（8888 · 优先）
+   listTaskGroupsApi + TaskHistoryView 分组视图
+   GET /operation/task/groups · 验收 test/operation-task-groups-acceptance.md
+   前置：user-center 重启含 755abd43
+
+② KBOPS-2（8090）
+   KnowledgeOpsDashboardView → GET /kb/ops/dashboard（参数 trendDays）
+
+③ KB-LINT（8090 · 可选）
+   质量 Tab 确认 pageNum/pageSize 走服务端分页
+
 详稿：docs/api/p3-optional-backend-handoff.md §0 / §0.1
-
-① DC-4：listTaskGroupsApi + TaskHistoryView 分组视图（8888）
-② KBOPS-2：KnowledgeOpsDashboardView → GET /kb/ops/dashboard（8090）
-③ KB-LINT：质量 Tab 确认服务端分页参数（8090，无新 API）
-
-类型：operation-frontend.md §11.2.1
+索引：docs/frontend-gaps.md §0
+KB 点验：npm run kb:prd ✅ 16/17
 ```
 
 ### 7.3 相关

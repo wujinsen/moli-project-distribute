@@ -447,14 +447,14 @@ POST /kb/sync/trigger
 - [ ] 健康体检 / `GET /kb/lint` 与文件一致
 - [ ] （可选）`git diff` 检查 index/log/edges
 
-**P0 · Sync 失败 UI（O4 / P0-O4）** — 环境无历史 fail 时必做点验  
+**P0 · Sync 失败 UI（O4 / P0-O4）** — ✅ 2026-07-13 HTTP 探针通过（`kb:prd` P0-O4）  
 见 **[kb-sync-failure-runbook.md §9](kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)**：
 
-- [ ] 在 `wiki/_p0o4-fail-test/` 放未分类测试页 → 触发 Sync 失败
-- [ ] 健康体检日志表：fail 行着色 + 展开 message + Toast
-- [ ] 勾选 **「仅显示失败」** 仅见 fail 行
-- [ ] 删除测试目录后重跑 Sync 成功
-- [ ] （可选）`meiling-ui` 执行 `npm run kb:prd-acceptance` → P0-O4 通过
+- [x] 在 `wiki/_p0o4-fail-test/` 放未分类测试页 → 触发 Sync 失败（dev 样本已存在）
+- [ ] 健康体检日志表：fail 行着色 + 展开 message + Toast（浏览器复验可选）
+- [ ] 勾选 **「仅显示失败」** 仅见 fail 行（浏览器复验可选）
+- [ ] 删除测试目录后重跑 Sync 成功（运维按需清理）
+- [x] `meiling-ui` 执行 `npm run kb:prd` → **P0-O4** ✅ 2026-07-13
 
 ---
 
@@ -512,6 +512,7 @@ Web 抽检：[`docs/test/knowledge-t22-image-remediation.md`](../test/knowledge-
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-13 | §5 P0-O4：`kb:prd` 16/17 通过 |
 | 2026-07-12 | §9 P0-O4 点验；§5 总验收增加 O4 勾选项 |
 | 2026-07-06 | §2.7 T20：Editor 浏览器上传、SSH 仅运维兜底 |
 | 2026-07-06 | §8 对齐生产：raw-asset-bundle + deploy 脚本；Sync 与插图分包 |

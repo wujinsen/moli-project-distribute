@@ -1,9 +1,29 @@
 # 前端缺口与联调索引
 
-> **更新**：2026-07-13 · **运营 W1–W10 走查 ✅** · **SSO-MENU-1 全量走查通过（含边界 S1/S2/S8/S9）**  
+> **更新**：2026-07-13 · **运营 W1–W10 走查 ✅** · **KB 点验 ✅**（`kb:prd` 16/17）· **SSO-MENU-1 全量走查通过**  
 > **走查稿**：[test/operation-w1-w10-walkthrough.md](test/operation-w1-w10-walkthrough.md)  
 > **给后端**：[api/frontend-backend-dependencies.md](api/frontend-backend-dependencies.md) §7–§8  
 > **前端仓库索引**：[`meiling-ui/docs/frontend-gaps.md`](../../meiling-ui/docs/frontend-gaps.md)
+
+---
+
+## 0. 给前端（一键开工 · 2026-07-13）
+
+**后端已全部就绪，无 API 阻塞。** 主入口：[p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §0。
+
+| 优先级 | 任务 | 服务 | 落点 |
+|--------|------|------|------|
+| ① | **DC-4** 任务历史分组 | `:8888` | `listTaskGroupsApi` · `TaskHistoryView.vue` |
+| ② | **KBOPS-2** Dashboard 单请求 | `:8090` | `GET /kb/ops/dashboard` |
+| ③ | **KB-LINT** 分页收紧 | `:8090` | `kbLint.ts` · 质量 Tab |
+
+**本地前置**：重启 `:8888`（含 `755abd43` DC-4）、`:8090`（含 `38570430` kb 路径修复）后再联调。
+
+```
+详稿：docs/api/p3-optional-backend-handoff.md §0.1（可贴进 meiling-ui 对话）
+运营契约：operation-frontend.md §11.2.1 · 验收：test/operation-task-groups-acceptance.md
+KB 点验：npm run kb:prd ✅ 16/17（2026-07-13）
+```
 
 ---
 
@@ -60,17 +80,19 @@
 
 ---
 
-## 三、知识库
+## 三、知识库（2026-07-13 ✅ 点验）
 
 | 任务 | 状态 |
 |------|------|
-| **KB-O4** | 前端 ✅ · 本地 O4 样本已就绪 |
-| **KB-BROWSE-1** | 前端 ✅ · `npm run kb:prd` P0-browse-v3 |
-| **KB-LLM-DB** | 本地 dev `encryptionReady=true`；生产需 `KB_LLM_CONFIG_SECRET` |
+| **KB-O4** | ✅ 2026-07-13 `kb:prd` **P0-O4**（`enterprise-kb` fail 行） |
+| **KB-BROWSE-1** | ✅ 2026-07-13 **P0-browse-v3** |
+| **KB-LLM-DB** | ✅ 2026-07-13 `encryptionReady=true` · **REG-llm-on** |
+| **KB-LINT-SCAN** | ✅ 2026-07-13 **P0-O9** · O5–O8 |
+| **KB-GOV-LLM** | ✅ **REG-llm-on**；⏭ REG-llm-off UI（关 LLM 后可选） |
 | **KB-LINT-1/2** | ✅ 8090 API 已交付；前端可选收紧 | [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §2 |
 | **KBOPS-2** | ✅ 8090 API 已交付；**前端待接线** dashboard | 同上 §3 |
 
-点验脚本：meiling-ui **`npm run kb:prd`**（文档亦称 `kb:prd-acceptance`）。
+点验脚本：meiling-ui **`npm run kb:prd`**（2026-07-13 · **16/17**；日志 `kb-prd-acceptance.log`）。
 
 ---
 
@@ -92,6 +114,6 @@
 ## 五、建议顺序
 
 1. ~~**运营** W1–W10~~ ✅ 2026-07-13
-2. **KB** `npm run kb:prd`（8090 secret + O4 UI 点验）
+2. ~~**KB** `npm run kb:prd`~~ ✅ 2026-07-13（16/17）
 3. ~~**SSO** F-SSO-1～6~~ ✅ 2026-07-13
 4. **P3 可选（三项 API 已就绪）**：DC-4 TaskHistoryView 分组 → KBOPS-2 dashboard → KB-LINT 收紧（见 [p3-optional-backend-handoff.md](api/p3-optional-backend-handoff.md) §4）

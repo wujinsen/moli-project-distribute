@@ -5,11 +5,11 @@
 > **技术规划**：[kb-ops-roadmap.md](../design/kb-ops-roadmap.md)  
 > **HTTP 契约**：[KNOWLEDGE_API.md](KNOWLEDGE_API.md) §4（体检/Sync）、§3.5（LLM）  
 > **工作台总览**：[knowledge-workbench-frontend.md](knowledge-workbench-frontend.md)  
-> **meiling-ui 落地审计（权威）**：[`meiling-ui/docs/api/knowledge-ops-frontend.md`](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §0 · 与 [`moli-knowledge/TASKS.md`](../../moli-knowledge/TASKS.md) 同步至 **2026-07-12**
+> **meiling-ui 落地审计（权威）**：[`meiling-ui/docs/api/knowledge-ops-frontend.md`](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §0 · 与 [`moli-knowledge/TASKS.md`](../../moli-knowledge/TASKS.md) 同步至 **2026-07-13**
 
 ---
 
-## 0. 前端落地摘要（2026-07-12）
+## 0. 前端落地摘要（2026-07-13）
 
 | 模块 | 状态 | 代码落点（meiling-ui） |
 |------|------|------------------------|
@@ -21,7 +21,9 @@
 | T20f Ingest 三 Tab | ✅ | `KnowledgeIngestWorkbenchView.vue` |
 | KBOPS-9 Dashboard | ✅ | `KnowledgeOpsDashboardView.vue` |
 
-**剩余（非前端）**：生产开 `kb.sync.schedule-enabled` / `kb.lint.schedule-enabled`、告警 webhook、`KB_LLM_CONFIG_SECRET`；部署 knowledge-server ≥ O7 batch 后 `npm run kb:prd` 复验。
+**点验（2026-07-13）**：meiling-ui `npm run kb:prd` **16/17**（P0-O4 · P0-O9 · browse-v3 · O5–O8 · REG-llm-on）。仅 **REG-llm-off** 需关 LLM 后 UI 点验。
+
+**剩余（非前端）**：生产开 `kb.sync.schedule-enabled` / `kb.lint.schedule-enabled`、告警 webhook；生产环境注入真实 `KB_LLM_CONFIG_SECRET`。
 
 ---
 
@@ -183,7 +185,7 @@ export const getLintScanStatus = (spaceId: string) =>
 - [x] running 时不能重复 trigger  
 - [x] **O9**：展示定时 scan 开关状态 + 最近 scan 时间（只读）
 
-**P0-O4 环境点验**（近 30 条日志无 fail 时脚本会 skip）：见 [`kb-sync-failure-runbook.md` §9](../../ops/kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)。
+**P0-O4 环境点验**：✅ 2026-07-13 `kb:prd` **P0-O4** 通过（`enterprise-kb` fail 行）。造败步骤见 [`kb-sync-failure-runbook.md` §9](../../ops/kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)。
 
 ---
 

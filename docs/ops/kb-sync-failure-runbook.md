@@ -296,10 +296,13 @@ rm -rf kb/wiki/_p0o4-fail-test
 自动化复验（`meiling-ui` 仓库）：
 
 ```bash
-npm run kb:prd-acceptance
+npm run kb:prd
+# 文档亦称 kb:prd-acceptance（同一脚本）
 ```
 
-期望输出含 `✓ P0-O4`（任一空間近 30 条含 fail，或 `status.failCount>0`）。
+期望输出含 `✅ [P0-O4]`（任一空间近 30 条含 fail，或 `status.failCount>0`）。
+
+**最近通过（2026-07-13）**：`enterprise-kb` 日志含 `status=fail`；全脚本 **16/17**（仅 `REG-llm-off` 跳过）。日志：`meiling-ui/kb-prd-acceptance.log`。
 
 ### 9.5 其它造败方式（备选）
 
@@ -315,5 +318,6 @@ npm run kb:prd-acceptance
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-13 | §9.4：`kb:prd` 16/17 通过；P0-O4 `enterprise-kb` fail 行命中 |
 | 2026-07-12 | §9 P0-O4：故意造败 +「仅显示失败」UI 点验步骤 |
 | 2026-07-10 | 初稿 KBOPS-A2：失败定位、重跑、三空间 verify、CI lint-strict 门禁 |

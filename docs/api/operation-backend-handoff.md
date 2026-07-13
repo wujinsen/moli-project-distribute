@@ -1,6 +1,6 @@
 # 运营管理 · 后端联调通知（给 meiling-ui 前端）
 
-> **更新**：2026-07-13 · **commit `b4ac176a`** · **前端 W7–W10 已对接** · **W1–W10 走查 ✅**  
+> **更新**：2026-07-13 · **DC-4 `755abd43`** · **W1–W10 走查 ✅** · **前端 W7–W10 已对接**  
 > **走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)  
 > **前端开工**：[operation-frontend-handoff.md](operation-frontend-handoff.md) · **完整契约**：[operation-frontend.md](operation-frontend.md)  
 > **meiling-ui 交付稿**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)
@@ -21,7 +21,7 @@
 | **任务历史分组（DC-4）** | ✅ `GET /operation/task/groups` · 见 [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §1 |
 | **detail `*Count` 与 list 一致** | ✅ **`toVo()` 统一派生** · [operation-frontend-handoff.md](operation-frontend-handoff.md) |
 | **order / bi 远程启停** | ✅ `presets.serviceKeys` 含五服务；`moli-service.sh` 已扩展 |
-| **阻塞项** | **无**（W1–W10 走查 ✅ 2026-07-13） |
+| **阻塞项** | **无**；P3 三项 API 已交付 → [p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §0 |
 
 本地：`admin`/`123456` · Vite `5141` → `8888` · 后端 smoke 2026-07-13 通过 · 见 [走查稿](../test/operation-w1-w10-walkthrough.md)。
 

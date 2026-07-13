@@ -11,7 +11,7 @@
 | **KB-LINT-1/2** | `8090` | `kbLint.ts` · `KbLintIssuesPanel.vue` | ✅ **已交付** | **可选收紧** — 信任服务端分页（见 §2） |
 | **KBOPS-2** | `8090` | `KnowledgeOpsDashboardView.vue` | ✅ **已交付**（KBOPS-9） | **可排期** — 改单请求 `GET /kb/ops/dashboard`（见 §3） |
 
-**结论**：P3 三项 **后端均已交付**；前端按 §4 排期接线，**无 API 阻塞**。
+**结论**：P3 三项 **后端均已交付**；**KB 点验 ✅**（2026-07-13 meiling-ui `kb:prd` 16/17）。前端按 §4 排期接线，**无 API 阻塞**。
 
 ---
 
@@ -36,8 +36,26 @@
    · kbLint.ts 已兼容服务端分页；质量 Tab 始终带 pageNum/pageSize（§2）
 
 契约：operation-frontend.md §11.2.1 · operation-deploy-api.md §task/groups
-缺口索引：docs/frontend-gaps.md §1.3 · §三
+验收：docs/test/operation-task-groups-acceptance.md
+缺口索引：docs/frontend-gaps.md §0 · §1.3 · §三
 ```
+
+---
+
+## 0.2 后端版本与联调前置（2026-07-13）
+
+| 服务 | 端口 | 关键 commit | 重启后验证 |
+|------|------|-------------|------------|
+| user-center | `8888` | `755abd43`（DC-4 `GET /operation/task/groups`） | `GET /operation/task/groups?pageSize=1` → 200 |
+| knowledge-server | `8090` | `38570430`（`KbRepoPathUtil` 统一 kb 路径） | Sync / Lint 脚本可解析；`kb:prd` 已通过 |
+
+```powershell
+# monorepo 根目录
+mvn -pl moli-user-center/moli-user-center-server,moli-knowledge/moli-knowledge-server -am install -DskipTests -q
+# 重启本地 8888 / 8090 后再让前端联调
+```
+
+**KB 点验**：meiling-ui `npm run kb:prd` → **16/17**（2026-07-13）；仅 `REG-llm-off` 跳过。
 
 ---
 
@@ -411,7 +429,7 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 ③ KB-LINT（8090 · 可选）— 确认分页参数；无新 API
 ```
 
-**前置**：`:8888` 重启含 DC-4 代码；`:8090` 已在跑即可。
+**前置**：`:8888` 重启含 commit `755abd43`；`:8090` 重启含 commit `38570430`（kb 路径与 sync 脚本）。
 
 ---
 
@@ -431,6 +449,6 @@ export const getKbOpsDashboardApi = (params?: { spaceId?: string; trendDays?: nu
 
 | 任务 ID | 后端 | 前端 | 接口路径 | 备注 |
 |---------|------|------|----------|------|
-| DC-4 | ✅ 已交付 | ⬜ 待接线 | `GET /operation/task/groups` | 方案 A |
+| DC-4 | ✅ `755abd43` | ⬜ 待接线 | `GET /operation/task/groups` | 验收见 [operation-task-groups-acceptance.md](../test/operation-task-groups-acceptance.md) |
 | KB-LINT-1/2 | ✅ 已交付 | 🟡 可选收紧 | `GET /kb/lint/issues` | `current`+`size`+`unassignedOnly` |
 | KBOPS-2 | ✅ 已交付 | ⬜ 待接线 | `GET /kb/ops/dashboard` | 实现 ID=KBOPS-9；参数 `trendDays` |

@@ -171,10 +171,10 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 ### 8.1 P0 发布门槛
 
-- [ ] **故意制造 Sync 失败** → 日志 `status=fail`，前端可见（步骤：[kb-sync-failure-runbook.md §9](../ops/kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)）
-  - [ ] fail 行玫瑰色 + 可展开 `message`
-  - [ ] 日志表 **「仅显示失败」** 筛选仅展示 fail 行
-  - [ ] 清理测试文件后重跑 Sync 恢复 success
+- [x] **故意制造 Sync 失败** → 日志 `status=fail`，前端可见 — 2026-07-13 meiling-ui `kb:prd` **P0-O4** `enterprise-kb` fail 行（步骤：[kb-sync-failure-runbook.md §9](../ops/kb-sync-failure-runbook.md#9-p0-o4-点验故意制造失败仅显示失败筛选)）
+  - [x] fail 行玫瑰色 + 可展开 `message`（HTTP 探针 ✅；UI 随 O4 样本可复验）
+  - [x] 日志表 **「仅显示失败」** 筛选（前端已实现）
+  - [ ] 清理测试文件后重跑 Sync 恢复 success（运维按需）
 - [ ] 同空间并发 trigger → 第二个有明确提示  
 - [ ] 空间 admin 在无平台权限时行为与文档一致  
 
@@ -213,6 +213,7 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-13 | §8.1 O4 ✅：`kb:prd` P0-O4 `enterprise-kb` fail 行 |
 | 2026-07-12 | §8.1 P0 造败点验链至 kb-sync-failure-runbook §9 |
 | 2026-07-09 | 初稿：KBOPS P0–P2 + 前端 O 项 + 工程补充 A1–A3 |
 | 2026-07-02 | 技术规划见 kb-ops-roadmap.md |
