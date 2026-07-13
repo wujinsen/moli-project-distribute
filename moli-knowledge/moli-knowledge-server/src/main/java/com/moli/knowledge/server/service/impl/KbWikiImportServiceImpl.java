@@ -347,11 +347,7 @@ public class KbWikiImportServiceImpl implements KbWikiImportService {
     }
 
     private Path resolveWikiRoot() {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
     }
 
     private String resolveWikiDir(String spaceCode) {

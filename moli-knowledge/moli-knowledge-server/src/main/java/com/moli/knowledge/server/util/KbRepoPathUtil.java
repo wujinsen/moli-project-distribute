@@ -36,11 +36,11 @@ public final class KbRepoPathUtil {
         List<Path> bases = Arrays.asList(cwd, cwd.resolve("moli-knowledge-server"));
         Set<String> candidates = new LinkedHashSet<>();
         candidates.add(configuredPath.trim());
-        if (configuredPath.contains("../kb/")) {
-            candidates.add(configuredPath.replace("../kb/", "moli-knowledge/kb/"));
+        if (configuredPath.contains("../kb")) {
+            candidates.add(configuredPath.replace("../kb", "moli-knowledge/kb"));
         }
-        if (configuredPath.startsWith("moli-knowledge/kb/")) {
-            candidates.add(configuredPath.replace("moli-knowledge/kb/", "../kb/"));
+        if (configuredPath.contains("moli-knowledge/kb")) {
+            candidates.add(configuredPath.replace("moli-knowledge/kb", "../kb"));
         }
 
         List<String> tried = new ArrayList<>();
@@ -54,5 +54,16 @@ public final class KbRepoPathUtil {
             }
         }
         throw new BaseException(label + " 不存在: " + configuredPath + " (cwd=" + cwd + "; tried=" + tried + ")");
+    }
+
+    /** 解析 {@code kb/} 根目录（{@code kb.wiki.root} 等）。 */
+    public static Path resolveKbRoot(String configuredPath) {
+        return resolveExisting(StringUtils.defaultIfBlank(configuredPath, "../kb"), "kb 根目录");
+    }
+
+    /** 解析 {@code kb/raw} 根目录。 */
+    public static Path resolveRawRoot(String configuredPath) {
+        return resolveExisting(
+                StringUtils.defaultIfBlank(configuredPath, "moli-knowledge/kb/raw"), "raw 根目录");
     }
 }

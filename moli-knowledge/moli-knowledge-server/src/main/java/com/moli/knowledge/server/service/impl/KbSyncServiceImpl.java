@@ -407,14 +407,8 @@ public class KbSyncServiceImpl implements KbSyncService {
     }
 
     private Path resolveScriptPath() {
-        Path path = Paths.get(syncProperties.getScriptPath());
-        if (!path.isAbsolute()) {
-            path = Paths.get(System.getProperty("user.dir")).resolve(path);
-        }
-        if (!path.toFile().exists()) {
-            throw new BaseException("同步脚本不存在: " + path);
-        }
-        return path;
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveExisting(
+                syncProperties.getScriptPath(), "同步脚本");
     }
 
     private String tail(String text, int maxLen) {

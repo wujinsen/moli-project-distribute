@@ -246,10 +246,7 @@ public class KbCategoryServiceImpl implements KbCategoryService {
         if (StringUtils.isBlank(wikiDir)) {
             throw new BaseException("空间未配置 wiki 目录: " + spaceCode);
         }
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
+        Path root = com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
         Path base = root.resolve(wikiDir).normalize();
         Path dir = base.resolve(dirSlug).normalize();
         if (!dir.startsWith(base)) {

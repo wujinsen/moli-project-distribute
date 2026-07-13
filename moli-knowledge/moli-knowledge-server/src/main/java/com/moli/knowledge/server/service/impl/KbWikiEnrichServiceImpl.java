@@ -365,20 +365,12 @@ public class KbWikiEnrichServiceImpl implements KbWikiEnrichService {
     }
 
     private Path resolveWikiBase(String spaceCode) {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        String dir = wikiProperties.getSpaceDirs().getOrDefault(spaceCode, "wiki");
-        return root.resolve(dir).normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot())
+                .resolve(wikiProperties.getSpaceDirs().getOrDefault(spaceCode, "wiki")).normalize();
     }
 
     private Path resolveRawRoot() {
-        Path root = Paths.get(ingestProperties.getRawRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveRawRoot(ingestProperties.getRawRoot());
     }
 
     private String readRawSnippets(List<String> rawPaths) {

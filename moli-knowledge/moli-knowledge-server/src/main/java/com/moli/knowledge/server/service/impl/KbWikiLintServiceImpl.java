@@ -172,14 +172,8 @@ public class KbWikiLintServiceImpl implements KbWikiLintService {
     }
 
     private Path resolveScriptPath() {
-        Path path = Paths.get(wikiProperties.getLintScriptPath());
-        if (!path.isAbsolute()) {
-            path = Paths.get(System.getProperty("user.dir")).resolve(path);
-        }
-        if (!path.toFile().exists()) {
-            throw new BaseException("Lint 脚本不存在: " + path);
-        }
-        return path;
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveExisting(
+                wikiProperties.getLintScriptPath(), "Lint 脚本");
     }
 
     private String tail(String text, int maxLen) {

@@ -94,7 +94,7 @@ kb:
   sync:
     enabled: true
     python: python
-    # spring-boot:run 时 cwd=moli-knowledge-server，脚本在 ../kb/tools
+    # 相对 cwd 解析；KbRepoPathUtil 兼容 monorepo 根与 moli-knowledge-server 模块目录
     script-path: ../kb/tools/sync_to_db.py
     space-code: enterprise-kb
     timeout-seconds: 300
@@ -117,7 +117,7 @@ kb:
   wiki:
     # Web 在线编辑（T14）读写 kb/wiki* markdown 文件
     enabled: true
-    # kb/ 根目录（相对进程 cwd=moli-knowledge-server）
+    # kb/ 根目录（KbRepoPathUtil 同策略：monorepo 根或 server 模块 cwd）
     root: ../kb
     # space_code → wiki 子目录（相对 root）
     space-dirs:

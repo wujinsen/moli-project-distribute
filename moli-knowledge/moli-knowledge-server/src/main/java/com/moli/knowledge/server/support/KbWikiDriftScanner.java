@@ -77,10 +77,7 @@ public class KbWikiDriftScanner {
     }
 
     private Path resolveWikiBase(String wikiDirRelative) {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.resolve(wikiDirRelative).normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot())
+                .resolve(wikiDirRelative).normalize();
     }
 }

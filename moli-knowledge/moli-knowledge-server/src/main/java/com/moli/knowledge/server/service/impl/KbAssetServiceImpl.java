@@ -345,19 +345,11 @@ public class KbAssetServiceImpl implements KbAssetService {
     }
 
     private Path resolveRawRoot() {
-        Path root = Paths.get(ingestProperties.getRawRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveRawRoot(ingestProperties.getRawRoot());
     }
 
     private Path resolveWikiRoot() {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
     }
 
     private String resolveWikiDir(String spaceCode) {

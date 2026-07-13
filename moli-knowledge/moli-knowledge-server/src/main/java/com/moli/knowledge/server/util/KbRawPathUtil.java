@@ -22,11 +22,7 @@ public final class KbRawPathUtil {
     }
 
     public static Path resolveRawRoot(String rawRootConfig) {
-        Path root = Paths.get(StringUtils.defaultIfBlank(rawRootConfig, "moli-knowledge/kb/raw"));
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.normalize();
+        return KbRepoPathUtil.resolveRawRoot(rawRootConfig);
     }
 
     /** 规范化 prefix：去首尾 {@code /}，禁止 {@code ..}、绝对路径、盘符。 */

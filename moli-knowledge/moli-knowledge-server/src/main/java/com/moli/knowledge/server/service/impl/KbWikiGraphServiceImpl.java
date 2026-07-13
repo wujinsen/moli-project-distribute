@@ -131,10 +131,7 @@ public class KbWikiGraphServiceImpl implements KbWikiGraphService {
         if (StringUtils.isBlank(wikiDir)) {
             throw new BaseException("空间未配置 wiki 目录映射: " + spaceCode);
         }
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
+        Path root = com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
         return root.resolve(wikiDir).normalize();
     }
 

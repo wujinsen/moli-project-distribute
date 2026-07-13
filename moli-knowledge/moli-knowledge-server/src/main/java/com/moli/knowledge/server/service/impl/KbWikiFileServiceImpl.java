@@ -171,10 +171,7 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
 
     /** 扫描该空间所有 .md + graph/edges.jsonl，把全路径引用 from -> to 改写。 */
     private void rewriteReferences(String wikiDir, String from, String to) throws IOException {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
+        Path root = com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
         Path base = root.resolve(wikiDir).normalize();
         if (!Files.exists(base)) {
             return;
@@ -266,10 +263,7 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
 
     /** 解析并校验目标文件在 wiki 目录内（防目录穿越）。 */
     private Path resolveFile(String wikiDir, String slug) {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
+        Path root = com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
         Path base = root.resolve(wikiDir).normalize();
         Path file = base.resolve(slug + ".md").normalize();
         if (!file.startsWith(base)) {

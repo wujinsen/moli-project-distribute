@@ -1801,11 +1801,7 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     private Path resolveRawRoot() {
-        Path root = Paths.get(ingestProperties.getRawRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveRawRoot(ingestProperties.getRawRoot());
     }
 
     /** 解析 prefix/相对路径并校验在 raw 根内（防目录穿越）。 */
@@ -2341,11 +2337,8 @@ public class KbIngestServiceImpl implements KbIngestService {
     }
 
     private Path resolveWikiBase(String spaceCode) {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
-        return root.resolve(resolveWikiDir(spaceCode)).normalize();
+        return com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot())
+                .resolve(resolveWikiDir(spaceCode)).normalize();
     }
 
     private Path resolveWikiRelFile(String spaceCode, String relFile) {
