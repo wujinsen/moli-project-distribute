@@ -54,7 +54,8 @@ UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN
 WHERE `id` = 700 OR `parent_id` = 700;
 
 -- 2.8 企业知识库（900 段含 906/910/920 等后续增量）
-UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_KNOWLEDGE
+-- 定案 Q5-A：内嵌于 moli-admin；sys_system id=39 为门户 EXTERNAL 第二入口，菜单归属仍为 1
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN
 WHERE `id` = 900 OR `parent_id` = 900;
 
 -- 2.9 按钮权限（F）随父菜单：按 parent 递归已在 UPDATE 中覆盖子 C/M；

@@ -15,8 +15,9 @@
 | **[operation-backend-handoff.md](operation-backend-handoff.md)** | **运营管理 · 后端联调通知（给前端 · Breaking/create id）** |
 | **[operation-frontend-handoff.md](operation-frontend-handoff.md)** | **运营管理 · 前端开工（`toVo` 计数 · S-VO · 走查）** |
 | **[frontend-backend-dependencies.md](frontend-backend-dependencies.md)** | **前端 ↔ 后端依赖（8888/8090/SSO）· §8 后端回复** |
+| **[sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md)** | **SSO 菜单隔离 · meiling-ui 开工（SSO-MENU-1）** |
 | [frontend-gaps.md](../frontend-gaps.md) | 前端缺口索引 |
-| [operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md) | **运营 W1–W10 联合走查（给后端）** |
+| [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md) | **SSO-MENU-1 前端走查** |
 | **[operation-deploy-api.md](operation-deploy-api.md)** | **部署中心 HTTP 契约（SVR-13~20，后端权威）** |
 | **[operation-port-matrix-api.md](operation-port-matrix-api.md)** | **端口矩阵管理 HTTP 契约（SVR-21，设计稿）** |
 | [user-center-dubbo.md](user-center-dubbo.md) | Dubbo 三方法 |

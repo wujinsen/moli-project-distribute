@@ -1,6 +1,6 @@
 # 前端缺口与联调索引
 
-> **更新**：2026-07-13 · **运营 W1–W10 前端代码已完工**（meiling-ui），待**联合走查**。  
+> **更新**：2026-07-13 · **运营 W1–W10 前端已完工** · **SSO-MENU-1 前端可开工**  
 > **走查稿**：[test/operation-w1-w10-walkthrough.md](test/operation-w1-w10-walkthrough.md)  
 > **给后端**：[api/frontend-backend-dependencies.md](api/frontend-backend-dependencies.md) §7–§8  
 > **前端仓库索引**：[`meiling-ui/docs/frontend-gaps.md`](../../meiling-ui/docs/frontend-gaps.md)
@@ -33,11 +33,23 @@
 | 任务 ID | 阻塞 |
 |---------|------|
 | **DC-4** | 后端 task 聚合 VO |
-| **KB-LINT-1/2** · **KBOPS-2** · **SSO-MENU-1** | 见 dependencies §2.2 |
+| **KB-LINT-1/2** · **KBOPS-2** | 见 dependencies §2.2 |
 
 ---
 
-## 二、知识库
+## 二、SSO 菜单隔离（SSO-MENU-1 · 2026-07-13 可开工）
+
+| 任务 | 说明 |
+|------|------|
+| **F-SSO-1～6** | 守卫 · `reloadRoutesFromServer` · enter/switch 刷新 · Q5 知识库双入口 |
+
+契约：[api/sso-menu-frontend-handoff.md](api/sso-menu-frontend-handoff.md) · 走查：[test/sso-menu-frontend-walkthrough.md](test/sso-menu-frontend-walkthrough.md)
+
+**依赖**：全量 E2E 需后端 `system_id` 过滤；前端守卫逻辑可先行。
+
+---
+
+## 三、知识库
 
 | 任务 | 状态 |
 |------|------|
@@ -47,11 +59,13 @@
 
 ---
 
-## 三、文档地图
+## 四、文档地图
 
 | 方向 | 文档 |
 |------|------|
 | **运营开工/契约** | [operation-frontend-handoff.md](api/operation-frontend-handoff.md) |
+| **SSO 菜单开工** | [sso-menu-frontend-handoff.md](api/sso-menu-frontend-handoff.md) |
+| **SSO 走查** | [sso-menu-frontend-walkthrough.md](test/sso-menu-frontend-walkthrough.md) |
 | **后端联调通知** | [operation-backend-handoff.md](api/operation-backend-handoff.md) |
 | **跨模块给后端** | [frontend-backend-dependencies.md](api/frontend-backend-dependencies.md) |
 | **W1–W10 走查** | [operation-w1-w10-walkthrough.md](test/operation-w1-w10-walkthrough.md) |
@@ -59,8 +73,9 @@
 
 ---
 
-## 四、建议顺序
+## 五、建议顺序
 
 1. **运营** W1–W10（`:8888` commit `b4ac176a` + 重启）
 2. **KB** `kb:prd-acceptance`（8090 secret + O4）
-3. 可选：DC-4 · SSO-MENU-1
+3. **SSO** F-SSO-1～6（与后端 P0 并行）· [sso-menu-frontend-handoff.md](api/sso-menu-frontend-handoff.md)
+4. 可选：DC-4 · KB-LINT

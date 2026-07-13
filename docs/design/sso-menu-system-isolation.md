@@ -1,6 +1,6 @@
 # SSO · 菜单按系统隔离（技术设计）
 
-> **状态**：design · 2026-07-13  
+> **状态**：design · 2026-07-13 · **Q3/Q5 已定案（2026-07-13）**  
 > **问题域**：多系统门户 `sys_system` 已落地，运行时菜单未按当前系统过滤，切换系统后侧栏「串台」。  
 > **流程图**：[`docs/diagrams/moli-sso-menu-flow.drawio`](../diagrams/moli-sso-menu-flow.drawio) · PNG 见 [`docs/diagrams/png/moli-sso-menu-flow.png`](../diagrams/png/moli-sso-menu-flow.png)（需导出）  
 > **SQL 草案**：[`docs/sql/30_sso_menu_system_id.sql`](../sql/30_sso_menu_system_id.sql)  
@@ -40,7 +40,7 @@
 | **700** | 洞察与控制 | 701–703 | meiling-ui |
 | **800** | 身份与门户 | 系统注册、分配系统 | meiling-ui |
 | **810** | 安全审计 | 操作/登录日志 | meiling-ui |
-| **900** | 企业知识库 | 901–910、920 等 | meiling-ui 内嵌；`sys_system` id=39 为 EXTERNAL |
+| **900** | 企业知识库 | 901–910、920 等 | meiling-ui 内嵌于 **moli-admin**；`sys_system` id=39 为 EXTERNAL 第二入口 |
 
 `sys_system` 种子：仅 **id=1 `moli-admin`** 为 `INTERNAL`；**id=39 `moli-knowledge`** 等为 `EXTERNAL`（`scripts/moli.sql`）。
 
@@ -103,7 +103,7 @@ CREATE INDEX idx_sys_menu_system_id ON sys_menu (system_id);
 | **500** 及子 | ChatGPT | **4** | `ai-copilot` | 演示段；现多为禁用菜单 |
 | **600** 及子 | 烛龙 BI | **6** | `bi-report` | 与 BI 门户对齐 |
 | **700** 及子 | 洞察与控制 | **1** | `moli-admin` | **开放问题**：是否独立系统 |
-| **900** 及子 | 企业知识库 | **39** | `moli-knowledge` | EXTERNAL；进入 39 时不走 getRouters |
+| **900** 及子 | 企业知识库 | **1** | `moli-admin` | **已定案 Q5-A**：admin 侧栏内嵌；门户 enter **39** 为 EXTERNAL `redirectUrl` 第二入口 |
 
 **新增菜单约定**：运维/知识库等增量 SQL（如 `28_operation_topology_menu.sql`、`04_knowledge_menu.sql`）在 INSERT 时**显式写 `system_id`**，避免再依赖段位 UPDATE。
 
@@ -123,9 +123,12 @@ CREATE INDEX idx_sys_menu_system_id ON sys_menu (system_id);
 
 ```
 Long systemId = resolveEffectiveSystemId()
-  // portal 关闭 → null（不过滤）
-  // portal 开启 → ShiroUtils.getCurrentSystemId()
-  // 可选：enter 后尚未 getRouters 时 session 已由 enterSystem 写入
+  // portal 关闭 → null（不过滤，现网全量）
+  // portal 开启 + Session 有 currentSystemId → 过滤
+  // portal 开启 + Session 无 currentSystemId → EMPTY_SENTINEL（Q3-A：直接返回 []，不过滤全表）
+
+if (systemId == EMPTY_SENTINEL):
+  return emptyList()
 
 if (user is superadmin/fullPermission):
   menus = selectAllMenusForSystem(systemId)   // 非 getMenuTreeAll 无过滤版
@@ -191,7 +194,8 @@ return createTree(menus)
 |----|------|
 | 过滤依据 | **以 Session `currentSystemId` 为准**（推荐）；可选 query `?systemId=` 仅用于调试，生产以 Session 为准 |
 | 响应形状 | 不变，仍为 `List<MenuVo>` 树 |
-| 前置条件 | 门户多系统时，应先 `POST /system/enter`；未设置 Session 系统时返回空树或仅 `system_id IS NULL` 菜单（**开放问题**） |
+| 前置条件 | 门户多系统时，应先 `POST /system/enter` |
+| **未定 enter** | **已定案 Q3-A**：`getRouters` 返回 **`[]` 空树**；前端路由守卫跳「选系统」页（与 `login` 多系统 `menuVoList=[]` 一致） |
 
 ### 5.2 `POST /login`
 
@@ -220,11 +224,12 @@ return createTree(menus)
 | 项 | 动作 |
 |----|------|
 | 进入/切换系统 | `enter` / `switch` 成功后 **强制** `GET /menu/getRouters`（勿仅信任 enter 内嵌 `menuVoList` 缓存） |
+| 未 enter | **Q3-A**：`getRouters` 空树 → 路由守卫跳「选系统」页（勿注册上一次的动态路由） |
 | 路由缓存 | 清空 `permissionStore` / 动态路由表；`resetRouter()` 后按新树 `addRoutes` |
 | 当前系统态 | 与 `currentSystem` 一并存 Pinia；切换时清 tabs/keep-alive（可选） |
 | EXTERNAL | 收到 `redirectUrl` 跳转，不注册动态路由 |
 
-参考：[frontend-backend-dependencies.md §4](../api/frontend-backend-dependencies.md#4-sso--按系统隔离菜单)。
+参考：[sso-menu-frontend-handoff.md](../api/sso-menu-frontend-handoff.md) · [frontend-backend-dependencies.md §5](../api/frontend-backend-dependencies.md#5-ssosso-menu-1)。
 
 ---
 
@@ -260,14 +265,14 @@ return createTree(menus)
 |---|------|------|------|
 | S1 | 门户关闭 | `sso.enabled=false` 或空 `sys_system`，登录 | 菜单与现网一致（全量授权） |
 | S2 | 单 INTERNAL | 仅 `moli-admin`，登录 | 自动 enter，`menuVoList` 按 system_id=1 过滤 |
-| S3 | 多系统 · 运营账号 | 进入 `moli-admin` | 侧栏无 900 知识库（若角色仅有运营权限且 900 归 39） |
+| S3 | 多系统 · 运营账号 | 进入 `moli-admin` | 侧栏**无** 500/600 等其它系统段；**可见 900**（`system_id=1` 且角色授权） |
 | S4 | 切换系统 | `POST /system/switch` → `getRouters` | 菜单集随 `currentSystemId` 变化 |
-| S5 | EXTERNAL | enter `moli-knowledge`(39) | 空菜单 + `redirectUrl`；`getRouters` 不返回 900 段 |
+| S5 | EXTERNAL | enter `moli-knowledge`(39) | 空菜单 + `redirectUrl`；`getRouters` 不返回路由（Session 在 EXTERNAL 时亦空树） |
 | S6 | 超管运行时 | superadmin enter `moli-admin` | 无 500/600 段（若映射到 4/6 且当前系统=1） |
 | S7 | 超管管理端 | `GET /menu/getMenuTreeAll` | 仍见全树 |
 | S8 | 角色仅勾子菜单 | 角色只勾 401 | 树含 400 目录 + 401，且仅当前系统 |
 | S9 | 祖先补齐 | 子菜单 system_id=1，父 400 目录 system_id=1 | 树结构完整 |
-| S10 | 未 enter | 门户开启直接 `getRouters` | 空或仅 NULL 共享项（与产品决策一致） |
+| S10 | 未 enter | 门户开启直接 `getRouters` | **空树 `[]`**；前端跳选系统（Q3-A） |
 
 ---
 
@@ -291,15 +296,22 @@ return createTree(menus)
 
 ---
 
-## 12. 开放问题 / 产品决策
+## 12. 产品决策
+
+### 12.1 已定案（2026-07-13）
+
+| # | 决策 | 结论 | 实现要点 |
+|---|------|------|----------|
+| **Q3** | 门户开启、Session 无 `currentSystemId` 时 `getRouters` | **返回空树 `[]`** | `resolveEffectiveSystemId()` 在门户开启且无 Session 系统时 → 过滤参数为「仅空」；与 `LoginController.fillLoginContext` 多系统 `menuVoList=[]` 一致；**前端**路由守卫跳选系统页 |
+| **Q5** | 知识库 900 与 `moli-knowledge`(39) | **admin 内嵌为主** | backfill：**900 → `system_id=1`**；enter `moli-admin` 侧栏可见 900（按角色）；enter **39** 仍走 EXTERNAL `redirectUrl` 作第二入口，不依赖 `getRouters` 下发 900 |
+
+### 12.2 仍开放
 
 | # | 问题 | 建议 | 待确认 |
 |---|------|------|--------|
 | Q1 | 700 段（洞察与控制）归属哪个 `sys_system`？ | 暂归 **moli-admin (1)** | 是否拆独立 INTERNAL |
 | Q2 | 400 段是否迁移到 `moli-ops (2)` 当其为 INTERNAL？ | 短期仍归 **1** | 运维门户产品路线 |
-| Q3 | 门户开启但未 `enter` 时 `getRouters` 行为？ | 返回**空树** + 前端跳选系统 | 是否允许仅 NULL 共享菜单 |
 | Q4 | `permissions` 是否按系统过滤？ | P1 与菜单同源过滤 | 动作码跨系统引用场景 |
-| Q5 | 知识库 900 在 meiling-ui 内嵌 vs 仅 EXTERNAL 跳转？ | 两态并存：enter **1** 可见 900（若角色授权且实现允许）；enter **39** 跳转 | 是否禁止 39 菜单在 admin 显示 |
 | Q6 | 新增 INTERNAL 系统时菜单段分配规则？ | 文档化段位表 + 菜单管理 UI 必选 `system_id` | 运营流程 |
 
 ---

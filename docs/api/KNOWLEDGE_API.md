@@ -65,6 +65,8 @@
 
 知识库**不在前端写死路由**，由用户中心维护 `sys_menu`，登录后前端调用 **`GET /UserCenter/menu/getRouters`** 拉取整棵菜单树。
 
+> **SSO-MENU-1（Q5-A）**：900 段归属 **moli-admin**（`system_id=1`）；enter admin 后侧栏可有「企业知识库」。门户 enter **moli-knowledge(39)** 走 EXTERNAL `redirectUrl`，为第二入口。详见 [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md) §F-SSO-6。
+
 种子数据：
 
 | 脚本 | 说明 |

@@ -101,7 +101,7 @@
 
 ### 菜单管理 `MenuController`（前缀 `/menu`，8个）
 
-- `GET /menu/getRouters`：当前用户菜单树
+- `GET /menu/getRouters`：当前用户菜单树；门户开启时按 Session `currentSystemId` + `sys_menu.system_id` 过滤（**SSO-MENU-1**）；未 enter 返回 **`[]`**（见 [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md)）
 - `GET /menu/list`：菜单列表（`menuName`、`status`）；权限 `system:menu:list`
 - `POST /menu`：新增菜单；权限 `system:menu:add` + `system:menu:list`
 - `PUT /menu`：更新菜单；权限 `system:menu:edit` + `system:menu:list`

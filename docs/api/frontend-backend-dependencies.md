@@ -67,7 +67,7 @@
 | **DC-4** | 8888 | `task/list` 按 project 聚合 VO | 前端未开工 |
 | **KB-LINT-1/2** | 8090 | 服务端 `unassignedOnly` + 稳定分页 | 前端客户端兜底可用 |
 | **KBOPS-2** | 8090 | Dashboard 专用 API | 前端多接口聚合可用 |
-| **SSO-MENU-1** | user-center | `system_id` + `getRouters` 过滤 | P2 · 设计已出 |
+| **SSO-MENU-1** | user-center | `system_id` + `getRouters` 过滤 | **前端可并行** · [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md) |
 
 > **说明**：滚动批量重启已由 **`POST /operation/deploy/batch/task`**（`b4ac176a`）覆盖；meiling-ui 任务 **DC-BE-1** 若指同一能力，可标为已交付。
 
@@ -118,8 +118,20 @@ POST /operation/task/{id}/cancel
 
 ## 5. SSO（SSO-MENU-1）
 
-权威设计：[sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) · SQL：`docs/sql/30_sso_menu_system_id.sql`  
-**不挡**运营/KB 主流程；挡多系统门户菜单隔离。
+| 文档 | 读者 |
+|------|------|
+| **[sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md)** | **meiling-ui 开工（F-SSO-1～6）** |
+| [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md) | 联合走查勾选 |
+| [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) | 后端设计 · SQL |
+
+**已定案（2026-07-13）**：
+
+| 项 | 结论 |
+|----|------|
+| **Q3** | 门户开启且未 `enter` → `getRouters` 返回 **`[]`**；前端跳选系统 |
+| **Q5** | 900 段 **`system_id=1`**（admin 内嵌）；`moli-knowledge`(39) 保留 EXTERNAL `redirectUrl` 第二入口 |
+
+**分工**：后端 P0/P1（`system_id` 列 + 过滤）与前端 P2（守卫 + `reloadRoutesFromServer`）可并行；全量 E2E 需双方合入。
 
 ---
 

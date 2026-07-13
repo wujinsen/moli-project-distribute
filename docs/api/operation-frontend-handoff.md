@@ -228,7 +228,7 @@ export const getProjectLinksBatchApi = (ids: number[]) =>
 | 模块 | 文档 | 阻塞 |
 |------|------|------|
 | 知识库 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | 环境配置 |
-| SSO | [frontend-backend-dependencies.md §4](frontend-backend-dependencies.md#4-sso--按系统隔离菜单) | 后端 `system_id` |
+| SSO | [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md) | F-SSO-1～6 · Q3/Q5 已定案 |
 
 ---
 

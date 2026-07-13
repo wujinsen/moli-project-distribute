@@ -956,7 +956,7 @@ export interface PortMatrixSaveRequest {
 | 任务取消 | ✅ cancel | ✅ W10 |
 | S-VO `*Count` | ✅ `toVo()` | ✅ W1–W6 |
 | **联合走查** | 参与 | 🟡 [走查稿](../test/operation-w1-w10-walkthrough.md) |
-| SSO 菜单按系统 | 设计已出 | 等 P2 实现 |
+| SSO 菜单按系统 | **前端可开工** | [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md) · 后端 P0 并行 |
 
 ---
 

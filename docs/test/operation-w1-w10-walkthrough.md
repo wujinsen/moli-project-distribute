@@ -13,7 +13,7 @@
 | 项 | 状态 |
 |----|------|
 | **前端开发** | ✅ S-VO · DC-2/3 · W7–W10 均已落地；**无待开发阻塞项** |
-| **联合走查** | 🟡 后端 API smoke 已通过（§5）；W4/W5/W8/W10 待浏览器与前端共验 |
+| **联合走查** | 🟡 W8/W10 **API 已复验**（§5.1）；W4/W5/W8/W10 浏览器仍待与前端共验 |
 | **后端需保证** | `toVo()` `*Count` · create 返回 id · `POST /deploy/batch/task` · `POST /task/{id}/cancel` · `ops.upload/deploy.enabled` |
 
 ---
@@ -79,9 +79,24 @@
 
 ### W8 · `POST /operation/file/upload` → taskId 轮询
 
+| 项 | 内容 |
+|----|------|
+| **请求** | `multipart/form-data`：`file`、`serverId`、`targetPath`、`postAction`（默认 `none`） |
+| **路径** | `targetPath` 须在 `GET /operation/deploy/presets` → `pathPresets` 内（如 `/home/ubuntu/...`）；`/tmp/` → **10012** |
+| **目标机** | 须 `sshConfigured=true`（本地 dev：**server 201**） |
+| **轮询** | `GET /operation/task/{taskId}?logOffset=`（**无** `/poll` 后缀）至 `finished=true` |
+| **通过** | `code=200` 返回 `taskId`；日志含 `[SSH]`、`[SFTP]`；终态 `status=success` |
+
 ### W9 · `POST /operation/deploy/batch/task`（单父 taskId，日志 `[BATCH]`）
 
 ### W10 · `POST /operation/task/{id}/cancel` → `status=cancelled`
+
+| 项 | 内容 |
+|----|------|
+| **可取消** | 仅 `pending` / `running` |
+| **终态拒绝** | 已 `success` / `failed` / `cancelled` → **10012** `任务已结束，无法取消`（**预期**，非缺陷） |
+| **走查技巧** | 用 `POST /operation/command/exec/task` + `sleep 25`（server 201），或 W8 上传运行中点取消；取消后**继续 poll** 至 `status=cancelled` |
+| **通过** | `POST .../cancel` → **200**，`status=cancelled`，`finished=true` |
 
 > 多机上传/命令仍前端扇出，**不算 W9 失败**。
 
@@ -107,11 +122,54 @@ W1 → W2 → W2b → W3 → W4 → W5 → W6 → W7 → W8 → W9 → W10
 | W5 | 🟡 | API `?serverId=202` 可过滤；与前端共验 chips |
 | W6 | ✅ | topology 200 · component-links 200 |
 | W7 | ✅ | `POST /server` body **`ip`+`serverName`** → id |
-| W8 | 🟡 | 需浏览器 multipart + SSH 目标机 |
+| W8 | 🟡 | **API ✅**（见下 §5.1）；浏览器 multipart + 路径预设仍待共验 |
 | W9 | ✅ | `POST /deploy/batch/task` → 单 taskId |
-| W10 | 🟡 | cancel 路由 OK；短任务秒结束 → 10012，需运行中任务与前端共验 |
+| W10 | 🟡 | **API ✅**（见下 §5.1）；任务抽屉「取消」+ 继续 poll 仍待共验 |
 
 **走查人**：后端 API smoke　**日期**：2026-07-13　**8888 commit**：`b4ac176a`（文档 commit 待 push）
+
+### 5.1 W8 / W10 API 复验（2026-07-13 午后 · `:8888` 本地）
+
+环境：`admin`/`123456` · `ops.upload.enabled=true` · `ops.command.enabled=true` · 目标机 **server 201**（`sshConfigured=true`）。
+
+#### W8 · 上传 + SSH/SFTP
+
+```http
+POST /operation/file/upload
+Content-Type: multipart/form-data
+  file=<47B txt>
+  serverId=201
+  targetPath=/home/ubuntu/w8-smoke-133906.txt
+  postAction=none
+→ 200  taskId=731852137528557568
+
+GET /operation/task/731852137528557568?logOffset=0
+→ 200  status=success  finished=true
+     logChunk 含 [SSH]、[SFTP] 上传至 /home/ubuntu/w8-smoke-133906.txt
+```
+
+| 对照 | 结果 |
+|------|------|
+| `/tmp/w8-smoke.txt` | **10012** `targetPath 不在允许范围内`（路径白名单校验正常） |
+| `/home/ubuntu/...` | **200** → SFTP 成功 |
+
+#### W10 · 运行中取消
+
+```http
+POST /operation/command/exec/task
+{"serverId":201,"command":"sleep 25","workDir":"/tmp"}
+→ 200  taskId=731852047640428544
+
+POST /operation/task/731852047640428544/cancel   （约 800ms 后）
+→ 200  status=cancelled  finished=true
+```
+
+| 对照 | 结果 |
+|------|------|
+| 短任务（batch deploy 秒结束）后 cancel | **10012** `任务已结束，无法取消`（契约符合 handoff §任务） |
+| `sleep 25` 运行中 cancel | **200** `cancelled` |
+
+**仍待浏览器**：W8 上传页选预设路径 + 任务抽屉；W10 运行中点「取消」并 poll 至 `cancelled`。
 
 ---
 
