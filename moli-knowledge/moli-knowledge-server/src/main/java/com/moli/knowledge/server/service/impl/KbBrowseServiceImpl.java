@@ -28,6 +28,7 @@ import com.moli.knowledge.server.support.KbCategoryConstants;
 import com.moli.knowledge.server.support.KbDocumentFilterSupport;
 import com.moli.knowledge.server.support.KbDocumentFilterSupport.CategoryFilterScope;
 import com.moli.knowledge.server.support.KbPublishedWikiFilter;
+import com.moli.knowledge.server.support.KbSlugResolveSupport;
 import com.moli.knowledge.server.support.KbTypeConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -232,12 +233,12 @@ public class KbBrowseServiceImpl implements KbBrowseService {
             throw new BaseException("页面不存在: " + slug);
         }
 
-        LambdaQueryWrapper<KbDocument> wrapper = publishedScopeWrapper(scope);
-        wrapper.eq(KbDocument::getSlug, slug.trim());
-        wrapper.select(KbDocument::getId, KbDocument::getSlug, KbDocument::getTitle, KbDocument::getSpaceId,
-                KbDocument::getCategoryId);
-        wrapper.last("limit 1");
-        KbDocument d = kbDocumentMapper.selectOne(wrapper);
+        KbDocument d = KbSlugResolveSupport.findOne(kbDocumentMapper, () -> {
+            LambdaQueryWrapper<KbDocument> w = publishedScopeWrapper(scope);
+            w.select(KbDocument::getId, KbDocument::getSlug, KbDocument::getTitle, KbDocument::getSpaceId,
+                    KbDocument::getCategoryId);
+            return w;
+        }, slug);
         if (d == null) {
             throw new BaseException("页面不存在: " + slug);
         }
@@ -254,14 +255,14 @@ public class KbBrowseServiceImpl implements KbBrowseService {
 
     @Override
     public PageDetailVo page(String slug, Long spaceId) {
-        LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
-        wrapper.eq(KbDocument::getSlug, slug);
-        if (spaceId != null) {
-            wrapper.eq(KbDocument::getSpaceId, spaceId);
-        }
-        wrapper.last("limit 1");
-        KbDocument d = kbDocumentMapper.selectOne(wrapper);
+        KbDocument d = KbSlugResolveSupport.findOne(kbDocumentMapper, () -> {
+            LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
+            if (spaceId != null) {
+                wrapper.eq(KbDocument::getSpaceId, spaceId);
+            }
+            return wrapper;
+        }, slug);
         if (d == null) {
             throw new BaseException("页面不存在: " + slug);
         }
