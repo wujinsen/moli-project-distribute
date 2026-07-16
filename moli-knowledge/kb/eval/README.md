@@ -31,25 +31,31 @@
 ## 运行
 
 ```bash
-# 前置：网关 8888 + KnowledgeServer 已启动，wiki 已 Sync 进库
+# 前置：user-center(8888) + knowledge-server(8090 或网关 21000) 已启动，wiki 已 Sync 进库
 python kb/tools/eval_ask.py                       # 检索式（默认，不耗 LLM）
 python kb/tools/eval_ask.py --use-llm             # 生成式（同时检查 expect_keywords）
+python kb/tools/fill_eval_metrics.py --run --use-llm   # 跑评测 + 自动回填 README/PORTFOLIO
 python kb/tools/eval_ask.py --only M03            # 只跑单题
 python kb/tools/eval_ask.py --space moli-ops-manual
-python kb/tools/eval_ask.py --min-hit 0.8         # 命中率低于 0.8 时退出码 1（CI 门禁）
+python kb/tools/eval_ask.py --min-hit 0.9 --gate-at-k 3   # hit@3 低于 0.9 时退出码 1（CI 门禁）
+python kb/tools/eval_ask.py --use-llm --llm-context-top-k 3
 ```
 
-登录默认 `admin/123456`，可用 `--username/--password` 或环境变量
-`MOLI_EVAL_USER` / `MOLI_EVAL_PASS` 覆盖；网关地址 `--gateway`。
+登录默认 `admin/123456`，走 **user-center 直连** `http://127.0.0.1:8888/login`。
+KnowledgeServer 自动尝试 `21000/KnowledgeServer` → `8090` 直连。
+可用 `--login-base` / `--kb-base` 或环境变量 `MOLI_LOGIN_BASE` / `MOLI_KB_BASE` 覆盖。
 
 ## 指标
 
 | 指标 | 含义 |
 |------|------|
-| `hit@k` | expect_slugs 任一出现在 citations 里的题占比（k=topK，默认 8） |
+| `hit@k` | expect_slugs 任一出现在 citations 前 k 条里的题占比 |
+| `hit_at` | 报告 JSON 中多档命中率（默认派生 hit@3 / hit@5 / hit@8，需 `--top-k` ≥ k） |
 | `mrr` | 首个命中 slug 的排名倒数均值（越靠前越好） |
 | `coverage` | expect_slugs 被引用的比例均值（多候选题用） |
 | `kw_pass` | 生成式答案包含全部 expect_keywords 的题占比（仅 `--use-llm`） |
+
+**Ask 生产默认**（`kb.ask.*`）：citations 最多 8 页，LLM prompt 最多 3 页（`llmContextTopK`）；评测可用 `--llm-context-top-k` 覆盖。
 
 ## 基线记录
 

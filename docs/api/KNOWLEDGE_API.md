@@ -562,7 +562,8 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 | `question` | 是 | 问题 |
 | `spaceId` | 否 | 单空间；省略=全部可读空间 |
 | `spaceIds` | 否 | 多空间数组；非空时优先于 `spaceId` |
-| `topK` | 否 | 候选页上限，默认 8 |
+| `topK` | 否 | citations 候选页上限；省略用 `kb.ask.citation-top-k`（默认 8） |
+| `llmContextTopK` | 否 | LLM prompt 候选页上限；省略用 `kb.ask.llm-context-top-k`（默认 **3**） |
 | `useLlm` | 否 | 是否启用 LLM 生成式，默认 **false**；须后端 `available=true` 才生效 |
 
 响应 `data`：

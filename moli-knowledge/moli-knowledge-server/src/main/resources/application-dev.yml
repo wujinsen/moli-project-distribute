@@ -84,6 +84,11 @@ kb:
     # 生产须设环境变量 KB_LLM_CONFIG_SECRET；本地 dev 默认占位，勿用于生产
     config-secret: ${KB_LLM_CONFIG_SECRET:moli-dev-kb-llm-config-secret-local}
     call-log-enabled: true
+  ask:
+    # citations 条数（页级）；LLM prompt 单独限页数，默认 3 以省 token、减干扰
+    citation-top-k: 8
+    llm-context-top-k: 3
+    llm-context-max-chars: 12000
   search:
     # fulltext：用 kb_document 上 ngram 全文索引 ftx_kb_document（MATCH AGAINST）；like：旧三字段 LIKE
     mode: fulltext

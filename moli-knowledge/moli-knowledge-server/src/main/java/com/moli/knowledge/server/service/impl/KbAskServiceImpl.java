@@ -70,11 +70,19 @@ public class KbAskServiceImpl implements KbAskService {
     private KbAclService kbAclService;
     @Resource
     private com.moli.knowledge.server.config.KbSearchProperties kbSearchProperties;
+    @Resource
+    private com.moli.knowledge.server.config.KbAskProperties kbAskProperties;
 
     @Override
     public AskResponse ask(AskRequest request) {
         String question = request.getQuestion().trim();
-        int topK = request.getTopK() == null || request.getTopK() <= 0 ? 8 : request.getTopK();
+        int citationTopK = request.getTopK() == null || request.getTopK() <= 0
+                ? kbAskProperties.normalizedCitationTopK()
+                : request.getTopK();
+        int llmContextTopK = request.getLlmContextTopK() == null || request.getLlmContextTopK() <= 0
+                ? kbAskProperties.normalizedLlmContextTopK()
+                : request.getLlmContextTopK();
+        int llmContextMaxChars = kbAskProperties.normalizedLlmContextMaxChars();
 
         Scope scope = detectScope(question);
         List<String> terms = buildTerms(question);
@@ -102,17 +110,17 @@ public class KbAskServiceImpl implements KbAskService {
             DocumentRecallResult docResult = recallAndScoreDocuments(
                     scopeSpaces, scope, question, terms, candidateLimit);
             if (chunkResult != null && !chunkResult.scored.isEmpty()) {
-                citations = buildMergedCitations(chunkResult.scored, docResult.scored, terms, topK);
-                llmContext = buildChunkContext(chunkResult.scored, topK);
+                citations = buildMergedCitations(chunkResult.scored, docResult.scored, terms, citationTopK);
+                llmContext = buildChunkContext(chunkResult.scored, llmContextTopK, llmContextMaxChars);
             } else {
-                citations = buildDocumentCitations(docResult.scored, terms, topK);
-                llmContext = buildContext(docResult.scored, topK);
+                citations = buildDocumentCitations(docResult.scored, terms, citationTopK);
+                llmContext = buildContext(docResult.scored, llmContextTopK, llmContextMaxChars);
             }
         } else {
             DocumentRecallResult docResult = recallAndScoreDocuments(
                     scopeSpaces, scope, question, terms, candidateLimit);
-            citations = buildDocumentCitations(docResult.scored, terms, topK);
-            llmContext = buildContext(docResult.scored, topK);
+            citations = buildDocumentCitations(docResult.scored, terms, citationTopK);
+            llmContext = buildContext(docResult.scored, llmContextTopK, llmContextMaxChars);
         }
 
         AskResponse resp = new AskResponse();
@@ -639,8 +647,8 @@ public class KbAskServiceImpl implements KbAskService {
         return snip;
     }
 
-    private String buildChunkContext(List<ChunkScored> scored, int topK) {
-        int budget = 12000;
+    private String buildChunkContext(List<ChunkScored> scored, int topK, int maxChars) {
+        int budget = maxChars;
         StringBuilder sb = new StringBuilder();
         int used = 0;
         Set<Long> docsInContext = new LinkedHashSet<>();
@@ -699,8 +707,8 @@ public class KbAskServiceImpl implements KbAskService {
         return sb.toString();
     }
 
-    private String buildContext(List<Scored> scored, int topK) {
-        int budget = 12000;
+    private String buildContext(List<Scored> scored, int topK, int maxChars) {
+        int budget = maxChars;
         StringBuilder sb = new StringBuilder();
         int used = 0;
         for (int i = 0; i < scored.size() && i < topK; i++) {
