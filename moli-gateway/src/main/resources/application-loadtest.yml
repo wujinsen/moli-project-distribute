@@ -41,10 +41,10 @@ spring:
             - Path=/OrderServer/**
           filters:
             - StripPrefix=1
-        - id: bi-route
-          uri: lb://bi-server
+        - id: ai-route
+          uri: lb://ai-server
           predicates:
-            - Path=/BiServer/**
+            - Path=/AiServer/**
           filters:
             - StripPrefix=1
 

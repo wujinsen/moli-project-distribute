@@ -1,6 +1,6 @@
 # 知识库 · 双入口导入（T20 技术设计）
 
-> **状态**：design · 2026-07-06  
+> **状态**：design · **T20f 已交付** · 2026-07-13  
 > **产品 PRD**：[`docs/product/knowledge-import-entry-prd.md`](../product/knowledge-import-entry-prd.md)  
 > **流程图**：[`docs/diagrams/moli-kb-import-entry.drawio`](../diagrams/moli-kb-import-entry.drawio) · [API 时序图](../diagrams/moli-kb-import-entry-api.drawio)  
 > **API 契约（实现时补章）**：[`docs/api/KNOWLEDGE_API.md`](../api/KNOWLEDGE_API.md) §8.5 / §9.10  

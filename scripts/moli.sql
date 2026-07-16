@@ -310,7 +310,7 @@ INSERT INTO `operation_port_matrix` VALUES (501, 'gateway', '网关', '21000', 1
 INSERT INTO `operation_port_matrix` VALUES (502, 'user-center', '用户中心', '8888', 20, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix` VALUES (503, 'order', '订单服务', '8087', 30, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix` VALUES (504, 'knowledge', '知识库', '8090', 40, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
-INSERT INTO `operation_port_matrix` VALUES (505, 'bi', 'BI 服务', '1128', 50, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (505, 'ai', 'AI 服务', '1128', 50, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix` VALUES (506, 'nacos', 'Nacos', '8848', 60, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix` VALUES (507, 'mysql', 'MySQL', '3306', 70, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix` VALUES (508, 'redis', 'Redis', '6379', 80, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
@@ -329,8 +329,9 @@ INSERT INTO `operation_port_matrix_alias` VALUES (608, 503, 'moli-order', '2026-
 INSERT INTO `operation_port_matrix_alias` VALUES (609, 504, 'knowledge', '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix_alias` VALUES (610, 504, 'moli-knowledge', '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix_alias` VALUES (611, 504, 'knowledge-server', '2026-07-11 00:00:00');
-INSERT INTO `operation_port_matrix_alias` VALUES (612, 505, 'bi', '2026-07-11 00:00:00');
-INSERT INTO `operation_port_matrix_alias` VALUES (613, 505, 'moli-bi', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (612, 505, 'ai', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (613, 505, 'moli-ai', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (617, 505, 'ai-server', '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix_alias` VALUES (614, 506, 'nacos', '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix_alias` VALUES (615, 507, 'mysql', '2026-07-11 00:00:00');
 INSERT INTO `operation_port_matrix_alias` VALUES (616, 508, 'redis', '2026-07-11 00:00:00');

@@ -1,6 +1,6 @@
 # 茉莉微服务 · v1.0 发布范围说明
 
-> **状态**：首版上线基线 · 更新：2026-06-28  
+> **状态**：首版上线基线 + **v1 后增量索引** · 更新：2026-07-13  
 > **读者**：产品、研发、测试、运维  
 > **冲突时**：以本文「交付边界」为准；各模块细节见下表链接。
 
@@ -23,6 +23,8 @@
 - 知识库 Meilisearch/向量检索（MySQL ngram 已够用）
 - Wiki 治理前端 **T16f 全链路**（后端已就绪，UI 可部分交付，见 §3）
 
+**v1 后增量（2026-07 · 已交付，见 §9）**：运营管理 W1–W10、拓扑/关系、SSO 菜单隔离、KBOPS/T16f/T19d/T20f/P3。
+
 ---
 
 ## 2. 服务清单与交付状态
@@ -33,7 +35,7 @@
 | **user-center** | `user-center-server` | 8888 | `/UserCenter/**` | ✅ | 登录/RBAC/门户/Dubbo |
 | **order** | `order-server` | 8087 | `/OrderServer/**` | ✅ | **秒杀压测域**（非完整订单中心） |
 | **knowledge** | `knowledge-server` | 8090 | `/KnowledgeServer/**` | ✅ | 知识库 REST + Ingest + 治理 API |
-| **bi** | `bi-server` | 1128 | `/BiServer/**` | 🟡 占位 | 仅 `/demo/test`，不验收 |
+| **ai** | `ai-server` | 1128 | `/AiServer/**` | 🟡 占位 | 仅 `/demo/test`，不验收 |
 
 ---
 
@@ -73,14 +75,15 @@
 |------|---------|---------|------|
 | 浏览 / 问答 / 搜索 | ✅ | ✅ | [KNOWLEDGE_API.md](../api/KNOWLEDGE_API.md) |
 | 三空间 Sync | ✅ | ✅ | [wiki同步指南](../../moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md) |
-| Ingest 工作台 | ✅ | ⚠️ 部分 | [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) |
+| Ingest 工作台 | ✅ | ✅ Tab1/2/3 T20f | [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) |
 | Wiki 单页编辑 + AI | ✅ | ✅ | KNOWLEDGE_API §8 |
-| Wiki 治理（lint/script/AI/auto） | ✅ | ⚠️ T16f 部分 | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) |
-| 平台 LLM 设置 | ✅ | 🔵 T19d | [kb-llm-platform-settings.md](../design/kb-llm-platform-settings.md) |
+| Wiki 治理（lint/script/AI/auto） | ✅ | ✅ T16f | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) |
+| 平台 LLM 设置 | ✅ | ✅ T19d | [kb-llm-platform-settings.md](../design/kb-llm-platform-settings.md) |
+| 内容管道运维 KBOPS | ✅ | ✅ O1–O9 · Dashboard | [knowledge-ops-prd.md](knowledge-ops-prd.md) |
 
 ### 3.5 BI（不纳入 v1 验收）
 
-- 接口：`GET /BiServer/demo/test` → 字符串 `test success`
+- 接口：`GET /AiServer/demo/test` → 字符串 `test success`
 - 用途：验证网关路由与 Shiro 骨架；**不要求**产品/测试用例
 
 ---
@@ -97,8 +100,11 @@
 | 知识库问答 | `knowledge/ask` | ✅ |
 | Ingest 工作台 | `knowledge/ingest/index` | ✅ Express + Expert |
 | Wiki 编辑 | `knowledge/wiki/edit` | ✅ |
-| Wiki 治理 | `knowledge/wiki-govern/index` | ⚠️ Lint + AI（script/auto 待补） |
-| 健康体检 | `knowledge/lint/index` | ✅ |
+| Wiki 治理 | `knowledge/wiki-govern/index` | ✅ 全按钮 T16f |
+| 健康体检 / KBOPS | `knowledge/lint/index` · `knowledge/ops/dashboard` | ✅ O1–O9 · Dashboard |
+| 平台 LLM | `system/kb-llm` | ✅ T19d |
+| **运营管理** | `operation/*` | ✅ W1–W10 · 拓扑 · DC-4 |
+| **SSO 菜单隔离** | 门户 enter/switch | ✅ SSO-MENU-1 |
 | 秒杀压测 | 无专用页 | 经 k6 / curl |
 
 ---
@@ -133,16 +139,33 @@
 
 | 类型 | 路径 |
 |------|------|
-| PRD | 本文 · [user-center-requirements.md](user-center-requirements.md) · [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) |
-| 设计 | [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md) · [order-seckill-design.md](../design/order-seckill-design.md) · [knowledge-module-overview.md](../design/knowledge-module-overview.md) · [gateway-design.md](../design/gateway-design.md) |
+| PRD | 本文 · [user-center-requirements.md](user-center-requirements.md) · [operation-server-ops-prd.md](operation-server-ops-prd.md) · [sso-menu-isolation-prd.md](sso-menu-isolation-prd.md) · [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) · [knowledge-ops-prd.md](knowledge-ops-prd.md) |
+| 设计 | [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md) · [server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) · [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) · [knowledge-module-overview.md](../design/knowledge-module-overview.md) |
 | API | [api/README.md](../api/README.md) |
 | 测试 | [test/README.md](../test/README.md) · [knowledge-e2e-regression.md](../test/knowledge-e2e-regression.md) |
 | 运维 | [v1-release-runbook.md](../ops/v1-release-runbook.md) · [sql-migration-order.md](../ops/sql-migration-order.md) |
 
 ---
 
-## 8. 变更记录
+## 9. v1 后增量交付（2026-07）
+
+> v1 基线（2026-06-28）之上的已交付增量；**不改变** §1–§6 首版边界定义，供发版与运维对照。
+
+| 模块 | 增量 | PRD / 设计 |
+|------|------|------------|
+| **运营管理** | 四台账 · 部署中心 · 拓扑/关系 · batch/cancel · DC-4 任务分组 | [operation-server-ops-prd.md](operation-server-ops-prd.md) · [server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) |
+| **SSO 菜单** | `sys_menu.system_id` · 按系统过滤路由 | [sso-menu-isolation-prd.md](sso-menu-isolation-prd.md) |
+| **知识库 KBOPS** | Sync 失败可观测 · 并发锁 · 工单 O5–O8 · Dashboard | [knowledge-ops-prd.md](knowledge-ops-prd.md) |
+| **知识库工作台** | T16f · T19d · T20f · `kb:prd` 17/17 | [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) |
+| **知识库 Ask** | chunk 切段召回 + eval  harness | [knowledge-module-overview.md](../design/knowledge-module-overview.md) §4.6 |
+
+**运维**：共享环境 jar 部署 · `18_kb_llm_call_log.sql` · 见 [frontend-backend-dependencies.md](../api/frontend-backend-dependencies.md) §6。
+
+---
+
+## 10. 变更记录
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-13 | §9 v1 后增量；§3.4/§4 知识库与运营前端状态对齐 |
 | 2026-06-28 | 首版发布范围初稿 |

@@ -7,6 +7,39 @@
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-Hoxton.SR12-blue.svg)](https://spring.io/projects/spring-cloud)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
+[![RAG](https://img.shields.io/badge/RAG-Retrieval%2BLLM-8A2BE2.svg)](moli-knowledge/README.md)
+[![LLM](https://img.shields.io/badge/LLM-OpenAI%20Compatible-412991.svg)](moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/KbLlmClient.java)
+[![Agentic Coding](https://img.shields.io/badge/Agentic%20Coding-AGENTS%2BSkills-000000.svg)](AGENTS.md)
+[![Python](https://img.shields.io/badge/Python-KB%20Tooling-3776AB.svg)](moli-knowledge/kb/tools)
+
+> 🤖 **一言で**：「**Spring Cloud マイクロサービス + エンタープライズ LLM ナレッジベース**」のオープンソースシステム —— 本番級バックエンド × RAG 問答 × 検索評価 × Agentic Coding。
+
+## ✨ AI ハイライト（クイックリード）
+
+![ナレッジベースアーキテクチャ](docs/diagrams/png/moli-kb-architecture.png)
+
+| 能力 | 実装内容 |
+|------|----------|
+| 🔎 **RAG 問答** | チャンク分割 → 検索（`/kb/ask`）→ **引用付き LLM 生成回答**；OpenAI 互換クライアント（DB 設定優先 + yaml フォールバック + 呼び出しログ） |
+| 📊 **検索評価** | `golden.jsonl` → **hit@k / MRR / coverage**、検索式 vs 生成式の比較 |
+| 🧠 **LLM-Wiki ガバナンス** | Ingest / Lint / Enrich、知識を「一度コンパイル、継続的に鮮度維持」、単方向・増分・冪等同期 |
+| 🤝 **Agentic Coding** | 多層 `AGENTS.md` ルール + 自作 Cursor Skills（図 / SQL マイグレーション / KB Ingest）、再利用可能な AI 開発ワークフロー |
+| 🏗️ **本番級バックエンド** | Spring Cloud Alibaba（Nacos / Dubbo / Sentinel / Gateway）+ Shiro 分散認証 + GitHub Actions CI |
+
+**📈 主要指標**（`kb/tools/fill_eval_metrics.py` で自動更新）：
+<!-- KB_METRICS:START -->
+hit@1 `66.7%` | hit@3 `100.0%` | hit@8 `100.0%` | MRR `0.833` | coverage `100.0%` | 平均応答 `0.47s` | サンプル `12` 問
+<!-- KB_METRICS:END -->
+
+**🎬 デモ**
+- オンラインデモ：`<デプロイ後にリンク>`
+- デモ GIF：`docs/portfolio/kb-demo.gif` `<録画予定>`
+- ローカル 30 秒体験（依存なし）：`python moli-knowledge/kb/tools/serve.py` → http://127.0.0.1:8765
+
+**📄 ワンページャー**：[PORTFOLIO.md](PORTFOLIO.md) を参照
+
+---
+
 ## プロジェクト概要
 
 **茉莉マイクロサービス**（moli-project-distribute）は、**Spring Cloud + Spring Cloud Alibaba** ベースの分散マイクロサービスサンプルです。API ゲートウェイ、サービス登録・設定、RPC/HTTP 呼び出し、認証・認可、データ永続化などのエンタープライズ機能をカバーします。
@@ -34,11 +67,11 @@ moli-project-distribute/
 ├── moli-gateway/                 # API ゲートウェイ
 ├── moli-user-center/             # ユーザーセンター
 │   ├── moli-user-center-common/
-│   ├── moli-user-center-client/  # Dubbo 契約 + Shiro 統合（order/bi 向け）
+│   ├── moli-user-center-client/  # Dubbo 契約 + Shiro 統合（order/ai 向け）
 │   └── moli-user-center-server/  # Shiro、Dubbo Provider
 ├── moli-order/
 │   └── moli-order-server/
-├── moli-ai/                      # BI（Nacos: bi-server）
+├── moli-ai/                      # BI（Nacos: ai-server）
 │   └── moli-ai-server/
 ├── moli-knowledge/
 │   └── moli-knowledge-server/
@@ -54,7 +87,7 @@ moli-project-distribute/
 | moli-gateway | `moli-gateway` | 21000 | 統一 API ゲートウェイ |
 | moli-user-center-server | `user-center-server` | **8888** | ユーザー・ロール・メニュー・辞書 |
 | moli-order-server | `order-server` | 8087 | 注文（秒殺含む）；Dubbo でユーザーセンター |
-| moli-ai-server | `bi-server` | 1128 | BI スケルトン（v1 プレースホルダ） |
+| moli-ai-server | `ai-server` | 1128 | BI スケルトン（v1 プレースホルダ） |
 | moli-knowledge-server | `knowledge-server` | モジュール README 参照 | ナレッジベース / Ingest |
 
 ### ゲートウェイルート
@@ -63,7 +96,7 @@ moli-project-distribute/
 |---------------------|--------|
 | `/UserCenter/**` | `lb://user-center-server` |
 | `/OrderServer/**` | `lb://order-server` |
-| `/BiServer/**` | `lb://bi-server` |
+| `/AiServer/**` | `lb://ai-server` |
 | `/KnowledgeServer/**` | `lb://knowledge-server` |
 
 > [docs/api/gateway-routes.md](docs/api/gateway-routes.md) 参照。
@@ -160,7 +193,7 @@ cd ../moli-user-center && mvn clean package -DskipTests
 ```
 http://localhost:21000/UserCenter/...
 http://localhost:21000/OrderServer/...
-http://localhost:21000/BiServer/...
+http://localhost:21000/AiServer/...
 http://localhost:21000/KnowledgeServer/...
 ```
 

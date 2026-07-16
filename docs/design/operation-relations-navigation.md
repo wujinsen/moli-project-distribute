@@ -47,11 +47,11 @@ ER + 交互图：[`moli-operation-relations-nav.drawio`](../diagrams/moli-operat
 
 | VO | 新增字段 |
 |----|----------|
-| 项目 | `serverCount`（已可由 `serverIds.size()` 推得，显式化）、`componentCount` |
-| 组件 | `serverCount`、`projectCount` |
+| 项目 | `serverCount`（**`serverIds.length` 恒等**）、`componentCount` |
+| 组件 | `serverCount`（恒等 `serverIds.length`）、`projectCount` |
 | 服务器 | `projectCount`、`componentCount`（列表页直接显示，不用点拓扑才知道） |
 
-实现：`OperationRelationQuerySupport`（`countServersByProjectIds` / `resolveServerIdsForProject`），对当前页 id 集合聚合；**N:N 非空时计数以 N:N 为准**，主 `server_id` 仅作 N:N 为空时的回退（与 [`operation-server-links.md`](operation-server-links.md) §2.3 一致）。
+实现：`OperationRelationQuerySupport`（`resolveServerIdsForProject` 等）；**`Operation*ServiceImpl.toVo()`** 内 `serverCount = serverIds.size()`，list/detail 无分叉。
 
 ### 3.2 统一关系详情 API
 

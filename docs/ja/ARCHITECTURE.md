@@ -3,7 +3,7 @@
 **Languages / 语言 / 言語**: [中文](../zh-CN/ARCHITECTURE.md) | [English](../en/ARCHITECTURE.md) | [日本語](ARCHITECTURE.md)
 
 > 「外部リクエスト ↔ ゲートウェイ ↔ サービス A ↔ サービス B」全経路の技術スタック・呼び出し方式・認証方式を記載する。
-> 対応：**サービス A = order-server / bi-server**（業務サービス）、**サービス B = user-center-server**（呼び出される側）。
+> 対応：**サービス A = order-server / ai-server**（業務サービス）、**サービス B = user-center-server**（呼び出される側）。
 
 ---
 
@@ -27,7 +27,7 @@ meiling-ui (ブラウザ)
 moli-gateway :21000            Spring Cloud Gateway（ルーティング/限流/CORS）
    │  lb://<service>  +  StripPrefix=1
    ▼
-order-server / bi-server       Shiro authc がセッション検証（Redis 共有セッション）
+order-server / ai-server       Shiro authc がセッション検証（Redis 共有セッション）
    │  Dubbo RPC（version=1.0.0, group=moli）
    ▼
 user-center-server :8888       Dubbo Provider → 業務処理
@@ -45,7 +45,7 @@ Redis（共有セッション/キャッシュ）  /  MySQL（業務・権限デ�
 sequenceDiagram
     participant UI as meiling-ui
     participant GW as moli-gateway
-    participant A as order/bi-server (A)
+    participant A as order/ai-server (A)
     participant B as user-center-server (B)
     participant R as Redis
 
@@ -93,7 +93,7 @@ sequenceDiagram
 |------------|------|----------|
 | `/UserCenter/**` | `lb://user-center-server` | `StripPrefix=1` |
 | `/OrderServer/**` | `lb://order-server` | `StripPrefix=1` |
-| `/BiServer/**` | `lb://bi-server` | `StripPrefix=1` |
+| `/AiServer/**` | `lb://ai-server` | `StripPrefix=1` |
 
 `StripPrefix=1` は先頭セグメントを除去（例：`/UserCenter/user/list` → `/user/list`）。
 
@@ -229,5 +229,5 @@ flowchart TB
 1. Nacos（`:8848`）、Redis、MySQL
 2. `moli-gateway`（`:21000`）
 3. `user-center-server`（`:1127`、Dubbo `20881`）
-4. `order-server`（`:8087`、Dubbo `20882`）、`bi-server`（`:1128`、Dubbo `20883`）
+4. `order-server`（`:8087`、Dubbo `20882`）、`ai-server`（`:1128`、Dubbo `20883`）
 5. `meiling-ui` プロキシ → `http://localhost:21000/UserCenter`

@@ -41,3 +41,8 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all
 - [[csrf与xss防护]]（`wiki/security/csrf与xss防护.md`）
 - [[spring-boot-启动优化]]（`wiki/spring/spring-boot-启动优化.md`）
 
+
+## 批次 #WB-20260711201324（Web Ingest 2026-07-11） <!-- ingest-job:731226591115493376 -->
+
+- [[note-a]] — create guide
+- [[note-b]] — create guide

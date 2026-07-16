@@ -47,7 +47,7 @@ VALUES
   (502, 'user-center',  '用户中心',   '8888',  20, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW()),
   (503, 'order',        '订单服务',   '8087',  30, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW()),
   (504, 'knowledge',    '知识库',     '8090',  40, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW()),
-  (505, 'bi',           'BI 服务',    '1128',  50, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW()),
+  (505, 'ai',           'AI 服务',    '1128',  50, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW()),
   (506, 'nacos',        'Nacos',      '8848',  60, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW()),
   (507, 'mysql',        'MySQL',      '3306',  70, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW()),
   (508, 'redis',        'Redis',      '6379',  80, 1, 'migration:java-default', NULL, 1, NOW(), 1, NOW())
@@ -72,8 +72,9 @@ INSERT INTO `operation_port_matrix_alias` (`id`, `matrix_id`, `alias`, `create_t
   (609, 504, 'knowledge',         NOW()),
   (610, 504, 'moli-knowledge',    NOW()),
   (611, 504, 'knowledge-server',  NOW()),
-  (612, 505, 'bi',       NOW()),
-  (613, 505, 'moli-bi',  NOW()),
+  (612, 505, 'ai',         NOW()),
+  (613, 505, 'moli-ai',    NOW()),
+  (617, 505, 'ai-server', NOW()),
   (614, 506, 'nacos',    NOW()),
   (615, 507, 'mysql',    NOW()),
   (616, 508, 'redis',    NOW())

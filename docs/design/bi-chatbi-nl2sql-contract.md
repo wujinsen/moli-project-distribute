@@ -1,11 +1,11 @@
 # AI-4 ChatBI / NL2SQL · 施工契约（Opus 产出，Composer 施工）
 
 > **角色**：本文件由 Opus（架构与安全负责人）产出，作为 Composer 施工的**唯一契约**。
-> **任务**：AI-4 ChatBI / NL2SQL Agent（bi-server 0→1）
+> **任务**：AI-4 ChatBI / NL2SQL Agent（ai-server 0→1）
 > **状态**：contract · 2026-07-17 · 未开工
 > **上游**：[`ai-capability-roadmap.md`](ai-capability-roadmap.md) §4 第 2 波 · [`bi-chatbi-nl2sql.md`](bi-chatbi-nl2sql.md)（技术设计）· [`ai-capability-schedule.md`](ai-capability-schedule.md) §9（Opus/Composer 分工）
-> **运行时**：`moli-ai-server`（服务名 `bi-server`，HTTP **1128** / Dubbo **20883**，网关 `/BiServer/**` StripPrefix=1）
-> **架构图**（复用，勿重画）：[`../diagrams/png/moli-bi-chatbi-flow.png`](../diagrams/png/moli-bi-chatbi-flow.png) · 源 [`../diagrams/moli-bi-chatbi-flow.drawio`](../diagrams/moli-bi-chatbi-flow.drawio)
+> **运行时**：`moli-ai-server`（服务名 `ai-server`，HTTP **1128** / Dubbo **20883**，网关 `/AiServer/**` StripPrefix=1）
+> **架构图**（复用，勿重画）：[`../diagrams/png/moli-ai-chatbi-flow.png`](../diagrams/png/moli-ai-chatbi-flow.png) · 源 [`../diagrams/moli-ai-chatbi-flow.drawio`](../diagrams/moli-ai-chatbi-flow.drawio)
 
 ---
 
@@ -13,7 +13,7 @@
 
 **本契约只定义**：对外/对内接口签名、DTO 形状、错误码语义、算法与节点划分、prompt 草案、安全不变量、验收要点。
 
-**不在本契约内（交给 Composer，按 `moli-order`/`moli-knowledge` 现有模式落地）**：建表 DDL、Mapper/Entity/VO 样板类、配置类（`@ConfigurationProperties`）、Spring 接线、只读数据源与缓存 Bean、`bi-agent` FastAPI 脚手架、图表序列化、`nl2sql_testset.jsonl` 录入、CI。
+**不在本契约内（交给 Composer，按 `moli-order`/`moli-knowledge` 现有模式落地）**：建表 DDL、Mapper/Entity/VO 样板类、配置类（`@ConfigurationProperties`）、Spring 接线、只读数据源与缓存 Bean、`ai-agent` FastAPI 脚手架、图表序列化、`nl2sql_testset.jsonl` 录入、CI。
 
 **红线**：Composer **不得**改动本契约中的 §3 安全校验逻辑、§1 接口签名、§2 节点边界。发现歧义或安全漏洞 → 回 Opus 窗口改契约，不自行拍板。
 
@@ -21,15 +21,15 @@
 
 ## 1. 接口契约
 
-### 1.1 对外 REST（Java，`bi-server`，经网关 `/BiServer/**`）
+### 1.1 对外 REST（Java，`ai-server`，经网关 `/AiServer/**`）
 
 统一返回 `MoliResult<T>`（`com.moli.common.core.MoliResult`）。三个端点：
 
 | # | 方法 | 路径 | 权限码 | 说明 |
 |---|------|------|--------|------|
-| A | POST | `/bi/chat/ask` | `bi:chat:query` | 自然语言问数 → SQL+结果+图表+解读（支持 SSE） |
-| B | GET | `/bi/chat/trace/{traceId}` | `bi:chat:trace` | 查看单次问答决策链路（越权隔离，见 INV-11） |
-| C | GET | `/bi/chat/schema` | `bi:chat:query` | 返回可查询表/列白名单（**脱敏**，见 INV-14） |
+| A | POST | `/bi/chat/ask` | `ai:chat:query` | 自然语言问数 → SQL+结果+图表+解读（支持 SSE） |
+| B | GET | `/bi/chat/trace/{traceId}` | `ai:chat:trace` | 查看单次问答决策链路（越权隔离，见 INV-11） |
+| C | GET | `/bi/chat/schema` | `ai:chat:query` | 返回可查询表/列白名单（**脱敏**，见 INV-14） |
 
 #### A. `POST /bi/chat/ask`
 
@@ -46,7 +46,7 @@
 
 ```
 BiChatAskVo {
-  String traceId;              // 必返回，任何 status 都要能回溯 bi_chat_trace
+  String traceId;              // 必返回，任何 status 都要能回溯 ai_chat_trace
   String sessionId;
   String status;              // SUCCESS | REJECTED | ERROR
   String sql;                 // 最终执行 SQL；REJECTED/ERROR 时为 null
@@ -68,7 +68,7 @@ BiChartVo    { String type;  // bar|line|pie|table|none
 **关键约定**：
 - **校验拒答 = 业务成功包**：LLM 生成后被 §3 安全校验拦下的，返回 `MoliResult.success` + `status=REJECTED` + `rejectCode`（chat UI 可优雅渲染"无法安全回答"）。
 - **请求级失败 = MoliResult 错误码**：空问题/无权限/sidecar 不可用等，返回 `MoliResult.error(code)`（见 §1.3）。
-- 二者都必须已写入 `bi_chat_trace`（INV-12）。
+- 二者都必须已写入 `ai_chat_trace`（INV-12）。
 
 **SSE 契约（`stream=true`）**：`text/event-stream`，事件名 + JSON data：
 
@@ -102,7 +102,7 @@ BiTraceStep {
 }
 ```
 
-**越权隔离**：调用者仅可查 `user_id == 当前登录用户` 的 trace；否则 `10612`。持 `bi:chat:trace:all`（或平台超管）方可跨用户查看（INV-11）。
+**越权隔离**：调用者仅可查 `user_id == 当前登录用户` 的 trace；否则 `10612`。持 `ai:chat:trace:all`（或平台超管）方可跨用户查看（INV-11）。
 
 #### C. `GET /bi/chat/schema`
 
@@ -115,9 +115,9 @@ BiSchemaColumnVo  { String name; String type; String comment; }
 
 只返回 `bi.chat.allow-tables` 白名单表，且**剔除**列黑名单命中列（INV-6/14）。此接口是 UI/agent 了解可查范围的**唯一出口**，禁止对外暴露 `information_schema` 直查。
 
-### 1.2 对内契约：Java 壳 ↔ `bi-agent`（Python FastAPI sidecar）
+### 1.2 对内契约：Java 壳 ↔ `ai-agent`（Python FastAPI sidecar）
 
-> **编排归属（架构决策）**：**Java 是 conductor（外层控制流 + 唯一安全裁决 + 唯一 SQL 执行者）**；`bi-agent` 无状态、仅提供"图节点"HTTP 能力。理由：安全单一真相（INV-2）、sidecar 可重启/降级（INV-15）、Python 永不碰执行。retry 计数与循环由 Java 持有并回传给 agent 作上下文。
+> **编排归属（架构决策）**：**Java 是 conductor（外层控制流 + 唯一安全裁决 + 唯一 SQL 执行者）**；`ai-agent` 无状态、仅提供"图节点"HTTP 能力。理由：安全单一真相（INV-2）、sidecar 可重启/降级（INV-15）、Python 永不碰执行。retry 计数与循环由 Java 持有并回传给 agent 作上下文。
 
 两个内部端点（仅内网，走 `bi.agent.base-url`，**不经网关、不对外**）：
 
@@ -181,7 +181,7 @@ Response：`{ explanation, chart:{type,x,y,title} }`
 ### 2.1 端到端控制流（Java conductor）
 
 ```
-接收 ask → 鉴权(bi:chat:query) → 参数校验(10601)
+接收 ask → 鉴权(ai:chat:query) → 参数校验(10601)
  → retry=0
  → LOOP:
      POST /agent/generate {question, retry, priorSql, priorError}
@@ -196,7 +196,7 @@ Response：`{ explanation, chart:{type,x,y,title} }`
            │   └─ DB 错且 retry<max → priorError=错误; retry++; continue
            └─ 成功 → rows/columns → break(SUCCESS)
  → SUCCESS 时 POST /agent/explain → explanation + chart
- → 写 bi_chat_trace（成功/拒答/异常都写，INV-12）
+ → 写 ai_chat_trace（成功/拒答/异常都写，INV-12）
  → 返回 BiChatAskVo
 ```
 
@@ -204,7 +204,7 @@ Response：`{ explanation, chart:{type,x,y,title} }`
 - **"可纠错"类**：`REJECT_TABLE_NOT_ALLOWED`/`REJECT_COLUMN_BLOCKED`/`REJECT_STAR_SELECT`/DB 执行错 —— 把规则说明作为 `priorError` 反馈 agent 重写。
 - **"直接拒答"类**：`REJECT_NON_SELECT`/`REJECT_MULTI_STATEMENT`/`REJECT_DANGEROUS`/`REJECT_SEMANTIC` —— 表意明确恶意/越权，不浪费重试。
 
-### 2.2 LangGraph 节点划分（`bi-agent` 内，`/agent/generate` 子图）
+### 2.2 LangGraph 节点划分（`ai-agent` 内，`/agent/generate` 子图）
 
 | 节点 | 运行位置 | 职责 | 关键约束 |
 |------|----------|------|----------|
@@ -271,8 +271,8 @@ Response：`{ explanation, chart:{type,x,y,title} }`
 | INV-8 | **超时**：statement timeout（`bi.chat.query-timeout-ms`），到点中断。 |
 | INV-9 | **危险结构禁用**：`INTO OUTFILE/DUMPFILE`、`LOAD_FILE`、`BENCHMARK`、`SLEEP`、系统库（`mysql`/`information_schema`/`performance_schema`/`sys`）、UNION 提权到白名单外表。 |
 | INV-10 | **AST 而非正则判定**：先 JSqlParser 规范化，再判定，防注释/编码/大小写绕过；禁字符串黑名单裸匹配作唯一手段。 |
-| INV-11 | **鉴权 + trace 越权隔离**：每请求校验 Shiro session（user-center 签发）+ 权限码；trace 仅可查本人，跨用户需 `bi:chat:trace:all`/超管。 |
-| INV-12 | **审计不可绕过**：成功/拒答/异常**都写** `bi_chat_trace`（NL、final_sql 或 null、status、rejectCode/reason、行数、耗时、retry、user_id）。 |
+| INV-11 | **鉴权 + trace 越权隔离**：每请求校验 Shiro session（user-center 签发）+ 权限码；trace 仅可查本人，跨用户需 `ai:chat:trace:all`/超管。 |
+| INV-12 | **审计不可绕过**：成功/拒答/异常**都写** `ai_chat_trace`（NL、final_sql 或 null、status、rejectCode/reason、行数、耗时、retry、user_id）。 |
 | INV-13 | **错误不泄露**：sidecar/DB 异常对外统一为 `106xx`，不回传连接串/堆栈/表结构。 |
 | INV-14 | **schema 出口脱敏**：`/bi/chat/schema` 只出白名单表 + 剔除黑名单列；禁 chat 通道直查 `information_schema`。 |
 | INV-15 | **可回退/降级**：sidecar 不可用 → `10602` 优雅降级，绝不半执行、不写脏结果。 |
@@ -314,10 +314,10 @@ Response：`{ explanation, chart:{type,x,y,title} }`
 - [ ] 超时 → `10609`；超行 → `10610`。
 
 ### 4.3 鉴权 / 审计 / 降级
-- [ ] 无 `bi:chat:query` → `10009`；查他人 trace 无 `bi:chat:trace:all` → `10612`。
-- [ ] 每次问答（含拒答/异常）均落 `bi_chat_trace`，`trace/{id}` 可回溯节点链路。
+- [ ] 无 `ai:chat:query` → `10009`；查他人 trace 无 `ai:chat:trace:all` → `10612`。
+- [ ] 每次问答（含拒答/异常）均落 `ai_chat_trace`，`trace/{id}` 可回溯节点链路。
 - [ ] `/bi/chat/schema` 输出不含黑名单列、不含系统库表。
-- [ ] `bi-agent` 停机 → `10602` 优雅降级、无半执行、trace status=ERROR。
+- [ ] `ai-agent` 停机 → `10602` 优雅降级、无半执行、trace status=ERROR。
 
 ### 4.4 Agent 自纠错
 - [ ] 首轮 SQL 引用错列/错表 → 第 2 轮修正成功（`retry` 记 1）。
@@ -342,6 +342,6 @@ Response：`{ explanation, chart:{type,x,y,title} }`
 
 - 技术设计：[`bi-chatbi-nl2sql.md`](bi-chatbi-nl2sql.md)
 - 路线 / 排期 / 分工：[`ai-capability-roadmap.md`](ai-capability-roadmap.md) · [`ai-capability-schedule.md`](ai-capability-schedule.md) §9
-- 对外 API（落地时增量）：[`../api/bi-api.md`](../api/bi-api.md)
-- 模块概要：[`bi-module-overview.md`](bi-module-overview.md)
+- 对外 API（落地时增量）：[`../api/ai-api.md`](../api/ai-api.md)
+- 模块概要：[`ai-module-overview.md`](ai-module-overview.md)
 - LLM 网关模式参考：[`kb-llm-platform-settings.md`](kb-llm-platform-settings.md)

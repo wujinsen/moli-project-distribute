@@ -15,7 +15,7 @@
 | **[operation-backend-handoff.md](operation-backend-handoff.md)** | **运营管理 · 后端联调通知（给前端 · Breaking/create id）** |
 | **[operation-frontend-handoff.md](operation-frontend-handoff.md)** | **运营管理 · 前端开工（`toVo` 计数 · S-VO · 走查）** |
 | **[frontend-backend-dependencies.md](frontend-backend-dependencies.md)** | **前端 ↔ 后端依赖（8888/8090/SSO）· §8 后端回复** |
-| **[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md)** | **P3 可选 · 前端开工（DC-4/KBOPS/KB-LINT 三项后端 ✅）** |
+| **[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md)** | **P3 · DC-4/KBOPS/KB-LINT 前后端 ✅** |
 | **[sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md)** | **SSO 菜单隔离 · F-SSO-1～6（已交付 + 走查 ✅）** |
 | [frontend-gaps.md](../frontend-gaps.md) | 前端缺口索引 |
 | [operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md) | **运营 W1–W10 走查记录（✅ 2026-07-13）** |
@@ -24,7 +24,7 @@
 | **[operation-port-matrix-api.md](operation-port-matrix-api.md)** | **端口矩阵管理 HTTP 契约（SVR-21，设计稿）** |
 | [user-center-dubbo.md](user-center-dubbo.md) | Dubbo 三方法 |
 | [order-seckill-api.md](order-seckill-api.md) | 秒杀 `/seckill/*` |
-| [bi-api.md](bi-api.md) | BI 骨架 `/demo/test` |
+| [ai-api.md](ai-api.md) | AI 骨架 `/demo/test` |
 
 ## 知识库工作台
 
@@ -32,7 +32,7 @@
 |------|------|
 | [KNOWLEDGE_API.md](KNOWLEDGE_API.md) | `/kb/*` 契约 |
 | [knowledge-workbench-frontend.md](knowledge-workbench-frontend.md) | 前端总览 B1–B10 |
-| **[knowledge-ops-frontend.md](knowledge-ops-frontend.md)** | **KB 运维 · Sync O1–O4 · 排期（给前端）** |
+| **[knowledge-ops-frontend.md](knowledge-ops-frontend.md)** | **KB 运维 · Sync O1–O9 · Dashboard** |
 | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | Ingest I1–I5 · Tab2 |
 | [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | **T20** Tab1 Raw 投喂 + Tab3 成品导入 |
 | [wiki-govern-frontend.md](wiki-govern-frontend.md) | Wiki 治理 W1–W8 |

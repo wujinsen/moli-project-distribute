@@ -13,7 +13,7 @@
 | 茉莉系统手册 | ✅ | `kb/wiki-moli/`（`moli-ops-manual`） |
 | enterprise-kb | ✅ | `kb/wiki/`（通用技术文库，与手册分空间） |
 | 网关 / 用户中心 / 订单 / 知识库全链路 | ✅ | PRD·设计·API·测试 |
-| BI（moli-ai） | ✅ | 设计 + 产品摘要 + bi-smoke |
+| AI（moli-ai） | ✅ | 设计 + 产品摘要 + ai-smoke |
 | 公共模块 README | ✅ | `moli-distribute-common/README.md` |
 | 架构图 PNG | ✅ | `docs/diagrams/png/`（含 T20/T22/Meilisearch） |
 | API 迭代地图 | ✅ | [`docs/api/api-iteration-map.md`](api/api-iteration-map.md) |
@@ -92,8 +92,8 @@
 |------|------|------|----------|
 | `docs/design/` | `gateway-design.md` · `order-seckill-design.md` · `user-center-overview.md` | §2/§3 ASCII 仍作主图 | 已有对应 PNG |
 | `docs/design/` | `knowledge-module-overview.md` · `kb-import-entry-design.md` · `kb-llm-platform-settings.md` | PNG 已嵌但 ASCII 未收进 `<details>` | 同上 |
-| `docs/design/` | `bi-module-overview.md` · `kb-ops-roadmap.md` 等 | 部分仍 ASCII / 纯文本图引用 | 按需补 draw.io |
-| `wiki-moli/develop/` | `BI模块-概要设计.md` · `技术方案与架构索引.md` · `知识库-meilisearch接入规划.md` · `Wiki治理工作台产品方案.md` | 仍为「请在仓库打开 PNG」文本占位 | 各页对应 PNG 已存在 |
+| `docs/design/` | `ai-module-overview.md` · `kb-ops-roadmap.md` 等 | 部分仍 ASCII / 纯文本图引用 | 按需补 draw.io |
+| `wiki-moli/develop/` | `AI模块-概要设计.md` · `技术方案与架构索引.md` · `知识库-meilisearch接入规划.md` · `Wiki治理工作台产品方案.md` | 仍为「请在仓库打开 PNG」文本占位 | 各页对应 PNG 已存在 |
 | `wiki-moli/develop/` | `用户中心-详细设计.md` | §3.1 Mermaid 作主图 | `moli-auth-flow` |
 | `wiki-moli/develop/` | `bi服务.md` | §架构 Mermaid 作主图 | `moli-container-architecture` 或新建 BI 定位图 |
 | `wiki-moli/develop/outputs/` | `茉莉微服务全链路一张图.md` · `秒杀全链路与压测要点汇总.md` · `茉莉登录与鉴权故障根因汇总.md` | Mermaid 作主图 | 已有全链路 / 秒杀 / 鉴权 PNG |

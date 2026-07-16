@@ -17,13 +17,13 @@ updated: 2026-07-05
 
 > 服务实体 ；列级权限 [[security/字段级数据权限设计]]；检索扩展 [[search/elasticsearch-搜索]]。
 
-针对当前 **bi-server 骨架** 的推荐落地顺序（非已实现功能）。
+针对当前 **ai-server 骨架** 的推荐落地顺序（非已实现功能）。
 
 ## 阶段 0：修骨架（必做）
 
 | 任务 | 说明 |
 |------|------|
-| 修正 `@MapperScan` | 改为 `com.moli.bi.server.mapper` 或删除 |
+| 修正 `@MapperScan` | 改为 `com.moli.ai.server.mapper` 或删除 |
 | 对齐持久层 | 引入 MyBatis-Plus + Druid，与用户中心一致 [[database/mybatis-与-druid持久层]] |
 | 健康检查 | `/actuator/health` 可选暴露 |
 
@@ -52,7 +52,7 @@ BI 是列级权限的**首要业务场景**。
 
 ## 阶段 4：与全家桶集成
 
-- 网关 `/BiServer/**` 已预留
+- 网关 `/AiServer/**` 已预留
 - SSO 门户可注册 `sys_system`（参考 [[security/sso与系统门户]]）
 - 压测 profile 已含 Bi 路由
 
@@ -64,7 +64,7 @@ BI 是列级权限的**首要业务场景**。
 
 ## 验收建议
 
-1. 带 token 调 `/BiServer/report/...` 返回 200
+1. 带 token 调 `/AiServer/report/...` 返回 200
 2. 无 perm 返回 10009
 3. 列权限生效时字段从 JSON 消失
 4. Grafana 只看 BI 实例 Druid/HTTP 指标

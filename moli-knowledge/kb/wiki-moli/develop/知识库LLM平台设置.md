@@ -92,7 +92,7 @@ OpenAI 兼容 API（DeepSeek / Qwen / GLM …）
 - `moli-ai` 当前为空壳 demo，引入只会多一跳网关，不解决 Ingest/Ask。
 - 配置域属于 **知识库平台能力**，与 `kb_space`、`kb_ingest_*` 同库同服务，事务与 ACL 一致。
 
-**演进**：当 order/bi 等也要 LLM 时，可将 `KbLlmClient` 抽为 `moli-ai-server` 的 Dubbo/HTTP 网关；DB 表可迁或双写，API 路径保持不变。
+**演进**：当 order/ai 等也要 LLM 时，可将 `KbLlmClient` 抽为 `moli-ai-server` 的 Dubbo/HTTP 网关；DB 表可迁或双写，API 路径保持不变。
 
 ---
 

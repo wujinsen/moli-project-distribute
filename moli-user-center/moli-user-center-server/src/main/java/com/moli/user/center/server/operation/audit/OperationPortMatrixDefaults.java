@@ -23,7 +23,7 @@ public final class OperationPortMatrixDefaults {
                 row("user-center", "8888", 20, "user-center", "moli-user-center", "user-center-server", "moli-server"),
                 row("order", "8087", 30, "order", "moli-order"),
                 row("knowledge", "8090", 40, "knowledge", "moli-knowledge", "knowledge-server"),
-                row("bi", "1128", 50, "bi", "moli-bi"),
+                row("ai", "1128", 50, "ai", "moli-ai", "ai-server"),
                 row("nacos", "8848", 60, "nacos"),
                 row("mysql", "3306", 70, "mysql"),
                 row("redis", "6379", 80, "redis")

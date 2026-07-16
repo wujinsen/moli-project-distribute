@@ -1,7 +1,8 @@
 # 知识库模块 · 概要设计
 
 > 模块：`moli-knowledge` · 服务 `knowledge-server` :8090  
-> v1 范围：[moli-v1-release-scope.md](../product/moli-v1-release-scope.md) §3.4  
+> 更新：2026-07-13  
+> v1 范围：[moli-v1-release-scope.md](../product/moli-v1-release-scope.md) §3.4 · §9
 > 表结构：[KNOWLEDGE_SCHEMA.md](../sql/KNOWLEDGE_SCHEMA.md) · API：[KNOWLEDGE_API.md](../api/KNOWLEDGE_API.md)
 
 ---
@@ -49,13 +50,13 @@ raw/ + Cursor Agent          Web Ingest / Wiki 编辑
 
 ## 3. 三空间
 
-| wiki 目录 | space_code | space_id | 用途 |
-|-----------|------------|----------|------|
-| `kb/wiki-moli/` | `enterprise-kb` | 900000000000000001 | 技术文库、产品方案 |
-| `kb/wiki-moli/` | `moli-ops-manual` | 900000000000000003 | 茉莉系统手册 |
-| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 900000000000000002 | 考试题库 |
+| wiki 目录 | space_code | 用途 |
+|-----------|------------|------|
+| `kb/wiki/` | `enterprise-kb` | 通用技术文库 |
+| `kb/wiki-moli/` | `moli-ops-manual` | 茉莉系统手册 |
+| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 日本语 FE/AP 考试 |
 
-配置：`kb.wiki.space-dirs`（`application-dev.yml`）。
+路径解析：`KbRepoPathUtil`（8090 Java + Python 脚本统一根目录）。
 
 ---
 
@@ -81,9 +82,26 @@ raw → Plan → 草稿 → lint → commit → Sync；Express / 模板模式。
 
 `GET/PUT /kb/wiki-moli/page`、ai-revise、enrich（单页）。
 
-### 4.5 平台 LLM（T19）
+### 4.5 平台 LLM（T19 · ✅）
 
-`kb_platform_llm_config` + 系统管理 UI（前端 T19d 可选）。
+`kb_platform_llm_config` + 系统管理 UI（T19d）+ 可选 `kb_llm_call_log` 审计。
+
+### 4.6 内容管道运维（KBOPS · 2026-07）
+
+| 能力 | 说明 |
+|------|------|
+| Sync 可观测 + 并发锁 | `kb_sync_log` · Redis 锁 · O1–O4 UI |
+| 体检工单 | `kb_lint_issue` · O5–O8 |
+| 运维 Dashboard | `GET /kb/ops/dashboard` · `kb_llm_call_log` |
+| CI 门禁 | `lint-strict-all` + dry-run |
+
+详见 [kb-ops-roadmap.md](kb-ops-roadmap.md) · [knowledge-ops-prd.md](../product/knowledge-ops-prd.md)。
+
+### 4.7 Ask chunk 召回（2026-07）
+
+- markdown 正文按 chunk 切段入库/检索  
+- `eval_ask.py` 黄金集回归  
+- 配置：`kb.ask.recall-mode=chunk`
 
 ---
 
@@ -133,8 +151,8 @@ moli-knowledge/
 | 主题 | 文档 |
 |------|------|
 | LLM 平台设置 | [kb-llm-platform-settings.md](kb-llm-platform-settings.md) |
-| Ingest 流程图 | [moli-kb-ingest-workbench.drawio](../diagrams/moli-kb-ingest-workbench.drawio) |
-| Wiki 治理流程 | [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-govern.drawio) |
+| KBOPS 路线图 | [kb-ops-roadmap.md](kb-ops-roadmap.md) |
+| T20 双入口导入 | [kb-import-entry-design.md](kb-import-entry-design.md) |
 | 契约 | [kb/AGENTS.md](../../moli-knowledge/kb/AGENTS.md) |
 | 操作 | [knowledge-workbench-operations.md](../ops/knowledge-workbench-operations.md) |
 | 测试 | [knowledge-e2e-regression.md](../test/knowledge-e2e-regression.md) |

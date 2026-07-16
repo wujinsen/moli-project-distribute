@@ -1,7 +1,7 @@
 # 运营管理 + 部署中心 · 改造方案（v1.1）
 
-> 更新：2026-07-11  
-> 范围：**平台 / 服务器 / 项目 / 组件**（台账 CRUD）+ **部署中心**（启停 / 上传 / 命令 / 任务）  
+> 更新：2026-07-13  
+> 范围：**平台 / 服务器 / 项目 / 组件** + **部署中心** + **拓扑/关系** + **DC-4 任务分组**  
 > 归属：`moli-user-center` · 表 `operation_*` · API `/operation/*`  
 > 原则：**可渐进上线、API 尽量向后兼容、先修数据一致性再提性能**  
 > 关联路线图：[`server-ops-module-roadmap.md`](server-ops-module-roadmap.md) · API [`operation-deploy-api.md`](../api/operation-deploy-api.md)
@@ -20,7 +20,7 @@
 | **G6 代码可维护** | 四模块 CRUD/密钥/探活逻辑收敛，减少 4 份复制粘贴 |
 | **G7 部署路径统一** | 部署中心「本机脚本」与「SSH 远程」共用同一执行抽象；定时 `deploy_running` 与 UI 手动查询一致 |
 | **G8 任务可观测** | `operation_task` 覆盖 deploy / upload / command / health_probe；列表、轮询、锁键规范统一 |
-| **G9 服务键对齐** | `serviceKey` ↔ `project_name` ↔ Registry 单一映射；**order/bi 已入 YAML**（远程启停待 `moli-service.sh` 扩展） | ✅ |
+| **G9 服务键对齐** | `serviceKey` ↔ `project_name` ↔ Registry 单一映射；**order/ai 已入 YAML**（远程启停待 `moli-service.sh` 扩展） | ✅ |
 | **G10 安全默认关** | `ops.deploy/upload/command` 默认 false；Runbook 写清生产开启步骤与权限最小集 |
 
 **不做（本方案外）**：meiling-ui 大改版（仅列接口变更点）；与知识库 KBOPS 合并；CI/CD 流水线编排。
@@ -137,7 +137,7 @@ Phase 4（2 天）     代码重构 & 测试补齐
 
 ### 0.3 部署中心 Runbook 补全 ✅
 
-[`deploy/上线流程.md`](../../deploy/上线流程.md) **§7** — 三开关、SSH、权限、冒烟、order/bi 说明。
+[`deploy/上线流程.md`](../../deploy/上线流程.md) **§7** — 三开关、SSH、权限、冒烟、order/ai 说明。
 
 ---
 
@@ -346,7 +346,7 @@ operation/support/
 - [x] probe-all：HTTP 异步返回 taskId（100 台压测待联调）
 - [x] `serviceKey` 扩展 order/bi：YAML + presets；远程脚本待扩展
 - [x] 多服务器关联双轨同步（2026-07-13）：`PUT .../links` 对齐主 `server_id`；关系计数以 N:N 为准 — 见 [`operation-server-links.md`](operation-server-links.md) §2.3
-- [x] **前端 P4**：SVR-25b 拓扑图 · SVR-26b 组件依赖 · SVR-28c～f RelationDrawer — ✅ meiling-ui 2026-07-13
+- [x] **前端 P4 + P3**：SVR-25b 拓扑 · SVR-28 RelationDrawer · **DC-4** 任务分组 — ✅ 2026-07-13
 
 ---
 

@@ -95,7 +95,7 @@ export const cancelOperationTaskApi = (taskId: number) =>
 
 | 项 | 说明 |
 |----|------|
-| `GET /operation/deploy/presets` | `serviceKeys`: user-center, gateway, knowledge, **order**, **bi** |
+| `GET /operation/deploy/presets` | `serviceKeys`: user-center, gateway, knowledge, **order**, **ai** |
 | **上传** | `POST /operation/file/upload` → `taskId`；需 `ops.upload.enabled=true` + SSH |
 | **批量重启** | `POST /operation/deploy/batch/task`（`steps[]` / `intervalSeconds`） |
 | **任务取消** | `POST /operation/task/{id}/cancel` → `status=cancelled` |
@@ -125,7 +125,7 @@ export const cancelOperationTaskApi = (taskId: number) =>
 | 日期 | 提交范围 | 说明 |
 |------|----------|------|
 | 2026-07-13 | links 同步修复 | `ab70ed3d` · `68142cbf` |
-| 2026-07-13 | create 返回 id + order/bi 脚本 | 本轮 commit |
+| 2026-07-13 | create 返回 id + order/ai 脚本 | 本轮 commit |
 | 2026-07-13 | 详情 VO 关系计数 | **`toVo()` 统一派生 `*Count`**；前端 [operation-frontend-handoff.md](operation-frontend-handoff.md) §0 |
 | 2026-07-13 | server create 返回 id + 批量 deploy/links | `POST /operation/server` → Long；`POST /deploy/batch/task`；`GET .../links/batch` |
 | 2026-07-13 | 任务取消 | `POST /operation/task/{id}/cancel`；`status=cancelled` |

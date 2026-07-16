@@ -36,11 +36,11 @@ moli-project-distribute/
 ├── moli-gateway/                 # API 网关
 ├── moli-user-center/             # 用户中心
 │   ├── moli-user-center-common/  # 实体、VO 等公共定义
-│   ├── moli-user-center-shiro-starter/  # Shiro Starter，供 order/bi 依赖
+│   ├── moli-user-center-shiro-starter/  # Shiro Starter，供 order/ai 依赖
 │   └── moli-user-center-server/  # 用户中心主服务（Shiro、Dubbo Provider）
 ├── moli-order/                   # 订单服务
 │   └── moli-order-server/
-├── moli-ai/                      # BI 服务（Nacos 名 bi-server）
+├── moli-ai/                      # AI 服务（Nacos 名 ai-server）
 │   └── moli-ai-server/
 ├── moli-knowledge/               # 企业知识库
 │   └── moli-knowledge-server/
@@ -56,7 +56,7 @@ moli-project-distribute/
 | moli-gateway | `moli-gateway` | 21000 | 统一 API 网关 |
 | moli-user-center-server | `user-center-server` | **8888** | 用户、角色、菜单、字典等基础能力 |
 | moli-order-server | `order-server` | 8087 | 订单业务（含秒杀），通过 Dubbo 调用用户中心 |
-| moli-ai-server | `bi-server` | 1128 | BI 骨架服务（v1 占位） |
+| moli-ai-server | `ai-server` | 1128 | AI 骨架服务（v1 占位） |
 | moli-knowledge-server | `knowledge-server` | 见模块 README | 企业知识库 / Ingest / 问答 |
 
 ### 网关路由
@@ -65,7 +65,7 @@ moli-project-distribute/
 |----------|----------|
 | `/UserCenter/**` | `lb://user-center-server` |
 | `/OrderServer/**` | `lb://order-server` |
-| `/BiServer/**` | `lb://bi-server` |
+| `/AiServer/**` | `lb://ai-server` |
 | `/KnowledgeServer/**` | `lb://knowledge-server` |
 
 > 详见 [docs/api/gateway-routes.md](docs/api/gateway-routes.md)。
@@ -171,7 +171,7 @@ mvn clean package -DskipTests
 
 1. `moli-user-center-server` — 用户中心
 2. `moli-order-server` — 订单服务
-3. `moli-ai-server` — BI 服务（可选，v1 骨架）
+3. `moli-ai-server` — AI 服务（可选，v1 骨架）
 4. `moli-knowledge-server` — 知识库（可选）
 5. `moli-gateway` — API 网关
 
@@ -180,7 +180,7 @@ mvn clean package -DskipTests
 ```
 http://localhost:21000/UserCenter/...
 http://localhost:21000/OrderServer/...
-http://localhost:21000/BiServer/...
+http://localhost:21000/AiServer/...
 http://localhost:21000/KnowledgeServer/...
 ```
 

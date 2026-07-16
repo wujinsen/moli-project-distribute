@@ -68,8 +68,9 @@ scripts/                 ← DB 初始化（见 docs/ops/）
 |--------|------|
 | **v1 发布范围 / 冒烟** | **[product/moli-v1-release-scope.md](product/moli-v1-release-scope.md)** · [test/release-smoke-checklist.md](test/release-smoke-checklist.md) · [ops/v1-release-runbook.md](ops/v1-release-runbook.md) |
 | **操作知识入库 + Wiki 治理** | **[ops/knowledge-workbench-operations.md](ops/knowledge-workbench-operations.md)** |
-| 看产品 PRD | [product/knowledge-workbench-requirements.md](product/knowledge-workbench-requirements.md) → `kb/wiki-moli/guides/` |
+| 看产品 PRD | [product/knowledge-workbench-requirements.md](product/knowledge-workbench-requirements.md) · [operation-server-ops-prd.md](product/operation-server-ops-prd.md) · [sso-menu-isolation-prd.md](product/sso-menu-isolation-prd.md) → `kb/wiki-moli/guides/` |
 | 看架构/方案 | [design/README.md](design/README.md) → `docs/zh-CN/ARCHITECTURE.md` |
+| 前后端对齐索引 | [frontend-gaps.md](frontend-gaps.md) · [api/frontend-backend-dependencies.md](api/frontend-backend-dependencies.md) |
 | 对接 HTTP 接口 | [api/README.md](api/README.md) · [api-iteration-map.md](api/api-iteration-map.md) |
 | 文档健康度巡检 | [DOCUMENTATION_AUDIT.md](DOCUMENTATION_AUDIT.md) |
 | 压测 / 测试 | [test/README.md](test/README.md) |

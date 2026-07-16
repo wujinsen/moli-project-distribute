@@ -27,7 +27,7 @@
 
 - **服务间（Service ↔ Service）统一走 Dubbo**：高性能二进制 RPC、不对外暴露 HTTP，天然规避“内部接口被外部直连”的风险。
   - 提供方：用户中心 `UserServerProvider`（`@DubboService(version="1.0.0", group="moli")`）。
-  - 消费方：`order-server` / `bi-server`，在 `ShiroConfig` 中通过 `@DubboReference` 引用 `UserCenterServer`，再注入 `ShiroRealm` 完成登录认证。
+  - 消费方：`order-server` / `ai-server`，在 `ShiroConfig` 中通过 `@DubboReference` 引用 `UserCenterServer`，再注入 `ShiroRealm` 完成登录认证。
   - 注册/发现：Dubbo 以 `spring-cloud://` 挂载到 Nacos，与 Spring Cloud 共用注册中心。
 - **外部流量走 HTTP/REST**：浏览器/`meiling-ui` → 网关 → 各服务 Controller，统一 `MoliResult<T>` 返回。
 - 说明：早期示例中的 OpenFeign（`UserCenterClient`）已移除，避免为内部调用额外暴露 REST 接口。详见 `docs/zh-CN/ARCHITECTURE.md`。
@@ -108,11 +108,11 @@ moli-project-distribute/
 ├── moli-gateway/               # API 网关（Gateway + Nacos Discovery）
 ├── moli-user-center/           # 用户中心
 │   ├── moli-user-center-common/
-│   ├── moli-user-center-client/  # Dubbo 契约 + Shiro 集成（供 order/bi 依赖）
+│   ├── moli-user-center-client/  # Dubbo 契约 + Shiro 集成（供 order/ai 依赖）
 │   └── moli-user-center-server/  # Nacos + Sentinel + Dubbo + Shiro
 ├── moli-order/                 # 订单服务
 │   └── moli-order-server/
-└── moli-ai/                    # BI 服务（应用名 bi-server）
+└── moli-ai/                    # AI 服务（应用名 ai-server）
     └── moli-ai-server/
 ```
 
@@ -124,7 +124,7 @@ moli-project-distribute/
 | moli-user-center-server | Nacos Discovery/Config、Sentinel、Dubbo、MyBatis-Plus、Shiro、Redis、MinIO |
 | moli-user-center-client | Nacos Discovery、Spring Cloud Dubbo、`UserCenterServer` 契约、Shiro 集成 |
 | moli-order-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro（client 模块） |
-| moli-ai-server | Nacos、Dubbo、Shiro（client 模块）；应用名 `bi-server` |
+| moli-ai-server | Nacos、Dubbo、Shiro（client 模块）；应用名 `ai-server` |
 
 ---
 

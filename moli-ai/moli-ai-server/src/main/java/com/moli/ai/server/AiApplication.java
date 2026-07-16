@@ -1,4 +1,4 @@
-package com.moli.bi.server;
+package com.moli.ai.server;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -6,11 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
-@MapperScan(basePackages = {"com.moli.bi.server.mapper"})
+@MapperScan(basePackages = {"com.moli.ai.server.mapper"})
 @EnableDiscoveryClient
-public class BiApplication {
+public class AiApplication {
     public static void main(String[] args) {
 
-        SpringApplication.run(BiApplication.class, args);
+        SpringApplication.run(AiApplication.class, args);
     }
 }

@@ -29,7 +29,7 @@
 | **SVR-25/28/26b** | 拓扑 · 关联抽屉 · component-links |
 | **DC-2/3** | 部署中心项目优先 · 追加台账机 |
 | **W7–W10** | server create id · upload · batch deploy · task cancel |
-| **S-ERR-1** · **S-DEPLOY-1** | 错误码 Toast · order/bi 映射 |
+| **S-ERR-1** · **S-DEPLOY-1** | 错误码 Toast · order/ai 映射 |
 | **W1–W10 走查** | ✅ `npm run op:walkthrough` + 浏览器（2026-07-13） |
 
 契约：[operation-frontend-handoff.md](api/operation-frontend-handoff.md) · [operation-frontend.md](api/operation-frontend.md) §10/§16

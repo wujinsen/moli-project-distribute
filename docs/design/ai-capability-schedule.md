@@ -39,9 +39,9 @@
 
 | 周 | 任务 | 交付物 | 出口标准 |
 |----|------|--------|----------|
-| **W5** | 骨架 + 安全底座 | bi-server 只读数据源 + 独立只读账号；SQL AST 白名单校验（JSqlParser）；`bi_chat_trace` 表 | 危险 SQL 单测 100% 拦截 |
-| **W6** | Agent MVP | `bi-agent` sidecar（schema 检索 + NL→SQL + 自纠错）；Java 只读执行 | Gradio 输入 → 出结果表 |
-| **W7** | 图表 + 解读 + API | 结果图表建议 + 自然语言解读；`/bi/chat/ask` SSE；`bi:chat:*` 鉴权 | 端到端走通网关 `/BiServer/**` |
+| **W5** | 骨架 + 安全底座 | ai-server 只读数据源 + 独立只读账号；SQL AST 白名单校验（JSqlParser）；`ai_chat_trace` 表 | 危险 SQL 单测 100% 拦截 |
+| **W6** | Agent MVP | `ai-agent` sidecar（schema 检索 + NL→SQL + 自纠错）；Java 只读执行 | Gradio 输入 → 出结果表 |
+| **W7** | 图表 + 解读 + API | 结果图表建议 + 自然语言解读；`/bi/chat/ask` SSE；`ai:chat:*` 鉴权 | 端到端走通网关 `/AiServer/**` |
 | **W8** | 评测 + 打磨 | `nl2sql_testset.jsonl` ≥30 题；执行/拒答正确率 | 执行正确率 ≥80%、拦截 100% |
 
 **v1.2 里程碑（M2，~09-11）**：ChatBI 端到端 Demo，接 order/user 真实只读库。
@@ -135,7 +135,7 @@ AI-10（DeepResearch）依赖 AI-2/AI-5
 | **AI-1** | 负样本/脏 query 分层、难度标签体系、拒答判定标准 | `golden.jsonl` 录入、`eval_ask.py` 分层统计、`kb_qa_log` 导出脚本 | 🟢 Composer |
 | **AI-2** | 双路召回架构、RRF 融合权重、精排阈值、回退策略、sidecar 接口契约 | `kb-retrieval` FastAPI 脚手架、Chroma 索引、`KbSearchProperties`、Java HTTP client、离线索引任务 | 🔵 混合 |
 | **AI-3** | 门禁基线阈值策略 | `kb_eval_run` 表+mapper+落库、`KbOpsService` 卡片、CI yaml | 🟢 Composer |
-| **AI-4** | **SQL 白名单/AST 校验/注入防护**、NL2SQL prompt、LangGraph 工作流、自纠错重试、schema 检索与解读 prompt | `bi-server` Java 壳（Controller/Service/鉴权仿 order）、`bi_chat_trace` 审计、只读数据源+缓存、图表序列化、`bi-agent` 脚手架、`nl2sql_testset.jsonl` 录入 | 🟣 Opus 主导 |
+| **AI-4** | **SQL 白名单/AST 校验/注入防护**、NL2SQL prompt、LangGraph 工作流、自纠错重试、schema 检索与解读 prompt | `ai-server` Java 壳（Controller/Service/鉴权仿 order）、`ai_chat_trace` 审计、只读数据源+缓存、图表序列化、`ai-agent` 脚手架、`nl2sql_testset.jsonl` 录入 | 🟣 Opus 主导 |
 | **AI-5** | 沿边扩跳加权/剪枝算法、多跳候选融合 | 复用 `KbWikiGraphService` 遍历、候选合并、配置开关 | 🔵 混合 |
 | **AI-6** | 工具 schema 语义 | MCP server 脚手架、REST 包成 `kb.search/ask/graph`、token 鉴权接线 | 🟢 Composer |
 | **AI-7** | 编排层设计、query 改写/拆解 prompt、答案自检（陈述↔引用对齐）、回补检索决策 | 状态机代码、trace 表、开关、各步接线 | 🟣 Opus 主导 |

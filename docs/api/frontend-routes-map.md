@@ -13,7 +13,7 @@
 | 用户中心 | `{base}/UserCenter` |
 | 知识库 | `{base}/KnowledgeServer` |
 | 订单 | `{base}/OrderServer` |
-| BI | `{base}/BiServer` |
+| BI | `{base}/AiServer` |
 
 ---
 

@@ -1,4 +1,4 @@
-# moli-ai · BI 服务（骨架）
+# moli-ai · AI 服务（骨架）
 
 > **v1 定位**：[moli-v1-release-scope.md](../docs/product/moli-v1-release-scope.md) §3.5 — **占位服务，不纳入业务验收**  
 > 验证网关路由 + Shiro 骨架 + Nacos 注册。
@@ -7,16 +7,16 @@
 
 | 子模块 | 职责 |
 |--------|------|
-| `moli-ai-server` | 父模块 `moli-ai` · artifactId `moli-ai-server` · 应用名 `bi-server` |
+| `moli-ai-server` | 父模块 `moli-ai` · artifactId `moli-ai-server` · 应用名 `ai-server` |
 
 ## 运行时
 
 | 项 | 值 |
 |----|----|
-| Nacos 服务名 | `bi-server` |
+| Nacos 服务名 | `ai-server` |
 | HTTP 端口 | **1128** |
 | Dubbo 端口 | **20883** |
-| 网关路由 | `/BiServer/**` → StripPrefix=1 |
+| 网关路由 | `/AiServer/**` → `lb://ai-server`，StripPrefix=1 |
 
 ## 功能（v1）
 
@@ -24,7 +24,7 @@
 |------|------|
 | `GET /demo/test` | 返回 `test success` |
 
-完整契约：[docs/api/bi-api.md](../docs/api/bi-api.md)
+完整契约：[docs/api/ai-api.md](../docs/api/ai-api.md)
 
 ## 依赖
 
@@ -45,9 +45,9 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 | 类型 | 路径 |
 |------|------|
-| API | [docs/api/bi-api.md](../docs/api/bi-api.md) |
-| 设计 | [docs/design/bi-module-overview.md](../docs/design/bi-module-overview.md) |
-| 冒烟 | [docs/test/bi-smoke.md](../docs/test/bi-smoke.md) · [release-smoke-checklist.md](../docs/test/release-smoke-checklist.md) G4 |
+| API | [docs/api/ai-api.md](../docs/api/ai-api.md) |
+| 设计 | [docs/design/ai-module-overview.md](../docs/design/ai-module-overview.md) |
+| 冒烟 | [docs/test/ai-smoke.md](../docs/test/ai-smoke.md) · [release-smoke-checklist.md](../docs/test/release-smoke-checklist.md) G4 |
 
 ## 后续（v2+）
 

@@ -2,7 +2,7 @@
 
 > **角色**：本文件由 Opus（架构与安全负责人）产出，作为 Composer 施工的**唯一契约**。
 > **任务**：AI-1 golden 评测集扩容（12 → ≥50，理想 100），第 1 波 W1。
-> **状态**：contract · 2026-07-17 · 未开工
+> **状态**：**done** · Opus 复核通过 2026-07-17（首轮 review→修订→复核全过程见 §9；验收结论 §9.7）
 > **上游**：[`../ai-capability-roadmap.md`](../ai-capability-roadmap.md) §4 第 1 波 AI-1 · [`../kb-hybrid-retrieval.md`](../kb-hybrid-retrieval.md) §2 · `moli-knowledge/kb/eval/README.md`
 > **目标产物**：`moli-knowledge/kb/eval/golden.jsonl`（扩容）+ `kb/tools/eval_ask.py`（分层统计增强）+ `kb/eval/reports/` 扩容基线报告。
 
@@ -261,16 +261,128 @@ Composer 为现存 M01–M10、E01–E02 逐题补 `difficulty` + `expect_answer
 
 ---
 
-## 7. 未决问题 + 实现回填区（Composer 回填）
+## 7. 未决问题
 
 - **未决（需 Opus 定夺，勿自行拍板）**：
   - `/kb/ask` 是否可返回结构化「拒答标志位」以替代 §3.3 短语匹配？若后端暂无，本期用短语匹配兜底。
   - `multi-hop` 是否统一要求 `expect_all=true`？当前契约默认 `false`（任一命中），仅个别强多跳题开 `true`。
-- **实现清单**：_（待 Composer 填：实际新增题数/分布、eval_ask.py 改动点、基线报告文件名）_
+  - negative 题在 ngram 检索下 `refusal_accuracy=0%`（11/11 误召回，含新增 N-cross/N-lexical）——符合 §3.2 严格口径；E14 仅 2 条弱相关 citation，仍计 FAIL；AI-2 后再对比。
 
 ---
 
-## 8. 相关
+## 8. 实现清单（Composer 回填 · 2026-07-17）
+
+| 文件 | 状态 | 说明 |
+|------|------|------|
+| `moli-knowledge/kb/eval/golden.jsonl` | ✅ | **59** 题（+4 负样本 J10/E14/M39/M40）；jp expect 修正；dirty 错别字 |
+| `moli-knowledge/kb/tools/eval_ask.py` | ✅ | （首轮已完成，本轮未改） |
+| `moli-knowledge/kb/eval/README.md` | ✅ | 修订基线行已回填 |
+| `moli-knowledge/kb/wiki-jp-exam/certify/` | ✅ | §9.2a ingest 37 页 refresh + 模擬問題1/2/3 检索摘要 |
+| `moli-knowledge/kb/eval/reports/baseline-ngram-20260717-022510.json` | ✅ | 检索式修订基线（59 题；hit@3=79.17%、hit@8=91.67%、MRR=0.742） |
+| `moli-knowledge/kb/eval/reports/baseline-ngram-20260717-023735.json` | ✅ | 生成式修订基线（kw_pass=85%、refusal_acc=0%） |
+
+**§9.6 修订执行摘要**：
+- B1：§9.2(a) `ingest_certify_wiki.py` + **`sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam`**（37 update / 2465 chunk）；J01–J07 expect 对齐正文+中文解析。
+- §9.4：新增 N-cross（J10/E14）、N-lexical（M39/M40）各 2 道。
+- §9.3/9.5：M21/E08/J05 错别字、E09 中英混+annex 注、E09 note 已标注。
+- J 题复核：J01–J07 全部 PASS（修订基线检索式+生成式）。
+
+---
+
+## 9. Review 意见（Opus · AI-1 施工验收 · 2026-07-17）
+
+> **首轮结论（changes requested）→ 修订完成 → 复核通过。最终：`status: done`（见 §9.7）。**
+
+### 9.1 符合验收的部分（通过）
+
+- **字段扩展**：`difficulty` / `expect_answerable` / `expect_all` 齐全、取值合法（§1）。
+- **load_golden 校验**：难度枚举、negative 三约束、`expect_all` 仅 multi-hop、id 前缀与 space 一致、放宽 negative 空 slug —— 全部按 §1.2 落地。
+- **分母隔离（关键）**：`hit@k`/`mrr`/`coverage` 仅 answerable，`refusal_accuracy` 仅 negative，报告含 `answerable_total`/`negative_total`（§3.4）✓。
+- **拒答判定**：`compute_refused_correct` 双模 + `REFUSAL_MARKERS` 集中定义 + 大小写/全半角归一，符合 §3.2/§3.3。
+- **分层输出**：`by_difficulty`（multi-hop `all_hit_rate`、negative 仅 `refusal_accuracy`）、控制台 `== 分层 ==`/`== 拒答 ==`、CLI `--difficulty`/`--no-negative`/`--baseline`，符合 §4。
+- **12 题标签迁移**：与 §1.3 建议完全一致。
+- **两份基线已产出**（§8）：检索式 + 生成式 `baseline-ngram-*.json` 齐备（但见 §9.2，需修 B1 后**重跑**才可信）。
+- **slug 抽查**：moli-ops-manual（M01–M29）与 enterprise-kb（E01–E12）全部 `expect_slugs` 对应 wiki 页真实存在（含 `E09 annex-REDIS…`、`E12 …ik分词与分析器`）✓。
+
+### 9.2 阻断问题（BLOCKER · 必须修复后重跑基线才可 done）
+
+**B1 · jp-fe-ap-exam 空间目标页不存在** —— `wiki-jp-exam/` 当前只有 `guides/日本語試験知识库说明` 一个内容页，全仓**无 `certify/` 目录**。下列 6 题 `expect_slugs` 指向不存在的页，Sync 后必然全部 MISS：
+
+| 题 | 无效 expect_slugs |
+|----|-------------------|
+| J01 | `certify/Certifyサーティファイ` |
+| J03 | `certify/模擬問題1` |
+| J04 | `certify/開発技術` |
+| J05 | `certify/certify-katakana-vocab` |
+| J06 | `certify/模擬問題2`、`certify/模擬問題1` |
+| J07 | `certify/Certifyサーティファイ`、`certify/模擬問題3` |
+
+**已被基线印证**：§8 检索式基线 `hit@8=83.33%`（约 40/48 answerable 命中），缺口 ~8 与「6 道无效 jp + 个别难题」吻合——证明这些题在拉低基线，而非检索能力问题。
+
+**影响**：① 违反契约 §5.1/§6.2（`expect_slugs` 须与 DB `kb_document.slug` 一致）；② 污染 paraphrase/dirty 子集基线，而这正是 AI-2 要证增益的子集，导致 AI-2 对比失真；③ jp「可答」题实际只剩 J02 一道有效，§2.2 每空间有意义覆盖名存实亡。
+
+**处置（三选一，需你定夺）**：
+- (a) **先 ingest**：把 `raw/school/` certify 语料按 KB 规则 ingest 进 `wiki-jp-exam/certify/` 并 Sync（属 KB ingest 任务，**超出 AI-1 范围**，需单独排期）；ingest 后题即有效。
+- (b) **收缩 jp**：本期 jp 只留 J02 + J08/J09，将 J01/J03–J07 挪 backlog，缺口用 M/E 题补足各难度最低配额。
+- (c) **改指向/核实**：若 certify 已通过 Web 直 ingest 进 DB（wiki 缺文件但 DB 有），先核实 DB `kb_document` 确有这些 slug，通过方可保留。
+
+> 任一处置后，**重跑两份基线**替换 §8 现有报告；并加一步 Sync 后 slug 存在性核验，避免再出现「目标页不存在」。
+
+### 9.3 golden 分层是否合理
+
+- **配额**：15/15/10/8/7=55，恰达 §2.1 最低线；三空间占比 60%/24%/16% 符合 §2.2 ✓。
+- **改进点**：
+  - 扣除 B1 的 6 道无效题后**有效 answerable 仅 42**；按 §9.2 处置后应**回补到 ≥48 有效可答**，否则实际样本缩水。
+  - `dirty` 多为口语化（「咋整」「咋操作」），**真错别字 / 中英混**偏少（§2.3 期望三者兼有），建议改 2~3 道为含明显错别字。
+
+### 9.4 拒答负样本缺口（dimension 3）
+
+现有 7 道 negative 全属**「主题完全不在库」**单一类型。建议补两类更具区分度的（各 1~2 道）：
+
+- **N-cross · 跨空间越界**：在 A 空间问只存在于 B 空间的内容，验证空间隔离。例：`jp-fe-ap-exam` 空间问「Redis 有哪些数据结构」（答案只在 enterprise-kb）→ 期望拒答。当前零覆盖。
+- **N-lexical · 词面陷阱**：与真实页共享词汇但答案库内确无，考 ngram 假阳性。例：「知识库用的 Milvus 向量集群怎么运维？」（KB 提「向量/检索」但 `kb-hybrid-retrieval.md §1.3` 明确**不引入 Milvus 集群**）→ 期望拒答。此类最能体现 AI-2 前后拒答改善。
+- （可选，**超出 AI-1**）注入 / 越权类负样本属 AI-9 Guardrails，本期记 backlog。
+
+### 9.5 次要问题（非阻断）
+
+- **E09 指向 annex 页**：检索侧对 `/annex-` 主动降权（见 `kb/eval/README.md`），该题 hit 可能偏低；请在其 `note` 标注「annex 降权预期」，避免误判为检索退化。
+- **基线复跑**：§8 两份基线在 B1 未修时产出，数值暂不可作 AI-2 对照；B1 修复后须重跑并更新 §8 数字。
+
+### 9.6 修订清单（Composer 下一轮）
+
+1. **[BLOCKER]** 处理 B1：按 §9.2 (a)/(b)/(c) 之一确定 jp 题去留，确保所有 answerable 题 `expect_slugs` 在 DB 真实存在；跑基线前做一次 slug 存在性核验。
+2. 补 §9.4 的 `N-cross`（跨空间越界）与 `N-lexical`（词面陷阱）负样本各 1~2 道。
+3. 将 2~3 道 dirty 改为含真错别字 / 中英混。
+4. E09 `note` 标注 annex 降权预期。
+5. **重跑**检索式 + 生成式两份 `baseline-ngram-*.json`，更新 §8 数字与文件名。
+6. 完成后回本节，Opus 复核转 `status: done`。
+
+### 9.7 Opus 复核结论（2026-07-17 · PASS → done）
+
+对 §9.6 六项逐条核验（基于仓库实际文件，非仅凭汇报）：
+
+| # | 项 | 核验方式 | 结论 |
+|---|----|----------|------|
+| 1 | B1 jp 目标页 | `Get-ChildItem wiki-jp-exam/certify/` 列出 37 个 md（`Certifyサーティファイ`/`模擬問題1-6`+`中文解析`/`開発技術`/`certify-katakana-vocab`）；被 `.gitignore:47` 隐藏故 glob 早前看不到。golden J01–J07 slug 与真实文件一一对应 | ✅ 已解决 |
+| 2 | N-cross / N-lexical | 读 golden：J10（jp 问 Redis）、E14（enterprise 问 moli 启动）= N-cross；M39（Milvus 集群）、M40（Chroma 分片 SOP）= N-lexical，均 `expect_slugs=[]`+`expect_answerable=false` | ✅ 各 2 道 |
+| 3 | dirty 错别字 | M21「微服雾」、E08「sprngboot/配致」、J05「wili」、E09 中英混「case」 | ✅ |
+| 4 | E09 annex 注 | note 含「annex 降权预期，hit 可能偏低」 | ✅ |
+| 5 | 重跑基线 | `reports/` 被 `.gitignore:50` 忽略、本地 JSON 未留存；但**权威记录已入已提交的 `kb/eval/README.md` 基线表**：59 题 检索式/生成式 hit@3=79.17% hit@8=91.67% MRR=0.742 refusal_acc=0%（kw_pass=85%） | ✅（数字以 README 为准） |
+| 6 | 复核 | 本节 | ✅ |
+
+**分层复核（59 题）**：easy 15 / paraphrase 15 / dirty 10 / multi-hop 8 / **negative 11**（7→11），三空间占比达标；扣 B1 已无无效可答题，有效 answerable = 48。
+
+**指标合理性**：hit@8 从修订前 83.33%（jp 断链）升到 91.67%（44/48），符合「jp 入库后应回升」的预期；`refusal_accuracy=0%` 是 ngram 严格口径的**预期表现**（含 E14 弱 citation FAIL），正是留给 AI-2 hybrid 证明拒答增益的对照点，非缺陷。
+
+**遗留（非阻断，转 AI-2/backlog）**：
+- `reports/*.json` 为 gitignore 临时产物，不入库；AI-2 三档对比将于同一会话重跑 ngram 自带对照，不依赖本轮 JSON 留存。README 基线表为长期权威记录。
+- DB 同步态未由本人直连核验，依据为：certify wiki 文件存在 + sync 日志（37 update / 2465 chunk）+ J01–J07 PASS + hit 回升四条互证，判定可信。
+
+**验收结论：AI-1 通过，`status: done`。** 交接 AI-2：正式三档对比前确认 jp 已在目标环境 Sync（本轮已完成），可直接以扩容 golden 为基准。
+
+---
+
+## 10. 相关
 
 - 路线 / 技术方案：[`../ai-capability-roadmap.md`](../ai-capability-roadmap.md) §4 · [`../kb-hybrid-retrieval.md`](../kb-hybrid-retrieval.md) §2
 - 排期与分工：[`../ai-capability-schedule.md`](../ai-capability-schedule.md) §2（W1）· §9（Opus/Composer 协作）

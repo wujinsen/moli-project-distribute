@@ -27,7 +27,7 @@
 
 - **サービス間はすべて Dubbo**：高性能なバイナリ RPC で HTTP 非公開のため、内部 API が外部から直接呼ばれるリスクを回避。
   - プロバイダ：ユーザーセンター `UserServerProvider`（`@DubboService(version="1.0.0", group="moli")`）。
-  - コンシューマ：`order-server` / `bi-server` は `ShiroConfig` で `@DubboReference` し、`ShiroRealm` へ注入してログイン認証。
+  - コンシューマ：`order-server` / `ai-server` は `ShiroConfig` で `@DubboReference` し、`ShiroRealm` へ注入してログイン認証。
   - レジストリ：Dubbo は `spring-cloud://` で Nacos に登録し、Spring Cloud と共用。
 - **外部トラフィックは HTTP/REST**：ブラウザ/`meiling-ui` → ゲートウェイ → 各サービス Controller、統一 `MoliResult<T>` レスポンス。
 - 備考：初期サンプルの OpenFeign（`UserCenterClient`）は、内部呼び出しのために REST を公開しないよう削除。詳細は `docs/ja/ARCHITECTURE.md`。
@@ -103,7 +103,7 @@
 | moli-user-center-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro、Redis、MinIO |
 | moli-user-center-client | Nacos Discovery、Spring Cloud Dubbo、`UserCenterServer` 契約、Shiro 統合 |
 | moli-order-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro（client モジュール） |
-| moli-ai-server | Nacos、Dubbo、Shiro（client モジュール）；アプリ名 `bi-server` |
+| moli-ai-server | Nacos、Dubbo、Shiro（client モジュール）；アプリ名 `ai-server` |
 
 ---
 

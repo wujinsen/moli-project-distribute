@@ -16,7 +16,7 @@
 |----------|----------|------|
 | `/UserCenter/**` | `user-center-server` | StripPrefix=1 |
 | `/OrderServer/**` | `order-server` | StripPrefix=1 |
-| `/BiServer/**` | `bi-server` | StripPrefix=1 |
+| `/AiServer/**` | `ai-server` | StripPrefix=1 |
 | `/KnowledgeServer/**` | `knowledge-server` | StripPrefix=1 |
 
 完整说明：[docs/api/gateway-routes.md](../docs/api/gateway-routes.md)

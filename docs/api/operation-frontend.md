@@ -565,7 +565,7 @@ export type OperationStats = {
 | user-center | 8888 | user-center, moli-user-center, user-center-server, **moli-server** |
 | order | 8087 | order, moli-order |
 | knowledge | 8090 | knowledge, moli-knowledge, knowledge-server |
-| bi | 1128 | bi, moli-bi |
+| bi | 1128 | bi, moli-ai |
 | nacos | 8848 | nacos |
 | mysql | 3306 | mysql |
 | redis | 6379 | redis |
@@ -687,7 +687,7 @@ export type OperationDeployPresets = {
 
 ## 13. Phase R 改造 · 前端必改（2026-07-11）
 
-> **2026-07-13 后端追加**：[`operation-backend-handoff.md`](operation-backend-handoff.md)（create 返回 id · links 已验收 · order/bi 脚本）
+> **2026-07-13 后端追加**：[`operation-backend-handoff.md`](operation-backend-handoff.md)（create 返回 id · links 已验收 · order/ai 脚本）
 
 ### 13.0 Breaking · `POST` create 返回 id（2026-07-13）
 

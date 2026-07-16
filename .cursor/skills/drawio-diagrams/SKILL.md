@@ -86,7 +86,7 @@ style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft
 
 ## 项目架构事实（画图必须对齐）
 
-- 对外 HTTP 仅 **`moli-gateway :21000`**，前缀 `/UserCenter` `/OrderServer` `/BiServer` `/KnowledgeServer`（StripPrefix=1）
+- 对外 HTTP 仅 **`moli-gateway :21000`**，前缀 `/UserCenter` `/OrderServer` `/AiServer` `/KnowledgeServer`（StripPrefix=1）
 - 服务：`user-center :8888`，`order :8087`，`bi :1128`，`knowledge :8090`
 - 鉴权：`Authorization` = Shiro SessionId，Redis **db=2**；服务间 **Dubbo**（非 OpenFeign）
 - 知识库：markdown 唯一写入源 `kb/wiki*`，`sync_to_db.py` 单向同步 MySQL；三空间 `enterprise-kb` / `jp-fe-ap-exam` / `moli-ops-manual`

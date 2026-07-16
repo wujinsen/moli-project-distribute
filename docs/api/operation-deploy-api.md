@@ -56,9 +56,9 @@ ops:
       - key: order
         label: 订单服务
         aliases: [order, moli-order]
-      - key: bi
-        label: BI 服务
-        aliases: [bi, moli-bi]
+      - key: ai
+        label: AI 服务
+        aliases: [bi, moli-ai]
   health:
     probe-enabled: ${OPS_HEALTH_PROBE_ENABLED:false}
     probe-cron: ${OPS_HEALTH_PROBE_CRON:0 */15 * * * ?}
@@ -74,7 +74,7 @@ ops:
     default-work-dir: ${OPS_COMMAND_DEFAULT_WORK_DIR:/opt/moli-project-distribute}
 ```
 
-**serviceKey 说明**：`order` / `bi` 与端口矩阵别名一致，会出现在 `GET .../presets` 的 `serviceKeys`；远程启停依赖目标机 `deploy/linux/moli-service.sh`（已支持 `user-center` · `gateway` · `knowledge` · **`order`** · **`bi`**）。
+**serviceKey 说明**：`order` / `ai` 与端口矩阵别名一致，会出现在 `GET .../presets` 的 `serviceKeys`；远程启停依赖目标机 `deploy/linux/moli-service.sh`（已支持 `user-center` · `gateway` · `knowledge` · **`order`** · **`ai`**）。
 
 | 开关 | 影响 |
 |------|------|

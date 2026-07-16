@@ -18,7 +18,7 @@
 |---|------|------|
 | R1 | `GET /OrderServer/seckill/ping` | 200，`pong:true` |
 | R2 | `POST /UserCenter/login` | 200，含 `token` |
-| R3 | `GET /BiServer/demo/test` | body `test success` |
+| R3 | `GET /AiServer/demo/test` | body `test success` |
 | R4 | `GET /KnowledgeServer/kb/index?spaceId=900000000000000001` | 200，groups |
 
 ---

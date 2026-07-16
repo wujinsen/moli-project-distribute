@@ -31,7 +31,7 @@
 | **S-VO** | 三管理页去掉 links 水合 |
 | **DC-2** / **DC-3** | 部署中心项目优先 · 追加台账机 |
 | **S-ERR-1** | 10101–10109 i18n Toast |
-| **S-DEPLOY-1** | order/bi 项目名映射 |
+| **S-DEPLOY-1** | order/ai 项目名映射 |
 | **W7–W10** | server create id · batch deploy · upload · task cancel |
 
 **联合走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)

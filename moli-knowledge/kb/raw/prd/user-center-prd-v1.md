@@ -43,7 +43,7 @@
 
 - 登录返回 `token`、`user`、`permissions`（或门户模式下先返回 `systemList`）
 - 未登录访问受保护接口 → JSON「token 失效」
-- order/bi 使用同一 token 可访问（共享 Redis）
+- order/ai 使用同一 token 可访问（共享 Redis）
 
 ### 3.2 RBAC 管理（P0）
 
@@ -75,7 +75,7 @@
 ### 3.4 Dubbo 对外能力（P0）
 
 - `getInfoByUserName` / `getUserById` / `getPermissionsByUserId`
-- 消费方：order-server、bi-server、knowledge-server（via shiro-starter）
+- 消费方：order-server、ai-server、knowledge-server（via shiro-starter）
 
 ### 3.5 审计（P1）
 

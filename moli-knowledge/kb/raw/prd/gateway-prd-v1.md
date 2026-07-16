@@ -24,7 +24,7 @@
 
 - `/UserCenter/**` → user-center-server
 - `/OrderServer/**` → order-server
-- `/BiServer/**` → bi-server
+- `/AiServer/**` → ai-server
 - `/KnowledgeServer/**` → knowledge-server
 
 每条路由 StripPrefix=1，下游收到无前缀路径。

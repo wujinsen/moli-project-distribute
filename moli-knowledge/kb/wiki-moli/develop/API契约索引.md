@@ -34,7 +34,7 @@ updated: 2026-07-05
 | 用户中心 HTTP | `docs/api/user-center-api-map.md` |
 | 用户中心 Dubbo | `docs/api/user-center-dubbo.md` |
 | 订单秒杀 | `docs/api/order-seckill-api.md` |
-| BI | `docs/api/bi-api.md` |
+| BI | `docs/api/ai-api.md` |
 | 知识库 REST | `docs/api/KNOWLEDGE_API.md` |
 
 ## 知识库工作台（前端）
@@ -49,7 +49,7 @@ updated: 2026-07-05
 
 ## 调试
 
-- 经网关：`http://127.0.0.1:21000/{UserCenter|OrderServer|BiServer|KnowledgeServer}/...`
+- 经网关：`http://127.0.0.1:21000/{UserCenter|OrderServer|AiServer|KnowledgeServer}/...`
 - 详见 [[swagger接口调试指南]]
 
 ## 相关

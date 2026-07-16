@@ -40,8 +40,8 @@ public final class OperationDeployServiceCatalog {
                         "knowledge", "moli-knowledge", "knowledge-server"),
                 entry("order", "订单服务",
                         "order", "moli-order", "order-server"),
-                entry("bi", "BI 服务",
-                        "bi", "moli-bi", "bi-server")
+                entry("ai", "AI 服务",
+                        "ai", "moli-ai", "ai-server")
         );
     }
 

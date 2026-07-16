@@ -10,7 +10,7 @@
 #   moli-gateway/
 #   moli-knowledge/
 #   moli-order/
-#   moli-ai/          (BI · artifact moli-ai-server)
+#   moli-ai/          (AI · artifact moli-ai-server)
 #   deploy/linux/moli-service.sh
 #
 # 用法:
@@ -18,7 +18,7 @@
 #   ./deploy/linux/moli-service.sh gateway status
 #   ./deploy/linux/moli-service.sh knowledge logs 200
 #   ./deploy/linux/moli-service.sh order restart
-#   ./deploy/linux/moli-service.sh bi status
+#   ./deploy/linux/moli-service.sh ai status
 
 set -u
 
@@ -34,28 +34,28 @@ declare -A SVC_MODULE=(
   [gateway]="moli-gateway"
   [knowledge]="moli-knowledge"
   [order]="moli-order"
-  [bi]="moli-ai"
+  [ai]="moli-ai"
 )
 declare -A SVC_APP_NAME=(
   [user-center]="user-center-server"
   [gateway]="moli-gateway"
   [knowledge]="knowledge-server"
   [order]="order-server"
-  [bi]="bi-server"
+  [ai]="ai-server"
 )
 declare -A SVC_JAR_PREFIX=(
   [user-center]="moli-user-center-server"
   [gateway]="moli-gateway"
   [knowledge]="moli-knowledge-server"
   [order]="moli-order-server"
-  [bi]="moli-ai-server"
+  [ai]="moli-ai-server"
 )
 declare -A SVC_PID_NAME=(
   [user-center]="user-center"
   [gateway]="gateway"
   [knowledge]="knowledge"
   [order]="order"
-  [bi]="bi"
+  [ai]="bi"
 )
 # 方式 A（整仓 git pull）：JAR 在 Maven target 子目录
 declare -A SVC_MAVEN_TARGET=(
@@ -63,12 +63,12 @@ declare -A SVC_MAVEN_TARGET=(
   [gateway]="target"
   [knowledge]="moli-knowledge-server/target"
   [order]="moli-order-server/target"
-  [bi]="moli-ai-server/target"
+  [ai]="moli-ai-server/target"
 )
 
 if [[ -z "$SERVICE_KEY" || -z "${SVC_MODULE[$SERVICE_KEY]:-}" ]]; then
   cat <<EOF
-Usage: $0 {user-center|gateway|knowledge|order|bi} {start|stop|restart|status|logs [lines]}
+Usage: $0 {user-center|gateway|knowledge|order|ai} {start|stop|restart|status|logs [lines]}
 
 Deploy root: ${MOLI_DEPLOY_ROOT}
 Env:  \${APP_HOME}/conf/moli-<service>.env  (see deploy/linux/moli-*.env.example)

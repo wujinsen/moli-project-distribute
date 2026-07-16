@@ -53,7 +53,7 @@ cd D:\work\moli_project\moli-project-distribute
 1. Nacos、MySQL、Redis
 2. user-center-server     (:8888)
 3. order-server           (:8087)
-4. bi-server              (:1128)    # 可选
+4. ai-server              (:1128)    # 可选
 5. knowledge-server       (:8090)
 6. moli-gateway           (:21000)   # 最后
 7. meiling-ui 静态 / Nginx 反代      # 若有

@@ -291,7 +291,7 @@ public MoliResult delete(@PathVariable Long[] userIds) { ... }
 
 > 可编辑源文件：[moli-user-center-position.drawio](../diagrams/moli-user-center-position.drawio)
 
-其他微服务（如 `moli-order`、`moli-bi`）通过 **`moli-user-center-shiro-starter`** 集成会话校验与 Dubbo：
+其他微服务（如 `moli-order`、`moli-ai`）通过 **`moli-user-center-shiro-starter`** 集成会话校验与 Dubbo：
 
 <details>
 <summary>ASCII 备查（跨服务交互简图）</summary>

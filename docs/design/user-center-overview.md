@@ -1,6 +1,6 @@
 # 用户中心 · 概要设计
 
-> 模块：`moli-user-center` · 更新：2026-06-25  
+> 模块：`moli-user-center` · 更新：2026-07-13  
 > 详细设计：[`user-center-detailed-design.md`](user-center-detailed-design.md)  
 > 跨服务全链路：[`../zh-CN/ARCHITECTURE.md`](../zh-CN/ARCHITECTURE.md)
 
@@ -56,16 +56,22 @@ meiling-ui ──HTTP──► gateway:21000/UserCenter/** ──► user-center
 
 ### 3.3 门户子系统
 
-- 表：`sys_system`、`sys_user_system`
-- `SysSystemService`：登录上下文、enter/switch、INTERNAL 菜单过滤
-- 分组常量：[`SystemGroupConstant`](../../moli-distribute-common/src/main/java/com/moli/common/constant/SystemGroupConstant.java) — 见 [`portal-system-group.md`](portal-system-group.md)
+- 表：`sys_system`、`sys_user_system`、`sys_menu.system_id`（SSO-MENU-1）
+- `SysSystemService`：登录上下文、enter/switch、**按系统过滤**运行时菜单
+- 分组常量：[`SystemGroupConstant`](../../moli-distribute-common/src/main/java/com/moli/common/constant/SystemGroupConstant.java) — 见 [`portal-system-group.md`](portal-system-group.md) · [`sso-menu-system-isolation.md`](sso-menu-system-isolation.md)
 
-### 3.4 对外 RPC
+### 3.4 运营管理子系统（2026-07）
+
+- 包：`operation/` · 表 `operation_*` · API `/operation/*`
+- 四台账 + 部署中心 + 拓扑/关系 + 任务历史（含 DC-4 分组）
+- 详见 [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md) · [operation-server-ops-prd.md](../product/operation-server-ops-prd.md)
+
+### 3.5 对外 RPC
 
 - `UserServerProvider` 实现 `UserCenterServer`
 - 注册：`@DubboService(version="1.0.0", group="moli")`
 
-### 3.5 审计
+### 3.6 审计
 
 - `LogAspect` + `@MoliLog` → `sys_operation_log`
 - 登录成功/失败 → `sys_login_log`
@@ -99,6 +105,8 @@ meiling-ui ──HTTP──► gateway:21000/UserCenter/** ──► user-center
 | 文档 | 内容 |
 |------|------|
 | [`user-center-detailed-design.md`](user-center-detailed-design.md) | 类职责、关键流程、配置项 |
+| [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md) | 运营管理路线图 |
+| [`sso-menu-system-isolation.md`](sso-menu-system-isolation.md) | SSO-MENU-1 设计 |
 | [`USER_CENTER_SCHEMA.md`](../sql/USER_CENTER_SCHEMA.md) | 表结构 |
 | [`user-center-api-map.md`](../api/user-center-api-map.md) | HTTP 接口 |
 | [`user-center-dubbo.md`](../api/user-center-dubbo.md) | Dubbo 契约 |

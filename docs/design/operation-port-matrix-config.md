@@ -216,7 +216,7 @@ normalize(name) = trim(name).toLowerCase().replace('_', '-')
 | user-center | 用户中心 | 8888 | user-center, moli-user-center, user-center-server, moli-server |
 | order | 订单服务 | 8087 | order, moli-order |
 | knowledge | 知识库 | 8090 | knowledge, moli-knowledge, knowledge-server |
-| bi | BI 服务 | 1128 | bi, moli-bi |
+| bi | AI 服务 | 1128 | bi, moli-ai |
 | nacos | Nacos | 8848 | nacos |
 | mysql | MySQL | 3306 | mysql |
 | redis | Redis | 6379 | redis |

@@ -52,7 +52,7 @@
 | DEP-4 | deploy 开关关闭 | `ops.deploy.enabled=false` 时点 restart | 错误：部署变更动作未启用 |
 | DEP-5 | 非法 serviceKey | `POST .../moli-order/restart/task` | 不支持的 serviceKey |
 | DEP-6 | 脚本自动就位 | 远端删除 `moli-service.sh` 后执行 restart | 任务日志显示脚本上传 + chmod；随后执行成功 |
-| DEP-7 | 三件套白名单 | gateway / knowledge start-stop-restart | 均可创建任务；order/bi 应拒绝 |
+| DEP-7 | 三件套白名单 | gateway / knowledge start-stop-restart | 均可创建任务；order/ai 应拒绝 |
 
 ---
 

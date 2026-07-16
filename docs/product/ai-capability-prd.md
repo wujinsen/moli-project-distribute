@@ -19,7 +19,7 @@
 |------|------|----------|
 | 检索只有 MySQL ngram 全文，无语义/向量召回 | 换个说法、口语化、错别字的问题召回不稳 | "明明知识库里有，却问不出来" |
 | `/kb/ask` 单轮 retrieve→answer | 跨页、多跳、需要拆解的问题答不全 | "复杂问题只能拆成好几次问" |
-| `moli-ai-server`（服务名 bi-server）是占位骨架 | 平台空有 order/user 业务库，却不能用自然语言查 | "看数要么等报表、要么找开发写 SQL" |
+| `moli-ai-server`（服务名 ai-server）是占位骨架 | 平台空有 order/user 业务库，却不能用自然语言查 | "看数要么等报表、要么找开发写 SQL" |
 
 ### 1.2 产品定义
 
@@ -83,7 +83,7 @@
 
 | ID | 需求 | 用户价值 | 验收要点 |
 |----|------|----------|----------|
-| **AI-4** | ChatBI / NL2SQL Agent（bi-server 0→1） | 业务自助查数，不等报表、不找开发 | 端到端 Demo 走通 `/BiServer/**`；NL2SQL 测试集执行正确率 ≥80%；**只读账号 + SQL 白名单，危险 SQL 拦截 100%**；结果含图表 + 自然语言解读 |
+| **AI-4** | ChatBI / NL2SQL Agent（ai-server 0→1） | 业务自助查数，不等报表、不找开发 | 端到端 Demo 走通 `/AiServer/**`；NL2SQL 测试集执行正确率 ≥80%；**只读账号 + SQL 白名单，危险 SQL 拦截 100%**；结果含图表 + 自然语言解读 |
 
 ### P1 — v1.3 差异化检索
 
@@ -109,7 +109,7 @@
 |--------|------|
 | **知识库问答（/kb/ask）** | AI-2/5/7 升级其召回与编排；对外 API 兼容，新增能力以开关控制 |
 | **知识库内容管道运维（KBOPS）** | AI-3 评测看板并入 `KbOpsService`；与 Sync/Lint 看板同域 |
-| **BI 模块（v1 骨架）** | AI-4 把占位 bi-server 升级为 ChatBI，路由 `/BiServer/**` 不变 |
+| **BI 模块（v1 骨架）** | AI-4 把占位 ai-server 升级为 ChatBI，路由 `/AiServer/**` 不变 |
 | **平台 LLM 配置（T19）** | AI-4/8 复用"DB 优先 + yaml 兜底"的 LLM 配置与调用日志模式 |
 | **Ingest 工作台** | AI-10 报告产物走现有 Ingest → wiki → Sync 链路 |
 
@@ -121,8 +121,8 @@
 
 | 权限码 | 用途 | 备注 |
 |--------|------|------|
-| `bi:chat:query` | ChatBI 提问 | AI-4 新增；绑定只读数据域 |
-| `bi:chat:trace` | 查看 ChatBI 决策/SQL 链路 | AI-4 新增 |
+| `ai:chat:query` | ChatBI 提问 | AI-4 新增；绑定只读数据域 |
+| `ai:chat:trace` | 查看 ChatBI 决策/SQL 链路 | AI-4 新增 |
 | `kb:eval:run` | 触发/查看评测 | AI-3；管理员 |
 | `kb:ask` | 知识库问答 | 已有，AI-2/5/7 沿用 |
 | 空间 ACL | 检索/图谱结果按空间过滤 | 已有，MCP（AI-6）继承 |
@@ -164,8 +164,8 @@
 | 技术方案 · 混合检索 | `docs/design/kb-hybrid-retrieval.md` |
 | 技术方案 · ChatBI | `docs/design/bi-chatbi-nl2sql.md` |
 | 排期（Sprint 周计划） | `docs/design/ai-capability-schedule.md` |
-| 架构图 | `docs/diagrams/moli-kb-hybrid-retrieval.drawio` · `moli-bi-chatbi-flow.drawio` · `moli-ai-capability-roadmap.drawio` |
-| HTTP 契约 | `docs/api/KNOWLEDGE_API.md`（AI-2/3/5/7）· `docs/api/bi-api.md`（AI-4） |
+| 架构图 | `docs/diagrams/moli-kb-hybrid-retrieval.drawio` · `moli-ai-chatbi-flow.drawio` · `moli-ai-capability-roadmap.drawio` |
+| HTTP 契约 | `docs/api/KNOWLEDGE_API.md`（AI-2/3/5/7）· `docs/api/ai-api.md`（AI-4） |
 | 评测说明 | `moli-knowledge/kb/eval/README.md` |
 
 ---

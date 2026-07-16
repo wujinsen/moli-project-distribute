@@ -1,6 +1,6 @@
 # 知识库工作台 · 需求总览（现行版）
 
-> **本文是产品需求的导航页**（2026-06-27 对齐实现）。长篇正文在 wiki `guides/`，HTTP 契约在 `docs/api/`。  
+> **本文是产品需求的导航页**（2026-07-13 对齐实现）。长篇正文在 wiki `guides/`，HTTP 契约在 `docs/api/`。  
 > **若与旧文档冲突，以本页 + 下表「现行决策」为准。**  
 > **按文档操作入库 + 治理** → **[`docs/ops/knowledge-workbench-operations.md`](../ops/knowledge-workbench-operations.md)**
 
@@ -10,11 +10,11 @@
 
 | 产品线 | 菜单 | 产品方案 | 前端对接 | 后端状态 |
 |--------|------|----------|----------|----------|
-| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] · [双入口导入 PRD](knowledge-import-entry-prd.md) · **[T20 设计](../design/kb-import-entry-design.md)** · [wujinsen 图片回迁 T22](wujinsen-wiki-image-remediation-prd.md) | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) | T15+T18+T19 ✅；**T20 🔵 设计已定** |
-| **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [knowledge-workbench-frontend.md](../api/knowledge-workbench-frontend.md) · [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g ✅；**T16f 前端 🔵** |
+| **Ingest 入库** | Ingest 工作台 | [[Ingest工作台产品方案]] · [双入口导入 PRD](knowledge-import-entry-prd.md) · [T20 设计](../design/kb-import-entry-design.md) | [ingest-workbench-frontend.md](../api/ingest-workbench-frontend.md) · [kb-import-entry-frontend.md](../api/kb-import-entry-frontend.md) | T15+T18+T19+**T20f** ✅ |
+| **Wiki 治理** | Wiki 治理 | [[Wiki治理工作台产品方案]] | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) | T16a/e/g + **T16f** ✅ |
 | **单页编辑** | Wiki 编辑 | [[Wiki在线编辑与AI协助改稿]] | KNOWLEDGE_API §8.2–8.4 | T14 ✅ |
-| **健康体检** | 健康体检 | wiki-moli / 查询与体检指南 | KNOWLEDGE_API §4 | DB 快照，与治理分工 |
-| **内容管道运维（KBOPS）** | 健康体检 + Sync · Wiki 治理 · LLM 设置 | [knowledge-ops-prd.md](knowledge-ops-prd.md) | [knowledge-ops-frontend.md](../api/knowledge-ops-frontend.md) | 后端 KBOPS-1~5 📋；**O1–O4 / T16f / T19d** 🔵 |
+| **健康体检** | 健康体检 | wiki-moli / 查询与体检指南 | [knowledge-ops-frontend.md](../api/knowledge-ops-frontend.md) §3 | O1–O9 ✅ |
+| **内容管道运维（KBOPS）** | 健康体检 · Dashboard · LLM | [knowledge-ops-prd.md](knowledge-ops-prd.md) | 同上 §8 | KBOPS-1~10 ✅ · P3 Dashboard |
 
 **脚本 vs LLM 怎么选**：[`docs/test/knowledge-script-vs-llm-matrix.md`](../test/knowledge-script-vs-llm-matrix.md)
 
@@ -86,6 +86,7 @@
 
 | 日期 | 说明 |
 |------|------|
+| 2026-07-13 | T16f/T19d/T20f/KBOPS 前后端 ✅ · 产品线表对齐 |
 | 2026-07-09 | 新增 KBOPS 产品线 · [knowledge-ops-prd.md](knowledge-ops-prd.md) |
 | 2026-06-28 | 操作手册统一至 `docs/ops/knowledge-workbench-operations.md` |
 | 2026-06-27 | T16e/g：治理 script/AI/auto/merge-hint；Ingest 模板模式 + nextSteps + raw 门禁 |

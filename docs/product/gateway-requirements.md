@@ -28,7 +28,7 @@
 |------|------|------|
 | `/UserCenter/**` | `lb://user-center-server` | StripPrefix=1；下游收到 `/login` 等 |
 | `/OrderServer/**` | `lb://order-server` | 秒杀经网关可下单 |
-| `/BiServer/**` | `lb://bi-server` | `/demo/test` 200 |
+| `/AiServer/**` | `lb://ai-server` | `/demo/test` 200 |
 | `/KnowledgeServer/**` | `lb://knowledge-server` | `/kb/index` 200 |
 
 **契约**：[gateway-routes.md](../api/gateway-routes.md) · **冒烟**：[gateway-smoke.md](../test/gateway-smoke.md)

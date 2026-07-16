@@ -7,6 +7,39 @@
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-Hoxton.SR12-blue.svg)](https://spring.io/projects/spring-cloud)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
+[![RAG](https://img.shields.io/badge/RAG-Retrieval%2BLLM-8A2BE2.svg)](moli-knowledge/README.md)
+[![LLM](https://img.shields.io/badge/LLM-OpenAI%20Compatible-412991.svg)](moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/KbLlmClient.java)
+[![Agentic Coding](https://img.shields.io/badge/Agentic%20Coding-AGENTS%2BSkills-000000.svg)](AGENTS.md)
+[![Python](https://img.shields.io/badge/Python-KB%20Tooling-3776AB.svg)](moli-knowledge/kb/tools)
+
+> 🤖 **In one line**: an open-source system combining a **Spring Cloud microservices backend** with an **enterprise-grade LLM knowledge base** — production backend × RAG Q&A × retrieval evaluation × Agentic Coding.
+
+## ✨ AI Highlights (quick read)
+
+![Knowledge base architecture](docs/diagrams/png/moli-kb-architecture.png)
+
+| Capability | What's built |
+|------------|--------------|
+| 🔎 **RAG Q&A** | Chunk splitting → retrieval (`/kb/ask`) → **LLM generative answers with citations**; OpenAI-compatible client (DB config first + yaml fallback + call logging) |
+| 📊 **Retrieval eval** | `golden.jsonl` → **hit@k / MRR / coverage**, retrieval-only vs generative comparison |
+| 🧠 **LLM-Wiki governance** | Ingest / Lint / Enrich; knowledge "compiled once, kept fresh"; one-way incremental idempotent sync |
+| 🤝 **Agentic Coding** | Layered `AGENTS.md` rules + custom Cursor Skills (diagrams / SQL migration / KB ingest), a reusable AI dev workflow |
+| 🏗️ **Production backend** | Spring Cloud Alibaba (Nacos / Dubbo / Sentinel / Gateway) + Shiro distributed auth + GitHub Actions CI |
+
+**📈 Key metrics** (auto-filled by `kb/tools/fill_eval_metrics.py`):
+<!-- KB_METRICS:START -->
+hit@1 `66.7%` | hit@3 `100.0%` | hit@8 `100.0%` | MRR `0.833` | coverage `100.0%` | avg latency `0.47s` | `12` questions
+<!-- KB_METRICS:END -->
+
+**🎬 Demo**
+- Live demo: `<link after deploy>`
+- Demo GIF: `docs/portfolio/kb-demo.gif` `<to record>`
+- 30-sec local run (zero deps): `python moli-knowledge/kb/tools/serve.py` → http://127.0.0.1:8765
+
+**📄 One-pager**: see [PORTFOLIO.md](PORTFOLIO.md)
+
+---
+
 ## Introduction
 
 **Moli Microservices** (moli-project-distribute) is a distributed microservices sample built on **Spring Cloud + Spring Cloud Alibaba**. It covers API gateway, service discovery, configuration management, RPC/HTTP invocation, authentication & authorization, and data persistence.
@@ -38,7 +71,7 @@ moli-project-distribute/
 │   └── moli-user-center-server/  # Shiro, Dubbo Provider
 ├── moli-order/
 │   └── moli-order-server/
-├── moli-ai/                      # BI (Nacos: bi-server)
+├── moli-ai/                      # BI (Nacos: ai-server)
 │   └── moli-ai-server/
 ├── moli-knowledge/
 │   └── moli-knowledge-server/
@@ -54,7 +87,7 @@ moli-project-distribute/
 | moli-gateway | `moli-gateway` | 21000 | Unified API Gateway |
 | moli-user-center-server | `user-center-server` | **8888** | Users, roles, menus, dictionaries |
 | moli-order-server | `order-server` | 8087 | Orders (incl. seckill); Dubbo to user center |
-| moli-ai-server | `bi-server` | 1128 | BI skeleton (v1 placeholder) |
+| moli-ai-server | `ai-server` | 1128 | BI skeleton (v1 placeholder) |
 | moli-knowledge-server | `knowledge-server` | see module README | Knowledge base / Ingest / Ask |
 
 ### Gateway Routes
@@ -63,7 +96,7 @@ moli-project-distribute/
 |--------------|----------------|
 | `/UserCenter/**` | `lb://user-center-server` |
 | `/OrderServer/**` | `lb://order-server` |
-| `/BiServer/**` | `lb://bi-server` |
+| `/AiServer/**` | `lb://ai-server` |
 | `/KnowledgeServer/**` | `lb://knowledge-server` |
 
 > See [docs/api/gateway-routes.md](docs/api/gateway-routes.md).
@@ -160,7 +193,7 @@ Access via gateway:
 ```
 http://localhost:21000/UserCenter/...
 http://localhost:21000/OrderServer/...
-http://localhost:21000/BiServer/...
+http://localhost:21000/AiServer/...
 http://localhost:21000/KnowledgeServer/...
 ```
 

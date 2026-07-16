@@ -46,24 +46,34 @@
 | AI 改稿 | `POST /kb/wiki-moli/ai-revise` |
 | Enrich | `POST /kb/wiki-moli/enrich`（单页） |
 
-### 2.4 Wiki 治理（P0 后端 / P1 前端）
+### 2.4 Wiki 治理（P0 · 前后端 ✅）
 
 | 需求 | 验收 |
 |------|------|
 | 文件真值 Lint | `POST /kb/wiki-moli/lint-space` |
-| script / AI / auto-fix | 治理 API 全绿 |
+| script / AI / auto-fix | 治理 API + **T16f** Web 全按钮 |
 | merge-hint | dup 合并提示 |
-| **Web UI 全链路** | T16f 🔵 部分 |
+| **Web UI 全链路** | T16f ✅ · `kb:prd` |
 
-### 2.5 平台 LLM（P1）
+### 2.5 平台 LLM（P1 · ✅）
 
 | 需求 | 验收 |
 |------|------|
 | DB 存 Key | `kb_platform_llm_config` |
 | 管理 API | `GET/PUT/POST test` |
-| 前端设置页 | T19d 🔵 |
+| 前端设置页 | **T19d** ✅ |
 
-### 2.6 三空间（P0）
+### 2.6 内容管道运维 KBOPS（P1 · ✅）
+
+| 需求 | 验收 |
+|------|------|
+| Sync 失败可观测 O4 | `kb_sync_log.status=fail` + UI |
+| 体检工单 O5–O8 | 指派/批量/分页 |
+| 运维 Dashboard | `GET /kb/ops/dashboard` |
+
+详见 [knowledge-ops-prd.md](knowledge-ops-prd.md)。
+
+### 2.7 三空间（P0）
 
 | 空间 | 用途 |
 |------|------|

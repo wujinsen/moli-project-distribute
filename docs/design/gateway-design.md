@@ -31,7 +31,7 @@ Browser / k6
 moli-gateway :21000
      ├── /UserCenter/**    → user-center-server :8888
      ├── /OrderServer/**   → order-server :8087
-     ├── /BiServer/**      → bi-server :1128
+     ├── /AiServer/**      → ai-server :1128
      └── /KnowledgeServer/** → knowledge-server :8090
 ```
 

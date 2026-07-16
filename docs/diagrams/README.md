@@ -28,7 +28,7 @@
 | [`moli-kb-meilisearch.drawio`](moli-kb-meilisearch.drawio) | **Meilisearch 接入规划**：索引轨（sync→reindex）+ 查询轨（ACL filter + 体裁/分类 facet） |
 | [`moli-ai-capability-roadmap.drawio`](moli-ai-capability-roadmap.drawio) | **AI 能力升级四波路线**：AI-1~10（语义检索 / ChatBI / GraphRAG·MCP·Agentic / 可信前沿），设计见 `docs/design/ai-capability-roadmap.md` |
 | [`moli-kb-hybrid-retrieval.drawio`](moli-kb-hybrid-retrieval.drawio) | **混合检索架构 AI-2**：ngram + 向量双路 RRF 融合 + 可选 Rerank + 评测回归轨（设计见 `docs/design/kb-hybrid-retrieval.md`） |
-| [`moli-bi-chatbi-flow.drawio`](moli-bi-chatbi-flow.drawio) | **ChatBI / NL2SQL 调用链 AI-4**：Java 壳 AST 白名单+只读执行，Python sidecar 生成解读（设计见 `docs/design/bi-chatbi-nl2sql.md`） |
+| [`moli-ai-chatbi-flow.drawio`](moli-ai-chatbi-flow.drawio) | **ChatBI / NL2SQL 调用链 AI-4**：Java 壳 AST 白名单+只读执行，Python sidecar 生成解读（设计见 `docs/design/bi-chatbi-nl2sql.md`） |
 | [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：四路由 + StripPrefix + 端口 |
 | [`moli-rbac-model.drawio`](moli-rbac-model.drawio) | **RBAC 模型**：用户→角色→菜单/动作 + Shiro 运行时 |
 | [`moli-rbac-menu-query.drawio`](moli-rbac-menu-query.drawio) | **RBAC 菜单授权查询**：sys_user_role → MenuVo 树 · admin bypass |
@@ -122,14 +122,14 @@ docs/diagrams/png/moli-auth-layers.png
 docs/diagrams/png/moli-knowledge-sync.png
 docs/diagrams/png/moli-ai-capability-roadmap.png
 docs/diagrams/png/moli-kb-hybrid-retrieval.png
-docs/diagrams/png/moli-bi-chatbi-flow.png
+docs/diagrams/png/moli-ai-chatbi-flow.png
 ```
 
 在 [`docs/zh-CN/ARCHITECTURE.md`](../zh-CN/ARCHITECTURE.md) 可替换 Mermaid 为 PNG（按需）。
 
 ## 绘图约定（与项目一致）
 
-- **HTTP 对外**：仅经 `moli-gateway :21000`，路径前缀 `/UserCenter` `/OrderServer` `/BiServer` `/KnowledgeServer`
+- **HTTP 对外**：仅经 `moli-gateway :21000`，路径前缀 `/UserCenter` `/OrderServer` `/AiServer` `/KnowledgeServer`
 - **鉴权**：`Authorization` = Shiro SessionId，共享 Redis db=2
 - **服务间**：Dubbo → `user-center-server`（非 OpenFeign）
 - **知识库**：markdown 唯一写入源 `kb/wiki*`，Java 只读 MySQL

@@ -189,7 +189,7 @@
 |------|------|------|
 | **后端 API** | ✅ 主线完成 | 四台账、部署中心、端口矩阵、拓扑/关系读取层、component-links |
 | **后端增强** | ⬜ 可选 | `deploy_running` 全量远程化；relations 分实体权限 |
-| **后端 2026-07-13** | ✅ | `POST` project/component create 返回 `id`；`moli-service.sh` 扩展 order/bi |
+| **后端 2026-07-13** | ✅ | `POST` project/component create 返回 `id`；`moli-service.sh` 扩展 order/ai |
 | **前端 meiling-ui** | ✅ **主线 + P3** | W1–W10 · **DC-4** 分组 · 详 [`operation-frontend-handoff.md`](../api/operation-frontend-handoff.md) |
 | **共享部署** | ☐ 待运维 | `origin/ci/kb-sync-multi-space-gate` 已 push（`b4ac176a`/`755abd43`）；共享 `:8888` 待 install+重启 |
 | **联合验收** | ✅ W1–W10 | [operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md)；拓扑关系验收可选 |
@@ -230,7 +230,7 @@ SVR-13~20 功能已上线，但 **Schema 漂移、组件缺 `server_id`、定时
 | 项 | 说明 |
 |----|------|
 | `deploy_running` 本机回退 | `status-sync-mode=local` 时仍读本机 `moli-service.sh`；生产应 `ssh` |
-| order/bi 远程启停 | YAML/registry 已登记；目标机 `moli-service.sh` 待扩展 |
+| order/ai 远程启停 | YAML/registry 已登记；目标机 `moli-service.sh` 待扩展 |
 | Gateway 大文件上传 | 经网关上传 multipart 易 `Failed to fetch`；dev 宜 vite proxy → `:8888` |
 | `OperationHealthSupport` 抽取 | 重构计划中的可选收敛项 |
 

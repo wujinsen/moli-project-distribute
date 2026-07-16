@@ -113,7 +113,7 @@
 |----|------|
 | `OperationProjectLinkService` | 项目 N:N 读/写 + `syncLinks(projectId, serverIds, primaryServerId)` |
 | `OperationComponentLinkService` | 组件 N:N（对称） |
-| `OperationProjectServiceImpl` | create/update 后调用 `syncLinks`；`toVo` 回填 `serverIds` |
+| `OperationProjectServiceImpl` | create/update 后 `syncLinks`；**`toVo`** 回填 `serverIds` + `serverCount`/`componentCount`（同源派生） |
 | `OperationComponentServiceImpl` | 同上 |
 | `OperationServerCascadeSupport` | 删项目/组件/服务器时清理 N:N 行 |
 
@@ -136,7 +136,7 @@
 | **S6-b-3** | 列表列 | 主服务器 `名称 · IP` + `+N`；点击主标签查看详情 | ✅ |
 | **S6-b-4** | 部署操作 | 启停/status 仍用 **主** `serverId`；多机关联仅台账展示 | ✅ |
 
-**列表数据补全**：列表接口可能只带主 `serverId`；前端 `enrichRowsWithLinks` 对每行补拉 `GET .../links`。若 links 返回空数组 `[]`，应清空行内 `serverIds`/`serverId` 展示（避免取消关联后仍显示旧缓存）。
+**列表 `serverIds` / `*Count`**：凡 `toVo()` 出口（list 行、`GET /{id}`、check 返回 VO）字段一致；**`serverCount === serverIds.length`**。前端 chips 用 `row.serverCount`；`enrichRowsWithLinks` **仅**关联弹窗 GET/PUT，见 [operation-frontend-handoff.md](../api/operation-frontend-handoff.md) §0–§2。
 
 TypeScript 类型扩展：
 
@@ -169,7 +169,7 @@ export type OperationComponent = {
 |---|------|------|
 | L1 | 新建项目，`serverIds: [201,202]` | 主表 `server_id=201`；N:N 两行 |
 | L2 | 更新项目，改 `serverIds` | N:N 全量替换 |
-| L3 | GET 详情 | `serverIds` 与库一致 |
+| L3 | GET 详情 | `serverIds`、`*Count` 与库一致；与 list 同行一致 |
 | L4 | 删项目 | N:N 级联删除 |
 | L5 | 组件 L1–L4 | 与项目对称 |
 | L6 | 仅 `serverId` 无 `serverIds` | N:N 一条，GET 回填 `[serverId]` |

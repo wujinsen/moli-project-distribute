@@ -56,9 +56,9 @@ ops:
       - key: order
         label: 订单服务
         aliases: [order, moli-order]
-      - key: bi
-        label: BI 服务
-        aliases: [bi, moli-bi]
+      - key: ai
+        label: AI 服务
+        aliases: [ai, moli-ai, ai-server]
   ssh:
     connect-timeout-ms: ${OPS_SSH_CONNECT_TIMEOUT_MS:5000}
     command-timeout-seconds: ${OPS_SSH_COMMAND_TIMEOUT:120}

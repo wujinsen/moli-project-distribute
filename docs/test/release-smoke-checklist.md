@@ -26,7 +26,7 @@
 | G1 | `GET /OrderServer/seckill/ping` | `pong: true` | |
 | G2 | `POST /UserCenter/login` admin/123456 | `code=200`，含 `token` | |
 | G3 | 带 `Authorization` 访问 `/UserCenter/user/list` | 有数据或空列表，非 token 失效 | |
-| G4 | `GET /BiServer/demo/test` | `test success` | |
+| G4 | `GET /AiServer/demo/test` | `test success` | |
 | G5 | `GET /KnowledgeServer/kb/index?spaceId=900000000000000001` | 目录 meta 返回 | |
 
 详见 [gateway-routes.md](../api/gateway-routes.md)。

@@ -24,8 +24,9 @@
 | 域 | 契约 | 状态 |
 |----|------|------|
 | 登录 / 会话 / RBAC | [user-center-api-map.md](user-center-api-map.md) | **v1 稳定** |
-| 门户 / SSO / 系统切换 | 同上 | **v1 稳定** |
-| 运维台账 + 部署中心 | [operation-deploy-api.md](operation-deploy-api.md) | **v1 稳定**（SVR-13~20） |
+| 门户 / SSO / 系统切换 | 同上 · [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) | **v1 稳定** · SSO-MENU-1 ✅ |
+| 运维台账 + 部署中心 | [operation-deploy-api.md](operation-deploy-api.md) | **稳定**（SVR-13~28 · W1–W10） |
+| 拓扑 / 关系 / 任务分组 | [operation-frontend.md](operation-frontend.md) · `GET /operation/task/groups` | **稳定**（DC-4 ✅） |
 | Dubbo 鉴权三方法 | [user-center-dubbo.md](user-center-dubbo.md) | **v1 稳定** |
 
 ## 订单 · `order-server` :8087
@@ -35,31 +36,32 @@
 | 秒杀 `/seckill/*` | [order-seckill-api.md](order-seckill-api.md) | **v1 稳定** |
 | 通用订单 CRUD | Swagger | **规划** |
 
-## BI · `bi-server` :1128（模块 `moli-ai`）
+## BI · `ai-server` :1128（模块 `moli-ai`）
 
 | 域 | 契约 | 状态 |
 |----|------|------|
-| `GET /demo/test` | [bi-api.md](bi-api.md) | **v1 骨架** |
+| `GET /demo/test` | [ai-api.md](ai-api.md) | **v1 骨架** |
 | 报表 / 大屏 | — | **规划** |
 
-## 知识库 · `knowledge-server`
+## 知识库 · `knowledge-server` :8090
 
 | 域 | 契约 | 状态 |
 |----|------|------|
 | 空间 / 文档 / 分类 / 标签 / 搜索 | [KNOWLEDGE_API.md](KNOWLEDGE_API.md) | **v1 稳定** |
-| 问答 Ask | 同上 | **v1 稳定** |
-| Ingest 工作台 | KNOWLEDGE_API + [ingest-workbench-frontend.md](ingest-workbench-frontend.md) | **工作台** |
-| Wiki 治理 | [wiki-govern-frontend.md](wiki-govern-frontend.md) | **工作台** |
-| 平台 LLM 配置 | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | **工作台** |
-| 前端路由总表 | [frontend-routes-map.md](frontend-routes-map.md) | **工作台** |
-| Raw / Wiki 插图 Asset（R0） | [kb-markdown-image-frontend.md](kb-markdown-image-frontend.md) · KNOWLEDGE_API §Asset | **v1 稳定**（T22） |
-| Wiki 编辑页上传（F2） | 同上 · `POST /kb/wiki/asset` | **v1 稳定**（T22） |
+| 问答 Ask（chunk 召回） | 同上 §3 | **稳定** |
+| Ingest 工作台（T20 Tab1/2/3） | KNOWLEDGE_API + [ingest-workbench-frontend.md](ingest-workbench-frontend.md) · [kb-import-entry-frontend.md](kb-import-entry-frontend.md) | **稳定** |
+| Wiki 治理 T16f | [wiki-govern-frontend.md](wiki-govern-frontend.md) | **稳定** |
+| 平台 LLM T19d | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) | **稳定** |
+| 内容管道运维 KBOPS | [knowledge-ops-frontend.md](knowledge-ops-frontend.md) · `GET /kb/ops/dashboard` | **稳定** |
+| Raw / Wiki 插图 Asset（T22） | [kb-markdown-image-frontend.md](kb-markdown-image-frontend.md) | **v1 稳定** |
+| 前端路由总表 | [frontend-routes-map.md](frontend-routes-map.md) | **稳定** |
 
 ## 前端 · meiling-ui
 
 | 域 | 契约 | 状态 |
 |----|------|------|
-| 菜单 ↔ API 映射 | [frontend-routes-map.md](frontend-routes-map.md) | **工作台**（随菜单演进） |
+| 菜单 ↔ API 映射 | [frontend-routes-map.md](frontend-routes-map.md) | **稳定** |
+| 运营 / KB / SSO 缺口 | [frontend-gaps.md](../frontend-gaps.md) | **索引** |
 
 ## 维护规则
 
@@ -71,3 +73,10 @@
 
 - [api/README.md](README.md) — 契约索引
 - [docs/README.md](../README.md) — 五类文档地图
+
+## 变更记录
+
+| 日期 | 说明 |
+|------|------|
+| 2026-07-13 | 运营拓扑/DC-4 · SSO-MENU-1 · KBOPS/T16f/T20f 状态对齐 |
+| 2026-06-28 | 初版 |

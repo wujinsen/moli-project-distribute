@@ -4,7 +4,7 @@
 
 > This document describes the tech stack, invocation patterns, and authentication for the full chain
 > "external request ↔ gateway ↔ service A ↔ service B".
-> Mapping: **Service A = order-server / bi-server** (business services), **Service B = user-center-server** (callee).
+> Mapping: **Service A = order-server / ai-server** (business services), **Service B = user-center-server** (callee).
 
 ---
 
@@ -28,7 +28,7 @@ meiling-ui (browser)
 moli-gateway :21000            Spring Cloud Gateway (routing / rate-limit / CORS)
    │  lb://<service>  +  StripPrefix=1
    ▼
-order-server / bi-server       Shiro authc validates the session (shared Redis session)
+order-server / ai-server       Shiro authc validates the session (shared Redis session)
    │  Dubbo RPC (version=1.0.0, group=moli)
    ▼
 user-center-server :8888       Dubbo Provider → business logic
@@ -46,7 +46,7 @@ Redis (shared session/cache)  /  MySQL (business & permission data)
 sequenceDiagram
     participant UI as meiling-ui
     participant GW as moli-gateway
-    participant A as order/bi-server (A)
+    participant A as order/ai-server (A)
     participant B as user-center-server (B)
     participant R as Redis
 
@@ -94,7 +94,7 @@ Unified entry `:21000`. Routes (`moli-gateway/application-dev.yml`):
 |-------------|--------|--------|
 | `/UserCenter/**` | `lb://user-center-server` | `StripPrefix=1` |
 | `/OrderServer/**` | `lb://order-server` | `StripPrefix=1` |
-| `/BiServer/**` | `lb://bi-server` | `StripPrefix=1` |
+| `/AiServer/**` | `lb://ai-server` | `StripPrefix=1` |
 
 `StripPrefix=1` removes the first segment, e.g. `/UserCenter/user/list` → `/user/list`.
 
@@ -143,7 +143,7 @@ public class ShiroConfig {
 | Content | Description |
 |---------|-------------|
 | `UserCenterServer` | Dubbo contract interface |
-| `shiro/*` | Reusable Shiro config for order/bi |
+| `shiro/*` | Reusable Shiro config for order/ai |
 | Dependencies | `spring-cloud-starter-dubbo`, `spring-context-support`, Nacos Discovery |
 | Excludes | OpenFeign, internal HTTP endpoints |
 
@@ -239,5 +239,5 @@ All services share the same Redis, so one sessionId works across user-center / o
 1. Nacos (`:8848`), Redis, MySQL
 2. `moli-gateway` (`:21000`)
 3. `user-center-server` (`:1127`, Dubbo `20881`)
-4. `order-server` (`:8087`, Dubbo `20882`), `bi-server` (`:1128`, Dubbo `20883`)
+4. `order-server` (`:8087`, Dubbo `20882`), `ai-server` (`:1128`, Dubbo `20883`)
 5. `meiling-ui` proxy → `http://localhost:21000/UserCenter`

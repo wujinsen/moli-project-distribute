@@ -15,16 +15,16 @@ created: 2026-06-22
 updated: 2026-06-22
 ---
 
-# BI 服务（bi-server）
+# AI 服务（ai-server）
 
 BI / 报表微服务**预留槽位**，当前为可启动的**骨架工程**，尚无真实报表或 OLAP 能力。
 
 | 项 | 值 |
 |----|----|
-| 服务名 | `bi-server` |
+| 服务名 | `ai-server` |
 | HTTP 端口 | **1128** |
 | Dubbo 端口 | **20883**（Consumer） |
-| 网关路由 | `/BiServer/**` → `lb://bi-server`，StripPrefix=1 |
+| 网关路由 | `/AiServer/**` → `lb://ai-server`，StripPrefix=1 |
 
 ## 已具备能力
 
@@ -43,7 +43,7 @@ BI / 报表微服务**预留槽位**，当前为可启动的**骨架工程**，�
 |------|------|------|
 | GET | `/demo/test` | 返回 `"test success"`，无需业务逻辑 |
 
-经网关：`GET http://localhost:21000/BiServer/demo/test`（需 `Authorization` token，除 anon 外）。
+经网关：`GET http://localhost:21000/AiServer/demo/test`（需 `Authorization` token，除 anon 外）。
 
 调试接口见 [[swagger接口调试指南]]（BI 暂无 Swagger，可用 curl）。
 
@@ -59,7 +59,7 @@ BI / 报表微服务**预留槽位**，当前为可启动的**骨架工程**，�
 ```mermaid
 flowchart LR
   Client --> GW[Gateway]
-  GW --> BI[bi-server 1128]
+  GW --> BI[ai-server 1128]
   BI --> Redis[(Redis Session)]
   BI --> Dubbo[Dubbo → user-center]
   BI -.->|规划| MySQL[(moli)]
@@ -77,7 +77,7 @@ flowchart LR
 | P2 | 字段级列权限 `moli-knowledge/kb/wiki/security/字段级数据权限设计.md` | 未实现 |
 | P3 | 全文/聚合检索 → ES [[知识库-meilisearch接入规划]] | 未部署 |
 
-压测 loadtest 路由含 BiServer，见 [[秒杀压测指南]]（profile 差异）。
+压测 loadtest 路由含 AiServer，见 [[秒杀压测指南]]（profile 差异）。
 
 ## 启动
 

@@ -26,7 +26,7 @@ public class OperationDeployServiceCatalogTest {
         assertEquals("gateway", OperationDeployServiceCatalog.resolveProjectName("moli-gateway"));
         assertEquals("knowledge", OperationDeployServiceCatalog.resolveProjectName("knowledge-server"));
         assertEquals("order", OperationDeployServiceCatalog.resolveProjectName("moli-order"));
-        assertEquals("bi", OperationDeployServiceCatalog.resolveProjectName("moli-bi"));
+        assertEquals("ai", OperationDeployServiceCatalog.resolveProjectName("moli-ai"));
     }
 
     @Test
@@ -46,17 +46,17 @@ public class OperationDeployServiceCatalogTest {
     }
 
     @Test
-    public void resolve_order_and_bi_aliases_when_configured() {
+    public void resolve_order_and_ai_aliases_when_configured() {
         OperationDeployServiceCatalog.install(Arrays.asList(
                 entry("user-center", "用户中心", "moli-server"),
                 entry("order", "订单", "order", "moli-order"),
-                entry("bi", "BI", "bi", "moli-bi")
+                entry("ai", "AI", "ai", "moli-ai")
         ));
 
         assertEquals("order", OperationDeployServiceCatalog.resolveProjectName("moli-order"));
-        assertEquals("bi", OperationDeployServiceCatalog.resolveProjectName("moli-bi"));
+        assertEquals("ai", OperationDeployServiceCatalog.resolveProjectName("moli-ai"));
         assertTrue(OperationDeployServiceCatalog.isKnownKey("order"));
-        assertTrue(OperationDeployServiceCatalog.isKnownKey("bi"));
+        assertTrue(OperationDeployServiceCatalog.isKnownKey("ai"));
     }
 
     private static OperationDeployServiceEntry entry(String key, String label, String... aliases) {

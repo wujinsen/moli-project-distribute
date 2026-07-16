@@ -1,4 +1,4 @@
-package com.moli.bi.server.controller;
+package com.moli.ai.server.controller;
 
 
 import io.swagger.annotations.Api;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/demo")
 @Api(tags = "demo")
-public class BiController {
+public class AiController {
 
     @GetMapping("/test")
     public String test(){

@@ -2,7 +2,7 @@
 
 > **权威 PRD 原文**：[`moli-knowledge/kb/raw/prd/user-center-prd-v1.md`](../../moli-knowledge/kb/raw/prd/user-center-prd-v1.md)  
 > **v1 发布范围**：[`moli-v1-release-scope.md`](moli-v1-release-scope.md) §3.1  
-> **模块**：`moli-user-center` · 服务名 `user-center-server` · 更新：2026-06-28
+> **模块**：`moli-user-center` · 服务名 `user-center-server` · 更新：2026-07-13
 
 本文是 **工程侧需求导航**（验收口径 + 文档链），不重复 PRD 全文。
 
@@ -58,7 +58,28 @@
 
 **设计**：[portal-system-group.md](../design/portal-system-group.md)
 
-### 2.4 Dubbo（P0）
+### 2.4 服务器运维（P1 · 2026-07 交付）
+
+| 需求 | 验收标准 |
+|------|----------|
+| 四台账 CRUD + AES 凭据 | 平台/服务器/项目/组件 API 全绿 |
+| 部署中心启停/上传/命令 | `operation-deploy-api.md` · W7–W10 走查 |
+| 拓扑与关系 | `GET /operation/topology` · RelationDrawer |
+| 任务历史分组 DC-4 | `GET /operation/task/groups` |
+
+**PRD**：[operation-server-ops-prd.md](operation-server-ops-prd.md) · **设计**：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md)
+
+### 2.5 SSO 菜单隔离（P1 · SSO-MENU-1 · 2026-07）
+
+| 需求 | 验收标准 |
+|------|----------|
+| `sys_menu.system_id` | 老库 SQL 30 或新基线 |
+| 运行时按系统过滤菜单 | enter/switch 后侧栏不串台 |
+| 知识库双入口 Q5 | 900 段 admin + EXTERNAL id=39 |
+
+**PRD**：[sso-menu-isolation-prd.md](sso-menu-isolation-prd.md) · **设计**：[sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md)
+
+### 2.6 Dubbo（P0）
 
 | 方法 | 用途 |
 |------|------|
@@ -68,11 +89,11 @@
 
 **契约**：[user-center-dubbo.md](../api/user-center-dubbo.md) · 端口 **20881**
 
-### 2.5 审计（P1）
+### 2.7 审计（P1）
 
 - 登录日志、操作日志（`@MoliLog` AOP）分页查询
 
-### 2.6 压测（P2 · loadtest profile）
+### 2.8 压测（P2 · loadtest profile）
 
 - `POST /loadtest/login` 批量签发 Session → 配合 [load-test](../../load-test/README.md)
 
@@ -108,7 +129,9 @@
 | M2 | 多系统门户 + SSO | ✅ |
 | M3 | 动作码 + capabilities | ✅ |
 | M4 | ApiTest + loadtest | ✅ |
-| M5 | OAuth / 多租户 | 📋 v2+ |
+| M5 | 运营管理 + 部署中心 | ✅ 2026-07 |
+| M6 | SSO 菜单按系统隔离 | ✅ 2026-07 |
+| M7 | OAuth / 多租户 | 📋 v2+ |
 
 ---
 

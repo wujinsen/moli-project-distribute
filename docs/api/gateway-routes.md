@@ -16,7 +16,7 @@
 |---------|----------|----------|--------------|-------------|
 | `user-center-route` | `/UserCenter/**` | user-center-server | `user-center-server` | **1** |
 | `order-route` | `/OrderServer/**` | order-server | `order-server` | **1** |
-| `bi-route` | `/BiServer/**` | bi-server | `bi-server` | **1** |
+| `ai-route` | `/AiServer/**` | ai-server | `ai-server` | **1** |
 | `knowledge-route` | `/KnowledgeServer/**` | knowledge-server | `knowledge-server` | **1** |
 
 **StripPrefix=1**：去掉第一段路径再转发。
@@ -37,7 +37,7 @@ VITE_API_BASE_URL = http://{host}:21000
 |------|----------|
 | 用户中心 | `{base}/UserCenter` |
 | 订单/秒杀 | `{base}/OrderServer` |
-| BI | `{base}/BiServer` |
+| BI | `{base}/AiServer` |
 | 知识库 | `{base}/KnowledgeServer` |
 
 ---
@@ -58,7 +58,7 @@ VITE_API_BASE_URL = http://{host}:21000
 |------|----------------------|
 | user-center | `http://localhost:21000/UserCenter/swagger-ui.html` |
 | order | `http://localhost:21000/OrderServer/swagger-ui.html` |
-| bi | `http://localhost:21000/BiServer/swagger-ui.html` |
+| bi | `http://localhost:21000/AiServer/swagger-ui.html` |
 | knowledge | `http://localhost:21000/KnowledgeServer/swagger-ui.html` |
 
 调试时在 Swagger **Authorize** 填入登录拿到的 token。
@@ -72,7 +72,7 @@ VITE_API_BASE_URL = http://{host}:21000
 | gateway | 21000 | — |
 | user-center-server | 8888 | 20881 |
 | order-server | 8087 | 20882 |
-| bi-server | 1128 | 20883 |
+| ai-server | 1128 | 20883 |
 | knowledge-server | 8090 | — |
 
 ---

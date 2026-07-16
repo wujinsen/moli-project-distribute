@@ -2,7 +2,7 @@
 
 > 更新：2026-07-16 · 状态：**规划确认，未开工**（AI-1 起步）
 > 归属：跨 **`moli-knowledge`**（检索/评测/网关）与 **`moli-ai`**（ChatBI 0→1）
-> 边界：只管 **AI 能力演进**（检索、Agent、评测、LLM 网关）；知识内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)；BI v1 骨架见 [`bi-module-overview.md`](bi-module-overview.md)
+> 边界：只管 **AI 能力演进**（检索、Agent、评测、LLM 网关）；知识内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)；BI v1 骨架见 [`ai-module-overview.md`](ai-module-overview.md)
 > 前置阅读：[`knowledge-module-overview.md`](knowledge-module-overview.md) · `moli-knowledge/kb/ROADMAP.md` §五（检索升级触发条件）
 
 ---
@@ -14,7 +14,7 @@
 
 1. **检索只有 MySQL ngram 全文**：无向量/语义召回、无 Hybrid、无 Rerank —— 语义改写类 query 召回不稳。
 2. **`/kb/ask` 是单轮 retrieve→answer**：无查询改写、多跳检索、答案自检 —— 复杂/跨页问题能力有限。
-3. **`moli-ai-server`（服务名 bi-server）是占位骨架**：只有 `BiApplication` + `BiController`，而平台里有 order/user 真实业务库可接。
+3. **`moli-ai-server`（服务名 ai-server）是占位骨架**：只有 `AiApplication` + `AiController`，而平台里有 order/user 真实业务库可接。
 
 ![AI 能力升级四波路线](../diagrams/png/moli-ai-capability-roadmap.png)
 
@@ -51,7 +51,7 @@
 | G2 | golden 仅 12 题，hit@3 100% 属小样本，不足以支撑检索改造的回归判断 | 改造效果无法可信度量 | AI-1 / AI-3 |
 | G3 | `/kb/ask` 单轮，无改写/多跳/自检 | 口语化、跨页、多跳问题效果差 | AI-7 |
 | G4 | 图谱关系未参与检索 | 既有 `kb_relation` 资产闲置 | AI-5 |
-| G5 | bi-server 空壳 | 平台缺「AI 接真实业务数据」场景 | AI-4 |
+| G5 | ai-server 空壳 | 平台缺「AI 接真实业务数据」场景 | AI-4 |
 | G6 | LLM 网关单 provider 直连，无路由/缓存/成本看板 | 成本与可用性不可控 | AI-8 |
 | G7 | 答案无 grounding 校验、输入无注入/PII 防护 | 企业级可信欠缺 | AI-9 |
 
@@ -64,7 +64,7 @@
 | **AI-1** | golden 评测集扩容（12 → 50~100 题，含脏 query 与拒答负样本） | 评测 | ★☆ | — | 🔜 第 1 波 |
 | **AI-2** | 向量检索 + Hybrid Search + Rerank | 检索 | ★★☆ | AI-1 | 🔜 第 1 波 |
 | **AI-3** | Eval 回归看板（评测结果落库 + `KbOpsService` 展示 + CI 门禁） | 评测 | ★★ | AI-1 | 🔜 第 1 波 |
-| **AI-4** | ChatBI / NL2SQL Agent（bi-server 0→1，接 order/user 真实库） | 应用 | ★★★★ | — | 🔵 第 2 波 |
+| **AI-4** | ChatBI / NL2SQL Agent（ai-server 0→1，接 order/user 真实库） | 应用 | ★★★★ | — | 🔵 第 2 波 |
 | **AI-5** | GraphRAG（检索时沿 `kb_relation` 扩 N 跳） | 检索 | ★★★☆ | AI-2 | 🔵 第 3 波 |
 | **AI-6** | 知识库 MCP Server（`kb.search` / `kb.ask` / `kb.graph` 工具） | 基建 | ★★ | — | 🔵 第 3 波 |
 | **AI-7** | Agentic RAG（查询改写 / 多跳 / 答案自检 / 引用校验） | 检索 | ★★★ | AI-2 | 🔵 第 3 波 |
@@ -103,14 +103,14 @@
 
 **交付物**：`docs/design/kb-hybrid-retrieval.md` 方案 + `docs/diagrams/moli-kb-hybrid-retrieval.drawio`（检索双轨架构图，按 `@drawio-diagrams` 出 PNG）+ `docs/api/KNOWLEDGE_API.md` 增量 + `wiki-moli/develop/` enrich。
 
-### 第 2 波 · bi-server 0→1：ChatBI / NL2SQL Agent（AI-4）
+### 第 2 波 · ai-server 0→1：ChatBI / NL2SQL Agent（AI-4）
 
 - 场景：自然语言 → 理解 order/user 库 schema → 生成 SQL → 校验 → 执行 → 结果 + 图表 + 解读。
 - 安全铁律：**只读账号 + SQL 白名单校验（AST 解析，禁 DML/DDL）+ 行数/超时限制 + 审计日志**；鉴权复用 Shiro（与 order 一致：session 由 user-center 签发）。
-- 架构：`bi-server`（Java 壳：API/鉴权/审计/结果缓存）+ Python Agent sidecar（LangGraph：schema 检索 → SQL 生成 → 自纠错重试 → 解读）；LLM 走 `KbLlmClient` 同款「DB 配置优先」模式或复用平台 LLM 配置表。
+- 架构：`ai-server`（Java 壳：API/鉴权/审计/结果缓存）+ Python Agent sidecar（LangGraph：schema 检索 → SQL 生成 → 自纠错重试 → 解读）；LLM 走 `KbLlmClient` 同款「DB 配置优先」模式或复用平台 LLM 配置表。
 - 评测：建 `bi/eval/nl2sql_testset.jsonl`（30 题：单表/联表/聚合/时间窗/应拒绝），指标 = SQL 执行正确率 + 拒答正确率。
-- 验收：网关 `/BiServer/**` 走通端到端 Demo；测试集执行正确率 ≥80%；危险 SQL 100% 拦截。
-- 交付物：`docs/design/bi-chatbi-nl2sql.md` + `docs/diagrams/moli-bi-chatbi-flow.drawio` + `docs/api/bi-api.md` 扩充 + `bi-module-overview.md` §6 状态回填。
+- 验收：网关 `/AiServer/**` 走通端到端 Demo；测试集执行正确率 ≥80%；危险 SQL 100% 拦截。
+- 交付物：`docs/design/bi-chatbi-nl2sql.md` + `docs/diagrams/moli-ai-chatbi-flow.drawio` + `docs/api/ai-api.md` 扩充 + `ai-module-overview.md` §6 状态回填。
 
 ### 第 3 波 · 差异化检索 + Agent 互操作（AI-5 / AI-6 / AI-7）
 
@@ -160,7 +160,7 @@
 | AI-1 评测扩容 | `moli-knowledge/kb/tools/` · `kb/eval/`（现有 Python） | 否 |
 | AI-2 向量+Hybrid+Rerank | `moli-knowledge-server`（Java 编排）+ **`moli-knowledge/kb-retrieval/`** | **新建 sidecar** |
 | AI-3 Eval 看板+门禁 | `moli-knowledge-server`（`KbOpsService`）+ `kb/tools` + 新表 `kb_eval_run` | 否 |
-| AI-4 ChatBI/NL2SQL | `moli-ai/moli-ai-server`（artifactId `moli-ai-server`，服务名 `bi-server`，Java 壳）+ **`moli-ai/moli-ai-server/bi-agent/`** | **新建 sidecar** |
+| AI-4 ChatBI/NL2SQL | `moli-ai/moli-ai-server`（artifactId `moli-ai-server`，服务名 `ai-server`，Java 壳）+ **`moli-ai/moli-ai-server/ai-agent/`** | **新建 sidecar** |
 | AI-5 GraphRAG | `moli-knowledge-server`（复用 `KbWikiGraphService`） | 否 |
 | AI-6 MCP Server | `moli-knowledge/` 下新增薄 `mcp/`（复用 REST + 鉴权） | 目录级 |
 | AI-7 Agentic RAG | `moli-knowledge-server` + `kb-retrieval` sidecar | 否 |
@@ -173,7 +173,7 @@
 | sidecar | 目录 | 职责 | 为何独立 |
 |---------|------|------|----------|
 | `kb-retrieval` | `moli-knowledge/kb-retrieval/` | embedding / 向量检索 / rerank | 服务知识检索；被 AI-2/5/7 与 ChatBI schema 检索复用 |
-| `bi-agent` | `moli-ai/moli-ai-server/bi-agent/` | schema 检索 / NL→SQL / 结果解读 | **会访问业务库、安全域不同**，不与知识检索混进同一进程 |
+| `ai-agent` | `moli-ai/moli-ai-server/ai-agent/` | schema 检索 / NL→SQL / 结果解读 | **会访问业务库、安全域不同**，不与知识检索混进同一进程 |
 
 > 两者可共用同一 bge 模型依赖库，但**独立部署**。Java 侧经 HTTP 调用；sidecar 无状态、可重启、故障时 Java 自动降级。
 
@@ -185,8 +185,8 @@ ChatBI（AI-4）与现有智能问答（`/kb/ask`）是**两条独立赛道**，
 
 | 维度 | 智能问答 `/kb/ask` | ChatBI `/bi/chat/ask` |
 |------|--------------------|------------------------|
-| 模块 | `moli-knowledge` | `moli-ai/moli-ai-server`（服务名 bi-server） |
-| 网关前缀 | `/KnowledgeServer` | `/BiServer` |
+| 模块 | `moli-knowledge` | `moli-ai/moli-ai-server`（服务名 ai-server） |
+| 网关前缀 | `/KnowledgeServer` | `/AiServer` |
 | 数据源 | **非结构化**：markdown wiki（`kb_document`/`kb_document_chunk`） | **结构化**：order/user 业务库 |
 | 技术 | RAG 检索 + LLM 带引用 | NL2SQL → 校验 → 只读执行 → 图表 |
 | 输出 | 带 `[[页slug]]` 引用的文字 | SQL + 数据表 + 图表 + 解读 |
@@ -219,7 +219,7 @@ ChatBI（AI-4）与现有智能问答（`/kb/ask`）是**两条独立赛道**，
 - **技术方案 · ChatBI（AI-4）**：[`bi-chatbi-nl2sql.md`](bi-chatbi-nl2sql.md)
 - 知识库模块总览：[`knowledge-module-overview.md`](knowledge-module-overview.md)
 - 知识库内容管道运维：[`kb-ops-roadmap.md`](kb-ops-roadmap.md)
-- BI 模块 v1 骨架：[`bi-module-overview.md`](bi-module-overview.md) · API：[`../api/bi-api.md`](../api/bi-api.md)
+- BI 模块 v1 骨架：[`ai-module-overview.md`](ai-module-overview.md) · API：[`../api/ai-api.md`](../api/ai-api.md)
 - 检索升级触发条件（kb 侧）：`moli-knowledge/kb/ROADMAP.md` §五
 - 评测使用说明：`moli-knowledge/kb/eval/README.md`
 - 知识库 API 契约：[`../api/KNOWLEDGE_API.md`](../api/KNOWLEDGE_API.md)

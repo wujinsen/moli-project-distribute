@@ -1,7 +1,7 @@
-# BI 服务 · API（骨架）
+# AI 服务 · API（骨架）
 
-> 模块：`moli-ai-server` · Nacos 名 `bi-server` · **v1 仅占位**  
-> 网关：`GET http://{gateway}:21000/BiServer/demo/test`
+> 模块：`moli-ai-server` · Nacos 名 `ai-server` · **v1 仅占位**  
+> 网关：`GET http://{gateway}:21000/AiServer/demo/test`
 
 ---
 
@@ -14,7 +14,7 @@
 ### 经网关
 
 ```bash
-curl http://127.0.0.1:21000/BiServer/demo/test
+curl http://127.0.0.1:21000/AiServer/demo/test
 ```
 
 期望响应 body：`test success`
@@ -24,7 +24,7 @@ curl http://127.0.0.1:21000/BiServer/demo/test
 ## 2. Swagger
 
 - 直连：`http://localhost:1128/swagger-ui.html`
-- 网关：`http://localhost:21000/BiServer/swagger-ui.html`
+- 网关：`http://localhost:21000/AiServer/swagger-ui.html`
 
 ---
 
