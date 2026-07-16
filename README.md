@@ -1,11 +1,44 @@
 # 茉莉项目微服务（moli-project-distribute）
 
-**Languages / 语言 / 言語**: **中文** | [English](README.en.md) | [日本語](README.ja.md)
+**Languages / 语言 / 言語**：**[中文](README.md)**（默认）· [English](README.en.md) · [日本語](README.ja.md)
 
 [![Java](https://img.shields.io/badge/Java-1.8-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.3.12-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-Hoxton.SR12-blue.svg)](https://spring.io/projects/spring-cloud)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
+[![RAG](https://img.shields.io/badge/RAG-Retrieval%2BLLM-8A2BE2.svg)](moli-knowledge/README.md)
+[![LLM](https://img.shields.io/badge/LLM-OpenAI%20Compatible-412991.svg)](moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/KbLlmClient.java)
+[![Agentic Coding](https://img.shields.io/badge/Agentic%20Coding-AGENTS%2BSkills-000000.svg)](AGENTS.md)
+[![Python](https://img.shields.io/badge/Python-KB%20Tooling-3776AB.svg)](moli-knowledge/kb/tools)
+
+> 🤖 **一句话定位**：一套「**Spring Cloud 微服务 + 企业级 LLM 知识库**」的开源系统 —— 生产级后端架构 × RAG 检索问答 × 检索评测 × Agentic Coding 一体化落地。
+
+## ✨ AI 能力亮点（求职速览）
+
+![知识库双轨架构](docs/diagrams/png/moli-kb-architecture.png)
+
+| 能力 | 落地情况 |
+|------|----------|
+| 🔎 **RAG 检索问答** | Chunk 切段 → 检索（`/kb/ask`）→ **LLM 生成式带引用回答**；OpenAI 兼容客户端（DB 配置优先 + yaml 兜底 + 调用日志） |
+| 📊 **检索评测** | `golden.jsonl` → **hit@k / MRR / coverage**，支持检索式 vs 生成式对比评测 |
+| 🧠 **LLM-Wiki 知识治理** | Ingest / Lint / Enrich，知识「编译一次、持续保鲜」，单向增量幂等入库 |
+| 🤝 **Agentic Coding** | 多层 `AGENTS.md` 规则 + 自建 Cursor Skills（架构图 / SQL 迁移 / KB Ingest），沉淀可复用 AI 研发工作流 |
+| 🏗️ **生产级后端** | Spring Cloud Alibaba（Nacos / Dubbo / Sentinel / Gateway）+ Shiro 分布式鉴权 + GitHub Actions CI |
+
+**📈 关键指标**（由 `kb/tools/fill_eval_metrics.py` 自动回填）：
+<!-- KB_METRICS:START -->
+hit@1 `66.7%` ｜ hit@3 `100.0%` ｜ hit@5 `100.0%` ｜ hit@8 `100.0%` ｜ MRR `0.833` ｜ coverage `100.0%` ｜ 平均响应 `0.47s` ｜ 样本 `12` 题
+<!-- KB_METRICS:END -->
+
+**🎬 演示**
+- 在线 Demo：`<部署后填链接>`
+- 效果演示 GIF：`docs/portfolio/kb-demo.gif` `<待录制>`
+- 本地 30 秒体验（零依赖）：`python moli-knowledge/kb/tools/serve.py` → http://127.0.0.1:8765
+
+**📄 招聘一页纸 / 项目速读**：见 [PORTFOLIO.md](PORTFOLIO.md)
+
+---
 
 ## 项目介绍
 
