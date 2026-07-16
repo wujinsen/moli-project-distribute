@@ -10,7 +10,7 @@
 #   moli-gateway/
 #   moli-knowledge/
 #   moli-order/
-#   moli-ai/          (BI · artifact moli-bi-server)
+#   moli-ai/          (BI · artifact moli-ai-server)
 #   deploy/linux/moli-service.sh
 #
 # 用法:
@@ -48,7 +48,7 @@ declare -A SVC_JAR_PREFIX=(
   [gateway]="moli-gateway"
   [knowledge]="moli-knowledge-server"
   [order]="moli-order-server"
-  [bi]="moli-bi-server"
+  [bi]="moli-ai-server"
 )
 declare -A SVC_PID_NAME=(
   [user-center]="user-center"

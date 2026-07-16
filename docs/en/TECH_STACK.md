@@ -103,7 +103,7 @@ Built on **Spring Cloud + Spring Cloud Alibaba**, covering service discovery, AP
 | moli-user-center-server | Nacos, Sentinel, Dubbo, MyBatis-Plus, Shiro, Redis, MinIO |
 | moli-user-center-client | Nacos Discovery, Spring Cloud Dubbo, `UserCenterServer` contract, Shiro integration |
 | moli-order-server | Nacos, Sentinel, Dubbo, MyBatis-Plus, Shiro (client module) |
-| moli-bi-server | Nacos, Dubbo, Shiro (client module) |
+| moli-ai-server | Nacos, Dubbo, Shiro (client module); application name `bi-server` |
 
 ---
 

@@ -103,7 +103,7 @@
 | moli-user-center-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro、Redis、MinIO |
 | moli-user-center-client | Nacos Discovery、Spring Cloud Dubbo、`UserCenterServer` 契約、Shiro 統合 |
 | moli-order-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro（client モジュール） |
-| moli-bi-server | Nacos、Dubbo、Shiro（client モジュール） |
+| moli-ai-server | Nacos、Dubbo、Shiro（client モジュール）；アプリ名 `bi-server` |
 
 ---
 

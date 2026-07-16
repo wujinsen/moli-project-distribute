@@ -123,6 +123,10 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 > 「ngram 全文按相关度召回 ≤`kb.search.ask-candidate-limit`(默认100) 页 → 内存 bigram 精排」，
 > 并保留全文未启用/0 命中时的全量扫描兜底。只有当召回明显变差或文档量再上一个量级、
 > 或需要语义检索时，才升级到 Meilisearch/Typesense（独立服务）或向量库。
+>
+> **2026-07-16**：向量/Hybrid/Rerank 已从「按需再说」升级为**排期任务**（AI-2），连同评测扩容（AI-1）、
+> GraphRAG（AI-5）、Agentic RAG（AI-7）等统一规划——见
+> [`docs/design/ai-capability-roadmap.md`](../../docs/design/ai-capability-roadmap.md)。
 
 ---
 

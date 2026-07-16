@@ -5,7 +5,7 @@ type: article
 status: active
 tags: [BI, 报表, 演进, 设计]
 sources:
-- moli-bi/moli-bi-server/
+- moli-ai/moli-ai-server/
 - wiki/search/elasticsearch-搜索.md
 - wiki/security/字段级数据权限设计.md
 related: [字段级数据权限设计, elasticsearch-搜索, mybatis-与-druid持久层, rbac-权限模型]

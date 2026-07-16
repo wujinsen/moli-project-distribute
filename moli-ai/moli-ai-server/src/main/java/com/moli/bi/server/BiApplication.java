@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
-@MapperScan(basePackages = {"com.shushan.demo.server.mapper"})
+@MapperScan(basePackages = {"com.moli.bi.server.mapper"})
 @EnableDiscoveryClient
 public class BiApplication {
     public static void main(String[] args) {

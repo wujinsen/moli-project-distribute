@@ -7,7 +7,7 @@
 
 | 子模块 | 职责 |
 |--------|------|
-| `moli-ai-server` | 父模块名 `moli-ai`，应用名 `bi-server` |
+| `moli-ai-server` | 父模块 `moli-ai` · artifactId `moli-ai-server` · 应用名 `bi-server` |
 
 ## 运行时
 

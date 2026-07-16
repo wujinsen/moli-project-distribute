@@ -1,6 +1,6 @@
 # BI 模块 · 概要设计
 
-> 模块：**`moli-ai`**（Maven 名）· Nacos 服务名 **`bi-server`** · HTTP **1128**  
+> 模块：**`moli-ai`**（父）/ **`moli-ai-server`**（artifactId + 目录）· Nacos 服务名 **`bi-server`** · HTTP **1128**  
 > v1 范围：[moli-v1-release-scope.md](../product/moli-v1-release-scope.md) §3.5  
 > API：[bi-api.md](../api/bi-api.md) · 冒烟：[bi-smoke.md](../test/bi-smoke.md)
 
@@ -77,6 +77,7 @@ bi-server :1128
 
 | 阶段 | 能力 | wiki 参考 |
 |------|------|-----------|
+| v2 | **ChatBI / NL2SQL Agent（AI-4）**：自然语言 → SQL → 图表 + 解读，接 order/user 只读库 | [`ai-capability-roadmap.md`](ai-capability-roadmap.md) §4 第 2 波 |
 | v2 | 报表 API、数据集元数据 | [[bi报表服务演进路线]] |
 | v2+ | 对接 MinIO/ES、权限域隔离 | concepts/ |
 | v3 | 大屏、订阅推送 | 待定 |

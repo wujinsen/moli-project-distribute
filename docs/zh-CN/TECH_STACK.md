@@ -112,8 +112,8 @@ moli-project-distribute/
 │   └── moli-user-center-server/  # Nacos + Sentinel + Dubbo + Shiro
 ├── moli-order/                 # 订单服务
 │   └── moli-order-server/
-└── moli-bi/                    # BI 服务
-    └── moli-bi-server/
+└── moli-ai/                    # BI 服务（应用名 bi-server）
+    └── moli-ai-server/
 ```
 
 ### 各模块主要技术栈
@@ -124,7 +124,7 @@ moli-project-distribute/
 | moli-user-center-server | Nacos Discovery/Config、Sentinel、Dubbo、MyBatis-Plus、Shiro、Redis、MinIO |
 | moli-user-center-client | Nacos Discovery、Spring Cloud Dubbo、`UserCenterServer` 契约、Shiro 集成 |
 | moli-order-server | Nacos、Sentinel、Dubbo、MyBatis-Plus、Shiro（client 模块） |
-| moli-bi-server | Nacos、Dubbo、Shiro（client 模块） |
+| moli-ai-server | Nacos、Dubbo、Shiro（client 模块）；应用名 `bi-server` |
 
 ---
 

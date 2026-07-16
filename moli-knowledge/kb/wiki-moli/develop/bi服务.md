@@ -7,7 +7,7 @@ type: service
 status: active
 tags: [微服务, BI, 骨架, 报表]
 sources:
-  - moli-bi/moli-bi-server/
+  - moli-ai/moli-ai-server/
   - README.zh-CN.md
   - docs/zh-CN/ARCHITECTURE.md
 related: [用户中心, 本地启动指南, 网关, 茉莉-shiro-跨服务, swagger接口调试指南, 知识库-meilisearch接入规划]
