@@ -7,44 +7,11 @@
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-Hoxton.SR12-blue.svg)](https://spring.io/projects/spring-cloud)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-[![RAG](https://img.shields.io/badge/RAG-Retrieval%2BLLM-8A2BE2.svg)](moli-knowledge/README.md)
-[![LLM](https://img.shields.io/badge/LLM-OpenAI%20Compatible-412991.svg)](moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/KbLlmClient.java)
-[![Agentic Coding](https://img.shields.io/badge/Agentic%20Coding-AGENTS%2BSkills-000000.svg)](AGENTS.md)
-[![Python](https://img.shields.io/badge/Python-KB%20Tooling-3776AB.svg)](moli-knowledge/kb/tools)
-
-> 🤖 **一句话定位**：一套「**Spring Cloud 微服务 + 企业级 LLM 知识库**」的开源系统 —— 生产级后端架构 × RAG 检索问答 × 检索评测 × Agentic Coding 一体化落地。
-
-## ✨ AI 能力亮点（求职速览）
-
-![知识库双轨架构](docs/diagrams/png/moli-kb-architecture.png)
-
-| 能力 | 落地情况 |
-|------|----------|
-| 🔎 **RAG 检索问答** | Chunk 切段 → 检索（`/kb/ask`）→ **LLM 生成式带引用回答**；OpenAI 兼容客户端（DB 配置优先 + yaml 兜底 + 调用日志） |
-| 📊 **检索评测** | `golden.jsonl` → **hit@k / MRR / coverage**，支持检索式 vs 生成式对比评测 |
-| 🧠 **LLM-Wiki 知识治理** | Ingest / Lint / Enrich，知识「编译一次、持续保鲜」，单向增量幂等入库 |
-| 🤝 **Agentic Coding** | 多层 `AGENTS.md` 规则 + 自建 Cursor Skills（架构图 / SQL 迁移 / KB Ingest），沉淀可复用 AI 研发工作流 |
-| 🏗️ **生产级后端** | Spring Cloud Alibaba（Nacos / Dubbo / Sentinel / Gateway）+ Shiro 分布式鉴权 + GitHub Actions CI |
-
-**📈 关键指标**（由 `kb/tools/fill_eval_metrics.py` 自动回填）：
-<!-- KB_METRICS:START -->
-hit@1 `66.7%` ｜ hit@3 `100.0%` ｜ hit@5 `100.0%` ｜ hit@8 `100.0%` ｜ MRR `0.833` ｜ coverage `100.0%` ｜ 平均响应 `0.47s` ｜ 样本 `12` 题
-<!-- KB_METRICS:END -->
-
-**🎬 演示**
-- 在线 Demo：`<部署后填链接>`
-- 效果演示 GIF：`docs/portfolio/kb-demo.gif` `<待录制>`
-- 本地 30 秒体验（零依赖）：`python moli-knowledge/kb/tools/serve.py` → http://127.0.0.1:8765
-
-**📄 招聘一页纸 / 项目速读**：见 [PORTFOLIO.md](PORTFOLIO.md)
-
----
+> **一句话定位**：基于 **Spring Cloud + Spring Cloud Alibaba** 的分布式微服务工程 —— 统一网关、用户中心、订单/BI 等业务服务，并集成 **企业级 LLM 知识库** 作为平台能力之一。
 
 ## 项目介绍
 
-**茉莉项目微服务**（moli-project-distribute）是一套基于 **Spring Cloud + Spring Cloud Alibaba** 构建的分布式微服务示例工程，涵盖统一网关、服务注册与配置、RPC/HTTP 服务调用、权限认证、数据持久化等常见企业级能力。
-
-项目以用户中心为核心基础服务，向外提供订单、BI 等业务模块，适用于学习 Spring Cloud 微服务架构、二次开发或作为业务脚手架使用。
+**茉莉项目微服务**（moli-project-distribute）是一套企业级微服务示例工程，涵盖服务注册与配置、RPC/HTTP 调用、权限认证、数据持久化等常见能力。以 **用户中心** 为核心基础服务，向外提供订单、BI、知识库等模块，适用于学习 Spring Cloud 架构、二次开发或作为业务脚手架。
 
 ### 主要特性
 
@@ -54,7 +21,29 @@ hit@1 `66.7%` ｜ hit@3 `100.0%` ｜ hit@5 `100.0%` ｜ hit@8 `100.0%` ｜ MRR `
 - **流量保护**：Sentinel 熔断降级与限流
 - **权限与安全**：Apache Shiro + Redis 分布式 Session + JWT
 - **数据层**：MySQL + MyBatis-Plus + Druid 连接池
+- **企业知识库**：RAG 检索问答、LLM-Wiki 治理、检索评测（见下文 [企业知识库](#企业知识库moli-knowledge)）
 - **可扩展能力**：预留 Seata 分布式事务、RocketMQ 消息、XXL-JOB 任务调度及 ELK / SkyWalking / Prometheus 可观测性方案
+
+---
+
+## 系统架构概览
+
+![全项目容器架构](docs/diagrams/png/moli-container-architecture.png)
+
+> 可编辑源文件：[moli-container-architecture.drawio](docs/diagrams/moli-container-architecture.drawio) · 链路、鉴权与部署细节见 [架构 / 调用 / 鉴权设计](docs/zh-CN/ARCHITECTURE.md)
+
+| 图 | 说明 |
+|----|------|
+| ![网关路由](docs/diagrams/png/moli-gateway-routes.png) | [moli-gateway-routes.drawio](docs/diagrams/moli-gateway-routes.drawio) · Gateway 路由 |
+| ![RBAC 模型](docs/diagrams/png/moli-rbac-model.png) | [moli-rbac-model.drawio](docs/diagrams/moli-rbac-model.drawio) · 权限模型 |
+| ![秒杀链路](docs/diagrams/png/moli-seckill-flow.png) | [moli-seckill-flow.drawio](docs/diagrams/moli-seckill-flow.drawio) · 订单秒杀 |
+| ![本地部署](docs/diagrams/png/moli-deploy-topology.png) | [moli-deploy-topology.drawio](docs/diagrams/moli-deploy-topology.drawio) · 部署拓扑 |
+| ![知识库双轨架构](docs/diagrams/png/moli-kb-architecture.png) | [moli-kb-architecture.drawio](docs/diagrams/moli-kb-architecture.drawio) · kb/ 写入轨 + knowledge-server 读取轨 |
+| ![知识库功能流程](docs/diagrams/png/moli-kb-functional-flows.png) | [moli-kb-functional-flows.drawio](docs/diagrams/moli-kb-functional-flows.drawio) · Browse / Ask / Sync / Ingest |
+
+更多 draw.io 源文件与导出说明见 [docs/diagrams/README.md](docs/diagrams/README.md)。知识库模块详情见下文 [企业知识库](#企业知识库moli-knowledge)。
+
+**📄 项目速读 ：见 [PORTFOLIO.md](PORTFOLIO.md)
 
 ---
 
@@ -261,6 +250,45 @@ http://localhost:21000/KnowledgeServer/...
 | 部门 | `/dept` | 部门 CRUD |
 
 > 完整设计说明、流程图、表结构与扩展建议见 [docs/zh-CN/RBAC.md](docs/zh-CN/RBAC.md)。
+
+---
+
+## 企业知识库（moli-knowledge）
+
+知识库是平台中的一个微服务模块（`moli-knowledge-server`），与网关、用户中心、订单等并列；负责 Wiki 维护、Sync 入库、智能问答与检索评测。
+
+[![RAG](https://img.shields.io/badge/RAG-Retrieval%2BLLM-8A2BE2.svg)](moli-knowledge/README.md)
+[![LLM](https://img.shields.io/badge/LLM-OpenAI%20Compatible-412991.svg)](moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/KbLlmClient.java)
+[![Python](https://img.shields.io/badge/Python-KB%20Tooling-3776AB.svg)](moli-knowledge/kb/tools)
+
+### 知识库架构（draw.io）
+
+![知识库双轨架构](docs/diagrams/png/moli-kb-architecture.png)
+
+> 主图源文件：[moli-kb-architecture.drawio](docs/diagrams/moli-kb-architecture.drawio) · 模块说明：[moli-knowledge/README.md](moli-knowledge/README.md) · 全清单：[docs/diagrams/README.md](docs/diagrams/README.md)
+
+| 图 | 说明 |
+|----|------|
+| ![RAW 全链路](docs/diagrams/png/moli-kb-raw-pipeline.png) | [moli-kb-raw-pipeline.drawio](docs/diagrams/moli-kb-raw-pipeline.drawio) · raw → wiki → sync |
+| ![功能流程](docs/diagrams/png/moli-kb-functional-flows.png) | [moli-kb-functional-flows.drawio](docs/diagrams/moli-kb-functional-flows.drawio) · Browse / Ask / Sync / Ingest |
+| ![Sync 双轨](docs/diagrams/png/moli-knowledge-sync.png) | [moli-knowledge-sync.drawio](docs/diagrams/moli-knowledge-sync.drawio) · kb/ 与 DB 同步 |
+| ![ER 模型](docs/diagrams/png/moli-kb-er.png) | [moli-kb-er.drawio](docs/diagrams/moli-kb-er.drawio) · kb_* 表关系 |
+
+### 能力与指标
+
+| 能力 | 落地情况 |
+|------|----------|
+| 🔎 **RAG 检索问答** | Chunk 切段 → 检索（`/kb/ask`）→ **LLM 生成式带引用回答**；OpenAI 兼容客户端（DB 配置优先 + yaml 兜底 + 调用日志） |
+| 📊 **检索评测** | `golden.jsonl` → **hit@k / MRR / coverage**，支持检索式 vs 生成式对比评测 |
+| 🧠 **LLM-Wiki 知识治理** | Ingest / Lint / Enrich，知识「编译一次、持续保鲜」，单向增量幂等入库 |
+
+**📈 检索指标**（由 `kb/tools/fill_eval_metrics.py` 自动回填）：
+<!-- KB_METRICS:START -->
+hit@1 `66.7%` ｜ hit@3 `100.0%` ｜ hit@5 `100.0%` ｜ hit@8 `100.0%` ｜ MRR `0.833` ｜ coverage `100.0%` ｜ 平均响应 `0.47s` ｜ 样本 `12` 题
+<!-- KB_METRICS:END -->
+
+- 在线 Demo：`<https://moli-ui.wu-jinsen.com/>`
+- Agentic Coding 规则与 Skills：见 [AGENTS.md](AGENTS.md)
 
 ---
 
