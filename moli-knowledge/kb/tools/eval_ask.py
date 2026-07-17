@@ -7,6 +7,7 @@
   python kb/tools/eval_ask.py                    # 检索式，汇总 hit@3/5/8
   python kb/tools/eval_ask.py --use-llm          # 生成式 + 关键词检查
   python kb/tools/eval_ask.py --only M03 --min-hit 0.8 --gate-at-k 3
+  python kb/tools/eval_ask.py --baseline         # 基线报告 baseline-ngram-*.json
 """
 from __future__ import annotations
 
@@ -25,6 +26,27 @@ DEFAULT_GOLDEN = KB_DIR / "eval" / "golden.jsonl"
 REPORT_DIR = KB_DIR / "eval" / "reports"
 # 单次请求 top_k≥max(STANDARD_HIT_AT) 时，由 first_rank 派生多档 hit@k，无需重复调 API
 STANDARD_HIT_AT = (3, 5, 8)
+
+VALID_DIFFICULTIES = frozenset({"easy", "paraphrase", "dirty", "multi-hop", "negative"})
+ID_PREFIX_BY_SPACE = {
+    "moli-ops-manual": "M",
+    "enterprise-kb": "E",
+    "jp-fe-ap-exam": "J",
+}
+
+# 拒答短语集合（契约 §3.3；大小写/全半角归一后子串匹配）
+REFUSAL_MARKERS = (
+    "暂无相关",
+    "暂无",
+    "无相关内容",
+    "没有找到",
+    "未找到",
+    "知识库暂无",
+    "无法回答",
+    "抱歉，没有",
+    "not found",
+    "no relevant",
+)
 
 # space_code -> spaceId 兜底映射（/kb/space/mine 不可用时使用）
 FALLBACK_SPACE_IDS = {
@@ -156,6 +178,18 @@ def resolve_spaces(kb_base: str, token: str) -> dict:
     return dict(FALLBACK_SPACE_IDS)
 
 
+def _normalize_refusal_text(text: str) -> str:
+    """大小写/全半角归一，便于拒答短语匹配。"""
+    s = (text or "").lower()
+    s = s.replace("　", " ")
+    return s
+
+
+def has_refusal_marker(answer: str) -> bool:
+    norm = _normalize_refusal_text(answer)
+    return any(_normalize_refusal_text(m) in norm for m in REFUSAL_MARKERS)
+
+
 def load_golden(path: Path) -> list[dict]:
     entries = []
     for ln, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
@@ -166,10 +200,60 @@ def load_golden(path: Path) -> list[dict]:
             row = json.loads(line)
         except json.JSONDecodeError as e:
             raise SystemExit(f"golden.jsonl 第 {ln} 行 JSON 解析失败: {e}")
-        for field in ("id", "space", "question", "expect_slugs"):
-            if not row.get(field):
+        for field in ("id", "space", "question", "difficulty", "expect_answerable"):
+            if field not in row:
                 raise SystemExit(f"golden.jsonl 第 {ln} 行缺字段 {field}")
+
+        difficulty = row["difficulty"]
+        if difficulty not in VALID_DIFFICULTIES:
+            raise SystemExit(
+                f"golden.jsonl 第 {ln} 行 difficulty 非法: {difficulty!r}，"
+                f"允许 {sorted(VALID_DIFFICULTIES)}"
+            )
+
+        expect_answerable = row["expect_answerable"]
+        if not isinstance(expect_answerable, bool):
+            raise SystemExit(f"golden.jsonl 第 {ln} 行 expect_answerable 必须为 boolean")
+
+        expect_slugs = row.get("expect_slugs")
+        if expect_slugs is None:
+            expect_slugs = []
+        if not isinstance(expect_slugs, list):
+            raise SystemExit(f"golden.jsonl 第 {ln} 行 expect_slugs 必须为数组")
+
+        expect_keywords = row.get("expect_keywords")
+        if expect_keywords is not None and not isinstance(expect_keywords, list):
+            raise SystemExit(f"golden.jsonl 第 {ln} 行 expect_keywords 必须为数组")
+
+        expect_all = row.get("expect_all", False)
+        if expect_all and difficulty != "multi-hop":
+            raise SystemExit(f"golden.jsonl 第 {ln} 行 expect_all=true 仅允许 multi-hop")
+
+        if difficulty == "negative":
+            if expect_answerable is not False:
+                raise SystemExit(f"golden.jsonl 第 {ln} 行 negative 题 expect_answerable 必须为 false")
+            if expect_slugs:
+                raise SystemExit(f"golden.jsonl 第 {ln} 行 negative 题 expect_slugs 必须为空")
+            if expect_keywords:
+                raise SystemExit(f"golden.jsonl 第 {ln} 行 negative 题禁止 expect_keywords")
+        else:
+            if expect_answerable is not True:
+                raise SystemExit(
+                    f"golden.jsonl 第 {ln} 行 difficulty={difficulty} 时 expect_answerable 必须为 true"
+                )
+            if not expect_slugs:
+                raise SystemExit(f"golden.jsonl 第 {ln} 行 expect_answerable=true 时 expect_slugs 非空必填")
+
+        expected_prefix = ID_PREFIX_BY_SPACE.get(row["space"])
+        if expected_prefix and not str(row["id"]).startswith(expected_prefix):
+            raise SystemExit(
+                f"golden.jsonl 第 {ln} 行 id 前缀与 space 不一致: "
+                f"id={row['id']!r} space={row['space']!r} 期望前缀 {expected_prefix}"
+            )
+
+        row["expect_slugs"] = expect_slugs
         entries.append(row)
+
     ids = [r["id"] for r in entries]
     dup = {i for i in ids if ids.count(i) > 1}
     if dup:
@@ -197,6 +281,14 @@ def compute_hit_at_rates(scored: list[dict], ks: list[int]) -> dict[str, float]:
     return out
 
 
+def compute_refused_correct(citations: list, answer: str, use_llm: bool) -> bool:
+    """negative 题拒答判定（契约 §3.2）。"""
+    cited = citations or []
+    if not use_llm:
+        return len(cited) == 0
+    return has_refusal_marker(answer) and len(cited) == 0
+
+
 def evaluate_one(entry: dict, kb_base: str, token: str, space_id: int,
                  top_k: int, use_llm: bool, llm_context_top_k: int | None) -> dict:
     payload: dict = {"question": entry["question"], "spaceId": space_id,
@@ -208,43 +300,108 @@ def evaluate_one(entry: dict, kb_base: str, token: str, space_id: int,
         body = http_json(f"{kb_base}/kb/ask", method="POST",
                          token=token, payload=payload, timeout=120)
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
-        return {"id": entry["id"], "error": str(e)}
+        return {"id": entry["id"], "error": str(e),
+                "difficulty": entry.get("difficulty"),
+                "expect_answerable": entry.get("expect_answerable")}
+
     elapsed_ms = int((time.time() - t0) * 1000)
 
     data = body.get("data") or {}
     citations = data.get("citations") or []
+    answer = data.get("answer") or ""
     cited = [norm_slug(c.get("slug", "")) for c in citations]
-    expect = [norm_slug(s) for s in entry["expect_slugs"]]
+    expect = [norm_slug(s) for s in entry.get("expect_slugs") or []]
+    expect_answerable = entry.get("expect_answerable", True)
+    difficulty = entry.get("difficulty")
+    expect_all = entry.get("expect_all", False)
 
-    first_rank = 0  # 1-based；0=未命中
+    base = {
+        "id": entry["id"],
+        "space": entry["space"],
+        "question": entry["question"],
+        "difficulty": difficulty,
+        "expect_answerable": expect_answerable,
+        "cited": cited,
+        "mode": data.get("mode"),
+        "scope": data.get("scope"),
+        "elapsed_ms": elapsed_ms,
+    }
+
+    if not expect_answerable:
+        refused = compute_refused_correct(citations, answer, use_llm)
+        return {**base, "refused_correct": refused, "hit": None, "first_rank": 0,
+                "coverage": None, "kw_pass": None}
+
+    first_rank = 0
     for rank, slug in enumerate(cited, 1):
         if slug in expect:
             first_rank = rank
             break
     hit = first_rank > 0
     covered = sum(1 for s in expect if s in cited)
-    coverage = covered / len(expect)
+    coverage = covered / len(expect) if expect else 0.0
+
+    all_hit = None
+    if expect_all and expect:
+        cited_top = cited[:top_k]
+        all_hit = all(s in cited_top for s in expect)
 
     kw_pass = None
     if use_llm and entry.get("expect_keywords"):
-        answer = (data.get("answer") or "").lower()
-        missing = [k for k in entry["expect_keywords"] if k.lower() not in answer]
+        answer_lower = answer.lower()
+        missing = [k for k in entry["expect_keywords"] if k.lower() not in answer_lower]
         kw_pass = not missing
 
     return {
-        "id": entry["id"],
-        "space": entry["space"],
-        "question": entry["question"],
+        **base,
         "hit": hit,
         "first_rank": first_rank,
         "coverage": round(coverage, 3),
-        "cited": cited,
         "expect": expect,
-        "mode": data.get("mode"),
-        "scope": data.get("scope"),
+        "all_hit": all_hit,
         "kw_pass": kw_pass,
-        "elapsed_ms": elapsed_ms,
     }
+
+
+def _group_by_difficulty(results: list[dict]) -> dict[str, list[dict]]:
+    groups: dict[str, list[dict]] = {d: [] for d in VALID_DIFFICULTIES}
+    for r in results:
+        d = r.get("difficulty")
+        if d in groups:
+            groups[d].append(r)
+    return groups
+
+
+def build_by_difficulty(groups: dict[str, list[dict]], report_ks: list[int]) -> dict:
+    out: dict = {}
+    for diff in ("easy", "paraphrase", "dirty", "multi-hop", "negative"):
+        rows = [r for r in groups.get(diff, []) if not r.get("error")]
+        if not rows:
+            continue
+        if diff == "negative":
+            refused = sum(1 for r in rows if r.get("refused_correct"))
+            out[diff] = {
+                "total": len(rows),
+                "refusal_accuracy": round(refused / len(rows), 4) if rows else 0.0,
+            }
+            continue
+        hit_at = compute_hit_at_rates(rows, report_ks)
+        mrr = sum((1 / r["first_rank"]) for r in rows if r.get("first_rank")) / len(rows)
+        coverage = sum(r.get("coverage") or 0 for r in rows) / len(rows)
+        block: dict = {
+            "total": len(rows),
+            "hit_at": hit_at,
+            "mrr": round(mrr, 4),
+            "coverage": round(coverage, 4),
+        }
+        if diff == "multi-hop":
+            all_hit_rows = [r for r in rows if r.get("all_hit") is not None]
+            if all_hit_rows:
+                block["all_hit_rate"] = round(
+                    sum(1 for r in all_hit_rows if r.get("all_hit")) / len(all_hit_rows), 4
+                )
+        out[diff] = block
+    return out
 
 
 def main() -> int:
@@ -265,6 +422,13 @@ def main() -> int:
     ap.add_argument("--use-llm", action="store_true", help="生成式作答并检查 expect_keywords")
     ap.add_argument("--only", help="只跑指定题 id（逗号分隔）")
     ap.add_argument("--space", help="只跑指定 space_code 的题")
+    ap.add_argument("--difficulty", help="只跑指定难度（逗号分隔 easy,paraphrase,...）")
+    ap.add_argument("--include-negative", dest="include_negative", action="store_true", default=True,
+                    help="纳入 negative 题（默认）")
+    ap.add_argument("--no-negative", dest="include_negative", action="store_false",
+                    help="排除 negative 题")
+    ap.add_argument("--baseline", action="store_true",
+                    help="基线报告命名 baseline-ngram-YYYYMMDD-HHMMSS.json（AI-1 对照组）")
     ap.add_argument("--min-hit", type=float, default=0.0,
                     help="hit@k 低于该值时退出码 1（CI 门禁，默认只报告）")
     ap.add_argument("--gate-at-k", type=int, default=0,
@@ -282,6 +446,15 @@ def main() -> int:
         entries = [e for e in entries if e["id"] in wanted]
     if args.space:
         entries = [e for e in entries if e["space"] == args.space]
+    if args.difficulty:
+        wanted_diff = {s.strip() for s in args.difficulty.split(",")}
+        unknown = wanted_diff - VALID_DIFFICULTIES
+        if unknown:
+            print(f"[error] 未知 difficulty: {sorted(unknown)}")
+            return 1
+        entries = [e for e in entries if e["difficulty"] in wanted_diff]
+    if not args.include_negative:
+        entries = [e for e in entries if e.get("expect_answerable", True)]
     if not entries:
         print("没有匹配的题目")
         return 1
@@ -317,12 +490,18 @@ def main() -> int:
     for entry in entries:
         space_id = space_map.get(entry["space"])
         if not space_id:
-            results.append({"id": entry["id"], "error": f"未知 space_code: {entry['space']}"})
+            results.append({"id": entry["id"], "error": f"未知 space_code: {entry['space']}",
+                            "difficulty": entry.get("difficulty"),
+                            "expect_answerable": entry.get("expect_answerable")})
             continue
         r = evaluate_one(entry, kb_base, token, space_id, args.top_k, args.use_llm, llm_ctx)
         results.append(r)
         if r.get("error"):
             print(f"  {r['id']}  ERROR  {r['error']}")
+        elif not r.get("expect_answerable", True):
+            mark = "REFUSE_OK" if r.get("refused_correct") else "REFUSE_FAIL"
+            print(f"  {r['id']}  {mark}  cites={len(r.get('cited') or [])}  "
+                  f"{r['elapsed_ms']}ms  {entry['question']}")
         else:
             mark = "PASS" if r["hit"] else "MISS"
             kw = "" if r["kw_pass"] is None else ("  kw=" + ("OK" if r["kw_pass"] else "FAIL"))
@@ -334,23 +513,54 @@ def main() -> int:
     if not scored:
         print("\n全部请求失败，请检查服务是否启动")
         return 1
-    hit_rate = sum(1 for r in scored if r["hit"]) / len(scored)
-    mrr = sum((1 / r["first_rank"]) for r in scored if r["first_rank"]) / len(scored)
-    coverage = sum(r["coverage"] for r in scored) / len(scored)
-    kw_scored = [r for r in scored if r["kw_pass"] is not None]
+
+    answerable = [r for r in scored if r.get("expect_answerable", True)]
+    negative = [r for r in scored if not r.get("expect_answerable", True)]
+    answerable_total = len(answerable)
+    negative_total = len(negative)
+
+    hit_rate = (sum(1 for r in answerable if r["hit"]) / answerable_total) if answerable else 0.0
+    mrr = ((sum((1 / r["first_rank"]) for r in answerable if r.get("first_rank"))
+            / answerable_total) if answerable else 0.0)
+    coverage = ((sum(r.get("coverage") or 0 for r in answerable) / answerable_total)
+                if answerable else 0.0)
+    kw_scored = [r for r in answerable if r.get("kw_pass") is not None]
     kw_rate = (sum(1 for r in kw_scored if r["kw_pass"]) / len(kw_scored)) if kw_scored else None
 
+    refusal_accuracy = None
+    if negative_total and args.include_negative:
+        refused_ok = sum(1 for r in negative if r.get("refused_correct"))
+        refusal_accuracy = refused_ok / negative_total
+
     report_ks = sorted({k for k in STANDARD_HIT_AT if k <= args.top_k} | {args.top_k, gate_k})
-    hit_at = compute_hit_at_rates(scored, report_ks)
+    hit_at = compute_hit_at_rates(answerable, report_ks)
     gate_hit = hit_at.get(str(gate_k), hit_rate)
+
+    by_difficulty = build_by_difficulty(_group_by_difficulty(scored), report_ks)
 
     hit_parts = "  ".join(f"hit@{k}={hit_at[str(k)]:.2%}" for k in report_ks)
     print(f"\n== 汇总 ==  {hit_parts}  mrr={mrr:.3f}"
           f"  coverage={coverage:.2%}"
           + (f"  kw_pass={kw_rate:.2%}" if kw_rate is not None else "")
-          + (f"  errors={errors}" if errors else ""))
+          + (f"  errors={errors}" if errors else "")
+          + f"  answerable={answerable_total}  negative={negative_total}")
+
+    layer_parts = []
+    for diff in ("easy", "paraphrase", "dirty", "multi-hop"):
+        block = by_difficulty.get(diff)
+        if block and "hit_at" in block:
+            h3 = block["hit_at"].get("3", block["hit_at"].get(str(gate_k), 0))
+            layer_parts.append(f"{diff} hit@3={h3:.0%}")
+    if layer_parts:
+        print("== 分层 ==  " + "  ".join(layer_parts))
+
+    if refusal_accuracy is not None:
+        refused_ok = sum(1 for r in negative if r.get("refused_correct"))
+        print(f"== 拒答 ==  refusal_accuracy={refusal_accuracy:.1%} ({refused_ok}/{negative_total})")
 
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+    prefix = "baseline-ngram" if args.baseline else "report"
     report = {
         "time": datetime.now().isoformat(timespec="seconds"),
         "login_base": login_base,
@@ -360,15 +570,19 @@ def main() -> int:
         "gate_at_k": gate_k,
         "use_llm": args.use_llm,
         "total": len(results),
+        "answerable_total": answerable_total,
+        "negative_total": negative_total,
         "errors": errors,
         "hit_rate": round(hit_rate, 4),
         "hit_at": hit_at,
         "mrr": round(mrr, 4),
         "coverage": round(coverage, 4),
+        "refusal_accuracy": None if refusal_accuracy is None else round(refusal_accuracy, 4),
+        "by_difficulty": by_difficulty,
         "kw_pass_rate": None if kw_rate is None else round(kw_rate, 4),
         "results": results,
     }
-    out = REPORT_DIR / f"report-{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
+    out = REPORT_DIR / f"{prefix}-{ts}.json"
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"报告: {out.relative_to(KB_DIR)}")
 
