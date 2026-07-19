@@ -1,16 +1,24 @@
 package com.moli.knowledge.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
+import com.moli.knowledge.server.config.KbEvalBaselinesProvider;
 import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.dto.KbLlmConfigVo;
 import com.moli.knowledge.server.dto.KbOpsDashboardVo;
+import com.moli.knowledge.server.dto.KbOpsEvalRunVo;
+import com.moli.knowledge.server.dto.KbOpsEvalStrategySummaryVo;
+import com.moli.knowledge.server.dto.KbOpsEvalSummaryVo;
+import com.moli.knowledge.server.dto.KbOpsEvalTrendPointVo;
 import com.moli.knowledge.server.dto.KbOpsLintSummaryVo;
 import com.moli.knowledge.server.dto.KbOpsLlmSummaryVo;
 import com.moli.knowledge.server.dto.KbOpsSyncTrendPointVo;
+import com.moli.knowledge.server.entity.KbEvalRun;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.entity.KbRelation;
 import com.moli.knowledge.server.entity.KbSyncLog;
+import com.moli.knowledge.server.mapper.KbEvalRunMapper;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
 import com.moli.knowledge.server.mapper.KbSyncLogMapper;
@@ -24,11 +32,13 @@ import com.moli.knowledge.server.service.KbOpsService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -41,6 +51,10 @@ public class KbOpsServiceImpl implements KbOpsService {
 
     private static final int DEFAULT_TREND_DAYS = 7;
     private static final int MAX_TREND_DAYS = 30;
+    private static final int DEFAULT_EVAL_TREND_DAYS = 14;
+    private static final int MAX_EVAL_TREND_DAYS = 90;
+    private static final int DEFAULT_EVAL_RUN_LIMIT = 20;
+    private static final int MAX_EVAL_RUN_LIMIT = 100;
     private static final int TOP_BROKEN = 10;
 
     @Resource
@@ -61,6 +75,10 @@ public class KbOpsServiceImpl implements KbOpsService {
     private KbLlmRuntime kbLlmRuntime;
     @Resource
     private KbDriftService kbDriftService;
+    @Resource
+    private KbEvalRunMapper kbEvalRunMapper;
+    @Resource
+    private KbEvalBaselinesProvider kbEvalBaselinesProvider;
 
     private static final int DRIFT_DASHBOARD_SAMPLE = 5;
 
@@ -77,7 +95,44 @@ public class KbOpsServiceImpl implements KbOpsService {
         vo.setUnresolvedRelationCount(countUnresolvedRelations(scope));
         vo.setLlm(buildLlmSummary(scope, spaceId, days));
         vo.setDriftSummary(kbDriftService.driftSummary(spaceId, DRIFT_DASHBOARD_SAMPLE));
+        vo.setRetrievalQuality(buildRetrievalQuality());
         return vo;
+    }
+
+    @Override
+    public List<KbOpsEvalTrendPointVo> evalTrend(String strategy, Integer days) {
+        kbAclService.assertCanOpsDashboard(null);
+        int windowDays = normalizeEvalTrendDays(days);
+        Date from = Date.from(LocalDate.now().minusDays(windowDays - 1L)
+                .atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        QueryWrapper<KbEvalRun> wrapper = new QueryWrapper<KbEvalRun>()
+                .ge("run_at", from)
+                .orderByDesc("run_at");
+        if (strategy != null && !strategy.trim().isEmpty()) {
+            wrapper.eq("strategy", strategy.trim());
+        }
+        List<KbEvalRun> rows = kbEvalRunMapper.selectList(wrapper);
+        return aggregateEvalTrend(rows, windowDays);
+    }
+
+    @Override
+    public List<KbOpsEvalRunVo> evalRuns(String strategy, Integer limit) {
+        kbAclService.assertCanOpsDashboard(null);
+        int cap = normalizeEvalRunLimit(limit);
+
+        QueryWrapper<KbEvalRun> wrapper = new QueryWrapper<KbEvalRun>()
+                .orderByDesc("run_at")
+                .last("LIMIT " + cap);
+        if (strategy != null && !strategy.trim().isEmpty()) {
+            wrapper.eq("strategy", strategy.trim());
+        }
+        List<KbEvalRun> rows = kbEvalRunMapper.selectList(wrapper);
+        List<KbOpsEvalRunVo> result = new ArrayList<>(rows.size());
+        for (KbEvalRun row : rows) {
+            result.add(toEvalRunVo(row));
+        }
+        return result;
     }
 
     private List<Long> resolveScope(Long spaceId) {
@@ -240,6 +295,125 @@ public class KbOpsServiceImpl implements KbOpsService {
         }
         llm.setCallsByScene(stats.getCallsByScene());
         llm.setCallTrend(stats.getCallTrend());
+        if (stats.getSuccessCalls() > 0) {
+            llm.setCacheHitRate(stats.getCacheHits() * 1.0 / stats.getSuccessCalls());
+        }
+        llm.setEstimatedCostUsd(stats.getEstimatedCostUsd().doubleValue());
+        llm.setFailoverCount(stats.getFailoverCount());
+        llm.setEstimatedCostSavedUsd(stats.getEstimatedCostSavedUsd().doubleValue());
+        llm.setEstimatedTokensSaved(stats.getEstimatedTokensSaved());
+        llm.setCostTrend(stats.getCostTrend());
         return llm;
+    }
+
+    private int normalizeEvalTrendDays(Integer days) {
+        if (days == null || days <= 0) {
+            return DEFAULT_EVAL_TREND_DAYS;
+        }
+        return Math.min(days, MAX_EVAL_TREND_DAYS);
+    }
+
+    private int normalizeEvalRunLimit(Integer limit) {
+        if (limit == null || limit <= 0) {
+            return DEFAULT_EVAL_RUN_LIMIT;
+        }
+        return Math.min(limit, MAX_EVAL_RUN_LIMIT);
+    }
+
+    private KbOpsEvalSummaryVo buildRetrievalQuality() {
+        KbOpsEvalSummaryVo summary = new KbOpsEvalSummaryVo();
+        Integer baselineGolden = kbEvalBaselinesProvider.goldenTotalFromBaselines();
+        if (baselineGolden != null) {
+            summary.setGoldenTotal(baselineGolden);
+        }
+
+        List<KbOpsEvalStrategySummaryVo> strategies = new ArrayList<>();
+        for (String key : kbEvalBaselinesProvider.strategyKeys()) {
+            KbEvalRun latest = kbEvalRunMapper.selectOne(new QueryWrapper<KbEvalRun>()
+                    .eq("strategy", key)
+                    .orderByDesc("run_at")
+                    .last("LIMIT 1"));
+            KbOpsEvalStrategySummaryVo item = new KbOpsEvalStrategySummaryVo();
+            item.setStrategy(key);
+            BigDecimal baselineHit3 = kbEvalBaselinesProvider.baselineHit3(key);
+            item.setBaselineHit3(baselineHit3);
+            if (latest != null) {
+                if (summary.getGoldenTotal() == null && latest.getGoldenTotal() != null) {
+                    summary.setGoldenTotal(latest.getGoldenTotal());
+                }
+                item.setLatestRunAt(latest.getRunAt());
+                item.setHit1(latest.getHit1());
+                item.setHit3(latest.getHit3());
+                item.setHit5(latest.getHit5());
+                item.setMrr(latest.getMrr());
+                item.setP95Ms(latest.getP95Ms());
+                item.setErrors(latest.getErrors());
+                if (latest.getHit3() != null && baselineHit3 != null) {
+                    item.setDeltaHit3(latest.getHit3().subtract(baselineHit3));
+                }
+                if (latest.getGatePass() != null) {
+                    item.setGatePass(latest.getGatePass() == 1);
+                }
+            }
+            strategies.add(item);
+        }
+        summary.setStrategies(strategies);
+        return summary;
+    }
+
+    private List<KbOpsEvalTrendPointVo> aggregateEvalTrend(List<KbEvalRun> rows, int windowDays) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        Map<String, KbEvalRun> latestByDayStrategy = new HashMap<>();
+        for (KbEvalRun row : rows) {
+            if (row.getRunAt() == null) {
+                continue;
+            }
+            String day = fmt.format(row.getRunAt());
+            String strat = row.getStrategy() == null ? "" : row.getStrategy();
+            String key = day + "\0" + strat;
+            latestByDayStrategy.putIfAbsent(key, row);
+        }
+
+        List<KbOpsEvalTrendPointVo> points = new ArrayList<>();
+        for (Map.Entry<String, KbEvalRun> entry : latestByDayStrategy.entrySet()) {
+            KbEvalRun row = entry.getValue();
+            KbOpsEvalTrendPointVo point = new KbOpsEvalTrendPointVo();
+            point.setDate(fmt.format(row.getRunAt()));
+            point.setStrategy(row.getStrategy());
+            point.setHit3(row.getHit3());
+            point.setMrr(row.getMrr());
+            points.add(point);
+        }
+        points.sort(Comparator.comparing(KbOpsEvalTrendPointVo::getDate)
+                .thenComparing(p -> p.getStrategy() == null ? "" : p.getStrategy()));
+        return points;
+    }
+
+    private KbOpsEvalRunVo toEvalRunVo(KbEvalRun row) {
+        KbOpsEvalRunVo vo = new KbOpsEvalRunVo();
+        vo.setId(row.getId());
+        vo.setRunAt(row.getRunAt());
+        vo.setStrategy(row.getStrategy());
+        vo.setUseLlm(row.getUseLlm());
+        vo.setGoldenTotal(row.getGoldenTotal());
+        vo.setAnswerableTotal(row.getAnswerableTotal());
+        vo.setNegativeTotal(row.getNegativeTotal());
+        vo.setErrors(row.getErrors());
+        vo.setHit1(row.getHit1());
+        vo.setHit3(row.getHit3());
+        vo.setHit5(row.getHit5());
+        vo.setHit8(row.getHit8());
+        vo.setMrr(row.getMrr());
+        vo.setCoverage(row.getCoverage());
+        vo.setRefusalAccuracy(row.getRefusalAccuracy());
+        vo.setP95Ms(row.getP95Ms());
+        vo.setByDifficultyJson(row.getByDifficultyJson());
+        vo.setReportPath(row.getReportPath());
+        vo.setGitSha(row.getGitSha());
+        if (row.getGatePass() != null) {
+            vo.setGatePass(row.getGatePass() == 1);
+        }
+        vo.setCreateTime(row.getCreateTime());
+        return vo;
     }
 }

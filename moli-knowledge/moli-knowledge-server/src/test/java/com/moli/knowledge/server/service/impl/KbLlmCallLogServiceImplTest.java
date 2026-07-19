@@ -37,10 +37,15 @@ public class KbLlmCallLogServiceImplTest {
     private KbLlmCallLogMapper kbLlmCallLogMapper;
     @Mock
     private KbLlmProperties kbLlmProperties;
+    @Mock
+    private com.moli.knowledge.server.config.KbLlmRouterProperties routerProperties;
 
     @Before
     public void setUp() {
         when(kbLlmProperties.isCallLogEnabled()).thenReturn(true);
+        com.moli.knowledge.server.config.KbLlmRouterProperties.Pricing pricing =
+                new com.moli.knowledge.server.config.KbLlmRouterProperties.Pricing();
+        when(routerProperties.getPricing()).thenReturn(pricing);
     }
 
     @Test
@@ -57,12 +62,15 @@ public class KbLlmCallLogServiceImplTest {
             ids.when(IdGenerator::getId).thenReturn(100L);
             shiro.when(ShiroUtils::getUserId).thenReturn(1L);
 
-            service.recordSuccess("ask", 1L, "glm", "glm-4-flash", 150);
+            service.recordSuccess("ask", 1L, "glm", "glm-4-flash", 150, false, true, 20, 10,
+                    java.math.BigDecimal.ZERO);
 
             ArgumentCaptor<KbLlmCallLog> captor = ArgumentCaptor.forClass(KbLlmCallLog.class);
             verify(kbLlmCallLogMapper).insert(captor.capture());
             Assert.assertEquals("ask", captor.getValue().getScene());
             Assert.assertEquals("success", captor.getValue().getStatus());
+            Assert.assertTrue(captor.getValue().getCacheHit());
+            Assert.assertEquals(Integer.valueOf(20), captor.getValue().getPromptTokensEst());
         }
     }
 

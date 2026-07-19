@@ -51,5 +51,6 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 ## 后续（v2+）
 
+- ChatBI NL2SQL（AI-4）：W5–W8 已合入 — 见 [`docs/design/bi-chatbi-nl2sql-contract.md`](../docs/design/bi-chatbi-nl2sql-contract.md) §5 · 评测 [`bi/eval/README.md`](moli-ai-server/bi/eval/README.md)
 - 报表 / 大屏 / 数据接口
 - 独立 BI 表结构与权限域

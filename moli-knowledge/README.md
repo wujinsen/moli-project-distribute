@@ -44,6 +44,7 @@
 | **`kb/tools/serve.py`** | 零依赖本地 Viewer：浏览 wiki + 检索式 Query + 高亮引用 | `python kb/tools/serve.py` → `http://127.0.0.1:8765` | 见下「看效果」 |
 | **`kb/tools/sync_to_db.py`** | kb→DB 单向增量同步：把 wiki 写进 `kb_document` 供 Java/前端使用 | `python kb/tools/sync_to_db.py --dry-run`（先校验）/ 去掉 `--dry-run` 写库 | 见下「同步到数据库」 |
 | **`kb/tools/enrich.py`** | 已有 wiki 页 **Enrich 治理**：追加 patch + log/index/edges（与 Web `POST /kb/wiki/enrich`、Ingest EnrichWriter 对齐） | `python kb/tools/enrich.py --slug guides/foo --patch-file p.md --apply` | [`KNOWLEDGE_API.md`](../docs/api/KNOWLEDGE_API.md) §8.4 |
+| **`deep-research/`** | **AI-10 DeepResearch** sidecar（Planner/Retriever/Writer/Reviewer） | `uvicorn deep_research.main:app --port 8095` · [`deep-research/README.md`](deep-research/README.md) | [`AI-10-contract.md`](../docs/design/contracts/AI-10-contract.md) · [`KNOWLEDGE_API.md`](../docs/api/KNOWLEDGE_API.md) §3 |
 
 ---
 
@@ -128,6 +129,7 @@ bash kb/tools/ci/run_sync.sh sync-all
 moli-knowledge/
   README.md                  # 本文（模块总览）
   moli-knowledge-server/     # Java REST 后端（见其 README）
+  deep-research/             # AI-10 DeepResearch Python sidecar
   kb/                        # LLM-Wiki 知识库
     AGENTS.md                #   契约（Agent 工作前必读）
     README.md  ROADMAP.md    #   说明 / 功能规划
@@ -146,5 +148,6 @@ moli-knowledge/
 - 知识库范式与用法：[`kb/README.md`](kb/README.md)
 - 知识库契约（schema / 三操作）：[`kb/AGENTS.md`](kb/AGENTS.md)
 - **自我进化操作手册**（Ingest/Lint/Sync/Crystallize、AI 审校 MD）：[`kb/wiki-moli/develop/AI自我进化与MD审校流程.md`](kb/wiki-moli/develop/AI自我进化与MD审校流程.md)
+- **DeepResearch（AI-10）**：[`deep-research/README.md`](deep-research/README.md) · 契约 [`docs/design/contracts/AI-10-contract.md`](../docs/design/contracts/AI-10-contract.md)
 - 功能规划与双轨分工：[`kb/ROADMAP.md`](kb/ROADMAP.md)
 - 现有知识页目录：[`kb/wiki/index.md`](kb/wiki/index.md)

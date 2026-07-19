@@ -46,3 +46,13 @@
 ## [2026-07-13] implement | ask ä½œç”¨åŸŸ/ç²¾æ’ä¼˜åŒ– â†’ golden hit@8=100%ï¼ˆM03/M06/E01 ä¿®å¤ï¼‰
 ## [2026-07-13] implement | chunk åˆ‡æ®µ v1ï¼šsync_to_db å†™ kb_document_chunk + /kb/ask æŒ‰æ®µå¬å›ï¼ˆ+ eval å›å½’ï¼‰
 ## [2026-07-13] docs | è…¾è®¯äº‘ CVM åŸºç¡€ç¯å¢ƒå®‰è£… â†’ docs/ops/tencent-cloud-cvm-bootstrap.md + enrich wiki/è…¾è®¯äº‘ç”Ÿäº§éƒ¨ç½²æŒ‡å—ã€deploy/è…¾è®¯äº‘ä¸Šçº¿æµç¨‹ Â§3.0
+
+## [2026-07-19] maintenance | AI-5 GraphRAG Êı¾İ²à½µÔë ¡ú enrich guides/±¾µØÆô¶¯Ö¸ÄÏ£¨related ÊÕÖ÷Á´ + FAQ È¥ [[Ç°¶Ë/docker/swagger]]£©¡¤ develop/ÓÃ»§ÖĞĞÄ£¨related ÊÕÉè¼ÆÒ³ + È¥ [[È¨ÏŞ¹ÜÀí²Ù×÷Ö¸ÄÏ]]£©
+
+## [2026-07-19] maintenance | AI-5 GraphRAG Êı¾İ²à ¡¤ checklist È¥ÊàÅ¦ÔëÉù ¡ú enrich develop/outputs/ÜÔÀòĞÂÈËÉÏÊÖchecklist£¨[[ÏîÄ¿ÎÄµµ×ÜÀÀ]] ÎóÁ´¸ÄÎª±¾µØÆô¶¯/¿â³õÊ¼»¯/µÇÂ¼¼øÈ¨µÈÖ÷Â·¾¶£©
+
+## [2026-07-19] maintenance | AI-5 GraphRAG Êı¾İ²à ¡¤ È¥ÏîÄ¿ÎÄµµ×ÜÀÀÊàÅ¦ ¡ú enrich ÜÔÀòÎ¢·şÎñÈ«Á´Â·Ò»ÕÅÍ¼¡¢ÜÔÀòµÇÂ¼Óë¼øÈ¨¹ÊÕÏ¸ùÒò»ã×Ü£¨[[ÏîÄ¿ÎÄµµ×ÜÀÀ]] ÎóÁ´¸ÄÎª±¾µØÆô¶¯/µÇÂ¼¼øÈ¨/Íø¹ØµÈ£©
+
+## [2026-07-19] maintenance | AI-5 GraphRAG Êı¾İ²à ¡¤ SQLÓëÊı¾İ×ÖµäË÷ÒıÈ¥ÊàÅ¦±ß£»±¾µØÆô¶¯ related È¥µô¹ÊÕÏÅÅ²é
+
+## [2026-07-20] maintenance | AI-5 A+B+C ¡¤ enrich ops/¼à¿ØÓëÈÕÖ¾+¹ÊÕÏÅÅ²éÖ¸ÄÏ£¨M28 Áª¶Á£©¡¤ Ëã·¨ protectBaseTopK/hubPenalty

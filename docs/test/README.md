@@ -24,6 +24,7 @@
 | **[knowledge-lint-ops-acceptance.md](knowledge-lint-ops-acceptance.md)** | **KBOPS-8/10 健康体检工单验收 + 32 单测** |
 | [knowledge-script-vs-llm-matrix.md](knowledge-script-vs-llm-matrix.md) | 脚本 vs LLM |
 | **[knowledge-t22-image-remediation.md](knowledge-t22-image-remediation.md)** | **T22 wujinsen 插图回迁验收 + 自动化测试** |
+| **[knowledge-deep-research-smoke.md](knowledge-deep-research-smoke.md)** | **AI-10 DeepResearch 冒烟 + pytest** |
 
 ## 压测
 

@@ -6,6 +6,9 @@ package com.moli.knowledge.server.support;
 public final class KbLlmCallScenes {
 
     public static final String ASK = "ask";
+    public static final String AGENTIC_REWRITE = "agentic_rewrite";
+    public static final String AGENTIC_SELF_CHECK = "agentic_self_check";
+    public static final String ASK_GROUNDING = "ask_grounding";
     public static final String INGEST_PLAN = "ingest_plan";
     public static final String INGEST_GENERATE = "ingest_generate";
     public static final String INGEST_ENRICH = "ingest_enrich";

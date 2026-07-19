@@ -31,6 +31,16 @@ class EmbedResponse(BaseModel):
     deleted: int
 
 
+class EmbedQueryRequest(BaseModel):
+    text: str
+
+
+class EmbedQueryResponse(BaseModel):
+    model: str
+    dim: int
+    embedding: list[float]
+
+
 class SearchFilter(BaseModel):
     kbType: list[str] | None = None
     excludeKbType: list[str] | None = None
@@ -66,6 +76,31 @@ class HealthResponse(BaseModel):
     indexedChunks: int
     chromaPath: str
     modelLoaded: bool
+    rerankModel: str | None = None
+    rerankModelLoaded: bool = False
+    device: str | None = None
+
+
+class RerankCandidate(BaseModel):
+    chunkId: int
+    text: str
+
+
+class RerankRequest(BaseModel):
+    query: str
+    candidates: list[RerankCandidate] = Field(default_factory=list)
+    topM: int = 8
+
+
+class RerankHit(BaseModel):
+    chunkId: int
+    score: float
+    rank: int
+
+
+class RerankResponse(BaseModel):
+    model: str
+    results: list[RerankHit]
 
 
 def filter_to_lists(flt: SearchFilter | None) -> tuple[list[str] | None, list[str] | None]:

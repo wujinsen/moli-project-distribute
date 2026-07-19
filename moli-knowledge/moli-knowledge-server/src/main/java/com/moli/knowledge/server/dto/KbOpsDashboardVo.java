@@ -28,4 +28,7 @@ public class KbOpsDashboardVo {
 
     @ApiModelProperty("wiki↔DB 漂移摘要（KBOPS-A3）")
     private KbOpsDriftSummaryVo driftSummary = new KbOpsDriftSummaryVo();
+
+    @ApiModelProperty("检索质量摘要（AI-3）")
+    private KbOpsEvalSummaryVo retrievalQuality = new KbOpsEvalSummaryVo();
 }

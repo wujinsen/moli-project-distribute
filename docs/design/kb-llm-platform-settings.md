@@ -313,6 +313,36 @@ kbAclService.assertPlatformLlmManage();
 
 ---
 
+## 12. AI-8 路由 / 语义缓存（W13–W14）
+
+> 契约：[`docs/design/contracts/AI-8-contract.md`](contracts/AI-8-contract.md) · 默认 **router/cache 均关**，零回归。
+
+### 12.1 调用链
+
+```
+KbLlmClient.chat(scene, …)
+  ├─ kb.llm.cache.enabled → KbLlmSemanticCache.lookup（Redis 精确键；可选 approx）
+  ├─ miss → kb.llm.router.enabled → KbLlmRouter failover
+  └─ KbLlmCallLogService.record*（cache_hit / failover / estimated_cost_usd）
+```
+
+### 12.2 配置键
+
+| 前缀 | 默认 | 说明 |
+|------|------|------|
+| `kb.llm.router.enabled` | `false` | primary 失败切 `fallbacks[]`（env key） |
+| `kb.llm.cache.enabled` | `false` | Redis 语义缓存 |
+| `kb.llm.cache.ttl-seconds` | `3600` | 精确键 TTL |
+| `kb.llm.cache.approx-enabled` | `false` | embedding 近似命中（sidecar `POST /embed-query`） |
+
+缓存键含 **scene + 归一化 userPrompt + model + system 指纹**，防跨 scene / 跨 system 串答。
+
+### 12.3 运维看板
+
+`GET /kb/ops/dashboard` → `llm.cacheHitRate` · `llm.estimatedCostUsd` · `llm.costTrend[]`（需执行 `35_kb_llm_call_log_ai8.sql`）。
+
+---
+
 ## 11. 相关
 
 - [`docs/nacos/knowledge-server-kb-llm-dev.yaml`](../nacos/knowledge-server-kb-llm-dev.yaml)（bootstrap 模板，一期降级为兜底）

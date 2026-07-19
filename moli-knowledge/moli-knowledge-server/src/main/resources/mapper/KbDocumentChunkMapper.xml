@@ -75,4 +75,76 @@
         LIMIT #{limit}
     </select>
 
+    <select id="selectAskChunksByIds" resultType="com.moli.knowledge.server.dto.KbChunkAskRow">
+        SELECT c.id AS chunkId,
+               c.document_id AS documentId,
+               c.space_id AS spaceId,
+               c.slug,
+               d.title,
+               d.summary,
+               c.kb_type AS kbType,
+               c.heading,
+               c.content,
+               c.chunk_index AS chunkIndex
+        FROM kb_document_chunk c
+        INNER JOIN kb_document d ON d.id = c.document_id AND d.is_delete = 0
+        WHERE c.is_delete = 0
+        <if test="status != null">
+            AND c.status = #{status}
+        </if>
+        AND c.id IN
+        <foreach collection="chunkIds" item="cid" open="(" separator="," close=")">
+            #{cid}
+        </foreach>
+        ORDER BY c.chunk_index ASC
+    </select>
+
+    <select id="selectAskChunksByDocumentIds" resultType="com.moli.knowledge.server.dto.KbChunkAskRow">
+        SELECT chunkId, documentId, spaceId, slug, title, summary, kbType, heading, content, chunkIndex
+        FROM (
+            SELECT c.id AS chunkId,
+                   c.document_id AS documentId,
+                   c.space_id AS spaceId,
+                   c.slug,
+                   d.title,
+                   d.summary,
+                   c.kb_type AS kbType,
+                   c.heading,
+                   c.content,
+                   c.chunk_index AS chunkIndex,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY c.document_id
+                       ORDER BY
+                       <choose>
+                           <when test="keyword != null and keyword != ''">
+                               CASE WHEN c.heading LIKE CONCAT('%', #{keyword}, '%')
+                                         OR c.content LIKE CONCAT('%', #{keyword}, '%')
+                                    THEN 0 ELSE 1 END,
+                           </when>
+                       </choose>
+                       c.chunk_index ASC
+                   ) AS rn
+            FROM kb_document_chunk c
+            INNER JOIN kb_document d ON d.id = c.document_id AND d.is_delete = 0
+            WHERE c.is_delete = 0
+            <if test="status != null">
+                AND c.status = #{status}
+            </if>
+            <if test="spaceIds != null and spaceIds.size() &gt; 0">
+                AND c.space_id IN
+                <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
+                    #{sid}
+                </foreach>
+            </if>
+            <if test="documentIds != null and documentIds.size() &gt; 0">
+                AND c.document_id IN
+                <foreach collection="documentIds" item="did" open="(" separator="," close=")">
+                    #{did}
+                </foreach>
+            </if>
+        ) ranked
+        WHERE ranked.rn &lt;= #{perDoc}
+        ORDER BY documentId ASC, chunkIndex ASC
+    </select>
+
 </mapper>

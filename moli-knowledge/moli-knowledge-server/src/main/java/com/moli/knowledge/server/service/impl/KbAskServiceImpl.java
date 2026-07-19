@@ -5,9 +5,19 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.constant.CommonConstant;
+import com.moli.knowledge.server.config.KbSearchProperties;
 import com.moli.knowledge.server.dto.AskRequest;
 import com.moli.knowledge.server.dto.AskResponse;
 import com.moli.knowledge.server.dto.KbChunkAskRow;
+import com.moli.knowledge.server.dto.retrieval.RerankCandidateDto;
+import com.moli.knowledge.server.dto.retrieval.RerankHitDto;
+import com.moli.knowledge.server.dto.retrieval.RerankResponseDto;
+import com.moli.knowledge.server.dto.retrieval.VectorSearchHit;
+import com.moli.knowledge.server.support.KbGraphExpandConfig;
+import com.moli.knowledge.server.support.KbGraphExpandSupport;
+import com.moli.knowledge.server.support.KbGraphMergeSupport;
+import com.moli.knowledge.server.support.KbHybridRrfSupport;
+import com.moli.knowledge.server.support.KbRetrievalClient;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.dto.QaHistoryVo;
@@ -20,6 +30,9 @@ import com.moli.knowledge.server.mapper.KbQaLogMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbAskService;
 import com.moli.knowledge.server.service.KbLlmClient;
+import com.moli.knowledge.server.guard.InputGuardOutcome;
+import com.moli.knowledge.server.guard.KbInputGuardService;
+import com.moli.knowledge.server.guard.KbOutputGroundingService;
 import com.moli.knowledge.server.support.KbLlmCallScenes;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,14 +42,17 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * 知识库问答（Query）。流程对齐 kb/AGENTS.md §5 与 kb/tools/serve.py：
@@ -47,7 +63,7 @@ public class KbAskServiceImpl implements KbAskService {
 
     private static final Logger log = LoggerFactory.getLogger(KbAskServiceImpl.class);
 
-    private static final String SYSTEM_PROMPT =
+    static final String SYSTEM_PROMPT =
             "你是茉莉企业知识库的问答助手。只能依据用户提供的【知识库页】内容作答，严禁编造。\n"
             + "要求：\n"
             + "1) 用中文、条理清晰，先给结论再给要点；\n"
@@ -72,10 +88,25 @@ public class KbAskServiceImpl implements KbAskService {
     private com.moli.knowledge.server.config.KbSearchProperties kbSearchProperties;
     @Resource
     private com.moli.knowledge.server.config.KbAskProperties kbAskProperties;
+    @Resource
+    private KbRetrievalClient kbRetrievalClient;
+    @Resource
+    private KbGraphExpandSupport kbGraphExpandSupport;
+    @Resource
+    private KbInputGuardService inputGuardService;
+    @Resource
+    private KbOutputGroundingService outputGroundingService;
 
     @Override
     public AskResponse ask(AskRequest request) {
-        String question = request.getQuestion().trim();
+        return executeAsk(request, null);
+    }
+
+    /**
+     * @param preGuard 非 null 时跳过重复检测（Agentic BLOCK 路径）
+     */
+    AskResponse executeAsk(AskRequest request, InputGuardOutcome preGuard) {
+        String rawQuestion = request.getQuestion().trim();
         int citationTopK = request.getTopK() == null || request.getTopK() <= 0
                 ? kbAskProperties.normalizedCitationTopK()
                 : request.getTopK();
@@ -84,29 +115,40 @@ public class KbAskServiceImpl implements KbAskService {
                 : request.getLlmContextTopK();
         int llmContextMaxChars = kbAskProperties.normalizedLlmContextMaxChars();
 
-        Scope scope = detectScope(question);
-        List<String> terms = buildTerms(question);
-
-        // 候选页：已发布 + 空间过滤 + 作用域类型过滤（叠加 ACL 可读空间）
         List<Long> scopeSpaces = kbAclService.resolveReadableSpaceIds(
                 request.getSpaceId(), request.getSpaceIds());
         if (scopeSpaces.isEmpty()) {
             AskResponse empty = new AskResponse();
             empty.setAnswer("无可访问的知识空间。");
             empty.setMode("retrieval");
-            empty.setScope(scope.include.isEmpty() ? "全部类型" : scope.include.toString());
-            empty.setScopeReason(scope.reason);
+            empty.setScope("全部类型");
+            empty.setScopeReason("");
             empty.setProvider(kbLlmClient.getProvider());
             empty.setModel(kbLlmClient.getModel());
             return empty;
         }
 
+        InputGuardOutcome guardOutcome = preGuard != null ? preGuard : inputGuardService.process(rawQuestion);
+        String question = guardOutcome.getQuestionForProcessing();
+        if (guardOutcome.isPiiOnlyReject()) {
+            return buildGuardRejectResponse(request, guardOutcome, scopeSpaces, question);
+        }
+
+        Scope scope = detectScope(question);
+        List<String> terms = buildTerms(question);
         int candidateLimit = kbSearchProperties.normalizedAskCandidateLimit();
         List<AskResponse.Citation> citations;
         String llmContext;
 
         if (kbSearchProperties.isChunkEnabled()) {
-            ChunkRecallResult chunkResult = recallAndScoreChunks(scopeSpaces, scope, question, terms, candidateLimit);
+            String strategy = resolveRetrievalStrategy(request);
+            ChunkRecallResult chunkResult;
+            if (kbSearchProperties.isNgramStrategy(strategy)) {
+                chunkResult = recallAndScoreChunks(scopeSpaces, scope, question, terms, candidateLimit);
+            } else {
+                chunkResult = recallHybridChunks(scopeSpaces, scope, question, terms, candidateLimit, strategy,
+                        request);
+            }
             DocumentRecallResult docResult = recallAndScoreDocuments(
                     scopeSpaces, scope, question, terms, candidateLimit);
             if (chunkResult != null && !chunkResult.scored.isEmpty()) {
@@ -130,8 +172,16 @@ public class KbAskServiceImpl implements KbAskService {
         resp.setModel(kbLlmClient.getModel());
 
         resp.setCitations(citations);
+        if (guardOutcome.toVo() != null) {
+            resp.setGuard(guardOutcome.toVo());
+        }
 
-        if (shouldUseLlm(request) && !citations.isEmpty()) {
+        boolean injectBlocked = guardOutcome.isBlocked();
+        if (injectBlocked) {
+            String tail = citations.isEmpty() ? null : retrievalAnswer(question, citations);
+            resp.setAnswer(inputGuardService.mergeBlockedAnswer(tail));
+            resp.setMode("retrieval");
+        } else if (shouldUseLlm(request) && !citations.isEmpty()) {
             try {
                 Long askSpaceId = request.getSpaceId() != null ? request.getSpaceId()
                         : (scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null);
@@ -139,6 +189,7 @@ public class KbAskServiceImpl implements KbAskService {
                         "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + llmContext);
                 resp.setAnswer(answer);
                 resp.setMode("generative");
+                outputGroundingService.applyGrounding(resp, askSpaceId, guardOutcome);
             } catch (Exception e) {                       // noqa
                 log.warn("LLM 调用失败，降级检索式: {}", e.getMessage());
                 resp.setAnswer("> 调用 " + kbLlmClient.getProvider() + " 失败（" + e.getMessage()
@@ -156,7 +207,22 @@ public class KbAskServiceImpl implements KbAskService {
             resp.setMode("retrieval");
         }
 
-        Long qaLogId = saveLog(request, resp, scopeSpaces);
+        Long qaLogId = saveLog(request, resp, scopeSpaces, question);
+        resp.setQaLogId(qaLogId);
+        return resp;
+    }
+
+    private AskResponse buildGuardRejectResponse(AskRequest request, InputGuardOutcome guardOutcome,
+                                                 List<Long> scopeSpaces, String questionForLog) {
+        AskResponse resp = new AskResponse();
+        resp.setAnswer(InputGuardOutcome.PII_ONLY_ANSWER);
+        resp.setMode("retrieval");
+        resp.setScope("全部类型");
+        resp.setScopeReason("");
+        resp.setProvider(kbLlmClient.getProvider());
+        resp.setModel(kbLlmClient.getModel());
+        resp.setGuard(guardOutcome.toVo());
+        Long qaLogId = saveLog(request, resp, scopeSpaces, questionForLog);
         resp.setQaLogId(qaLogId);
         return resp;
     }
@@ -257,7 +323,7 @@ public class KbAskServiceImpl implements KbAskService {
     // 作用域识别
     // ------------------------------------------------------------------
 
-    private static class Scope {
+    static class Scope {
         List<String> include = new ArrayList<>();
         Set<String> exclude = new LinkedHashSet<>();
         String reason;
@@ -274,10 +340,18 @@ public class KbAskServiceImpl implements KbAskService {
             s.reason = "命中『面试题』意图 → 限 interview";
             return s;
         }
-        if (find(q, "方案|解决|最佳实践|优化|调优|排查")) {
+        // 勿单独匹配「排查」——会把 ops guide（故障排查指南/监控与日志）滤掉（AI-5 M28）
+        if (find(q, "方案|解决|最佳实践|优化|调优|排查方案|根因分析")) {
             s.include.add("article");
             s.include.add("concept");
             s.reason = "命中『方案/最佳实践』意图 → 限 article + concept";
+            return s;
+        }
+        // 监控告警 + 故障排查联读 → guide（运维手册）
+        if (find(q, "监控告警|告警.*排查|排查.*文档|监控与日志|故障排查")) {
+            s.include.add("guide");
+            s.include.add("service");
+            s.reason = "命中『监控/排障文档』意图 → 限 guide + service";
             return s;
         }
         // 设计/原理类（概要设计、RBAC 模型怎么设计、JVM 怎么工作）→ 概念/文章，勿落 guide
@@ -459,6 +533,340 @@ public class KbAskServiceImpl implements KbAskService {
         }
         scored.sort((a, b) -> Integer.compare(b.score, a.score));
         return scored.isEmpty() ? null : new ChunkRecallResult(scored);
+    }
+
+    private String resolveRetrievalStrategy(AskRequest request) {
+        if (StringUtils.isNotBlank(request.getRetrievalStrategy())) {
+            return KbSearchProperties.normalizeStrategy(request.getRetrievalStrategy());
+        }
+        return kbSearchProperties.normalizedRetrievalStrategy();
+    }
+
+    /** G-INV-1：ngram 忽略 graph；请求 graphExpand 覆盖配置默认。 */
+    private boolean resolveGraphExpand(AskRequest request, String strategy) {
+        if (kbSearchProperties.isNgramStrategy(strategy)) {
+            return false;
+        }
+        if (request != null && request.getGraphExpand() != null) {
+            return request.getGraphExpand();
+        }
+        return kbSearchProperties.graphEnabled();
+    }
+
+    /**
+     * AI-2 hybrid：ngram + 向量 RRF 融合；AI-5 graph 在 rerank 前扩跳；sidecar 失败时仍有 ngram 候选。
+     */
+    private ChunkRecallResult recallHybridChunks(List<Long> scopeSpaces, Scope scope, String question,
+                                                 List<String> terms, int candidateLimit, String strategy,
+                                                 AskRequest request) {
+        ChunkRecallResult ngramResult = recallAndScoreChunks(scopeSpaces, scope, question, terms, candidateLimit);
+        List<ChunkScored> ngramChunks = ngramResult == null
+                ? Collections.emptyList() : ngramResult.scored;
+
+        try {
+            List<String> includeTypes = scope.include.isEmpty() ? null : new ArrayList<>(scope.include);
+            List<String> excludeTypes = scope.exclude.isEmpty() ? null : new ArrayList<>(scope.exclude);
+            List<VectorSearchHit> vectorHits = kbRetrievalClient.search(
+                    question, scopeSpaces, includeTypes, excludeTypes);
+            vectorHits = filterVectorHitsAcl(vectorHits, scopeSpaces, scope);
+
+            if (ngramChunks.isEmpty() && vectorHits.isEmpty()) {
+                return ngramResult;
+            }
+
+            Map<Long, String> slugByChunkId = buildChunkSlugIndex(ngramChunks, vectorHits);
+            List<Long> ngramIds = new ArrayList<>();
+            for (ChunkScored cs : ngramChunks) {
+                if (cs.row.getChunkId() != null) {
+                    ngramIds.add(cs.row.getChunkId());
+                }
+            }
+            Map<Long, Double> fused = KbHybridRrfSupport.rrfFuse(
+                    ngramIds, vectorHits, kbSearchProperties.normalizedRrfK());
+            fused = KbHybridRrfSupport.applyAnnexFusionPenalty(fused, slugByChunkId);
+            List<Long> ordered = KbHybridRrfSupport.sortChunkIdsByRrf(fused);
+
+            HybridRecallState state = new HybridRecallState(ordered, fused, ngramChunks);
+            if (resolveGraphExpand(request, strategy)) {
+                state = graphExpandAndMerge(state, scopeSpaces, scope, question, terms);
+            }
+            if (kbSearchProperties.isHybridRerankStrategy(strategy)) {
+                state.ordered = applyRerank(question, state.ordered);
+            }
+            List<ChunkScored> scored = materializeHybridRecall(state, terms, candidateLimit);
+            return scored.isEmpty() ? ngramResult : new ChunkRecallResult(scored);
+        } catch (Exception e) {
+            log.warn("hybrid 召回异常，降级 ngram: {}", e.getMessage());
+            return ngramResult;
+        }
+    }
+
+    /**
+     * AI-5 §1.3 Step 1–4：BFS graphBoost + 邻居 chunk 注入/强化；G-INV-7 异常回退原 state。
+     */
+    private HybridRecallState graphExpandAndMerge(HybridRecallState state,
+                                                  List<Long> scopeSpaces,
+                                                  Scope scope,
+                                                  String question,
+                                                  List<String> terms) {
+        if (state == null || state.ordered == null || state.ordered.isEmpty()) {
+            return state;
+        }
+        KbGraphExpandConfig cfg = KbGraphExpandConfig.from(kbSearchProperties).withEnabled(true);
+        try {
+            Map<Long, KbChunkAskRow> rowByChunkId = buildRowMapForOrdered(state.ordered, state.ngramChunks);
+            Map<Long, Integer> chunkScores = computeHybridChunkScores(state.ordered, state.fused, rowByChunkId, terms);
+            Map<Long, Integer> docMax = KbGraphMergeSupport.docMaxScores(chunkScores, rowByChunkId);
+            Map<Long, Double> entryNorm = KbGraphMergeSupport.buildEntryDocScoreNorm(docMax, cfg.getEntryTopE());
+            if (entryNorm.isEmpty()) {
+                return state;
+            }
+
+            Map<Long, Double> graphBoost = kbGraphExpandSupport.expand(entryNorm, scopeSpaces, cfg);
+            if (graphBoost.isEmpty()) {
+                return state;
+            }
+
+            Set<Long> baseDocIds = docMax.keySet();
+            List<Long> neighborDocIds = graphBoost.keySet().stream()
+                    .filter(d -> d != null && !baseDocIds.contains(d))
+                    .collect(Collectors.toList());
+            if (!neighborDocIds.isEmpty()) {
+                List<String> includeTypes = scope.include.isEmpty() ? null : new ArrayList<>(scope.include);
+                List<KbChunkAskRow> neighborRows = kbDocumentChunkMapper.selectAskChunksByDocumentIds(
+                        neighborDocIds,
+                        scopeSpaces,
+                        DocumentStatus.PUBLISHED.getCode(),
+                        question,
+                        cfg.getChunksPerNeighbor() <= 0 ? 2 : cfg.getChunksPerNeighbor());
+                for (KbChunkAskRow row : neighborRows) {
+                    if (row.getChunkId() != null
+                            && KbGraphMergeSupport.passesScope(row, scopeSpaces, includeTypes, scope.exclude)) {
+                        rowByChunkId.put(row.getChunkId(), row);
+                    }
+                }
+            }
+
+            KbGraphMergeSupport.mergeGraphIntoPool(
+                    state.ordered,
+                    chunkScores,
+                    rowByChunkId,
+                    graphBoost,
+                    cfg,
+                    row -> scoreChunk(row, terms));
+
+            state.chunkScores = chunkScores;
+            return state;
+        } catch (Exception ex) {
+            log.warn("graph expand merge failed, degrade hybrid: {}", ex.getMessage());
+            return state;
+        }
+    }
+
+    private Map<Long, KbChunkAskRow> buildRowMapForOrdered(List<Long> ordered, List<ChunkScored> ngramChunks) {
+        Map<Long, KbChunkAskRow> rowByChunkId = new HashMap<>();
+        for (ChunkScored cs : ngramChunks) {
+            if (cs.row.getChunkId() != null) {
+                rowByChunkId.put(cs.row.getChunkId(), cs.row);
+            }
+        }
+        List<Long> needLoad = new ArrayList<>();
+        for (Long chunkId : ordered) {
+            if (!rowByChunkId.containsKey(chunkId)) {
+                needLoad.add(chunkId);
+            }
+        }
+        if (!needLoad.isEmpty()) {
+            List<KbChunkAskRow> loaded = kbDocumentChunkMapper.selectAskChunksByIds(
+                    needLoad, DocumentStatus.PUBLISHED.getCode());
+            for (KbChunkAskRow row : loaded) {
+                if (row.getChunkId() != null) {
+                    rowByChunkId.put(row.getChunkId(), row);
+                }
+            }
+        }
+        return rowByChunkId;
+    }
+
+    private Map<Long, Integer> computeHybridChunkScores(List<Long> ordered,
+                                                        Map<Long, Double> fused,
+                                                        Map<Long, KbChunkAskRow> rowByChunkId,
+                                                        List<String> terms) {
+        Map<Long, Integer> scores = new HashMap<>();
+        for (Long chunkId : ordered) {
+            KbChunkAskRow row = rowByChunkId.get(chunkId);
+            if (row == null) {
+                continue;
+            }
+            double rrf = fused.getOrDefault(chunkId, 0.0);
+            scores.put(chunkId, (int) (rrf * 10_000) + scoreChunk(row, terms));
+        }
+        return scores;
+    }
+
+    private List<ChunkScored> materializeHybridRecall(HybridRecallState state,
+                                                      List<String> terms,
+                                                      int candidateLimit) {
+        if (state.chunkScores != null && !state.chunkScores.isEmpty()) {
+            Map<Long, KbChunkAskRow> rowByChunkId = buildRowMapForOrdered(state.ordered, state.ngramChunks);
+            List<ChunkScored> scored = new ArrayList<>();
+            int limit = Math.min(candidateLimit, state.ordered.size());
+            for (int i = 0; i < limit; i++) {
+                Long chunkId = state.ordered.get(i);
+                KbChunkAskRow row = rowByChunkId.get(chunkId);
+                if (row == null) {
+                    continue;
+                }
+                int score = state.chunkScores.getOrDefault(chunkId, scoreChunk(row, terms));
+                scored.add(new ChunkScored(row, score));
+            }
+            return scored;
+        }
+        return materializeFusedChunks(state.ordered, state.fused, state.ngramChunks, terms, candidateLimit);
+    }
+
+    private Map<Long, String> buildChunkSlugIndex(List<ChunkScored> ngramChunks, List<VectorSearchHit> vectorHits) {
+        Map<Long, String> slugByChunkId = new HashMap<>();
+        for (ChunkScored cs : ngramChunks) {
+            if (cs.row.getChunkId() != null && StringUtils.isNotBlank(cs.row.getSlug())) {
+                slugByChunkId.putIfAbsent(cs.row.getChunkId(), cs.row.getSlug());
+            }
+        }
+        for (VectorSearchHit hit : vectorHits) {
+            if (hit.getChunkId() != null && StringUtils.isNotBlank(hit.getSlug())) {
+                slugByChunkId.putIfAbsent(hit.getChunkId(), hit.getSlug());
+            }
+        }
+        return slugByChunkId;
+    }
+
+    private List<VectorSearchHit> filterVectorHitsAcl(List<VectorSearchHit> hits,
+                                                      List<Long> scopeSpaces, Scope scope) {
+        if (hits == null || hits.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Set<Long> allowed = new HashSet<>(scopeSpaces);
+        List<VectorSearchHit> out = new ArrayList<>();
+        for (VectorSearchHit hit : hits) {
+            if (hit.getChunkId() == null || hit.getSpaceId() == null) {
+                continue;
+            }
+            if (!allowed.contains(hit.getSpaceId())) {
+                continue;
+            }
+            if (hit.getKbType() != null && scope.exclude.contains(hit.getKbType())) {
+                continue;
+            }
+            if (!scope.include.isEmpty() && hit.getKbType() != null
+                    && !scope.include.contains(hit.getKbType())) {
+                continue;
+            }
+            out.add(hit);
+        }
+        return out;
+    }
+
+    private List<Long> applyRerank(String question, List<Long> ordered) {
+        if (ordered == null || ordered.isEmpty()) {
+            return ordered;
+        }
+        List<Long> fusionOrder = new ArrayList<>(ordered);
+        try {
+            int poolSize = kbSearchProperties.normalizedRerankPool();
+            List<Long> poolIds = fusionOrder.subList(0, Math.min(poolSize, fusionOrder.size()));
+            List<KbChunkAskRow> rows = kbDocumentChunkMapper.selectAskChunksByIds(
+                    new ArrayList<>(poolIds), DocumentStatus.PUBLISHED.getCode());
+            Map<Long, KbChunkAskRow> rowMap = new HashMap<>();
+            for (KbChunkAskRow row : rows) {
+                rowMap.put(row.getChunkId(), row);
+            }
+            List<RerankCandidateDto> candidates = new ArrayList<>();
+            for (Long chunkId : poolIds) {
+                KbChunkAskRow row = rowMap.get(chunkId);
+                if (row == null) {
+                    continue;
+                }
+                RerankCandidateDto dto = new RerankCandidateDto();
+                dto.setChunkId(chunkId);
+                dto.setText(chunkPlainText(row));
+                candidates.add(dto);
+            }
+            RerankResponseDto resp = kbRetrievalClient.rerank(
+                    question, candidates, kbSearchProperties.normalizedRerankTopM());
+            if (resp == null || resp.getResults() == null || resp.getResults().isEmpty()) {
+                return fusionOrder;
+            }
+            List<Long> reordered = new ArrayList<>();
+            Set<Long> seen = new HashSet<>();
+            for (RerankHitDto hit : resp.getResults()) {
+                if (hit.getChunkId() != null && poolIds.contains(hit.getChunkId()) && seen.add(hit.getChunkId())) {
+                    reordered.add(hit.getChunkId());
+                }
+            }
+            for (Long chunkId : poolIds) {
+                if (seen.add(chunkId)) {
+                    reordered.add(chunkId);
+                }
+            }
+            if (fusionOrder.size() > poolSize) {
+                reordered.addAll(fusionOrder.subList(poolSize, fusionOrder.size()));
+            }
+            return reordered;
+        } catch (Exception e) {
+            log.warn("rerank 异常，回退融合序: {}", e.getMessage());
+            return fusionOrder;
+        }
+    }
+
+    private List<ChunkScored> materializeFusedChunks(List<Long> ordered, Map<Long, Double> fused,
+                                                     List<ChunkScored> ngramChunks, List<String> terms,
+                                                     int candidateLimit) {
+        Map<Long, KbChunkAskRow> ngramRowMap = new HashMap<>();
+        for (ChunkScored cs : ngramChunks) {
+            if (cs.row.getChunkId() != null) {
+                ngramRowMap.put(cs.row.getChunkId(), cs.row);
+            }
+        }
+        List<Long> needLoad = new ArrayList<>();
+        for (Long chunkId : ordered) {
+            if (!ngramRowMap.containsKey(chunkId)) {
+                needLoad.add(chunkId);
+            }
+        }
+        if (!needLoad.isEmpty()) {
+            List<KbChunkAskRow> loaded = kbDocumentChunkMapper.selectAskChunksByIds(
+                    needLoad, DocumentStatus.PUBLISHED.getCode());
+            for (KbChunkAskRow row : loaded) {
+                ngramRowMap.put(row.getChunkId(), row);
+            }
+        }
+        List<ChunkScored> scored = new ArrayList<>();
+        int limit = Math.min(candidateLimit, ordered.size());
+        for (int i = 0; i < limit; i++) {
+            Long chunkId = ordered.get(i);
+            KbChunkAskRow row = ngramRowMap.get(chunkId);
+            if (row == null) {
+                continue;
+            }
+            double rrf = fused.getOrDefault(chunkId, 0.0);
+            int score = (int) (rrf * 10_000) + scoreChunk(row, terms);
+            scored.add(new ChunkScored(row, score));
+        }
+        return scored;
+    }
+
+    private String chunkPlainText(KbChunkAskRow row) {
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isNotBlank(row.getHeading())) {
+            sb.append(row.getHeading().trim());
+        }
+        if (StringUtils.isNotBlank(row.getContent())) {
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(row.getContent().trim());
+        }
+        return sb.toString();
     }
 
     private DocumentRecallResult recallAndScoreDocuments(List<Long> scopeSpaces, Scope scope, String question,
@@ -727,14 +1135,14 @@ public class KbAskServiceImpl implements KbAskService {
         return sb.toString();
     }
 
-    private Long saveLog(AskRequest request, AskResponse resp, List<Long> scopeSpaces) {
+    private Long saveLog(AskRequest request, AskResponse resp, List<Long> scopeSpaces, String questionForLog) {
         try {
             KbQaLog qa = new KbQaLog();
             Long id = com.moli.common.core.IdGenerator.getId();
             qa.setId(id);
             qa.setSpaceId(scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null);
             qa.setUserId(ShiroUtils.getUserId());
-            qa.setQuestion(request.getQuestion());
+            qa.setQuestion(questionForLog);
             qa.setAnswer(resp.getAnswer());
             qa.setCitations(JSON.toJSONString(resp.getCitations()));
             qa.setScope(packScope(resp.getMode(), resp.getScope()));
@@ -761,7 +1169,20 @@ public class KbAskServiceImpl implements KbAskService {
         }
     }
 
-    private static class ChunkScored {
+    private static class HybridRecallState {
+        List<Long> ordered;
+        Map<Long, Double> fused;
+        List<ChunkScored> ngramChunks;
+        Map<Long, Integer> chunkScores;
+
+        HybridRecallState(List<Long> ordered, Map<Long, Double> fused, List<ChunkScored> ngramChunks) {
+            this.ordered = ordered;
+            this.fused = fused;
+            this.ngramChunks = ngramChunks;
+        }
+    }
+
+    static class ChunkScored {
         final KbChunkAskRow row;
         final int score;
 
@@ -779,5 +1200,208 @@ public class KbAskServiceImpl implements KbAskService {
             this.doc = doc;
             this.score = score;
         }
+    }
+
+    // ------------------------------------------------------------------
+    // AI-7 Agentic：package-private 召回/合并/生成（复用 AI-2/AI-5，A-INV-5）
+    // ------------------------------------------------------------------
+
+    Scope detectScopeForAgentic(String question) {
+        return detectScope(question);
+    }
+
+    List<String> buildTermsForAgentic(String question) {
+        return buildTerms(question);
+    }
+
+    static final class QueryRecallResult {
+        final String query;
+        final Scope scope;
+        final List<String> terms;
+        final List<ChunkScored> chunkScored;
+        final List<Scored> docScored;
+
+        QueryRecallResult(String query, Scope scope, List<String> terms,
+                          List<ChunkScored> chunkScored, List<Scored> docScored) {
+            this.query = query;
+            this.scope = scope;
+            this.terms = terms;
+            this.chunkScored = chunkScored;
+            this.docScored = docScored;
+        }
+    }
+
+    static final class MergedPool {
+        final List<ChunkScored> mergedChunks;
+        final List<Scored> mergedDocs;
+        final Set<String> poolSlugs;
+
+        MergedPool(List<ChunkScored> mergedChunks, List<Scored> mergedDocs, Set<String> poolSlugs) {
+            this.mergedChunks = mergedChunks;
+            this.mergedDocs = mergedDocs;
+            this.poolSlugs = poolSlugs;
+        }
+    }
+
+    QueryRecallResult recallForQuery(AskRequest request, String query, List<Long> scopeSpaces) {
+        Scope scope = detectScope(query);
+        List<String> terms = buildTerms(query);
+        int candidateLimit = kbSearchProperties.normalizedAskCandidateLimit();
+        List<ChunkScored> chunkScored = null;
+        List<Scored> docScored;
+        if (kbSearchProperties.isChunkEnabled()) {
+            String strategy = resolveRetrievalStrategy(request);
+            ChunkRecallResult chunkResult;
+            if (kbSearchProperties.isNgramStrategy(strategy)) {
+                chunkResult = recallAndScoreChunks(scopeSpaces, scope, query, terms, candidateLimit);
+            } else {
+                chunkResult = recallHybridChunks(scopeSpaces, scope, query, terms, candidateLimit, strategy,
+                        request);
+            }
+            DocumentRecallResult docResult = recallAndScoreDocuments(
+                    scopeSpaces, scope, query, terms, candidateLimit);
+            chunkScored = chunkResult != null ? chunkResult.scored : null;
+            docScored = docResult.scored;
+        } else {
+            DocumentRecallResult docResult = recallAndScoreDocuments(
+                    scopeSpaces, scope, query, terms, candidateLimit);
+            docScored = docResult.scored;
+        }
+        return new QueryRecallResult(query, scope, terms, chunkScored, docScored);
+    }
+
+    MergedPool mergeQueryRecalls(List<QueryRecallResult> recalls) {
+        Map<Long, ChunkScored> byChunkId = new HashMap<>();
+        Map<Long, Scored> byDocId = new HashMap<>();
+        Set<String> poolSlugs = new LinkedHashSet<>();
+        for (QueryRecallResult qr : recalls) {
+            if (qr.chunkScored != null) {
+                for (ChunkScored cs : qr.chunkScored) {
+                    Long chunkId = cs.row.getChunkId();
+                    if (chunkId != null) {
+                        byChunkId.merge(chunkId, cs, (a, b) -> a.score >= b.score ? a : b);
+                        if (StringUtils.isNotBlank(cs.row.getSlug())) {
+                            poolSlugs.add(cs.row.getSlug());
+                        }
+                    } else if (cs.row.getDocumentId() != null) {
+                        byDocId.merge(cs.row.getDocumentId(),
+                                new Scored(null, cs.score),
+                                (a, b) -> a.score >= b.score ? a : b);
+                        if (StringUtils.isNotBlank(cs.row.getSlug())) {
+                            poolSlugs.add(cs.row.getSlug());
+                        }
+                    }
+                }
+            }
+            if (qr.docScored != null) {
+                for (Scored s : qr.docScored) {
+                    if (s.doc != null && s.doc.getId() != null) {
+                        byDocId.merge(s.doc.getId(), s, (a, b) -> a.score >= b.score ? a : b);
+                        if (StringUtils.isNotBlank(s.doc.getSlug())) {
+                            poolSlugs.add(s.doc.getSlug());
+                        }
+                    }
+                }
+            }
+        }
+        List<ChunkScored> mergedChunks = new ArrayList<>(byChunkId.values());
+        mergedChunks.sort((a, b) -> Integer.compare(b.score, a.score));
+        List<Scored> mergedDocs = new ArrayList<>();
+        for (Scored s : byDocId.values()) {
+            if (s.doc != null) {
+                mergedDocs.add(s);
+            }
+        }
+        mergedDocs.sort((a, b) -> Integer.compare(b.score, a.score));
+        return new MergedPool(mergedChunks, mergedDocs, poolSlugs);
+    }
+
+    List<String> slugsFromRecall(QueryRecallResult recall) {
+        Set<String> slugs = new LinkedHashSet<>();
+        if (recall.chunkScored != null) {
+            for (ChunkScored cs : recall.chunkScored) {
+                if (StringUtils.isNotBlank(cs.row.getSlug())) {
+                    slugs.add(cs.row.getSlug());
+                }
+            }
+        }
+        if (recall.docScored != null) {
+            for (Scored s : recall.docScored) {
+                if (s.doc != null && StringUtils.isNotBlank(s.doc.getSlug())) {
+                    slugs.add(s.doc.getSlug());
+                }
+            }
+        }
+        return new ArrayList<>(slugs);
+    }
+
+    AskResponse generateFromPool(AskRequest request, String question, MergedPool pool,
+                                 Scope displayScope, List<String> snippetTerms,
+                                 int citationTopK, int llmContextTopK, int llmContextMaxChars,
+                                 List<Long> scopeSpaces, boolean useLlm) {
+        List<AskResponse.Citation> citations;
+        String llmContext;
+        if (pool.mergedChunks != null && !pool.mergedChunks.isEmpty()) {
+            citations = buildMergedCitations(pool.mergedChunks, pool.mergedDocs, snippetTerms, citationTopK);
+            llmContext = buildChunkContext(pool.mergedChunks, llmContextTopK, llmContextMaxChars);
+        } else {
+            citations = buildDocumentCitations(pool.mergedDocs, snippetTerms, citationTopK);
+            llmContext = buildContext(pool.mergedDocs, llmContextTopK, llmContextMaxChars);
+        }
+        citations = filterCitationsToPool(citations, pool.poolSlugs);
+
+        AskResponse resp = new AskResponse();
+        resp.setScope(displayScope.include.isEmpty() ? "全部类型" : displayScope.include.toString());
+        resp.setScopeReason(displayScope.reason);
+        resp.setProvider(kbLlmClient.getProvider());
+        resp.setModel(kbLlmClient.getModel());
+        resp.setCitations(citations);
+
+        if (useLlm && kbLlmClient.usable() && !citations.isEmpty()) {
+            try {
+                Long askSpaceId = request.getSpaceId() != null ? request.getSpaceId()
+                        : (scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null);
+                String answer = kbLlmClient.chat(KbLlmCallScenes.ASK, askSpaceId, SYSTEM_PROMPT,
+                        "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + llmContext);
+                resp.setAnswer(answer);
+                resp.setMode("generative");
+            } catch (Exception e) {
+                log.warn("Agentic LLM 调用失败，降级检索式: {}", e.getMessage());
+                resp.setAnswer("> 调用 " + kbLlmClient.getProvider() + " 失败（" + e.getMessage()
+                        + "），已回退检索式。\n\n" + retrievalAnswer(question, citations));
+                resp.setMode("retrieval");
+            }
+        } else {
+            String note = "";
+            if (!useLlm) {
+                note = "> 本次未启用 LLM 生成式，当前为检索式。\n\n";
+            } else if (!kbLlmClient.usable()) {
+                note = "> 后端未配置 LLM（平台 LLM 设置或 kb.llm.enabled/api-key），当前为检索式。\n\n";
+            }
+            resp.setAnswer(note + retrievalAnswer(question, citations));
+            resp.setMode("retrieval");
+        }
+        return resp;
+    }
+
+    static List<AskResponse.Citation> filterCitationsToPool(List<AskResponse.Citation> citations,
+                                                            Set<String> poolSlugs) {
+        if (citations == null || citations.isEmpty()) {
+            return citations == null ? new ArrayList<>() : citations;
+        }
+        if (poolSlugs == null || poolSlugs.isEmpty()) {
+            return citations;
+        }
+        List<AskResponse.Citation> out = new ArrayList<>();
+        for (AskResponse.Citation c : citations) {
+            if (c.getSlug() != null && poolSlugs.contains(c.getSlug())) {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
+    Long saveQaLog(AskRequest request, AskResponse resp, List<Long> scopeSpaces) {
+        return saveLog(request, resp, scopeSpaces, request.getQuestion());
     }
 }

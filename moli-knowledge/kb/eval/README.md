@@ -9,6 +9,7 @@
 | 文件 | 说明 |
 |------|------|
 | `golden.jsonl` | 标准问答集（一行一题，可持续追加） |
+| `baselines.json` | **committed** 门禁基线（hit@3 / dirty / tolerance；CI 只读，不自动改） |
 | `reports/` | 每次评测输出的 JSON 报告（gitignore 建议保留最近几份即可） |
 | `../tools/eval_ask.py` | 评测脚本：登录网关 → 逐题调 `/kb/ask` → 出指标 |
 
@@ -53,11 +54,20 @@ python kb/tools/eval_ask.py --use-llm             # 生成式（同时检查 exp
 python kb/tools/fill_eval_metrics.py --run --use-llm   # 跑评测 + 自动回填 README/PORTFOLIO
 python kb/tools/eval_ask.py --only M03            # 只跑单题
 python kb/tools/eval_ask.py --space moli-ops-manual
-python kb/tools/eval_ask.py --min-hit 0.9 --gate-at-k 3   # hit@3 低于 0.9 时退出码 1（CI 门禁）
+python kb/tools/eval_ask.py --min-hit 0.9 --gate-at-k 3   # hit@3 低于 0.9 时退出码 1（legacy 单阈值）
+python kb/tools/eval_ask.py --strategy ngram --gate-from-baselines   # AI-3：读 baselines.json §1.2 三条件门禁
+python kb/tools/eval_ask.py --strategy hybrid --gate-from-baselines --emit-db   # 评测 + 落库 kb_eval_run
+python kb/tools/eval_gate.py eval/reports/xxx.json --strategy ngram   # 对已有 report 单独判 gate
 python kb/tools/eval_ask.py --use-llm --llm-context-top-k 3
 python kb/tools/eval_ask.py --difficulty dirty,paraphrase  # 只跑指定难度
 python kb/tools/eval_ask.py --no-negative                  # 排除 negative 题
 python kb/tools/eval_ask.py --baseline                     # 基线报告 baseline-ngram-*.json
+
+# AI-9 Guardrails 开/关对比（需 --use-llm；off 轮默认 kb.guardrails.enabled=false）
+python kb/tools/eval_ask.py --use-llm --guardrails-baseline
+# 开启 kb.guardrails.enabled=true 并重启后：
+python kb/tools/eval_ask.py --use-llm --compare-guardrails \
+  --guardrails-off-report eval/reports/ai9-guardrails-off-YYYYMMDD-HHMMSS.json
 ```
 
 登录默认 `admin/123456`，走 **user-center 直连** `http://127.0.0.1:8888/login`。
@@ -75,10 +85,31 @@ KnowledgeServer 自动尝试 `21000/KnowledgeServer` → `8090` 直连。
 | `kw_pass` | 生成式答案包含全部 expect_keywords 的题占比（仅 `--use-llm`） |
 | `refusal_accuracy` | negative 题正确拒答占比（检索式：citations 为空；生成式：拒答短语 + citations 为空） |
 | `by_difficulty` | 报告 JSON 中按难度分层的 hit@k / MRR / coverage / refusal_accuracy |
+| `guard_metrics` | AI-9：`grounding_coverage_mean` · `hallucination_proxy_mean`（1-coverage）· `grounding_low_rate` · `hallucination_samples` |
 
 **分母隔离**：`hit@k` / `mrr` / `coverage` / `kw_pass` 只对 `expect_answerable=true` 子集计算；`refusal_accuracy` 只对 negative 子集计算。
 
 **Ask 生产默认**（`kb.ask.*`）：citations 最多 8 页，LLM prompt 最多 3 页（`llmContextTopK`）；评测可用 `--llm-context-top-k` 覆盖。
+
+## 门禁基线（AI-3 · `baselines.json`）
+
+| 策略 | hit@3 基线 | dirty hit@3 | tolerance | CI 档位 |
+|------|------------|-------------|-----------|---------|
+| `ngram` | 0.7917 | 0.80 | **0**（零容忍） | PR **阻断** |
+| `hybrid` | 0.8958 | 0.90 | 0.05 | nightly **非阻断** |
+| `hybrid-rerank` | 0.8333 | 0.90 | 0.05 | nightly **非阻断** |
+
+**三条件**（`--gate-from-baselines` / `eval_gate.py`，任一失败 exit 1）：
+
+1. 全集 `hit@3 ≥ baseline.hit3 − tolerance`
+2. `errors == 0`
+3. `by_difficulty.dirty.hit@3 ≥ baseline.dirty_hit3 − tolerance`
+
+**基线更新协议**（防棘轮下滑）：
+
+- CI **绝不**自动改 `baselines.json`；只能人审 PR + 本 README 记一行（日期、原因、前后值）。
+- golden 扩容/改题后须同批重跑三档并更新基线。
+- 初值来源：AI-2 W3 签核复测（2026-07-19，6961 段索引）。
 
 ## 基线记录
 

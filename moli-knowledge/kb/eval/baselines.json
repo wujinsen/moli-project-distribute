@@ -1,0 +1,23 @@
+{
+  "updated": "2026-07-19",
+  "git_sha": "6d9e4c74",
+  "golden_total": 59,
+  "gate_metric": "hit3",
+  "strategies": {
+    "ngram": {
+      "hit3": 0.7917,
+      "dirty_hit3": 0.8,
+      "tolerance": 0.0
+    },
+    "hybrid": {
+      "hit3": 0.8958,
+      "dirty_hit3": 0.9,
+      "tolerance": 0.05
+    },
+    "hybrid-rerank": {
+      "hit3": 0.8333,
+      "dirty_hit3": 0.9,
+      "tolerance": 0.05
+    }
+  }
+}

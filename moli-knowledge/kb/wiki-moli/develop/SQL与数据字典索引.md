@@ -8,9 +8,10 @@ status: active
 tags: [SQL, 数据库, 索引]
 sources:
   - docs/sql/README.md
-related: [项目文档总览, 数据库初始化指南, SQL迁移顺序, 技术方案与架构索引]
+# GraphRAG：勿链项目文档总览 / v1 Runbook（M26 入口页会把枢纽挤进 top3）
+related: [数据库初始化指南, SQL迁移顺序, 技术方案与架构索引]
 created: 2026-06-20
-updated: 2026-06-20
+updated: 2026-07-19
 ---
 
 # SQL 与数据字典索引
@@ -44,4 +45,4 @@ updated: 2026-06-20
 
 ## 相关
 
-[[项目文档总览]] · [[v1发布Runbook]]
+[[数据库初始化指南]] · [[SQL迁移顺序]] · [[技术方案与架构索引]]

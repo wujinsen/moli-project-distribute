@@ -32,6 +32,9 @@ public class AskResponse {
     @ApiModelProperty("引用来源")
     private List<Citation> citations = new ArrayList<>();
 
+    @ApiModelProperty("Guardrails 摘要（AI-9，默认 null）")
+    private com.moli.knowledge.server.guard.AskGuardVo guard;
+
     @ApiModelProperty("本次问答日志ID（用于提交反馈）")
     private Long qaLogId;
 

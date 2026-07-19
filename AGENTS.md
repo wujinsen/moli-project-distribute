@@ -102,3 +102,4 @@
 - 文档总览：[`docs/README.md`](docs/README.md)
 - 图清单：[`docs/diagrams/README.md`](docs/diagrams/README.md)
 - 知识库 Ingest：[`moli-knowledge/kb/AGENTS.md`](moli-knowledge/kb/AGENTS.md)
+- **前端 → 后端依赖**（运营/知识库/SSO）：[`docs/api/frontend-backend-dependencies.md`](docs/api/frontend-backend-dependencies.md) · **前端开工** [`docs/api/operation-frontend-handoff.md`](docs/api/operation-frontend-handoff.md) · 索引 [`docs/frontend-gaps.md`](docs/frontend-gaps.md)

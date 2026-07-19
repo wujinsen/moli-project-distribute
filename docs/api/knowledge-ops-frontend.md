@@ -303,10 +303,32 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 |------|------------------------------------------|
 | D1 Sync 趋势 | `GET /kb/ops/dashboard` → `syncTrend`（降级 sync/logs 聚合） |
 | D2 待处理工单 | `lintSummary.openByType` |
-| D3 LLM 可用 | `dashboard.llm` |
+| D3 LLM 可用 | `dashboard.llm`（含 AI-8 `cacheHitRate` / `estimatedCostUsd` / `costTrend`） |
 | D4 断链 Top | `lintSummary.topBrokenLinks` |
+| D5 检索质量 | `retrievalQuality`（AI-3）· 明细 `GET /kb/ops/eval-trend` · `GET /kb/ops/eval-runs` |
 
 **后端** `GET /kb/ops/dashboard` ✅（**`trendDays`**，默认 7）。  
+**AI-3 只读扩展**（权限同 `kb:ops:dashboard`）：
+
+| 路径 | 说明 |
+|------|------|
+| `GET /kb/ops/eval-trend?strategy=&days=14` | 按日 hit@3/MRR（当日最后一次 run） |
+| `GET /kb/ops/eval-runs?strategy=&limit=20` | run 明细含 `report_path` / `gate_pass` / `by_difficulty_json` |
+
+Dashboard 新增字段 `retrievalQuality.strategies[]`：`strategy` · `hit3` · `mrr` · `baselineHit3` · `deltaHit3` · `gatePass`。
+
+**AI-8 LLM 缓存/成本（additive · `dashboard.llm`）**：
+
+| 字段 | 说明 |
+|------|------|
+| `cacheHitRate` | 窗口内成功调用中 `cache_hit=1` 占比 |
+| `estimatedCostUsd` | 窗口内 `estimated_cost_usd` 求和 |
+| `failoverCount` | 窗口内 `failover=1` 次数 |
+| `estimatedCostSavedUsd` | 缓存命中按 token 粗算的节省成本 |
+| `estimatedTokensSaved` | 缓存命中 prompt+completion tokens 粗算合计 |
+| `costTrend[]` | 按日：`date` · `estimatedCostUsd` · `cacheHits` · `calls` |
+
+前置 DDL：[`docs/sql/35_kb_llm_call_log_ai8.sql`](../sql/35_kb_llm_call_log_ai8.sql)（在 `18_kb_llm_call_log.sql` 之后）。
 **前端** ✅ `getKbOpsDashboardApi`（commit `a7b6fa9`）；缺 `kb_llm_call_log` 时 legacy 降级。  
 **详稿**：[p3-optional-backend-handoff.md](p3-optional-backend-handoff.md) §3 · meiling-ui [knowledge-ops-frontend.md](../../meiling-ui/docs/api/knowledge-ops-frontend.md) §8。
 
@@ -320,7 +342,9 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 | `kb.sync.schedule-enabled` | `false` | 定时 Sync 默认关 |
 | `kb.lint.schedule-enabled` | `false` | 定时 DB scan 落库默认关；**Web 只读展示**（O9），改 yml/Nacos |
 | `kb.sync.space-code` | 单空间 | KBOPS-4 后可能变多空间列表 |
-| `kb.llm.call-log-enabled` | `true` | 写 `kb_llm_call_log`；缺表时 dashboard 500 → 前端降级；DDL：`docs/sql/18_kb_llm_call_log.sql` |
+| `kb.llm.call-log-enabled` | `true` | 写 `kb_llm_call_log`；缺表时 dashboard 500 → 前端降级；DDL：`docs/sql/18_kb_llm_call_log.sql` + AI-8 [`35_kb_llm_call_log_ai8.sql`](../sql/35_kb_llm_call_log_ai8.sql) |
+| `kb.llm.cache.enabled` | `false` | 语义缓存（Redis）；`true` 时同问二次命中；见 [`kb-llm-platform-settings.md`](../design/kb-llm-platform-settings.md) §12 |
+| `kb.llm.router.enabled` | `false` | 多 provider failover；见同上 §12 |
 
 详表见 PRD §6、运维 `wiki同步指南`。
 

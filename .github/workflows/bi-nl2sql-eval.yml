@@ -1,0 +1,90 @@
+# AI-4 NL2SQL eval gate (W8)
+#
+# - validator-gate: blocking on PR (offline, no live stack)
+# - e2e-gate: optional with stack secrets (non-blocking on schedule)
+#
+# Secrets (optional for e2e):
+#   MOLI_AI_BASE / MOLI_AI_TOKEN or MOLI_LOGIN_BASE + MOLI_EVAL_USER/PASS
+
+name: BI NL2SQL Eval
+
+on:
+  pull_request:
+    paths:
+      - 'moli-ai/moli-ai-server/**'
+      - 'docs/design/bi-chatbi-nl2sql-contract.md'
+      - '.github/workflows/bi-nl2sql-eval.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 19 * * *'
+
+concurrency:
+  group: bi-nl2sql-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validator-gate:
+    name: validator gate (blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validator testset + baselines gate
+        working-directory: moli-ai/moli-ai-server/bi/eval
+        run: python eval_nl2sql.py --validator-only --gate
+
+  e2e-gate:
+    name: e2e ask gate (observe)
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install httpx
+        run: pip install httpx
+
+      - name: Check stack secrets
+        id: stack
+        env:
+          MOLI_AI_BASE: ${{ secrets.MOLI_AI_BASE }}
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+        run: |
+          if [[ -z "${MOLI_AI_BASE}" && -z "${MOLI_LOGIN_BASE}" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::e2e eval skipped: set MOLI_AI_BASE or MOLI_LOGIN_BASE"
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Full NL2SQL eval + gate
+        if: steps.stack.outputs.skip != 'true'
+        working-directory: moli-ai/moli-ai-server/bi/eval
+        env:
+          MOLI_AI_BASE: ${{ secrets.MOLI_AI_BASE }}
+          MOLI_AI_TOKEN: ${{ secrets.MOLI_AI_TOKEN }}
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+          MOLI_EVAL_USER: ${{ secrets.MOLI_EVAL_USER }}
+          MOLI_EVAL_PASS: ${{ secrets.MOLI_EVAL_PASS }}
+        run: |
+          python eval_nl2sql.py --gate || echo "::warning::e2e gate failed (non-blocking)"

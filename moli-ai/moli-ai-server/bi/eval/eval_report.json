@@ -1,0 +1,13 @@
+{
+  "testset": "nl2sql_testset.jsonl",
+  "total": 44,
+  "ask_success_total": 15,
+  "ask_reject_total": 8,
+  "validator_total": 21,
+  "ask_success_pass": 15,
+  "ask_reject_pass": 8,
+  "validator_pass": 21,
+  "failures": [],
+  "exec_accuracy": 1.0,
+  "reject_accuracy": 1.0
+}

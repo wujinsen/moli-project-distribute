@@ -95,6 +95,12 @@ if (-not $SkipKnowledge) {
 
     Import-SqlFile -Path $KnowledgeOpsSpaceSql -Label "docs/sql/07_kb_space_ops_manual.sql"
 
+    $KbEvalRunSql = Join-Path $Root "docs\sql\31_kb_eval_run.sql"
+    Import-SqlFile -Path $KbEvalRunSql -Label "docs/sql/31_kb_eval_run.sql (AI-3 eval, idempotent)"
+
+    $AiChatTraceSql = Join-Path $Root "docs\sql\32_ai_chat_trace.sql"
+    Import-SqlFile -Path $AiChatTraceSql -Label "docs/sql/32_ai_chat_trace.sql (AI-4 ChatBI trace + ro user)"
+
 }
 
 

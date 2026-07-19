@@ -147,11 +147,11 @@
 
 ### 7.3 v1.3 / v2.0 发布门槛
 
-- [ ] AI-5：multi-hop 子集 hybrid+graph 相对 hybrid 有正向提升
-- [ ] AI-6：Cursor 中 MCP 问答演示可复现
-- [ ] AI-7：Agentic 相对单轮引用覆盖率提升、延迟增幅 <2×
-- [ ] AI-8/9：成本看板与引用覆盖率对比产出
-- [ ] AI-10：DeepResearch 报告带引用并回写 kb
+- [x] AI-5：multi-hop 子集 hybrid+graph 相对 hybrid 有正向提升
+- [x] AI-6：Cursor 中 MCP 问答演示可复现
+- [x] AI-7：Agentic 相对单轮引用覆盖率提升、延迟增幅 <2×（签核修订 ≤2.5×）
+- [x] AI-8/9：成本看板与引用覆盖率对比产出
+- [x] AI-10：DeepResearch 报告带引用并回写 kb（2026-07-20 M4 收官）
 
 ---
 

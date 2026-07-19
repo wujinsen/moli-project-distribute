@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-deep-research" name="DeepResearch AI-10">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;AI-10 DeepResearch 四 Agent 编排&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;POST /kb/research + SSE · Python sidecar :8095 · Java 薄壳 kb_research_run · D-INV-1 Ingest 回写&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="client" value="Client / meiling-ui&#xa;Authorization + spaceIds" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="java" value="&lt;b&gt;KbResearchServiceImpl&lt;/b&gt;&#xa;InputGuard (AI-9) · ACL · SSE&#xa;kb_research_run trace" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sidecar" value="&lt;b&gt;deep-research sidecar&lt;/b&gt;&#xa;POST /v1/research&#xa;Planner → Retriever → Writer → Reviewer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="80" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="lane" value="Sidecar 编排（有界：maxSections≤10 · maxRetrieveRounds≤3 · latencyBudgetMs · coverageThreshold）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="190" width="1720" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" value="&lt;b&gt;① Planner&lt;/b&gt;&#xa;outline + retrieveQueries" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="30" y="50" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" value="&lt;b&gt;② Retriever&lt;/b&gt;&#xa;POST /kb/ask useLlm=false&#xa;hybrid + graphExpand&#xa;可选 agentic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="240" y="50" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" value="&lt;b&gt;③ Writer&lt;/b&gt;&#xa;分节 Markdown + [[slug]]&#xa;frontmatter type=output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="490" y="50" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" value="&lt;b&gt;④ Reviewer&lt;/b&gt;&#xa;AI-7 self_check 口径&#xa;coverage / unsupported / gaps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="740" y="50" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="decide" value="accept?&#xa;gaps 且&#xa;round &amp;lt; max?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="990" y="45" width="130" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="finalize" value="&lt;b&gt;finalize&lt;/b&gt;&#xa;reportMd + citations&#xa;runs/{runId}/report.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="1160" y="55" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="backfill" value="回补 Retriever → Writer(节) → Reviewer&#xa;≤ maxRetrieveRounds · 不静默删 unsupported" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;dashed=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="740" y="190" width="380" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="degrade" value="超 latencyBudgetMs → degraded 大纲+引用摘要（D-INV-4）" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#b85450;fontStyle=2;" vertex="1" parent="lane">
+          <mxGeometry x="30" y="190" width="380" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="lane" source="p1" target="p2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" style="endArrow=block;html=1;strokeColor=#82b366;" edge="1" parent="lane" source="p2" target="p3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" style="endArrow=block;html=1;strokeColor=#d79b00;" edge="1" parent="lane" source="p3" target="p4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e45" style="endArrow=block;html=1;strokeColor=#b85450;" edge="1" parent="lane" source="p4" target="decide"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5f" value="finalize" style="endArrow=block;html=1;strokeColor=#9673a6;fontSize=10;" edge="1" parent="lane" source="decide" target="finalize"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5b" value="回补" style="endArrow=block;html=1;strokeColor=#d6b656;dashed=1;fontSize=10;" edge="1" parent="lane" source="decide" target="backfill"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb2" style="endArrow=block;html=1;strokeColor=#d6b656;dashed=1;" edge="1" parent="lane" source="backfill" target="p2"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="350" y="225" /></Array></mxGeometry></mxCell>
+        <mxCell id="writeback" value="&lt;b&gt;writeback=true（Java · D-INV-1）&lt;/b&gt;&#xa;POST /kb/ingest/jobs → plan → generate → draft → lint → commit?sync=&#xa;wiki-moli/develop/outputs/{slug}.md · 禁止直写 wiki/DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="720" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="smoke" value="smoke.py · 同主题二次运行 slug 集合对比&#xa;docs/design/contracts/AI-10-contract.md §6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="800" y="540" width="420" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ecj" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="client" target="java"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ejs" style="endArrow=block;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="java" target="sidecar"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ejw" style="endArrow=block;html=1;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="java" target="writeback"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ask" value="Knowledge REST（复用 AI-2/5/7）&#xa;POST /kb/ask · optional /kb/ask/agentic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="880" y="90" width="320" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="esa" style="endArrow=block;html=1;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="sidecar" target="ask"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

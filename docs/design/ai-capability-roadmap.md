@@ -62,15 +62,15 @@
 | 任务 | 名称 | 层级 | 难度 | 依赖 | 状态 |
 |------|------|------|------|------|------|
 | **AI-1** | golden 评测集扩容（12 → 50~100 题，含脏 query 与拒答负样本） | 评测 | ★☆ | — | 🔜 第 1 波 |
-| **AI-2** | 向量检索 + Hybrid Search + Rerank | 检索 | ★★☆ | AI-1 | 🔜 第 1 波 |
-| **AI-3** | Eval 回归看板（评测结果落库 + `KbOpsService` 展示 + CI 门禁） | 评测 | ★★ | AI-1 | 🔜 第 1 波 |
-| **AI-4** | ChatBI / NL2SQL Agent（ai-server 0→1，接 order/user 真实库） | 应用 | ★★★★ | — | 🔵 第 2 波 |
-| **AI-5** | GraphRAG（检索时沿 `kb_relation` 扩 N 跳） | 检索 | ★★★☆ | AI-2 | 🔵 第 3 波 |
-| **AI-6** | 知识库 MCP Server（`kb.search` / `kb.ask` / `kb.graph` 工具） | 基建 | ★★ | — | 🔵 第 3 波 |
-| **AI-7** | Agentic RAG（查询改写 / 多跳 / 答案自检 / 引用校验） | 检索 | ★★★ | AI-2 | 🔵 第 3 波 |
-| **AI-8** | LLM 网关升级（多 provider 路由 + 语义缓存 + 成本看板） | 基建 | ★★★ | — | ⚪ 第 4 波 |
-| **AI-9** | Guardrails（grounding 校验 + 注入检测 + PII 脱敏） | 可信 | ★★★ | AI-7 | ⚪ 第 4 波 |
-| **AI-10** | Multi-Agent DeepResearch（主题 → 大纲 → 检索 → 撰写 → 审校 → 带引用报告，可回写 kb） | 应用 | ★★★★ | AI-2/5 | ⚪ 第 4 波 |
+| **AI-2** | 向量检索 + Hybrid Search + Rerank | 检索 | ★★☆ | AI-1 | ✅ done（2026-07-19 Opus 签核 · hybrid hit@3 0.8958 / +10.4pp；[契约](contracts/AI-2-contract.md)） |
+| **AI-3** | Eval 回归看板（评测结果落库 + `KbOpsService` 展示 + CI 门禁） | 评测 | ★★ | AI-1 | ✅ done（[AI-3 契约](contracts/AI-3-contract.md) §6 全绿）：`kb_eval_run` 落库 + `retrievalQuality` 三档卡片 + `kb-eval.yml` ngram 阻断门禁 |
+| **AI-4** | ChatBI / NL2SQL Agent（ai-server 0→1，接 order/user 真实库） | 应用 | ★★★★ | — | ✅ done（[AI-4 契约](bi-chatbi-nl2sql-contract.md) §5 W5–W8 全签核）：AST 白名单校验器 31/31 绿（含 B1 绕过回归）+ SSE 身份修复 + 只读执行 + 评测拦截 100% |
+| **AI-5** | GraphRAG（检索时沿 `kb_relation` 扩 N 跳） | 检索 | ★★★☆ | AI-2 | ✅ done（2026-07-20 Opus 签核 · [AI-5 契约](contracts/AI-5-contract.md)）：multi-hop 非回归 Δ0 + 全集 hit@3 +6.25pp；protect-topK/hub 惩罚 + M28/`detectScope`） |
+| **AI-6** | 知识库 MCP Server（`kb.search` / `kb.ask` / `kb.graph` 工具） | 基建 | ★★ | — | ✅ done（2026-07-20 Opus 签核 · [AI-6 契约](contracts/AI-6-contract.md)）：`moli-knowledge/mcp/` 三只读工具 + token 透传 + smoke 绿） |
+| **AI-7** | Agentic RAG（查询改写 / 多跳 / 答案自检 / 引用校验） | 检索 | ★★★ | AI-2 | ✅ done（2026-07-20 Opus 签核 · [AI-7 契约](contracts/AI-7-contract.md)）：dirty+multi-hop hit@3 +5pp / coverage +7.72pp / 延迟 2.43×） |
+| **AI-8** | LLM 网关升级（多 provider 路由 + 语义缓存 + 成本看板） | 基建 | ★★★ | — | ✅ done（2026-07-20 Opus 签核 · [AI-8 契约](contracts/AI-8-contract.md)）：failover 路由 + Redis 语义缓存 + Ops 成本/命中率） |
+| **AI-9** | Guardrails（grounding 校验 + 注入检测 + PII 脱敏） | 可信 | ★★★ | AI-7 | ✅ done（2026-07-20 Opus 签核 · [AI-9 契约](contracts/AI-9-contract.md)）：注入金样 20/20 · PII · grounding VO · 默认关零回归） |
+| **AI-10** | Multi-Agent DeepResearch（主题 → 大纲 → 检索 → 撰写 → 审校 → 带引用报告，可回写 kb） | 应用 | ★★★★ | AI-2/5 | ✅ done（2026-07-20 Opus 签核 · [AI-10 契约](contracts/AI-10-contract.md)）：四 Agent + `/kb/research` SSE + Ingest 回写 outputs/ · M4 收官） |
 
 > 状态图例：🔜 即将开工 · 🔵 排队 · ⚪ 远期 · ✅ 完成。完成后在本表回填并链接方案文档。
 
@@ -145,7 +145,7 @@
 | M1 | AI-1 + AI-2 + AI-3 | golden ≥50 题；三档检索对比表产出；回归看板 + CI 门禁生效 |
 | M2 | AI-4 | ChatBI 端到端 Demo；NL2SQL 测试集正确率 ≥80%；安全拦截 100% |
 | M3 | AI-5 + AI-6 + AI-7 | 多跳/脏 query 子集指标提升可量化；MCP 演示可复现 |
-| M4 | AI-8 + AI-9 + AI-10 | 成本看板上线；引用覆盖率对比产出；DeepResearch 报告回写 kb |
+| M4 | AI-8 + AI-9 + AI-10 | ✅ 收官（2026-07-20）：成本看板 · Guardrails 引用覆盖对比 · DeepResearch Ingest 回写 |
 
 每个里程碑完成后：更新本文件任务总表状态 → 更新根 `README.md` 指标区 → 对应 wiki-moli 页 enrich + sync。
 

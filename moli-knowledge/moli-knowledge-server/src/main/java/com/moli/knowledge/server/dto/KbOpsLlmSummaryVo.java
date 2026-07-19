@@ -54,4 +54,22 @@ public class KbOpsLlmSummaryVo {
 
     @ApiModelProperty("近 N 日调用趋势")
     private List<KbOpsLlmCallTrendPointVo> callTrend = new ArrayList<>();
+
+    @ApiModelProperty("窗口内缓存命中率 0~1（成功调用中 cache_hit=1）")
+    private Double cacheHitRate;
+
+    @ApiModelProperty("窗口内估算 LLM 成本 USD 合计")
+    private Double estimatedCostUsd;
+
+    @ApiModelProperty("窗口内 failover 成功次数")
+    private Long failoverCount;
+
+    @ApiModelProperty("窗口内估算节省成本 USD（缓存命中按 token 粗算）")
+    private Double estimatedCostSavedUsd;
+
+    @ApiModelProperty("窗口内估算节省 tokens（缓存命中 prompt+completion 粗算）")
+    private Long estimatedTokensSaved;
+
+    @ApiModelProperty("近 N 日成本/缓存命中趋势")
+    private List<KbOpsLlmCostTrendPointVo> costTrend = new ArrayList<>();
 }

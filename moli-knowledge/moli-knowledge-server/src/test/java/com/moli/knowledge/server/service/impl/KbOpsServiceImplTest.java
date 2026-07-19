@@ -1,5 +1,6 @@
 package com.moli.knowledge.server.service.impl;
 
+import com.moli.knowledge.server.config.KbEvalBaselinesProvider;
 import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.dto.KbLlmConfigVo;
 import com.moli.knowledge.server.dto.KbOpsDriftSummaryVo;
@@ -9,6 +10,7 @@ import com.moli.knowledge.server.entity.KbLlmCallLog;
 import com.moli.knowledge.server.entity.KbSyncLog;
 import com.moli.knowledge.server.llm.KbLlmConfigSource;
 import com.moli.knowledge.server.llm.KbLlmRuntime;
+import com.moli.knowledge.server.mapper.KbEvalRunMapper;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.mapper.KbLlmCallLogMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
@@ -56,6 +58,10 @@ public class KbOpsServiceImplTest {
     private KbLlmRuntime kbLlmRuntime;
     @Mock
     private KbDriftService kbDriftService;
+    @Mock
+    private KbEvalRunMapper kbEvalRunMapper;
+    @Mock
+    private KbEvalBaselinesProvider kbEvalBaselinesProvider;
 
     @Before
     public void setUp() {
@@ -63,6 +69,11 @@ public class KbOpsServiceImplTest {
         when(kbSyncLogMapper.selectList(any())).thenReturn(Collections.emptyList());
         when(kbLintIssueMapper.selectList(any())).thenReturn(Collections.emptyList());
         when(kbRelationMapper.selectCount(any())).thenReturn(0);
+        when(kbEvalRunMapper.selectList(any())).thenReturn(Collections.emptyList());
+        when(kbEvalRunMapper.selectOne(any())).thenReturn(null);
+        when(kbEvalBaselinesProvider.strategyKeys()).thenReturn(
+                java.util.Arrays.asList("ngram", "hybrid", "hybrid-rerank"));
+        when(kbEvalBaselinesProvider.goldenTotalFromBaselines()).thenReturn(59);
         KbLlmConfigVo llm = new KbLlmConfigVo();
         llm.setAvailable(true);
         llm.setConfigEnabled(true);
@@ -117,6 +128,8 @@ public class KbOpsServiceImplTest {
         Assert.assertTrue(vo.getLlm().getAvailable());
         Assert.assertEquals(10, vo.getLlm().getTotalCalls());
         Assert.assertEquals(0.8, vo.getLlm().getSuccessRate(), 0.001);
+        Assert.assertNotNull(vo.getRetrievalQuality());
+        Assert.assertEquals(3, vo.getRetrievalQuality().getStrategies().size());
         verify(kbAclService).assertCanOpsDashboard(null);
     }
 }

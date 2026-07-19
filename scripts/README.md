@@ -29,7 +29,9 @@ $mysql = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
 
 | 文件 | 说明 |
 |------|------|
-| `docs/sql/03_knowledge_schema.sql` | 知识库业务表 |
+| `docs/sql/03_knowledge_schema.sql` | 知识库业务表（含 `kb_eval_run` AI-3） |
+| `docs/sql/31_kb_eval_run.sql` | 已有库增量：`kb_eval_run`（新环境见 03 基线） |
+| `docs/sql/32_ai_chat_trace.sql` | AI-4 W5：`ai_chat_trace` + 只读账号 `moli_bi_ro` |
 | `docs/sql/04_knowledge_menu.sql` | 知识库 `sys_menu` + `sys_role_menu`（`getRouters` 下发给前端） |
 
 `init-db.ps1` 默认会依次导入上述文件，并 **`07_kb_space_ops_manual.sql`**（茉莉系统手册空间）；可用 `-SkipKnowledge` 跳过。

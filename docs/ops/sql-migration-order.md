@@ -49,6 +49,11 @@
 | 24 | `28_operation_topology_menu.sql` | 拓扑图菜单 407（SVR-25c）；perms 复用 `operation:server:list`（**已合并进 `moli.sql` 基线**） |
 | 25 | `29_kb_document_chunk.sql` | 知识库切段表 `kb_document_chunk` + ngram 全文（`/kb/ask` 按段召回） |
 | 26 | `30_sso_menu_system_id.sql` | SSO-MENU-1 · `sys_menu.system_id` + 段位 backfill（**已合并进 `moli.sql` 基线**） |
+| 27 | `31_kb_eval_run.sql` | AI-3 · 评测回归记录 `kb_eval_run`（Python `--emit-db` 写、Java 只读；**已合并进 `03_knowledge_schema.sql` 基线**） |
+| 28 | `32_ai_chat_trace.sql` | AI-4 W5 · ChatBI 审计 `ai_chat_trace` + 只读账号 `moli_bi_ro` |
+| 29 | `33_ai_chat_permissions.sql` | AI-4 W7 · ChatBI 菜单 610 + `ai:chat:*` 权限 seed |
+| 30 | `34_kb_agentic_trace.sql` | AI-7 W12 · Agentic 编排 trace `kb_agentic_trace`（关联 `kb_qa_log`） |
+| 31 | `35_kb_llm_call_log_ai8.sql` | AI-8 W14 · `kb_llm_call_log` 增 `cache_hit`/`failover`/成本估算列 |
 
 ---
 

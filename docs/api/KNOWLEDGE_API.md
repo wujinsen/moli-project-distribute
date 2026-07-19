@@ -565,6 +565,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 | `topK` | 否 | citations 候选页上限；省略用 `kb.ask.citation-top-k`（默认 8） |
 | `llmContextTopK` | 否 | LLM prompt 候选页上限；省略用 `kb.ask.llm-context-top-k`（默认 **3**） |
 | `useLlm` | 否 | 是否启用 LLM 生成式，默认 **false**；须后端 `available=true` 才生效 |
+| `retrievalStrategy` | 否 | 召回策略覆盖：`ngram` \| `hybrid` \| `hybrid-rerank`；省略用 `kb.search.retrieval-strategy`（默认 **ngram**） |
 
 响应 `data`：
 
@@ -582,6 +583,32 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
   "qaLogId": 901234567890123456
 }
 ```
+
+**Guardrails（AI-9 · additive，`kb.guardrails.enabled=true` 时可能出现）**：
+
+```json
+"guard": {
+  "blocked": false,
+  "flagged": false,
+  "blockReason": null,
+  "piiRedacted": true,
+  "piiTypes": ["email"],
+  "groundingApplied": true,
+  "groundingLow": false,
+  "coverage": 0.92,
+  "unsupportedStatements": []
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `guard.blocked` | 注入 BLOCK；此时 `mode=retrieval` 且未调用 LLM |
+| `guard.flagged` | 可疑注入 FLAG，仍允许生成 |
+| `guard.piiRedacted` / `piiTypes` | PII 已脱敏；类型枚举 `email`/`phone`/`id_card`，**不含原文** |
+| `guard.groundingApplied` | 单轮 generative 或 Agentic S3 已做 grounding 标注 |
+| `guard.coverage` | 陈述被 citations 支撑比例（AI-7 同口径）；未跑为 `null` |
+| `guard.groundingLow` | `coverage < kb.guardrails.grounding.low-threshold`（默认 0.8） |
+| `guard.unsupportedStatements` | 无 citation 支撑的陈述列表；**答案正文不删句** |
 
 | 字段 | 说明 |
 |------|------|
@@ -644,6 +671,72 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 | `useful` | `1` 有用 / `0` 无用 |
 
 > 后端是否走生成式取决于 `application-dev.yml` 的 `kb.llm.enabled + api-key`。前端无需关心，按 `mode` 展示即可（generative 显示富文本答案；retrieval 提示"检索式"并列出引用）。
+
+### DeepResearch（AI-10 · additive）
+
+> 契约：[`docs/design/contracts/AI-10-contract.md`](../design/contracts/AI-10-contract.md) · 流程图：[`moli-kb-deep-research.drawio`](../diagrams/moli-kb-deep-research.drawio)  
+> 总开关 `kb.research.enabled`（默认 **false**）；Sidecar `moli-knowledge/deep-research/`（`:8095`）。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `POST` | `/kb/research` | 启动调研，返回 `runId`（异步） |
+| `POST` | `/kb/research/start` | 同 `/kb/research` |
+| `GET` | `/kb/research/{runId}` | 状态 + 结果（outline / reportMd / citations / coverage） |
+| `GET` | `/kb/research/{runId}/stream` | SSE：`progress` / `complete` / `error` |
+
+**请求体** `ResearchRequest`（JSON）：
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `topic` | 是 | 调研主题（≤500 字） |
+| `spaceId` / `spaceIds` | 否 | ACL 范围，语义同 `POST /kb/ask` |
+| `writeback` | 否 | 默认 `false`；`true` 时经 Ingest commit 落盘 `wiki-moli/develop/outputs/{slug}.md`（D-INV-1） |
+| `slug` | 否 | 回写文件 stem；空则用 Planner `slugHint` |
+| `agentic` | 否 | 难节是否允许 `/kb/ask/agentic` |
+| `graphExpand` | 否 | 透传 GraphRAG（AI-5） |
+| `retrievalStrategy` | 否 | 默认 `hybrid`（AI-2） |
+| `maxSections` | 否 | Planner 节数上限（硬顶 10） |
+| `maxRetrieveRounds` | 否 | Reviewer 回补轮（硬顶 3） |
+| `latencyBudgetMs` | 否 | 整次预算；超则 `degraded=true` 大纲+引用摘要 |
+| `topK` | 否 | 每 query 检索 topK |
+
+**响应** `ResearchVo`（`GET` 或 SSE `complete`）：
+
+```json
+{
+  "runId": "uuid",
+  "status": "SUCCEEDED",
+  "topic": "茉莉微服务架构",
+  "title": "茉莉微服务架构调研",
+  "slug": "茉莉微服务架构",
+  "outline": { "sections": [] },
+  "reportMd": "---\ntitle: ...\ntype: output\nquery: ...\nsource_pages: [...]\n---\n# ...",
+  "citations": [{ "slug": "develop/用户中心", "title": "用户中心", "sectionIds": ["s1"] }],
+  "coverage": 0.82,
+  "unsupportedStatements": [],
+  "degraded": false,
+  "degradeReason": null,
+  "ingestJobId": null,
+  "outputPath": null,
+  "guard": null,
+  "latencyMs": 12000
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `reportMd` | 多节 Markdown + YAML frontmatter（`type=output`、`query`、`source_pages`） |
+| `coverage` | Reviewer 陈述支撑比例（AI-7 同口径）；`unsupportedStatements` **不删句** |
+| `ingestJobId` / `outputPath` | `writeback=true` 且 commit 成功时有值 |
+| `guard` | `kb.research.guardrails=true` 且 AI-9 启用时，启动前 InputGuard 结果 |
+
+**SSE `progress`**：`phase` = `planner|retriever|writer|reviewer|writeback`。
+
+**权限**：读权限同 Ask；`writeback=true` 另需 Ingest `kb:ingest:job` + `kb:ingest:commit`。
+
+**配置**（`kb.research.*`）：`enabled` · `sidecar-base-url` · `max-sections` · `max-retrieve-rounds` · `latency-budget-ms` · `coverage-threshold` · `writeback-auto-sync` · `writeback-space-id` · `writeback-raw-path` · `guardrails`。
+
+**冒烟**：`python moli-knowledge/deep-research/smoke.py --topic "茉莉微服务架构"`（同主题二次运行对比 citations/`source_pages` slug 集合）。
 
 ---
 
@@ -1000,6 +1093,21 @@ python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
 |----|------|
 | `fulltext`（默认） | MySQL ngram 全文索引 `MATCH AGAINST`；索引异常时**自动降级**三字段 `LIKE` |
 | `like` | 始终用 `title`/`summary`/`content` 的 `LIKE` |
+
+**Hybrid 向量召回**（AI-2 · `kb.search`，仅 `/kb/ask` chunk 召回；默认 `retrieval-strategy: ngram` 与现状一致）：
+
+| 键 | 默认 | 说明 |
+|----|------|------|
+| `retrieval-strategy` | `ngram` | `ngram` \| `hybrid` \| `hybrid-rerank` |
+| `vector.base-url` | — | kb-retrieval sidecar（如 `http://127.0.0.1:8099`）；空或不可达 → 降级 ngram |
+| `vector.top-n` | `20` | sidecar `/search` 召回条数 |
+| `vector.timeout-ms` | `1500` | `/search` / `/rerank` 超时（毫秒） |
+| `fusion.rrf-k` | `60` | RRF 平滑常数（ngram 与向量两路等权） |
+| `rerank.top-m` | `8` | `hybrid-rerank` 精排保留条数 |
+| `rerank.pool` | `30` | RRF 融合后进 `/rerank` 的候选池大小 |
+| `rerank.timeout-ms` | `30000` | `/rerank` 超时（毫秒）；失败回退融合序 |
+
+> `/kb/ask` **响应结构不变**；`retrievalStrategy` 仅影响 citations 候选来源。评测三档：`python kb/tools/eval_ask.py --strategy hybrid`。
 
 > 前端「知识库浏览 / 文档管理」筛选见 **§2.1.3**（体裁 × 分类平行双 facet）；侧栏树形展开仍可用 `/kb/index` + `/kb/index/items`；列表统一 **`/kb/document/search?source=kb`**。
 

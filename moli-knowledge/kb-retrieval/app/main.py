@@ -6,13 +6,25 @@ import logging
 
 from fastapi import FastAPI
 
-from .config import CHROMA_PATH, COLLECTION_NAME, EMBED_DIM, MAX_TEXT_CHARS, RETRIEVAL_PORT
+from .config import (
+    CHROMA_PATH,
+    COLLECTION_NAME,
+    EMBED_DIM,
+    MAX_TEXT_CHARS,
+    RETRIEVAL_HOST,
+    RETRIEVAL_PORT,
+)
 from .errors import RetrievalError, retrieval_error_handler
-from . import chroma_store, embedding
+from . import chroma_store, embedding, rerank
 from .models import (
+    EmbedQueryRequest,
+    EmbedQueryResponse,
     EmbedRequest,
     EmbedResponse,
     HealthResponse,
+    RerankRequest,
+    RerankResponse,
+    RerankHit,
     SearchRequest,
     SearchResponse,
     SearchHit,
@@ -26,6 +38,21 @@ app = FastAPI(title="Moli KB Retrieval Sidecar", version="0.1.0")
 app.add_exception_handler(RetrievalError, retrieval_error_handler)
 
 
+@app.on_event("startup")
+def warmup_models() -> None:
+    """S2：启动预热 embedding/rerank，避免首查冷加载超过 Java timeout-ms 误降级。"""
+    try:
+        embedding.embed_texts(["warmup"])
+        log.info("embedding model warmed up")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("embedding warmup failed: %s", exc)
+    try:
+        rerank.rerank_pairs("warmup", ["warmup"])
+        log.info("rerank model warmed up")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("rerank warmup failed: %s", exc)
+
+
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     return HealthResponse(
@@ -36,6 +63,9 @@ def health() -> HealthResponse:
         indexedChunks=chroma_store.count_chunks(),
         chromaPath=str(CHROMA_PATH),
         modelLoaded=embedding.is_model_loaded(),
+        rerankModel=rerank.model_name(),
+        rerankModelLoaded=rerank.is_model_loaded(),
+        device=embedding.device_name(),
     )
 
 
@@ -84,6 +114,21 @@ def embed_batch(body: EmbedRequest) -> EmbedResponse:
     )
 
 
+@app.post("/embed-query", response_model=EmbedQueryResponse)
+def embed_query(body: EmbedQueryRequest) -> EmbedQueryResponse:
+    text = (body.text or "").strip()
+    if not text:
+        raise RetrievalError("invalid_query", "text 不能为空", 400)
+    if len(text) > MAX_TEXT_CHARS:
+        text = text[:MAX_TEXT_CHARS]
+    vec = embedding.embed_texts([text])[0]
+    return EmbedQueryResponse(
+        model=embedding.model_name(),
+        dim=EMBED_DIM,
+        embedding=vec,
+    )
+
+
 @app.post("/search", response_model=SearchResponse)
 def search(body: SearchRequest) -> SearchResponse:
     query = (body.query or "").strip()
@@ -105,12 +150,46 @@ def search(body: SearchRequest) -> SearchResponse:
     )
 
 
+@app.post("/rerank", response_model=RerankResponse)
+def rerank_candidates(body: RerankRequest) -> RerankResponse:
+    query = (body.query or "").strip()
+    if not query:
+        raise RetrievalError("invalid_query", "query 不能为空", 400)
+    if not body.candidates:
+        return RerankResponse(model=rerank.model_name(), results=[])
+
+    from .config import RERANK_MAX_TEXT_CHARS
+
+    texts: list[str] = []
+    chunk_ids: list[int] = []
+    for c in body.candidates:
+        chunk_ids.append(c.chunkId)
+        text = c.text or ""
+        if len(text) > RERANK_MAX_TEXT_CHARS:
+            text = text[:RERANK_MAX_TEXT_CHARS]
+        texts.append(text)
+
+    scores = rerank.rerank_pairs(query, texts)
+    ranked = sorted(
+        zip(chunk_ids, scores, strict=False),
+        key=lambda x: x[1],
+        reverse=True,
+    )
+    top_m = max(1, body.topM)
+    results = [
+        RerankHit(chunkId=cid, score=round(float(sc), 4), rank=i + 1)
+        for i, (cid, sc) in enumerate(ranked[:top_m])
+    ]
+    log.info("rerank query_len=%s candidates=%s topM=%s", len(query), len(chunk_ids), top_m)
+    return RerankResponse(model=rerank.model_name(), results=results)
+
+
 def main() -> None:
     import uvicorn
 
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
+        host=RETRIEVAL_HOST,
         port=RETRIEVAL_PORT,
         reload=False,
     )

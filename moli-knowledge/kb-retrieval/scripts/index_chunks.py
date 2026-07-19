@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -24,16 +25,45 @@ PUBLISHED_STATUS = 1
 DEFAULT_BASE = os.environ.get("RETRIEVAL_BASE_URL", "http://127.0.0.1:8099")
 
 
-def http_json(url: str, payload: dict, *, timeout: int = 600) -> dict:
+def http_json(
+    url: str,
+    payload: dict,
+    *,
+    timeout: int = 1800,
+    retries: int = 3,
+) -> dict:
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=data,
-        method="POST",
-        headers={"Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode())
+    last_err: Exception | None = None
+    for attempt in range(1, retries + 1):
+        req = urllib.request.Request(
+            url,
+            data=data,
+            method="POST",
+            headers={"Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return json.loads(resp.read().decode())
+        except TimeoutError as e:
+            last_err = e
+            if attempt < retries:
+                wait_s = min(30, 5 * attempt)
+                print(f"[warn] /embed timeout attempt {attempt}/{retries}, retry in {wait_s}s")
+                time.sleep(wait_s)
+                continue
+            raise
+        except urllib.error.URLError as e:
+            if isinstance(getattr(e, "reason", None), TimeoutError):
+                last_err = e
+                if attempt < retries:
+                    wait_s = min(30, 5 * attempt)
+                    print(f"[warn] /embed timeout attempt {attempt}/{retries}, retry in {wait_s}s")
+                    time.sleep(wait_s)
+                    continue
+            raise
+    if last_err:
+        raise last_err
+    raise RuntimeError("http_json failed without exception")
 
 
 def probe_health(base: str, timeout: int = 5) -> dict:
@@ -128,9 +158,20 @@ def main() -> int:
     ap.add_argument("--password", default=os.environ.get("MYSQL_PASSWORD", "12345678"))
     ap.add_argument("--db", default=os.environ.get("MYSQL_DB", "moli"))
     ap.add_argument("--batch-size", type=int, default=int(os.environ.get("EMBED_BATCH_SIZE", "32")))
+    ap.add_argument(
+        "--http-timeout",
+        type=int,
+        default=int(os.environ.get("EMBED_HTTP_TIMEOUT", "1800")),
+        help="POST /embed 超时秒数（大批次 CPU 嵌入可能 >10min）",
+    )
     ap.add_argument("--force", action="store_true", help="忽略 contentHash，强制重嵌")
     ap.add_argument("--dry-run", action="store_true", help="只统计，不调 /embed")
     ap.add_argument("--limit", type=int, default=0, help="调试：最多索引 N 段")
+    ap.add_argument(
+        "--no-reconcile",
+        action="store_true",
+        help="跳过 Chroma 对账删除（sidecar 运行时避免 SQLite 锁；增量靠 contentHash 幂等）",
+    )
     ap.add_argument(
         "--space-id",
         type=int,
@@ -160,6 +201,9 @@ def main() -> int:
         password=args.password,
         database=args.db,
         charset="utf8mb4",
+        connect_timeout=30,
+        read_timeout=120,
+        write_timeout=120,
     )
     try:
         items = fetch_chunks(conn, space_id=args.space_id)
@@ -170,8 +214,13 @@ def main() -> int:
     if args.limit > 0:
         items = items[: args.limit]
 
-    indexed_ids = fetch_indexed_ids(base, space_id=args.space_id)
-    delete_ids = sorted(indexed_ids - db_ids)
+    indexed_ids: set[int] = set()
+    delete_ids: list[int] = []
+    if args.no_reconcile:
+        print("skip Chroma reconcile（--no-reconcile）")
+    else:
+        indexed_ids = fetch_indexed_ids(base, space_id=args.space_id)
+        delete_ids = sorted(indexed_ids - db_ids)
 
     print(f"DB chunks={len(items)} · Chroma indexed={len(indexed_ids)} · to_delete={len(delete_ids)}")
     if args.dry_run:
@@ -186,7 +235,11 @@ def main() -> int:
     if delete_ids:
         for i in range(0, len(delete_ids), batch_size):
             batch_del = delete_ids[i : i + batch_size]
-            resp = http_json(url, {"items": [], "deleteChunkIds": batch_del, "force": False})
+            resp = http_json(
+                url,
+                {"items": [], "deleteChunkIds": batch_del, "force": False},
+                timeout=args.http_timeout,
+            )
             total_deleted += int(resp.get("deleted", 0))
 
     for i in range(0, len(items), batch_size):
@@ -197,10 +250,13 @@ def main() -> int:
             "force": args.force,
         }
         try:
-            resp = http_json(url, payload)
-        except urllib.error.HTTPError as e:
-            body = e.read().decode(errors="replace")[:500]
-            print(f"[error] /embed HTTP {e.code}: {body}")
+            resp = http_json(url, payload, timeout=args.http_timeout)
+        except (urllib.error.HTTPError, TimeoutError) as e:
+            if isinstance(e, urllib.error.HTTPError):
+                body = e.read().decode(errors="replace")[:500]
+                print(f"[error] /embed HTTP {e.code}: {body}")
+            else:
+                print(f"[error] /embed timeout after {args.http_timeout}s on batch {i // batch_size + 1}")
             return 1
         total_upserted += int(resp.get("upserted", 0))
         total_skipped += int(resp.get("skipped", 0))

@@ -59,6 +59,7 @@
 | `kb_sync_log` | kb→DB 单向增量同步审计：批次、原始路径、`action`(insert/update/delete/skip)、内容 hash、结果 |
 | `kb_space_member` | 空间级 ACL：成员可为**用户或角色**（复用用户中心），角色 `viewer/editor/admin` |
 | `kb_qa_log` | Query 历史：问题、答案、`citations`(JSON 引用)、作用域、provider/model、token、`useful` 反馈 |
+| `kb_agentic_trace` | Agentic 编排 trace（AI-7）：改写/子问题/每轮 steps_json、coverage、关联 `kb_qa_log.id` |
 
 ### 平台配置（1 · T19）
 
@@ -66,6 +67,7 @@
 |----|------|
 | `kb_platform_llm_config` | 平台级 LLM 单例（`id=1`）：provider/base-url/加密 api-key/model；Web **系统管理 → 知识库 LLM** 维护 |
 | `kb_llm_call_log` | LLM 调用审计（KBOPS-9 Dashboard 调用率）；DDL [`18_kb_llm_call_log.sql`](18_kb_llm_call_log.sql) · **未合并** `scripts/moli.sql` 基线 |
+| `kb_eval_run` | 评测回归记录（AI-3）；Python `eval_ask.py --emit-db` 写、Java 只读；DDL [`31_kb_eval_run.sql`](31_kb_eval_run.sql) |
 
 > **向量库刻意不建**：ROADMAP §五把向量/ES 列为「按需」。先用 MySQL `ngram` 全文索引，文档量过千且召回变差时再外置 Meilisearch/ES/向量库，届时新增 `kb_chunk`/`kb_embedding` 即可，不影响现有表。
 

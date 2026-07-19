@@ -345,6 +345,37 @@ CREATE TABLE IF NOT EXISTS `kb_document_chunk` (
   FULLTEXT KEY `ftx_kb_document_chunk` (`heading`, `content`) WITH PARSER ngram
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库文档切段';
 
+-- -------------------------------------------------------------
+-- 15. 评测回归记录（AI-3 · Python --emit-db 写、Java 只读）
+--     增量迁移：docs/sql/31_kb_eval_run.sql
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `kb_eval_run` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `run_at` datetime NOT NULL COMMENT '报告 time',
+  `strategy` varchar(16) DEFAULT NULL COMMENT 'ngram/hybrid/hybrid-rerank',
+  `use_llm` tinyint(1) NOT NULL DEFAULT 0 COMMENT '检索式0/生成式1',
+  `golden_total` int NOT NULL DEFAULT 0 COMMENT '报告 total',
+  `answerable_total` int NOT NULL DEFAULT 0 COMMENT '可答题数',
+  `negative_total` int NOT NULL DEFAULT 0 COMMENT 'negative 题数',
+  `errors` int NOT NULL DEFAULT 0 COMMENT 'HTTP/请求错误数',
+  `hit1` decimal(5,4) DEFAULT NULL COMMENT 'hit@1',
+  `hit3` decimal(5,4) DEFAULT NULL COMMENT 'hit@3',
+  `hit5` decimal(5,4) DEFAULT NULL COMMENT 'hit@5',
+  `hit8` decimal(5,4) DEFAULT NULL COMMENT 'hit@8',
+  `mrr` decimal(5,4) DEFAULT NULL COMMENT 'MRR',
+  `coverage` decimal(5,4) DEFAULT NULL COMMENT 'coverage',
+  `refusal_accuracy` decimal(5,4) DEFAULT NULL COMMENT '拒答准确率',
+  `p95_ms` int DEFAULT NULL COMMENT 'P95 延迟毫秒',
+  `by_difficulty_json` json DEFAULT NULL COMMENT 'by_difficulty 原样',
+  `report_path` varchar(255) DEFAULT NULL COMMENT 'kb/eval/reports 相对路径',
+  `git_sha` varchar(64) DEFAULT NULL COMMENT '关联 git 提交',
+  `gate_pass` tinyint(1) DEFAULT NULL COMMENT '§1.2 门禁是否通过',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '落库时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_kb_eval_run_at` (`run_at`),
+  KEY `idx_kb_eval_strategy_run` (`strategy`, `run_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库评测回归记录';
+
 -- =============================================================
 -- 演示种子数据
 -- =============================================================

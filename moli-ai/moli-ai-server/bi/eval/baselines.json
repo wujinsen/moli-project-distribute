@@ -1,0 +1,7 @@
+{
+  "updated": "2026-07-19",
+  "testset": "nl2sql_testset.jsonl",
+  "min_exec_accuracy": 0.8,
+  "min_reject_accuracy": 1.0,
+  "tolerance": 0.0
+}

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moli.knowledge.server.mapper.KbRelationMapper">
+
+    <sql id="relationAclWhere">
+        r.is_delete = 0
+        AND r.resolved = 1
+        AND r.target_doc_id IS NOT NULL
+        <if test="spaceIds != null and spaceIds.size() &gt; 0">
+            AND r.space_id IN
+            <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+        </if>
+    </sql>
+
+    <select id="selectBySourceDocIds" resultType="com.moli.knowledge.server.entity.KbRelation">
+        SELECT r.id,
+               r.space_id AS spaceId,
+               r.source_doc_id AS sourceDocId,
+               r.target_doc_id AS targetDocId,
+               r.target_title AS targetTitle,
+               r.relation_type AS relationType,
+               r.resolved,
+               r.weight,
+               r.is_delete AS isDelete
+        FROM kb_relation r
+        WHERE <include refid="relationAclWhere"/>
+        <if test="sourceDocIds != null and sourceDocIds.size() &gt; 0">
+            AND r.source_doc_id IN
+            <foreach collection="sourceDocIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectSupersedesByTargetDocIds" resultType="com.moli.knowledge.server.entity.KbRelation">
+        SELECT r.id,
+               r.space_id AS spaceId,
+               r.source_doc_id AS sourceDocId,
+               r.target_doc_id AS targetDocId,
+               r.target_title AS targetTitle,
+               r.relation_type AS relationType,
+               r.resolved,
+               r.weight,
+               r.is_delete AS isDelete
+        FROM kb_relation r
+        WHERE <include refid="relationAclWhere"/>
+          AND r.relation_type = 'supersedes'
+        <if test="targetDocIds != null and targetDocIds.size() &gt; 0">
+            AND r.target_doc_id IN
+            <foreach collection="targetDocIds" item="tid" open="(" separator="," close=")">
+                #{tid}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectInboundByTargetDocIds" resultType="com.moli.knowledge.server.entity.KbRelation">
+        SELECT r.id,
+               r.space_id AS spaceId,
+               r.source_doc_id AS sourceDocId,
+               r.target_doc_id AS targetDocId,
+               r.target_title AS targetTitle,
+               r.relation_type AS relationType,
+               r.resolved,
+               r.weight,
+               r.is_delete AS isDelete
+        FROM kb_relation r
+        WHERE <include refid="relationAclWhere"/>
+          AND r.relation_type &lt;&gt; 'supersedes'
+        <if test="targetDocIds != null and targetDocIds.size() &gt; 0">
+            AND r.target_doc_id IN
+            <foreach collection="targetDocIds" item="tid" open="(" separator="," close=")">
+                #{tid}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="countInboundByTargetDocIds" resultType="com.moli.knowledge.server.dto.KbDocFanInCount">
+        SELECT r.target_doc_id AS targetDocId,
+               COUNT(*) AS cnt
+        FROM kb_relation r
+        WHERE r.is_delete = 0
+          AND r.resolved = 1
+          AND r.target_doc_id IS NOT NULL
+        <if test="spaceIds != null and spaceIds.size() &gt; 0">
+            AND r.space_id IN
+            <foreach collection="spaceIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+        </if>
+        <if test="targetDocIds != null and targetDocIds.size() &gt; 0">
+            AND r.target_doc_id IN
+            <foreach collection="targetDocIds" item="tid" open="(" separator="," close=")">
+                #{tid}
+            </foreach>
+        </if>
+        GROUP BY r.target_doc_id
+    </select>
+
+</mapper>

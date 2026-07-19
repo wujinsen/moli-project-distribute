@@ -29,4 +29,10 @@ public class AskRequest {
 
     @ApiModelProperty("是否启用 LLM 生成式作答（默认 false；须后端 kb.llm 已配置且 usable）")
     private Boolean useLlm = false;
+
+    @ApiModelProperty("召回策略覆盖：ngram | hybrid | hybrid-rerank；省略用 kb.search.retrieval-strategy")
+    private String retrievalStrategy;
+
+    @ApiModelProperty("GraphRAG 扩跳覆盖：true/false；null=用 kb.search.graph.enabled（ngram 档忽略）")
+    private Boolean graphExpand;
 }

@@ -1,4 +1,4 @@
-# moli-project-distribute · 项目速读（招聘一页纸）
+# moli-project-distribute · 项目速读
 
 > 作者：吴锦森 ｜ 开源协议：Apache 2.0 ｜ GitHub：`<仓库链接>` ｜ 在线 Demo：`<部署后填>`
 > 一句话：一套「**Spring Cloud 微服务 + 企业级 LLM 知识库**」的开源系统，把大模型能力落地为**生产级 AI 应用**。
@@ -7,9 +7,9 @@
 
 ## 为什么值得看（差异化）
 
-市面上多数 AI 项目是「训练营式 RAG toy demo」。本项目不同：它由 **14 年后端/架构经验**独立设计，把 **RAG 检索问答、检索评测、Agentic Coding、生产级微服务**做成一体，体现「**AI + 后端架构 + 工程化**」的稀缺交叉能力。
 
 ![知识库双轨架构](docs/diagrams/png/moli-kb-architecture.png)
+
 
 ---
 
@@ -55,25 +55,13 @@
 
 ---
 
-## 演示
-
-- **在线 Demo**：`<部署后填链接>`
-- **效果 GIF**：`docs/portfolio/kb-demo.gif` `<待录制：提问 → 检索 → LLM 带引用回答，30–60 秒>`
-- **本地 30 秒体验**（零依赖，纯 Python 标准库）：
-  ```bash
-  python moli-knowledge/kb/tools/serve.py    # 打开 http://127.0.0.1:8765
-  ```
-- **完整后端启动**：见 [moli-knowledge/README.md](moli-knowledge/README.md)
 
 ---
-
-## 我的角色
 
 从 **架构设计 → 后端开发 → LLM 应用 → RAG 评测 → Agentic Coding 工作流** 全链路独立完成，并输出中/英/日三语文档与 draw.io 架构图。
 
 ---
 
-## 面试深挖备答（自检）
 
 1. 为什么用「LLM-Wiki」而不是朴素 RAG？（答：投喂即治理，去重/提炼/矛盾检测有抓手，元数据预过滤先行、向量库按需叠加）
 2. 检索质量怎么衡量？（答：golden.jsonl + hit@k / MRR / coverage，检索式 vs 生成式对比）

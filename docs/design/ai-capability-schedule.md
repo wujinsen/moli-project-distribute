@@ -39,10 +39,10 @@
 
 | 周 | 任务 | 交付物 | 出口标准 |
 |----|------|--------|----------|
-| **W5** | 骨架 + 安全底座 | ai-server 只读数据源 + 独立只读账号；SQL AST 白名单校验（JSqlParser）；`ai_chat_trace` 表 | 危险 SQL 单测 100% 拦截 |
-| **W6** | Agent MVP | `ai-agent` sidecar（schema 检索 + NL→SQL + 自纠错）；Java 只读执行 | Gradio 输入 → 出结果表 |
-| **W7** | 图表 + 解读 + API | 结果图表建议 + 自然语言解读；`/bi/chat/ask` SSE；`ai:chat:*` 鉴权 | 端到端走通网关 `/AiServer/**` |
-| **W8** | 评测 + 打磨 | `nl2sql_testset.jsonl` ≥30 题；执行/拒答正确率 | 执行正确率 ≥80%、拦截 100% |
+| **W5** | 骨架 + 安全底座 | ai-server 只读数据源 + 独立只读账号；SQL AST 白名单校验（JSqlParser）；`ai_chat_trace` 表 | 危险 SQL 单测 100% 拦截 ✅ |
+| **W6** | Agent MVP | `ai-agent` sidecar（schema 检索 + NL→SQL + 自纠错）；Java 只读执行 | Gradio 输入 → 出结果表 ✅ |
+| **W7** | 图表 + 解读 + API | 结果图表建议 + 自然语言解读；`/bi/chat/ask` SSE；`ai:chat:*` 鉴权 | 端到端走通网关 `/AiServer/**` ✅ |
+| **W8** | 评测 + 打磨 | `nl2sql_testset.jsonl` ≥30 题；执行/拒答正确率 | 执行正确率 ≥80%、拦截 100% ✅ |
 
 **v1.2 里程碑（M2，~09-11）**：ChatBI 端到端 Demo，接 order/user 真实只读库。
 
@@ -52,10 +52,10 @@
 
 | 周 | 任务 | 交付物 | 出口标准 |
 |----|------|--------|----------|
-| **W9** | AI-5 GraphRAG | 检索沿 `kb_relation` 扩 N 跳，按边类型加权并入候选 | multi-hop 子集对比提升 |
-| **W10** | AI-6 MCP Server | `kb.search`/`kb.ask`/`kb.graph` MCP 工具，复用 REST + 鉴权 | Cursor 中 `@moli-kb` 问答演示 |
-| **W11** | AI-7 Agentic RAG（上） | 查询改写/拆解 + 多轮检索编排 | 复杂问题多跳检索跑通 |
-| **W12** | AI-7 Agentic RAG（下） | 答案自检 + 引用校验 + trace；单轮/Agentic 开关 | 引用覆盖率提升、延迟 <2× |
+| **W9** | AI-5 GraphRAG ✅ | 检索沿 `kb_relation` 扩 N 跳，按边类型加权并入候选 | multi-hop 非回归（Δ≥0）+ 全集 hit@3 可量化提升（2026-07-20 签核） |
+| **W10** | AI-6 MCP Server ✅ | `kb.search`/`kb.ask`/`kb.graph` MCP 工具，复用 REST + 鉴权 | Cursor `@moli-kb` 演示可复现（2026-07-20 签核） |
+| **W11** | AI-7 Agentic RAG（上）✅ | 查询改写/拆解 + 多轮检索编排 | 复杂问题多跳检索跑通 |
+| **W12** | AI-7 Agentic RAG（下）✅ | 答案自检 + 引用校验 + trace；单轮/Agentic 开关 | 引用覆盖率提升、延迟 ≤2.5×（2026-07-20 签核） |
 
 **v1.3 里程碑（M3，~10-09）**：多跳/脏 query 子集指标可量化提升；MCP 演示可复现。
 
@@ -65,12 +65,12 @@
 
 | 周 | 任务 | 交付物 | 出口标准 |
 |----|------|--------|----------|
-| **W13** | AI-8 网关路由 | `KbLlmClient` 多 provider 路由 + 失败降级 | 路由/降级可用 |
-| **W14** | AI-8 语义缓存+看板 | Redis 语义缓存；成本/命中率看板 | 缓存命中率、省钱数据可见 |
-| **W15** | AI-9 Guardrails | grounding 校验 + 注入检测 + PII 脱敏 | 幻觉率/引用覆盖率前后对比 |
-| **W16** | AI-10 DeepResearch | Planner/Retriever/Writer/Reviewer；产物走 Ingest 回写 | 带引用报告回写 `wiki-moli/develop/outputs/` |
+| **W13** | AI-8 网关路由 ✅ | `KbLlmClient` 多 provider 路由 + 失败降级 | 路由/降级可用（2026-07-20 签核） |
+| **W14** | AI-8 语义缓存+看板 ✅ | Redis 语义缓存；成本/命中率看板 | 缓存命中率、省钱数据可见（2026-07-20 签核） |
+| **W15** | AI-9 Guardrails ✅ | grounding 校验 + 注入检测 + PII 脱敏 | 注入金样 100% + 默认关零回归（2026-07-20 签核） |
+| **W16** | AI-10 DeepResearch ✅ | Planner/Retriever/Writer/Reviewer；产物走 Ingest 回写 | pytest 13 + Java 3；Ingest 回写路径签核（2026-07-20） |
 
-**v2.0 里程碑（M4，~11-06）**：成本看板上线；引用覆盖率对比产出；DeepResearch 报告可复现。
+**v2.0 里程碑（M4）**：✅ **收官（2026-07-20）** — 成本看板 · 引用覆盖率对比 · DeepResearch 报告经 Ingest 回写。
 
 ---
 
@@ -108,16 +108,16 @@ AI-10（DeepResearch）依赖 AI-2/AI-5
 
 | 任务 | 计划周 | 建议模型 | 状态 | 实际完成 | 备注 |
 |------|--------|----------|------|----------|------|
-| AI-1 | W1 | 🟢 Composer | 🔜 | — | 标准由 Opus 定 |
-| AI-2 | W2–W3 | 🔵 混合 | 🔜 | — | 融合/精排 Opus，脚手架 Composer |
-| AI-3 | W4 | 🟢 Composer | 🔜 | — | — |
-| AI-4 | W5–W8 | 🟣 Opus 主导 | 🔵 | — | 安全+Agent Opus，壳 Composer |
-| AI-5 | W9 | 🔵 混合 | 🔵 | — | 加权算法 Opus |
-| AI-6 | W10 | 🟢 Composer | 🔵 | — | — |
-| AI-7 | W11–W12 | 🟣 Opus 主导 | 🔵 | — | prompt/自检 Opus |
-| AI-8 | W13–W14 | 🔵 混合 | ⚪ | — | 路由策略 Opus |
-| AI-9 | W15 | 🟣 Opus 主导 | ⚪ | — | 安全关键 |
-| AI-10 | W16 | 🟣 Opus 主导 | ⚪ | — | 多 Agent 编排 |
+| AI-1 | W1 | 🟢 Composer | ✅ done | 2026-07-17 | golden 59 题；标准由 Opus 定 |
+| AI-2 | W2–W3 | 🔵 混合 | ✅ done | 2026-07-19 | hybrid hit@3 0.8958；Opus 签核 |
+| AI-3 | W4 | 🟢 Composer | ✅ done | Opus §6 六项全绿（2026-07-19） | [AI-3 契约](contracts/AI-3-contract.md)；门禁阈值 Opus 定，落库/看板/CI Composer |
+| AI-4 | W5–W8 | 🟣 Opus 主导 | ✅ done | Opus 三轮验收（2026-07-19，第 3 轮 B1/B2 整改后全签核） | [AI-4 契约](bi-chatbi-nl2sql-contract.md) §5；安全底座校验器 31/31 绿、SSE 身份修复、拦截 100% |
+| AI-5 | W9 | 🔵 混合 | ✅ done | 2026-07-20 | [AI-5 契约](contracts/AI-5-contract.md) 签核：multi-hop 1.0→1.0 + 全集 +6.25pp（`…-20260720-001741.json`） |
+| AI-6 | W10 | 🟢 Composer | ✅ done | 2026-07-20 | [AI-6 契约](contracts/AI-6-contract.md) 签核：`smoke.py` 三工具绿；10006→`KB_UNAUTHORIZED` |
+| AI-7 | W11–W12 | 🟣 Opus 主导 | ✅ done | 2026-07-20 | [AI-7 契约](contracts/AI-7-contract.md) 签核：hit@3 +5pp / cov +7.72pp / 延迟 2.43×（`…-024750.json`） |
+| AI-8 | W13–W14 | 🔵 混合 | ✅ done | 2026-07-20 | [AI-8 契约](contracts/AI-8-contract.md) 签核：failover + cacheHit log + Ops 成本/命中率；25 tests 绿 |
+| AI-9 | W15 | 🟣 Opus 主导 | ✅ done | 2026-07-20 | [AI-9 契约](contracts/AI-9-contract.md) 签核：金样 20/20 BLOCK · PII · grounding · 30 tests 绿 |
+| AI-10 | W16 | 🟣 Opus 主导 | ✅ done | 2026-07-20 | [AI-10 契约](contracts/AI-10-contract.md) 签核：四 Agent · Ingest 回写 · 16 tests 绿 · M4 收官 |
 
 > 图例：🔜 即将开工 · 🔵 排队 · ⚪ 远期 · ✅ 完成。完成后回填并同步 `ai-capability-roadmap.md` §3 状态列。
 > 建议模型图例：🟣 Opus 主导 · 🔵 混合（Opus 定契约、Composer 落地）· 🟢 Composer 主导。分工细则见 §9。
@@ -136,10 +136,10 @@ AI-10（DeepResearch）依赖 AI-2/AI-5
 | **AI-2** | 双路召回架构、RRF 融合权重、精排阈值、回退策略、sidecar 接口契约 | `kb-retrieval` FastAPI 脚手架、Chroma 索引、`KbSearchProperties`、Java HTTP client、离线索引任务 | 🔵 混合 |
 | **AI-3** | 门禁基线阈值策略 | `kb_eval_run` 表+mapper+落库、`KbOpsService` 卡片、CI yaml | 🟢 Composer |
 | **AI-4** | **SQL 白名单/AST 校验/注入防护**、NL2SQL prompt、LangGraph 工作流、自纠错重试、schema 检索与解读 prompt | `ai-server` Java 壳（Controller/Service/鉴权仿 order）、`ai_chat_trace` 审计、只读数据源+缓存、图表序列化、`ai-agent` 脚手架、`nl2sql_testset.jsonl` 录入 | 🟣 Opus 主导 |
-| **AI-5** | 沿边扩跳加权/剪枝算法、多跳候选融合 | 复用 `KbWikiGraphService` 遍历、候选合并、配置开关 | 🔵 混合 |
-| **AI-6** | 工具 schema 语义 | MCP server 脚手架、REST 包成 `kb.search/ask/graph`、token 鉴权接线 | 🟢 Composer |
-| **AI-7** | 编排层设计、query 改写/拆解 prompt、答案自检（陈述↔引用对齐）、回补检索决策 | 状态机代码、trace 表、开关、各步接线 | 🟣 Opus 主导 |
-| **AI-8** | 多 provider 路由策略（成本/延迟/降级）、语义缓存相似度阈值与失效 | provider 适配器、Redis 缓存读写、成本看板卡片 | 🔵 混合 |
+| **AI-5** | 沿边扩跳加权/剪枝算法、多跳候选融合 | 复用 `kb_relation` 遍历、候选合并、配置开关（✅ done） | 🔵 混合 |
+| **AI-6** | 工具 schema 语义 | MCP server 脚手架、REST 包成 `kb.search/ask/graph`、token 鉴权接线（✅ done） | 🟢 Composer |
+| **AI-7** | 编排层设计、query 改写/拆解 prompt、答案自检（陈述↔引用对齐）、回补检索决策 | 状态机代码、trace 表、开关、各步接线（✅ done） | 🟣 Opus 主导 |
+| **AI-8** | 多 provider 路由策略（成本/延迟/降级）、语义缓存相似度阈值与失效 | provider 适配器、Redis 缓存读写、成本看板卡片（✅ done） | 🔵 混合 |
 | **AI-9** | grounding 校验逻辑、注入检测规则、PII 识别策略、置信度标注 | 校验管道接线、PII 正则/脱敏工具、前后指标统计 | 🟣 Opus 主导 |
 | **AI-10** | Planner/Retriever/Writer/Reviewer 多 Agent 编排、大纲生成、审校与回写质量判定 | 各 Agent 骨架、接 Ingest 回写链路、报告模板渲染 | 🟣 Opus 主导 |
 

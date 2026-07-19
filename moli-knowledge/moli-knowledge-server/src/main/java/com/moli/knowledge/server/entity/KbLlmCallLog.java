@@ -39,6 +39,21 @@ public class KbLlmCallLog implements Serializable {
     @ApiModelProperty("耗时毫秒")
     private Integer latencyMs;
 
+    @ApiModelProperty("语义缓存命中")
+    private Boolean cacheHit;
+
+    @ApiModelProperty("经 fallback 成功")
+    private Boolean failover;
+
+    @ApiModelProperty("估算 prompt tokens")
+    private Integer promptTokensEst;
+
+    @ApiModelProperty("估算 completion tokens")
+    private Integer completionTokensEst;
+
+    @ApiModelProperty("估算成本 USD")
+    private java.math.BigDecimal estimatedCostUsd;
+
     @ApiModelProperty("失败摘要")
     private String errorMessage;
 

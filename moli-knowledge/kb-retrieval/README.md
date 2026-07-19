@@ -19,6 +19,7 @@ pip install -r requirements.txt
 
 | 变量 | 默认 | 说明 |
 |------|------|------|
+| `RETRIEVAL_HOST` | `127.0.0.1` | 绑定地址（S1：默认本机，勿暴露 `/embed` 写接口） |
 | `RETRIEVAL_PORT` | `8099` | HTTP 端口 |
 | `RETRIEVAL_BASE_URL` | `http://127.0.0.1:8099` | CLI 调 sidecar 基址 |
 | `EMBED_MODEL` | `BAAI/bge-m3` | sentence-transformers 模型 |
@@ -33,8 +34,10 @@ pip install -r requirements.txt
 ```powershell
 cd moli-knowledge/kb-retrieval
 $env:RETRIEVAL_PORT = "8099"
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8099
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8099
 ```
+
+> 启动时会预热 embedding + rerank 模型（S2），避免 Java 首查 `timeout-ms=1500` 误降级。
 
 健康检查：
 
@@ -84,10 +87,11 @@ curl -s -X POST http://127.0.0.1:8099/search `
 | GET | `/health` | 健康检查 + 索引条数 |
 | POST | `/embed` | 批量嵌入 + Chroma upsert（幂等 contentHash） |
 | POST | `/search` | query 向量召回 top-N |
+| POST | `/rerank` | cross-encoder 精排 top-M（`hybrid-rerank` 用） |
 
 错误响应：`{ "error": "<code>", "message": "<脱敏>" }`（非 2xx）。
 
-> W3 再交付 `/rerank` 与 Java `KbAskServiceImpl` 融合；W2 **不**改 Java。
+> W3 Java `KbAskServiceImpl` 经 `KbRetrievalClient` 调 `/search`/`/rerank`；`retrieval-strategy=ngram` 不触 sidecar。
 
 ## 目录
 
