@@ -18,7 +18,8 @@
 | 能力 | 落地情况 | 对应岗位关键词 |
 |------|----------|----------------|
 | 🔎 RAG 检索问答 | Chunk 切段 → 检索（`/kb/ask`）→ **LLM 生成式带引用回答**；封装 OpenAI 兼容客户端（`KbLlmClient`：DB 配置优先 + yaml 兜底 + 调用日志） | RAG、大模型应用、Prompt |
-| 📊 检索评测 | `golden.jsonl` → **hit@k / MRR / coverage**；支持检索式 vs 生成式对比（`eval_ask.py`） | RAG 评测 / 可观测性 |
+| 检索评测 | `golden.jsonl` → **hit@k / MRR / coverage**；ngram CI 门禁 + hybrid 观察（`eval_ask.py`） | RAG 评测 / 可观测性 |
+| 🤖 AI 能力（M4） | ChatBI · Hybrid/Agentic · Guardrails · DeepResearch 回写 kb | 大模型应用 / Agent |
 | 🧠 LLM-Wiki 知识治理 | Karpathy「LLM-Wiki」范式：Ingest / Lint / Enrich，知识「编译一次、持续保鲜」；kb→DB 单向增量幂等同步 | 知识工程 |
 | 🤝 Agentic Coding | 多层 `AGENTS.md` 规则 + 自建 Cursor Skills（架构图 / SQL 迁移 / KB Ingest），沉淀可复用 AI 研发工作流 | AI 编程 / 研发提效 |
 | 🏗️ 生产级后端 | Spring Cloud Alibaba（Nacos / Dubbo / Sentinel / Gateway）+ Shiro 分布式鉴权 + MyBatis-Plus + GitHub Actions CI + 压测 | 分布式 / 微服务 / 高并发 |

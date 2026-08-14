@@ -13,6 +13,7 @@
 | **P0** | **健康体检 · Sync 区** | `knowledge/lint/index` | 🔵 KBOPS-1 | 🔵 **O1–O4** · **O9** | **[knowledge-ops-frontend.md §3](knowledge-ops-frontend.md#3-p0--健康体检页-sync-增强o1o4)** |
 | **P1** | **健康体检 · 工单区** | `knowledge/lint/index` | ✅ KBOPS-8/10 | 🔵 **O5–O8**（**KBOPS-8f**） | **[knowledge-ops-frontend.md §3.7](knowledge-ops-frontend.md#37-p1--体检工单增强o5o8--kbops-810)** |
 | **P0** | Ingest 工作台 | `knowledge/ingest/index` | ✅ T15+T18+T19+T20+**T15f SSE** | ✅ **T20f** + Expert SSE 进度 | [ingest-workbench-frontend.md](ingest-workbench-frontend.md) · **[kb-import-entry-frontend.md](kb-import-entry-frontend.md)** |
+| **P1** | **主题调研（DeepResearch）** | `knowledge/research/index` | ✅ AI-10 | ✅ | §1.4 · [KNOWLEDGE_API.md §3 DeepResearch](KNOWLEDGE_API.md#deepresearchai-10--additive) |
 | **P0** | Wiki 治理 | `knowledge/wiki-govern/index` | ✅ T16a/e/g | 🔵 **Spec 已定**（见 §10.2；当前 MVP 仅 Lint+AI） | [wiki-govern-frontend.md](wiki-govern-frontend.md) · **[knowledge-ops-frontend.md §4](knowledge-ops-frontend.md#4-p0--wiki-治理t16f--kbops-6)** |
 | P1 | 平台 LLM 设置 | `system/kb-llm` | ✅ T19 | 🔵 T19d | [kb-llm-platform-frontend.md](kb-llm-platform-frontend.md) |
 | P1 | Wiki 编辑 | `knowledge/wiki/edit` | ✅ T14 | ✅ 已有 | KNOWLEDGE_API §8 |
@@ -89,6 +90,39 @@ interface KbBrowseFilters {
   keyword?: string
 }
 ```
+
+### 1.4 主题调研 → Ingest 回写深链（AI-10 · P1）
+
+> **页面**：`knowledge/research/index` · **组件**：`KnowledgeResearchView.vue`  
+> **API**：`POST /kb/research` + SSE `GET /kb/research/{runId}/stream` · 契约 [AI-10-contract.md](../design/contracts/AI-10-contract.md)
+
+| 能力 | 说明 |
+|------|------|
+| 入口 | 企业知识库侧栏 **主题调研**（menu 911 · perms `kb:ask:list`） |
+| 进度 | SSE `progress`：`planner` / `retriever` / `writer` / `reviewer` / `writeback` |
+| 报告 | `reportMd` + `[[slug]]` 预览；侧栏 `coverage` / `citations` / `unsupportedStatements` |
+| **回写** | 勾选「回写 outputs/」需动作权限 `kb:ingest:job` + `kb:ingest:commit`；成功返回 `ingestJobId` |
+
+**跳转到 Ingest 批次**（写回后查看 Plan / 草稿 / commit 状态）：
+
+```typescript
+router.push({
+  path: '/knowledge/ingest',
+  query: { jobId: String(result.ingestJobId) }, // 别名；工作台会 normalize 为 ?id=
+})
+// 或 canonical：
+router.push({ path: '/knowledge/ingest', query: { id: String(jobId) } })
+```
+
+| Query | 含义 |
+|-------|------|
+| `id` | **canonical** · 打开批次 Expert 详情 |
+| `jobId` | **别名**（DeepResearch / 外部链）· 进入后 replace 为 `id` |
+| `express=1` | Express 模式（与 `id` 组合，见 [ingest-workbench-frontend.md §1](ingest-workbench-frontend.md#1-页面与路由)） |
+
+实现：`KnowledgeIngestWorkbenchView` 的 `jobId` computed 同时读取 `id` / `jobId`；`onMounted` 将仅含 `jobId` 的 URL 规范化为 `?id=`。
+
+**前置**：`kb.research.enabled=true` + sidecar 可达；回写另需 Ingest 工作台启用。
 
 ---
 
@@ -181,6 +215,7 @@ export interface KbWorkflowHintVo {
 | Wiki 治理 | [wiki-govern-frontend.md §13–§15](wiki-govern-frontend.md#13-验收清单与进度w1w8) |
 | **KB 运维 Sync UI** | [knowledge-ops-frontend.md §3、§10](knowledge-ops-frontend.md#36-验收-o1o4) |
 | Ingest 增量 | [ingest-workbench-frontend.md §11–§13](ingest-workbench-frontend.md#11-验收清单与进度i1i5) |
+| **DeepResearch（主题调研 + Ingest 深链）** | [knowledge-deep-research-smoke.md §2–§4](../test/knowledge-deep-research-smoke.md#2-前端联调验收meiling-ui--约-15-分钟) · 对接 §1.4 |
 | 操作手册（非前端） | [knowledge-workbench-operations.md §3.2](../ops/knowledge-workbench-operations.md#32-当前-web-页-vs-完整能力t16f-差距) |
 
 ---

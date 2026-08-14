@@ -5,6 +5,9 @@ import com.moli.knowledge.server.dto.KbChunkAskRow;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -19,7 +22,7 @@ public class KbAgenticAskServiceImplTest {
         KbAgenticAskServiceImpl.RewriteDecomposeResult r =
                 KbAgenticAskServiceImpl.parseRewriteJson(raw, "fallback");
         assertEquals("规范问", r.rewritten);
-        assertEquals(List.of("子问A", "子问B"), r.subQuestions);
+        assertEquals(Arrays.asList("子问A", "子问B"), r.subQuestions);
     }
 
     @Test
@@ -34,13 +37,13 @@ public class KbAgenticAskServiceImplTest {
         KbAskServiceImpl.ChunkScored high = new KbAskServiceImpl.ChunkScored(row, 20);
 
         KbAskServiceImpl.QueryRecallResult q1 = new KbAskServiceImpl.QueryRecallResult(
-                "q1", new KbAskServiceImpl.Scope(), List.of("q1"),
-                List.of(low), new ArrayList<>());
+                "q1", new KbAskServiceImpl.Scope(), Collections.singletonList("q1"),
+                Collections.singletonList(low), new ArrayList<>());
         KbAskServiceImpl.QueryRecallResult q2 = new KbAskServiceImpl.QueryRecallResult(
-                "q2", new KbAskServiceImpl.Scope(), List.of("q2"),
-                List.of(high), new ArrayList<>());
+                "q2", new KbAskServiceImpl.Scope(), Collections.singletonList("q2"),
+                Collections.singletonList(high), new ArrayList<>());
 
-        KbAskServiceImpl.MergedPool pool = impl.mergeQueryRecalls(List.of(q1, q2));
+        KbAskServiceImpl.MergedPool pool = impl.mergeQueryRecalls(Arrays.asList(q1, q2));
         assertEquals(1, pool.mergedChunks.size());
         assertEquals(20, pool.mergedChunks.get(0).score);
         assertTrue(pool.poolSlugs.contains("guides/a"));
@@ -53,7 +56,7 @@ public class KbAgenticAskServiceImplTest {
         AskResponse.Citation out = new AskResponse.Citation();
         out.setSlug("guides/other");
         List<AskResponse.Citation> filtered = KbAskServiceImpl.filterCitationsToPool(
-                List.of(in, out), java.util.Set.of("guides/a"));
+                Arrays.asList(in, out), new HashSet<>(Collections.singletonList("guides/a")));
         assertEquals(1, filtered.size());
         assertEquals("guides/a", filtered.get(0).getSlug());
     }

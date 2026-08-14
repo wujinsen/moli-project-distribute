@@ -357,6 +357,33 @@ data: {"code":"…","message":"…"}
 - [x] **Guardrails（若开 AI-9）**：注入 BLOCK 样例不进入 Writer prompt；PII 不以明文进 Planner/Writer。
 - [x] **禁重实现**：sidecar 无独立向量/BM25 实现；检索流量可见对 `/kb/ask`（或 agentic）的调用。
 
+### 6.1 D-INV-5 回归门禁（AI-10 合入 / 发版前必跑）
+
+> **目的**：DeepResearch 只增 `/kb/research*`，不得拖垮 `/kb/ask`、ChatBI、Guardrails。三件套：**eval_ask**（尺子）· **ChatBI eval**（独立模块）· **Guard 金样**（注入规则）。
+
+| # | 套件 | 命令 | 通过标准 |
+|---|------|------|----------|
+| R1 | **KB golden · ngram 门禁** | `cd moli-knowledge/kb && python tools/eval_ask.py --strategy ngram --gate-from-baselines --gate-at-k 3` | exit 0；hit@3 ≥ `baselines.json` ngram − tolerance |
+| R2 | **KB golden · hybrid 观察**（可选） | 同上 `--strategy hybrid`；**需** kb-retrieval sidecar + 向量索引 | hit@3 ≥ hybrid 基线 − tolerance；sidecar 未起时仅作环境告警，不替代 R1 |
+| R3 | **Guard 金样（离线）** | `cd moli-knowledge/moli-knowledge-server && mvn test -Dtest=KbInjectDetectorGoldenTest,KbInjectDetectorTest,KbInputGuardServiceTest,KbOutputGroundingServiceTest,KbPiiRedactorTest` | 全绿；`guardrails_inject.jsonl` BLOCK 100%、PASS 零 BLOCK |
+| R4 | **Guard 金样（HTTP，Guardrails 开时）** | `kb.guardrails.enabled=true` 重启后：`python tools/eval_ask.py --use-llm --guardrails-baseline`（含 inject 金样） | `inject_summary.block_accuracy=1.0` · `false_block_rate=0` |
+| R5 | **ChatBI validator 门禁** | `cd moli-ai/moli-ai-server/bi/eval && python eval_nl2sql.py --validator-only --gate` | exit 0；`validator_pass=27/27` · `reject_accuracy=1.0` |
+| R6 | **Knowledge 单测（含 Agentic/Research 壳）** | `cd moli-knowledge/moli-knowledge-server && mvn test` | 无新增失败（guard/agentic/research 相关类须绿） |
+
+**前置**：user-center `:8888` + knowledge-server `:8090`（R1/R2/R4）；ChatBI 栈仅 R5 离线不需。
+
+**2026-07-20 本地复跑（AI-10 done 后）**
+
+| 套件 | 结果 | 备注 |
+|------|------|------|
+| R1 ngram gate | ✅ | hit@3 **83.33%**（基线 79.17%）；报告 `eval/reports/ai2-compare-ngram-20260720-060846.json` |
+| R2 hybrid gate | ⚠️ 环境 | hit@3 72.92%（sidecar `:8091` 未起）；**非 AI-10 回归失败** |
+| R3 Guard 金样 | ✅ | 11 tests 绿（golden + detector + input/output guard + PII） |
+| R5 ChatBI validator | ✅ | `validator_pass=27/27` · `reject_accuracy=1.0` |
+| R6 mvn test | ⚠️ 2 项预存失败 | `KbPlatformLlmConfigServiceImplTest` · `KbIngestServiceImplRawPrefixesTest`（与 `/kb/ask` 无关） |
+
+**Windows 提示**：R1/R2 若 gate 打印乱码/崩溃，设 `$env:PYTHONIOENCODING='utf-8'`。
+
 ---
 
 ## 7. Composer 禁改范围（Do-Not-Touch）
@@ -445,7 +472,7 @@ data: {"code":"…","message":"…"}
 | D-INV-2 不删句 | ✅ | Reviewer 保留 `unsupported`；Writer 不伪造池外 slug |
 | D-INV-3 ACL | ✅ | `KbRestClient` / `KbResearchClient` 透传 `Authorization` + spaceIds |
 | D-INV-4 有界降级 | ✅ | `test_orchestrator_degrades_on_tight_budget` → `degraded=BUDGET` |
-| D-INV-5 非侵入 | ✅ | 独立 `/kb/research*`；默认 `kb.research.enabled=false` |
+| D-INV-5 非侵入 | ✅ | 独立 `/kb/research*`；默认 `kb.research.enabled=false` · §6.1 R1/R3/R5 绿 |
 | Guardrails | ✅ | 壳侧 `KbInputGuardService` → `GUARD_BLOCK` |
 | lint --strict | ⏭ | 仓库内尚无本波 live commit 的 outputs 页；回写路径 lint blocking=0 才 commit；本地 commit 后按手册跑 lint |
 | 单测 | ✅ | **pytest 13/13** · **Java 3/3**（本轮复跑） |

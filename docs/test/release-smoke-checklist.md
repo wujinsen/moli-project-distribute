@@ -88,6 +88,7 @@ Ingest 深度验收：[knowledge-ingest-acceptance.md](knowledge-ingest-acceptan
 
 ## 6. 可选（P1 · 不阻塞 v1）
 
+- [ ] **DeepResearch（AI-10）**：主题调研页 + Ingest `?jobId=` 深链 — [knowledge-deep-research-smoke.md §4](knowledge-deep-research-smoke.md#4-验收勾选总表发版--功能签收)
 - [ ] Wiki 治理：script-fix / auto-fix UI（T16f 未全量）
 - [ ] 平台 LLM 设置页保存 Key（T19d）
 - [ ] k6 压测 1k RPS 5 分钟无错误尖峰

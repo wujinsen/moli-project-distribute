@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +28,14 @@ public class KbEvalBaselinesProvider {
 
     private static final Logger log = LoggerFactory.getLogger(KbEvalBaselinesProvider.class);
 
-    private static final List<String> STRATEGY_ORDER = List.of("ngram", "hybrid", "hybrid-rerank");
+    private static final List<String> STRATEGY_ORDER = Collections.unmodifiableList(
+            Arrays.asList("ngram", "hybrid", "hybrid-rerank"));
 
     @Value("${kb.eval.baselines-path:}")
     private String baselinesPath;
 
     private JsonNode root;
-    private Map<String, BigDecimal> baselineHit3ByStrategy = Map.of();
+    private Map<String, BigDecimal> baselineHit3ByStrategy = Collections.emptyMap();
 
     @PostConstruct
     public void load() {
@@ -76,7 +79,7 @@ public class KbEvalBaselinesProvider {
             }
             map.put(key, node.path("hit3").decimalValue());
         }
-        baselineHit3ByStrategy = Map.copyOf(map);
+        baselineHit3ByStrategy = Collections.unmodifiableMap(map);
     }
 
     private JsonNode readFile(ObjectMapper mapper, Path path) {

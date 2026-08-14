@@ -33,14 +33,20 @@ public final class KbRepoPathUtil {
         }
 
         Path cwd = Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
-        List<Path> bases = Arrays.asList(cwd, cwd.resolve("moli-knowledge-server"));
+        List<Path> bases = Arrays.asList(
+                cwd,
+                cwd.resolve("moli-knowledge-server"),
+                cwd.resolve("moli-knowledge/moli-knowledge-server"));
+
         Set<String> candidates = new LinkedHashSet<>();
-        candidates.add(configuredPath.trim());
-        if (configuredPath.contains("../kb")) {
-            candidates.add(configuredPath.replace("../kb", "moli-knowledge/kb"));
+        String trimmed = configuredPath.trim();
+        // Prefer monorepo layout (moli-knowledge/kb) before legacy ../kb — avoids stale repo-root kb/
+        if (trimmed.contains("../kb")) {
+            candidates.add(trimmed.replace("../kb", "moli-knowledge/kb"));
         }
-        if (configuredPath.contains("moli-knowledge/kb")) {
-            candidates.add(configuredPath.replace("moli-knowledge/kb", "../kb"));
+        candidates.add(trimmed);
+        if (trimmed.contains("moli-knowledge/kb")) {
+            candidates.add(trimmed.replace("moli-knowledge/kb", "../kb"));
         }
 
         List<String> tried = new ArrayList<>();
@@ -58,7 +64,7 @@ public final class KbRepoPathUtil {
 
     /** 解析 {@code kb/} 根目录（{@code kb.wiki.root} 等）。 */
     public static Path resolveKbRoot(String configuredPath) {
-        return resolveExisting(StringUtils.defaultIfBlank(configuredPath, "../kb"), "kb 根目录");
+        return resolveExisting(StringUtils.defaultIfBlank(configuredPath, "moli-knowledge/kb"), "kb 根目录");
     }
 
     /** 解析 {@code kb/raw} 根目录。 */

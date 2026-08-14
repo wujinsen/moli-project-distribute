@@ -1,6 +1,6 @@
 # AI 能力演进路线（RAG 升级 + ChatBI + Agent 基础设施）
 
-> 更新：2026-07-16 · 状态：**规划确认，未开工**（AI-1 起步）
+> 更新：2026-07-20 · 状态：**M4 收官**（AI-1～AI-10 全部 ✅ · 2026-07-20）
 > 归属：跨 **`moli-knowledge`**（检索/评测/网关）与 **`moli-ai`**（ChatBI 0→1）
 > 边界：只管 **AI 能力演进**（检索、Agent、评测、LLM 网关）；知识内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)；BI v1 骨架见 [`ai-module-overview.md`](ai-module-overview.md)
 > 前置阅读：[`knowledge-module-overview.md`](knowledge-module-overview.md) · `moli-knowledge/kb/ROADMAP.md` §五（检索升级触发条件）
@@ -61,7 +61,7 @@
 
 | 任务 | 名称 | 层级 | 难度 | 依赖 | 状态 |
 |------|------|------|------|------|------|
-| **AI-1** | golden 评测集扩容（12 → 50~100 题，含脏 query 与拒答负样本） | 评测 | ★☆ | — | 🔜 第 1 波 |
+| **AI-1** | golden 评测集扩容（12 → 50~100 题，含脏 query 与拒答负样本） | 评测 | ★☆ | — | ✅ done（2026-07-17 · golden 59 题） |
 | **AI-2** | 向量检索 + Hybrid Search + Rerank | 检索 | ★★☆ | AI-1 | ✅ done（2026-07-19 Opus 签核 · hybrid hit@3 0.8958 / +10.4pp；[契约](contracts/AI-2-contract.md)） |
 | **AI-3** | Eval 回归看板（评测结果落库 + `KbOpsService` 展示 + CI 门禁） | 评测 | ★★ | AI-1 | ✅ done（[AI-3 契约](contracts/AI-3-contract.md) §6 全绿）：`kb_eval_run` 落库 + `retrievalQuality` 三档卡片 + `kb-eval.yml` ngram 阻断门禁 |
 | **AI-4** | ChatBI / NL2SQL Agent（ai-server 0→1，接 order/user 真实库） | 应用 | ★★★★ | — | ✅ done（[AI-4 契约](bi-chatbi-nl2sql-contract.md) §5 W5–W8 全签核）：AST 白名单校验器 31/31 绿（含 B1 绕过回归）+ SSE 身份修复 + 只读执行 + 评测拦截 100% |

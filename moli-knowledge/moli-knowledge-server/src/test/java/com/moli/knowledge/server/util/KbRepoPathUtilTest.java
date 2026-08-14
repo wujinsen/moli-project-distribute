@@ -63,6 +63,18 @@ public class KbRepoPathUtilTest {
     }
 
     @Test
+    public void resolvesKbRootPrefersMoliKnowledgeWhenStaleRepoKbExists() throws Exception {
+        Path repo = Files.createTempDirectory("kb-root-stale-");
+        Files.createDirectories(repo.resolve("kb/raw"));
+        Path kbRoot = repo.resolve("moli-knowledge/kb");
+        Files.createDirectories(kbRoot.resolve("wiki"));
+
+        System.setProperty("user.dir", repo.toString());
+        Path resolved = KbRepoPathUtil.resolveKbRoot("../kb");
+        Assert.assertEquals(kbRoot.normalize(), resolved);
+    }
+
+    @Test
     public void resolvesRawRootFromMonorepoRoot() throws Exception {
         Path repo = Files.createTempDirectory("kb-raw-repo-");
         Path rawRoot = repo.resolve("moli-knowledge/kb/raw");

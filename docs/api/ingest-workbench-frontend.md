@@ -25,7 +25,7 @@ Ingest 页扩展为 **投喂 Raw · 选源入库 · 成品导入** 三 Tab；Tab
 
 | 项 | 值 |
 |----|-----|
-| 列表/详情 | `knowledge/ingest/index`（query `id?` 打开批次详情） |
+| 列表/详情 | `knowledge/ingest/index`（query **`id`** 打开批次详情；**`jobId`** 为 DeepResearch 等外链别名，进入后规范化为 `id`） |
 | 组件 | `KnowledgeIngestView`（或现有等价命名） |
 | 网关 | `{VITE_API_BASE_URL}/KnowledgeServer/kb/ingest/*` |
 
@@ -35,6 +35,16 @@ Ingest 页扩展为 **投喂 Raw · 选源入库 · 成品导入** 三 Tab；Tab
 |------|----------|----------|
 | **Expert** | ①选 raw → ②Plan → ③生成 → ④审阅 → ⑤lint → ⑥commit | 逐步调用 §9 各接口 |
 | **Express** | 勾选 raw → **一键预览** → diff 扫一眼 → **确认入库** | `express` / `publish` |
+
+**深链 Query**（列表 ↔ Expert 详情）：
+
+| 参数 | 说明 |
+|------|------|
+| `id` | 批次 ID（canonical） |
+| `jobId` | 与 `id` 等价；主题调研 writeback 成功后 `router.push({ query: { jobId } })` |
+| `express=1` | Express 模式（与批次 ID 组合） |
+
+`KnowledgeIngestWorkbenchView`：`jobId` computed 读取 `id` 优先，否则 `jobId`；仅带 `jobId` 时 `router.replace` 为 `?id=`。
 
 ---
 

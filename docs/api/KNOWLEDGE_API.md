@@ -1551,6 +1551,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index*` + `/kb/page` | KNOWLEDGE_API §2–3 |
 | 文档管理 | `knowledge/documents/index` | `/kb/document/search` + `/kb/wiki-moli/page` | §8.1 |
 | 智能问答 | `knowledge/ask/index` | `/kb/ask` | §5 |
+| 主题调研 | `knowledge/research/index` | `/kb/research*` | §3 DeepResearch |
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | §6 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + `/kb/sync/*` | §4 |
 | **Wiki 编辑** | `knowledge/wiki/edit` ✅ T14 | `/kb/wiki-moli/page` + `ai-revise` + `enrich` | §8 |

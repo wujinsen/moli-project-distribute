@@ -54,6 +54,8 @@
 | 29 | `33_ai_chat_permissions.sql` | AI-4 W7 · ChatBI 菜单 610 + `ai:chat:*` 权限 seed |
 | 30 | `34_kb_agentic_trace.sql` | AI-7 W12 · Agentic 编排 trace `kb_agentic_trace`（关联 `kb_qa_log`） |
 | 31 | `35_kb_llm_call_log_ai8.sql` | AI-8 W14 · `kb_llm_call_log` 增 `cache_hit`/`failover`/成本估算列 |
+| 32 | `36_kb_research_run.sql` | AI-10 · DeepResearch trace `kb_research_run` |
+| 33 | `37_kb_research_menu.sql` | AI-10 · 主题调研菜单 911 + 角色绑定 |
 
 ---
 

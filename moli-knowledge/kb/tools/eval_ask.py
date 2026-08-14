@@ -272,8 +272,10 @@ def load_inject_golden(path: Path) -> list[dict]:
         if not line or line.startswith("#"):
             continue
         row = json.loads(line)
+        if "question" not in row and "text" in row:
+            row["question"] = row["text"]
         if "question" not in row or "expect" not in row:
-            raise SystemExit(f"guardrails_inject.jsonl 第 {ln} 行缺 question/expect")
+            raise SystemExit(f"guardrails_inject.jsonl 第 {ln} 行缺 question/text/expect")
         if row["expect"] not in ("BLOCK", "PASS", "FLAG"):
             raise SystemExit(f"guardrails_inject.jsonl 第 {ln} 行 expect 非法: {row['expect']!r}")
         entries.append(row)

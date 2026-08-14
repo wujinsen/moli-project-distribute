@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,7 +25,7 @@ public class KbLlmRouterProperties {
 
     public List<Fallback> normalizedFallbacks() {
         if (fallbacks == null || fallbacks.isEmpty()) {
-            return List.of();
+            return Collections.emptyList();
         }
         List<Fallback> out = new ArrayList<>();
         for (Fallback fb : fallbacks) {

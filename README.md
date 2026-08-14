@@ -76,7 +76,7 @@ moli-project-distribute/
 | moli-gateway | `moli-gateway` | 21000 | 统一 API 网关 |
 | moli-user-center-server | `user-center-server` | **8888** | 用户、角色、菜单、字典等基础能力 |
 | moli-order-server | `order-server` | 8087 | 订单业务（含秒杀），通过 Dubbo 调用用户中心 |
-| moli-ai-server | `ai-server` | 1128 | AI 骨架服务（v1 占位） |
+| moli-ai-server | `ai-server` | 1128 | ChatBI / NL2SQL（AI-4）· 网关 `/AiServer/**` |
 | moli-knowledge-server | `knowledge-server` | 见模块 README | 企业知识库 / Ingest / 问答 |
 
 ### 网关路由
@@ -191,7 +191,7 @@ mvn clean package -DskipTests
 
 1. `moli-user-center-server` — 用户中心
 2. `moli-order-server` — 订单服务
-3. `moli-ai-server` — AI 服务（可选，v1 骨架）
+3. `moli-ai-server` — ChatBI / AI 服务（可选）
 4. `moli-knowledge-server` — 知识库（可选）
 5. `moli-gateway` — API 网关
 
@@ -281,11 +281,34 @@ http://localhost:21000/KnowledgeServer/...
 | 🔎 **RAG 检索问答** | Chunk 切段 → 检索（`/kb/ask`）→ **LLM 生成式带引用回答**；OpenAI 兼容客户端（DB 配置优先 + yaml 兜底 + 调用日志） |
 | 📊 **检索评测** | `golden.jsonl` → **hit@k / MRR / coverage**，支持检索式 vs 生成式对比评测 |
 | 🧠 **LLM-Wiki 知识治理** | Ingest / Lint / Enrich，知识「编译一次、持续保鲜」，单向增量幂等入库 |
+| 🤖 **AI 能力演进（M4 ✅）** | Hybrid/GraphRAG/Agentic · Guardrails · LLM 路由与成本看板 · **DeepResearch** 调研报告回写 kb |
 
 **📈 检索指标**（由 `kb/tools/fill_eval_metrics.py` 自动回填）：
 <!-- KB_METRICS:START -->
 hit@1 `66.7%` ｜ hit@3 `100.0%` ｜ hit@5 `100.0%` ｜ hit@8 `100.0%` ｜ MRR `0.833` ｜ coverage `100.0%` ｜ 平均响应 `0.47s` ｜ 样本 `12` 题
 <!-- KB_METRICS:END -->
+
+### AI 能力 · M4 收官（v2.0 · 2026-07-20）
+
+![AI 能力四波路线](docs/diagrams/png/moli-ai-capability-roadmap.png)
+
+> 源文件：[moli-ai-capability-roadmap.drawio](docs/diagrams/moli-ai-capability-roadmap.drawio) · 路线：[docs/design/ai-capability-roadmap.md](docs/design/ai-capability-roadmap.md) · 产品：[docs/product/ai-capability-prd.md](docs/product/ai-capability-prd.md)
+
+| 里程碑 | 范围 | 状态 |
+|--------|------|------|
+| M1 | 评测基线 + Hybrid + CI 门禁 | ✅ |
+| M2 | ChatBI / NL2SQL | ✅ |
+| M3 | GraphRAG + MCP + Agentic RAG | ✅ |
+| **M4** | **LLM 网关 · Guardrails · DeepResearch** | **✅ 2026-07-20** |
+
+| 能力 | 模块 | 入口 / 开关 | 手册 |
+|------|------|-------------|------|
+| ChatBI | `moli-ai-server` | `/AiServer/**` | [moli-ai/README.md](moli-ai/README.md) |
+| Hybrid / Agentic / Guard | `moli-knowledge-server` | `/kb/ask` · `/kb/ask/agentic` · `kb.guardrails.*` | [AI能力操作指南](moli-knowledge/kb/wiki-moli/guides/AI能力操作指南.md) |
+| LLM 路由 / 语义缓存 | `moli-knowledge-server` | `kb.llm.router.*` · Ops 看板 | [AI-8 契约](docs/design/contracts/AI-8-contract.md) |
+| **DeepResearch** | sidecar + Java 壳 | `POST /kb/research` · `kb.research.enabled` | [DeepResearch调研指南](moli-knowledge/kb/wiki-moli/guides/DeepResearch调研指南.md) |
+
+Wiki 操作指南目录：`moli-knowledge/kb/wiki-moli/guides/` · 发版前 `/kb/ask` 回归见 [AI-10 契约 §6.1](docs/design/contracts/AI-10-contract.md)。
 
 - 在线 Demo：`<https://moli-ui.wu-jinsen.com/>`
 - Agentic Coding 规则与 Skills：见 [AGENTS.md](AGENTS.md)
@@ -306,6 +329,7 @@ hit@1 `66.7%` ｜ hit@3 `100.0%` ｜ hit@5 `100.0%` ｜ hit@8 `100.0%` ｜ MRR `
 - [订单模块](moli-order/README.md)
 - [BI 模块（moli-ai）](moli-ai/README.md)
 - [知识库模块](moli-knowledge/README.md)
+- [AI 能力路线（M4）](docs/design/ai-capability-roadmap.md) · [DeepResearch 操作指南](moli-knowledge/kb/wiki-moli/guides/DeepResearch调研指南.md)
 - [公共模块](moli-distribute-common/README.md)
 - [运维索引](docs/ops/README.md) · [压测](load-test/README.md)
 
