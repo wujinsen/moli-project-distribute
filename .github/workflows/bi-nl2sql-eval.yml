@@ -39,6 +39,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install Maven deps for moli-ai-server (validator needs local modules)
+        run: mvn -q -pl moli-ai/moli-ai-server -am install -DskipTests
+
       - name: Validator testset + baselines gate
         working-directory: moli-ai/moli-ai-server/bi/eval
         run: python eval_nl2sql.py --validator-only --gate
@@ -63,6 +66,9 @@ jobs:
 
       - name: Install httpx
         run: pip install httpx
+
+      - name: Install Maven deps for moli-ai-server
+        run: mvn -q -pl moli-ai/moli-ai-server -am install -DskipTests
 
       - name: Check stack secrets
         id: stack
