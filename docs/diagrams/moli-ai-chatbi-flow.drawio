@@ -1,0 +1,86 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-ai-chatbi-flow" name="BI ChatBI NL2SQL Flow">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;BI · ChatBI / NL2SQL Agent 调用链（AI-4）&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;Java 壳负责安全裁决（AST 白名单 + 只读执行 + 审计），Python sidecar 负责生成与解读；LLM 不碰执行&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1100" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui" value="&lt;b&gt;meiling-ui / Gradio&lt;/b&gt;&#xa;自然语言问数" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="70" y="130" width="50" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="gw" value="&lt;b&gt;moli-gateway :21000&lt;/b&gt;&#xa;/AiServer/**（StripPrefix=1）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="230" y="140" width="240" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bi_lane" value="ai-server :1128（Java 壳 · 安全裁决单一真相）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="270" width="1720" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="auth" value="&lt;b&gt;Shiro 校验&lt;/b&gt;&#xa;session（user-center 签发）&#xa;ai:chat:query" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="bi_lane">
+          <mxGeometry x="30" y="50" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="validate" value="&lt;b&gt;SQL 白名单校验（JSqlParser）&lt;/b&gt;&#xa;仅 SELECT · 单语句 · 表/列白名单&#xa;强制 LIMIT · 超时/行数上限" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="bi_lane">
+          <mxGeometry x="640" y="40" width="280" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="exec" value="&lt;b&gt;只读执行&lt;/b&gt;&#xa;独立只读账号 · LIMIT/超时&#xa;order / user 业务库" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="bi_lane">
+          <mxGeometry x="1010" y="50" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="trace" value="&lt;b&gt;ai_chat_trace 审计&lt;/b&gt;&#xa;NL · final_sql · status&#xa;reject_reason · latency · retry" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=10;spacingTop=14;fontSize=11;" vertex="1" parent="bi_lane">
+          <mxGeometry x="1350" y="45" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="reject" value="校验失败 → rejected（返回原因 + 记审计），或作为 validate_error 反馈 Agent 重试（≤2）" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#b85450;" vertex="1" parent="bi_lane">
+          <mxGeometry x="640" y="230" width="700" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent_lane" value="ai-agent（Python sidecar · LangGraph）— 不碰执行" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="680" width="1720" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="retrieve" value="&lt;b&gt;retrieve_schema&lt;/b&gt;&#xa;检索相关表/列（1 表=1 单元）&#xa;收敛 schema 降 token" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="agent_lane">
+          <mxGeometry x="40" y="60" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="gensql" value="&lt;b&gt;generate_sql&lt;/b&gt;&#xa;LLM + few-shot → 单条 SELECT&#xa;（带 validate_error 反馈自纠错）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="agent_lane">
+          <mxGeometry x="400" y="60" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="summarize" value="&lt;b&gt;summarize&lt;/b&gt;&#xa;结果解读文案 + 图表类型建议&#xa;LLM 不做算术/聚合" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="agent_lane">
+          <mxGeometry x="760" y="60" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="result" value="&lt;b&gt;返回&lt;/b&gt;&#xa;{ sql, rows, chart, explanation, traceId }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fontStyle=1;" vertex="1" parent="agent_lane">
+          <mxGeometry x="1120" y="60" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="llm" value="&lt;b&gt;LLM（OpenAI 兼容）&lt;/b&gt;&#xa;平台配置 DB 优先 + yaml 兜底 + 调用日志" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="agent_lane">
+          <mxGeometry x="400" y="210" width="640" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_ui_gw" style="endArrow=block;html=1;strokeColor=#666666;" edge="1" parent="1" source="ui" target="gw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_gw_auth" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="gw" target="auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_auth_retrieve" value="调 sidecar" style="endArrow=block;html=1;strokeColor=#9673a6;fontSize=10;" edge="1" parent="1" source="auth" target="retrieve">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_retr_gen" style="endArrow=block;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="retrieve" target="gensql">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_gen_val" value="候选 SQL → Java 校验" style="endArrow=block;html=1;strokeColor=#b85450;fontSize=10;dashed=1;" edge="1" parent="1" source="gensql" target="validate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_val_exec" value="通过" style="endArrow=block;html=1;strokeColor=#82b366;fontSize=10;" edge="1" parent="1" source="validate" target="exec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_exec_sum" value="结果集 → 解读" style="endArrow=block;html=1;strokeColor=#9673a6;fontSize=10;" edge="1" parent="1" source="exec" target="summarize">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sum_res" style="endArrow=block;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="summarize" target="result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_exec_trace" style="endArrow=block;html=1;strokeColor=#d79b00;dashed=1;" edge="1" parent="1" source="exec" target="trace">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

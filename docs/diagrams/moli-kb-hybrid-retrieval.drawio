@@ -1,0 +1,125 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-hybrid-retrieval" name="KB Hybrid Retrieval">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1160" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;知识库 · 混合检索 + GraphRAG（AI-2 + AI-5）&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;ngram + 向量 RRF → 可选 Graph 扩跳（kb_relation）→ 可选 Rerank；graph 默认关&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1000" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="offline_lane" value="离线建索引轨（Sync 后按 content_hash 增量）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="1720" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="chunk_src" value="&lt;b&gt;kb_document_chunk&lt;/b&gt;&#xa;新增/变更段（content_hash 比对）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="offline_lane">
+          <mxGeometry x="30" y="50" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="embed_api" value="&lt;b&gt;kb-retrieval /embed&lt;/b&gt;&#xa;bge-m3 批量向量化（Python sidecar）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="offline_lane">
+          <mxGeometry x="360" y="50" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="chroma" value="&lt;b&gt;Chroma collection&lt;/b&gt;&#xa;payload: chunkId · docId&#xa;spaceId · slug · kbType · category" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=14;fontSize=11;" vertex="1" parent="offline_lane">
+          <mxGeometry x="720" y="42" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="off_e1" style="endArrow=block;html=1;strokeColor=#9673a6;" edge="1" parent="offline_lane" source="chunk_src" target="embed_api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="off_e2" style="endArrow=block;html=1;strokeColor=#9673a6;" edge="1" parent="offline_lane" source="embed_api" target="chroma">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="online_lane" value="在线检索轨（/kb/ask 召回增强，对外响应结构不变）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="1720" height="600" as="geometry" />
+        </mxCell>
+        <mxCell id="query" value="&lt;b&gt;用户 query&lt;/b&gt;&#xa;经网关 /KnowledgeServer/kb/ask" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="online_lane">
+          <mxGeometry x="30" y="260" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ask_svc" value="&lt;b&gt;KbAskServiceImpl&lt;/b&gt;（Java 编排）&#xa;召回 → 融合 → ACL 裁决 → 组装上下文 → LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fontStyle=1;" vertex="1" parent="online_lane">
+          <mxGeometry x="320" y="250" width="300" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="path1" value="&lt;b&gt;路 1 · ngram 全文&lt;/b&gt;&#xa;KbDocumentChunkMapper&#xa;MATCH AGAINST（ftx_kb_document）&#xa;top-N（ask-candidate-limit）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="online_lane">
+          <mxGeometry x="700" y="120" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="path2" value="&lt;b&gt;路 2 · 向量语义&lt;/b&gt;&#xa;kb-retrieval /search（Chroma）&#xa;vector.top-n；空间/ACL 初筛" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="online_lane">
+          <mxGeometry x="700" y="370" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="rrf" value="&lt;b&gt;RRF 融合&lt;/b&gt;&#xa;score = Σ 1/(rrf-k + rank)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="online_lane">
+          <mxGeometry x="1040" y="240" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="graph_expand" value="&lt;b&gt;GraphRAG（可选 · AI-5）&lt;/b&gt;&#xa;kb_relation BFS 1~2 跳&#xa;graph.enabled=false 默认跳过&#xa;邻居注入 ≤ 0.5×S_max" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;dashed=1;" vertex="1" parent="online_lane">
+          <mxGeometry x="1240" y="245" width="240" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="rerank" value="&lt;b&gt;Rerank（可选）&lt;/b&gt;&#xa;bge-reranker top-M&#xa;strategy=hybrid-rerank 时启用&#xa;图邻居并入 pool" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="online_lane">
+          <mxGeometry x="1510" y="250" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="context" value="&lt;b&gt;组装上下文 + LLM&lt;/b&gt;&#xa;buildChunkContext / KbLlmClient&#xa;citationTopK / llmContextTopK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="online_lane">
+          <mxGeometry x="1510" y="430" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="on_e0" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="online_lane" source="query" target="ask_svc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e1" value="fulltext" style="endArrow=block;html=1;strokeColor=#d79b00;fontSize=10;" edge="1" parent="online_lane" source="ask_svc" target="path1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e2" value="hybrid: 向量" style="endArrow=block;html=1;strokeColor=#82b366;fontSize=10;" edge="1" parent="online_lane" source="ask_svc" target="path2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e3" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="online_lane" source="path1" target="rrf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e4" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="online_lane" source="path2" target="rrf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e5" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="online_lane" source="rrf" target="graph_expand">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e5b" style="endArrow=block;html=1;strokeColor=#d6b656;fontSize=10;" edge="1" parent="online_lane" source="graph_expand" target="rerank">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e5c" value="graph 关" style="endArrow=block;html=1;strokeColor=#6c8ebf;dashed=1;fontSize=10;" edge="1" parent="online_lane" source="rrf" target="rerank">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="on_e6" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="online_lane" source="rerank" target="context">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fallback" value="sidecar 不可达 → 自动降级 strategy=ngram + 告警" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#b85450;" vertex="1" parent="online_lane">
+          <mxGeometry x="700" y="500" width="560" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eval_lane" value="评测回归轨（AI-1 扩容 · AI-3 看板门禁）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="930" width="1720" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="golden" value="&lt;b&gt;golden.jsonl&lt;/b&gt; ≥50 题&#xa;difficulty: easy/paraphrase/dirty/multi-hop/negative" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="eval_lane">
+          <mxGeometry x="30" y="50" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="eval_py" value="&lt;b&gt;eval_ask.py&lt;/b&gt;&#xa;hit@1/3/5/8 · MRR · coverage&#xa;--graph on|off · --compare-graph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="eval_lane">
+          <mxGeometry x="440" y="50" width="320" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="eval_db" value="&lt;b&gt;kb_eval_run&lt;/b&gt; 落库&#xa;strategy 分组指标" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=10;spacingTop=14;fontSize=11;" vertex="1" parent="eval_lane">
+          <mxGeometry x="850" y="42" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="dashboard" value="&lt;b&gt;KbOpsService 看板&lt;/b&gt;&#xa;检索质量趋势曲线" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="eval_lane">
+          <mxGeometry x="1160" y="50" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ci" value="&lt;b&gt;CI 门禁&lt;/b&gt;&#xa;--gate-at-k 3 --min-hit 拦回退" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="eval_lane">
+          <mxGeometry x="1470" y="50" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ev_e1" style="endArrow=block;html=1;strokeColor=#666666;" edge="1" parent="eval_lane" source="golden" target="eval_py">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ev_e2" style="endArrow=block;html=1;strokeColor=#666666;" edge="1" parent="eval_lane" source="eval_py" target="eval_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ev_e3" style="endArrow=block;html=1;strokeColor=#666666;" edge="1" parent="eval_lane" source="eval_db" target="dashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ev_e4" style="endArrow=block;html=1;strokeColor=#666666;" edge="1" parent="eval_lane" source="eval_py" target="ci">
+          <mxGeometry relative="1" edge="1" as="geometry">
+            <Array as="points"><mxPoint x="600" y="30" /><mxPoint x="1580" y="30" /></Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

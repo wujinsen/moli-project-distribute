@@ -1,0 +1,30 @@
+---
+description: Monorepo-wide doc placement and draw.io policy (all moli-* modules)
+alwaysApply: true
+---
+
+# Moli monorepo · documentation
+
+Read [`AGENTS.md`](../../AGENTS.md) for the full rule index (L0–L3).
+
+## Scope
+
+Applies to **all modules** (user-center, order, bi, gateway, knowledge, common, …), not only `moli-knowledge`.
+
+- Doc map: `docs/README.md`
+- KB ingest only: `moli-knowledge/kb/AGENTS.md` (do **not** duplicate per microservice)
+
+## draw.io (mandatory for diagrams)
+
+When adding or updating **architecture, deployment, call chain, ER, business flow, or state machine** visuals in any project doc:
+
+1. Read and follow `.cursor/skills/drawio-diagrams/SKILL.md` (or `@drawio-diagrams`)
+2. Create `docs/diagrams/moli-{topic}.drawio`, export PNG to `docs/diagrams/png/`
+3. Embed PNG in Markdown + link to `.drawio`; update `docs/diagrams/README.md`
+4. Do **not** use ASCII arrow art or Mermaid as the **primary** diagram (ASCII only inside `<details>` as backup)
+
+If an existing diagram in `docs/diagrams/` fits, link/reuse it instead of redrawing.
+
+## Single-service docs
+
+First draft in `moli-xxx/README.md`; browse summary in `kb/wiki/services/` after ingest. API authority stays in `docs/api/`.

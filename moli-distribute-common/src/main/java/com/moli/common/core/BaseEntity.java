@@ -1,7 +1,9 @@
 package com.moli.common.core;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -13,7 +15,7 @@ public class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("ID")
-    @TableField(fill = FieldFill.INSERT)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     @ApiModelProperty("创建人")

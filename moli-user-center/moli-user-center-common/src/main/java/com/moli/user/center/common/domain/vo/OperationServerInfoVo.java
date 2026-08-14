@@ -23,5 +23,17 @@ public class OperationServerInfoVo extends BaseEntity {
     @ApiModelProperty("开发环境: 1: dev 2:test 3:pre 4:pro")
     private Integer environment;
 
+    @ApiModelProperty("角色 app/db/cache/mq/gateway/bastion/middleware/other")
+    private String serverRole;
+
+    @ApiModelProperty("按标签筛选（精确匹配单项）")
+    private String tag;
+
+    @ApiModelProperty("按关联项目筛选")
+    private Long projectId;
+
+    @ApiModelProperty("按关联组件筛选")
+    private Long componentId;
+
     private String remark;
 }

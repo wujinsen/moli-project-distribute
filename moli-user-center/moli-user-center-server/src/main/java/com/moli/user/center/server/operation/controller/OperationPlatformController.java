@@ -1,20 +1,24 @@
 package com.moli.user.center.server.operation.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
+import com.moli.common.enums.BusinessTypeEnum;
+import com.moli.common.log.MoliLog;
+import com.moli.user.center.common.domain.dto.operation.OperationPlatformSaveRequest;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
+import com.moli.user.center.common.domain.vo.OperationPlatformVo;
+import com.moli.user.center.common.domain.vo.OperationSecretRevealVo;
 import com.moli.common.page.PageRes;
-import com.moli.user.center.server.operation.mapper.OperationPlatformMapper;
+import com.moli.user.center.server.operation.service.OperationPlatformService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/operation/platform")
@@ -23,68 +27,54 @@ import javax.annotation.Resource;
 public class OperationPlatformController {
 
     @Resource
-    private OperationPlatformMapper operationPlatformMapper;
+    private OperationPlatformService operationPlatformService;
 
     @GetMapping("/list")
     @RequiresPermissions(PermissionConstants.OPERATION_PLATFORM_LIST)
     @ApiOperation(value = "运维平台列表", notes = "运维平台列表")
-    public MoliResult<PageRes<OperationPlatformInfo>> list(OperationPlatformInfo operationPlatformInfo) {
-        PageRes<OperationPlatformInfo> result = new PageRes<>();
-        LambdaQueryWrapper<OperationPlatformInfo> lambdaQueryWrapper = new LambdaQueryWrapper();
-        if (StringUtils.isNotBlank(operationPlatformInfo.getPlatformName())) {
-            lambdaQueryWrapper.like(OperationPlatformInfo::getPlatformName, operationPlatformInfo.getPlatformName());
-        }
-
-        if (operationPlatformInfo.getEnvironment() != null) {
-            lambdaQueryWrapper.eq(OperationPlatformInfo::getEnvironment, operationPlatformInfo.getEnvironment());
-        }
-
-        lambdaQueryWrapper.orderByDesc(OperationPlatformInfo::getCreateTime);
-        Page page = new Page();
-        page.setCurrent(operationPlatformInfo.getPageNum());
-        page.setSize(operationPlatformInfo.getPageSize());
-        operationPlatformMapper.selectPage(page, lambdaQueryWrapper);
-        Long total = page.getTotal();
-        result.setTotal(total.intValue());
-        result.setList(page.getRecords());
-        result.setPageNum(operationPlatformInfo.getPageNum());
-        result.setPageSize(operationPlatformInfo.getPageSize());
-        return MoliResult.success(result);
-
+    public MoliResult<PageRes<OperationPlatformVo>> list(OperationPlatformInfo operationPlatformInfo) {
+        return MoliResult.success(operationPlatformService.list(operationPlatformInfo));
     }
 
     @PostMapping
     @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_ADD, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
+    @MoliLog(title = "添加运维平台", businessType = BusinessTypeEnum.INSERT)
     @ApiOperation(value = "添加运维平台", notes = "添加运维平台")
-    public MoliResult<Boolean> insert(@RequestBody OperationPlatformInfo operationPlatformInfo) {
-        operationPlatformMapper.insert(operationPlatformInfo);
+    public MoliResult<Boolean> insert(@Valid @RequestBody OperationPlatformSaveRequest request) {
+        operationPlatformService.create(request);
         return MoliResult.success(Boolean.TRUE);
     }
 
-
     @PutMapping
     @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_EDIT, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
+    @MoliLog(title = "更新运维平台", businessType = BusinessTypeEnum.UPDATE)
     @ApiOperation(value = "更新运维平台", notes = "更新运维平台")
-    public MoliResult<Boolean> update(@RequestBody OperationPlatformInfo operationPlatformInfo) {
-        operationPlatformMapper.updateById(operationPlatformInfo);
+    public MoliResult<Boolean> update(@Valid @RequestBody OperationPlatformSaveRequest request) {
+        operationPlatformService.update(request);
         return MoliResult.success(Boolean.TRUE);
     }
 
     @GetMapping(value = "/{id}")
     @RequiresPermissions(PermissionConstants.OPERATION_PLATFORM_LIST)
     @ApiOperation(value = "查询单个运维平台", notes = "查询单个运维平台")
-    public MoliResult<OperationPlatformInfo> selectOne(@PathVariable Long id) {
+    public MoliResult<OperationPlatformVo> selectOne(@PathVariable Long id) {
+        return MoliResult.success(operationPlatformService.getById(id));
+    }
 
-        return MoliResult.success(operationPlatformMapper.selectById(id));
+    @GetMapping(value = "/{id}/secret")
+    @RequiresPermissions(PermissionConstants.OPERATION_SECRET_VIEW)
+    @MoliLog(title = "查看运维平台凭据", businessType = BusinessTypeEnum.OTHER, isSaveResponseData = false)
+    @ApiOperation(value = "查看运维平台明文凭据", notes = "需 operation:secret:view 权限")
+    public MoliResult<OperationSecretRevealVo> revealSecret(@PathVariable Long id) {
+        return MoliResult.success(operationPlatformService.revealPassword(id));
     }
 
     @DeleteMapping("/{ids}")
     @RequiresPermissions(value = {PermissionConstants.OPERATION_PLATFORM_REMOVE, PermissionConstants.OPERATION_PLATFORM_LIST}, logical = Logical.AND)
+    @MoliLog(title = "删除运维平台", businessType = BusinessTypeEnum.DELETE)
     @ApiOperation(value = "删除运维平台", notes = "删除运维平台")
-    public MoliResult remove(@PathVariable Long[] ids) {
-        for (Long id : ids) {
-            operationPlatformMapper.deleteById(id);
-        }
+    public MoliResult<Boolean> remove(@PathVariable Long[] ids) {
+        operationPlatformService.deleteByIds(ids);
         return MoliResult.success(Boolean.TRUE);
     }
 }

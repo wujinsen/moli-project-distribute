@@ -1,0 +1,113 @@
+---
+title: MyBatis 与 Druid 持久层
+slug: mybatis-与-druid持久层
+type: concept
+status: active
+tags: [mybatis, druid, 持久层, 数据库]
+sources:
+- docs/zh-CN/TECH_STACK.md
+- moli-user-center/moli-user-center-server/src/main/resources/application-dev.yml
+- raw/wujinsen_markdown/javaweb/Mybatis/#{} ${} 区别.note.md
+- raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md
+- raw/wujinsen_markdown/javaweb/Mybatis/mybatis的#{}和${}的区别以及order by注入问题.note.md
+- raw/wujinsen_markdown/javaweb/Servlet生命周期与工作原理.note.md
+- raw/wujinsen_markdown/javaweb/jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。.note.md
+- raw/wujinsen_markdown/javaweb/spring监听器.note.md
+- raw/wujinsen_markdown/javaweb/为什么我再也不使用MVC框架了？.note.md
+- raw/wujinsen_markdown/javaweb/客户端跳转与服务器端跳转的区别.note.md
+- raw/wujinsen_markdown/插件/PageHelper/PageHelper采坑问题记录.note.md
+related: [mybatis-plus-用法与注入防护, druid连接池与监控, mysql-索引, mysql-事务与锁, spring-声明式事务]
+created: 2026-06-22
+updated: 2026-07-05
+---
+
+# MyBatis 与 Druid 持久层
+
+> SQL 写法与 `#{}` [[database/mybatis-plus-用法与注入防护]]；池监控 [[database/druid连接池与监控]]；事务 [[spring/spring-声明式事务]] + [[database/mysql-事务与锁]]。
+
+全家桶持久层：**MySQL 8.0 + MyBatis-Plus 3.4.2 + Druid 1.1.14**（见 ）。用户中心、订单、BI、知识库等服务均走 `DruidDataSource` + Mapper。
+
+## 1. 分层职责
+
+```mermaid
+flowchart TB
+ Controller --> Service
+ Service --> Mapper["Mapper (MyBatis-Plus)"]
+ Mapper --> Pool["Druid 连接池"]
+ Pool --> MySQL[(MySQL moli)]
+```
+
+| 层 | 职责 |
+|----|------|
+| **Service** | 业务 + `@Transactional` |
+| **Mapper** | SQL 映射；Plus 提供 CRUD、Wrapper |
+| **Druid** | 连接池、慢 SQL、防泄漏 |
+| **MySQL** | 索引/锁/MVCC（[[database/mysql-索引]]） |
+
+## 3. Druid 统一配置模式
+
+典型 `application-dev.yml`（用户中心）：
+
+| 参数 | 示例值 | 含义 |
+|------|--------|------|
+| initial-size | 10 | 初始连接 |
+| min-idle | 10 | 最小空闲 |
+| max-active | 100 | 最大活跃 |
+| max-wait | 10000 ms | 取连接最长等待 |
+| validation-query | SELECT 1 | 空闲检测 |
+| remove-abandoned | true | 泄漏连接回收 |
+
+压测 profile 可能调大 `max-active`（见 `application-loadtest.yml`）。
+
+## 4. 性能与排查触点
+
+| 现象 | 先看 |
+|------|------|
+| 获取连接超时 | Druid active/waiting；是否慢 SQL 占满池 |
+| 慢接口 | Druid SQL 统计 / [[database/mysql-深分页与慢sql优化]] |
+| 连接泄漏 | `remove-abandoned` 日志；未关 Connection |
+| 事务不回滚 | [[spring/spring-声明式事务]] 传播/自调用 |
+
+loadtest 已暴露 **Prometheus Druid 指标**（`druid.pool.*`），见 [[database/druid连接池与监控]]、[[middleware/压测监控与prometheus]]。
+
+## 5. 与分布式组件
+
+- **Redis**：Session/缓存，减轻 DB 读（[[cache/redis-缓存]]）
+- **秒杀**：热点在 Redis；订单落库仍靠 Mapper + 合理索引
+- **分布式锁 DB 方案**：长事务占连接 → 易打满池（[[cache/分布式锁]]）
+
+## 6. 编码规范（项目级）
+
+- 动态 SQL 值用 `#{}`，禁止随意 `${}`（[[database/mybatis-plus-用法与注入防护]]）
+- 避免 `WHERE 1=1` 堆砌，用 `<where>` / Wrapper
+- 写操作放在 Service 事务边界内
+
+## 批次#1320 增补（wujinsen Phase2 P0）
+
+合并 MyBatis #{} ${} 与 order by 注入防护 raw。
+
+## 批次#1324 增补（wujinsen Phase2 长尾）
+
+合并 PageHelper 插件 raw。
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/javaweb/jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/javaweb/jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。.note.md` · T22 **B** 档
+
+### 来自：jackson-mapper-asl总结一下自己使用jackson处理对象与JSON之间相互转换的心得。
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/jackson-mapper-asl%E6%80%BB%E7%BB%93%E4%B8%80%E4%B8%8B%E8%87%AA%E5%B7%B1%E4%BD%BF%E7%94%A8jackson%E5%A4%84%E7%90%86%E5%AF%B9%E8%B1%A1%E4%B8%8EJSON%E4%B9%8B%E9%97%B4%E7%9B%B8%E4%BA%92%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%BF%83%E5%BE%97%E3%80%82.note_images/imageFile1.png)
+
+原文插图 annex：[[database/annex-为什么我再也不使用MVC框架了？]]
+
+<!-- t22-wujinsen-images:raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md -->
+## 原文插图（wujinsen）
+
+> 图源 `raw/wujinsen_markdown/javaweb/Mybatis/MyBatis 通过包含的jdbcType类型.note.md` · T22 **B** 档
+
+### 来自：MyBatis 通过包含的jdbcType类型
+
+![image 1](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/Mybatis/MyBatis%20%E9%80%9A%E8%BF%87%E5%8C%85%E5%90%AB%E7%9A%84jdbcType%E7%B1%BB%E5%9E%8B.note_images/imageFile1.png)
+
+![image 2](/KnowledgeServer/kb/raw/asset?spaceId=900000000000000001&path=wujinsen_markdown/javaweb/Mybatis/MyBatis%20%E9%80%9A%E8%BF%87%E5%8C%85%E5%90%AB%E7%9A%84jdbcType%E7%B1%BB%E5%9E%8B.note_images/imageFile2.png)

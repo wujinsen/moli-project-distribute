@@ -3,8 +3,12 @@ package com.moli.user.center.server.testsupport;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
+import com.moli.user.center.common.domain.entity.OperationPortMatrixAliasInfo;
+import com.moli.user.center.common.domain.entity.OperationPortMatrixInfo;
 import com.moli.user.center.common.domain.entity.OperationPlatformInfo;
+import com.moli.user.center.common.domain.entity.OperationProjectComponent;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
+import com.moli.user.center.common.domain.entity.OperationTask;
 import com.moli.user.center.common.domain.entity.OperationServerComponent;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.entity.OperationServerProject;
@@ -61,7 +65,11 @@ public final class MybatisPlusTestSupport {
                     OperationProjectDeployInfo.class,
                     OperationComponentDeployInfo.class,
                     OperationServerProject.class,
-                    OperationServerComponent.class
+                    OperationServerComponent.class,
+                    OperationProjectComponent.class,
+                    OperationTask.class,
+                    OperationPortMatrixInfo.class,
+                    OperationPortMatrixAliasInfo.class
             };
             for (Class<?> entity : entities) {
                 TableInfoHelper.initTableInfo(assistant, entity);

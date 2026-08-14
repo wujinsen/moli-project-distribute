@@ -1,0 +1,59 @@
+# 技术方案 / 架构设计文档
+
+## 权威位置
+
+| 层级 | 路径 | 说明 |
+|------|------|------|
+| **官方薄层** | `docs/zh-CN/ARCHITECTURE.md`、`TECH_STACK.md`、`RBAC.md` | 多语言：`docs/en/`、`docs/ja/` |
+| **可视化** | `docs/diagrams/*.drawio` | C4、ER、RAW 全链路 |
+| **新稿投喂** | `kb/raw/design/` | 外部方案、评审稿 |
+| **详细知识** | `kb/wiki-moli/develop/concepts/`、`kb/wiki-moli/develop/articles/` | Ingest 后浏览 |
+| **综合汇总** | `kb/wiki-moli/develop/outputs/` | Query crystallize |
+
+## 类型映射
+
+| 内容 | wiki 目录 |
+|------|-----------|
+| 跨模块概念（RBAC、秒杀、网关） | `concepts/` |
+| **用户中心 + 门户 + SSO** | [`user-center-overview.md`](user-center-overview.md) · [`user-center-detailed-design.md`](user-center-detailed-design.md) · [`portal-system-group.md`](portal-system-group.md) · [`sso-menu-system-isolation.md`](sso-menu-system-isolation.md) |
+| **产品 PRD（运维/SSO）** | [`../product/operation-server-ops-prd.md`](../product/operation-server-ops-prd.md) · [`../product/sso-menu-isolation-prd.md`](../product/sso-menu-isolation-prd.md) |
+| **订单 · 秒杀** | [`order-seckill-design.md`](order-seckill-design.md) |
+| **知识库 LLM 平台设置（T19）** | [`kb-llm-platform-settings.md`](kb-llm-platform-settings.md) · 前端 [`../api/kb-llm-platform-frontend.md`](../api/kb-llm-platform-frontend.md) |
+| **知识库双入口导入（T20）** | [`kb-import-entry-design.md`](kb-import-entry-design.md) · 产品 [`../product/knowledge-import-entry-prd.md`](../product/knowledge-import-entry-prd.md) |
+| **知识库模块总览** | [`knowledge-module-overview.md`](knowledge-module-overview.md) |
+| **AI 模块（v1 骨架）** | [`ai-module-overview.md`](ai-module-overview.md) · [ai-api.md](../api/ai-api.md) |
+| **AI 能力演进路线（Hybrid 检索 / ChatBI / Agentic RAG / GraphRAG / MCP）** | [`ai-capability-roadmap.md`](ai-capability-roadmap.md) · 产品 [`../product/ai-capability-prd.md`](../product/ai-capability-prd.md) · 排期 [`ai-capability-schedule.md`](ai-capability-schedule.md) |
+| **AI · 混合检索 + 评测升级（AI-1/2/3）** | [`kb-hybrid-retrieval.md`](kb-hybrid-retrieval.md) · 图 [`moli-kb-hybrid-retrieval.drawio`](../diagrams/moli-kb-hybrid-retrieval.drawio) |
+| **AI · ChatBI / NL2SQL Agent（AI-4）** | [`bi-chatbi-nl2sql.md`](bi-chatbi-nl2sql.md) · 图 [`moli-ai-chatbi-flow.drawio`](../diagrams/moli-ai-chatbi-flow.drawio) |
+| **API 网关** | [`gateway-design.md`](gateway-design.md) · 路由 [`../api/gateway-routes.md`](../api/gateway-routes.md) |
+| **运维规划（两条独立线）** | [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md) · [`kb-ops-roadmap.md`](kb-ops-roadmap.md) |
+| **拓扑与关系（SVR-25/28）** | [`server-topology-visualization.md`](server-topology-visualization.md) · [`operation-relations-navigation.md`](operation-relations-navigation.md) · 图 [`moli-operation-topology-graph.drawio`](../diagrams/moli-operation-topology-graph.drawio) |
+| **运营管理 + 部署中心改造** | [`operation-module-refactor-plan.md`](operation-module-refactor-plan.md) · 图 [`moli-operation-refactor.drawio`](../diagrams/moli-operation-refactor.drawio) |
+| **端口矩阵可配置化（SVR-21）** | [`operation-port-matrix-config.md`](operation-port-matrix-config.md) · API [`operation-port-matrix-api.md`](../api/operation-port-matrix-api.md) · 图 [`moli-operation-port-matrix.drawio`](../diagrams/moli-operation-port-matrix.drawio) |
+| **项目/组件多服务器关联（SVR-22）** | [`operation-server-links.md`](operation-server-links.md) · 图 [`moli-operation-server-links.drawio`](../diagrams/moli-operation-server-links.drawio) |
+| 方案长文、踩坑、最佳实践 | `articles/` |
+| 微服务边界一页纸 | `services/` |
+
+## 工作流
+
+外部《技术方案 v3》→ `raw/design/` → Ingest → enrich 已有 concept/article → sync。
+
+## 相关
+
+- [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md)
+- [RBAC.md](../zh-CN/RBAC.md)
+- [diagrams/README.md](../diagrams/README.md)
+- 历史审查纪要：[archive/](archive/)（2026-06-25 Ingest / Sync·Ask）
+- [知识库 LLM 平台系统设置（T19）](kb-llm-platform-settings.md)
+
+## 可视化（draw.io）
+
+| 图 | 说明 |
+|----|------|
+| ![网关路由](../diagrams/png/moli-gateway-routes.png) | [moli-gateway-routes.drawio](../diagrams/moli-gateway-routes.drawio) |
+| ![RBAC 模型](../diagrams/png/moli-rbac-model.png) | [moli-rbac-model.drawio](../diagrams/moli-rbac-model.drawio) |
+| ![秒杀链路](../diagrams/png/moli-seckill-flow.png) | [moli-seckill-flow.drawio](../diagrams/moli-seckill-flow.drawio) |
+| ![本地部署](../diagrams/png/moli-deploy-topology.png) | [moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio) |
+| ![AI 能力路线](../diagrams/png/moli-ai-capability-roadmap.png) | [moli-ai-capability-roadmap.drawio](../diagrams/moli-ai-capability-roadmap.drawio) · AI-1~10 四波 |
+| ![混合检索](../diagrams/png/moli-kb-hybrid-retrieval.png) | [moli-kb-hybrid-retrieval.drawio](../diagrams/moli-kb-hybrid-retrieval.drawio) · ngram+向量+Rerank |
+| ![ChatBI 调用链](../diagrams/png/moli-ai-chatbi-flow.png) | [moli-ai-chatbi-flow.drawio](../diagrams/moli-ai-chatbi-flow.drawio) · NL2SQL 安全裁决 |

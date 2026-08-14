@@ -3,6 +3,7 @@ package com.moli.knowledge.server.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import com.moli.knowledge.server.dto.KbWorkflowHintVo;
 
 import java.util.List;
 
@@ -39,4 +40,7 @@ public class IngestCommitResultVo {
 
     @ApiModelProperty("Sync 结果（触发时）")
     private SyncTriggerVo syncResult;
+
+    @ApiModelProperty("建议下一步（Wiki 治理 Lint 等）")
+    private List<KbWorkflowHintVo> nextSteps;
 }

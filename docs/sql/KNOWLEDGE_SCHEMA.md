@@ -1,6 +1,6 @@
 # 企业知识库 · 表结构设计
 
-> 更新：2026-06-23 · 配套脚本 [`03_knowledge_schema.sql`](03_knowledge_schema.sql)
+> 更新：2026-06-28 · 配套脚本 [`03_knowledge_schema.sql`](03_knowledge_schema.sql)、[`11_kb_platform_llm_config.sql`](11_kb_platform_llm_config.sql)（T19）
 > 范式：LLM-Wiki —— `kb/`（markdown）是**唯一写入源**，`moli-knowledge-server` 是**下游只读门面 + 对外 Web/API**。
 > 规划见 [`../../moli-knowledge/kb/ROADMAP.md`](../../moli-knowledge/kb/ROADMAP.md)。
 
@@ -18,7 +18,9 @@
 | **Query `/kb/ask`（带引用 + 反馈）** | 🔜 | `kb_qa_log` |
 | **空间级 ACL（复用 Shiro/Dubbo）** | 🔜 | `kb_space_member` |
 | 面试题系列 / 作用域过滤（type/domain） | 🔜 | `kb_document`(+kb_type/domain) |
-| 全文检索（先 MySQL FULLTEXT，量大再外置） | 🔜 | `kb_document` ngram 全文索引 |
+| 全文检索（先 MySQL FULLTEXT，量大再外置） | ✅ | `kb_document` ngram 全文索引 |
+| **chunk 切段（/kb/ask 按段召回）** | ✅ | `kb_document_chunk`（sync 派生，见 `29_kb_document_chunk.sql`） |
+| **平台 LLM Web 配置（T19）** | ✅ | `kb_platform_llm_config`（设计 [`../design/kb-llm-platform-settings.md`](../design/kb-llm-platform-settings.md)） |
 
 通用约定：`bigint` 雪花主键；`create_id/create_time/update_id/update_time` 审计字段（MyBatis-Plus 自动填充）；`is_delete` 逻辑删除；**`utf8mb4`**。
 
@@ -26,7 +28,7 @@
 
 ---
 
-## 2. 表清单（14 张）
+## 2. 表清单（15 张 · 含 T19 平台 LLM）
 
 ### 核心内容（9）
 
@@ -35,6 +37,7 @@
 | `kb_space` | 知识空间（多租户 / 权限边界） | 不变 |
 | `kb_category` | 分类树（`parent_id` 自关联） | +`icon` |
 | `kb_document` | **知识文档（核心）** | +`slug` +`source` +`source_path` +`content_hash` +`kb_type` +`domain`，+全文索引 |
+| `kb_document_chunk` | **文档切段（ask 召回）** | sync 从正文按 `##` 派生；`ftx_kb_document_chunk(heading,content)` ngram |
 | `kb_tag` | 标签 | +`(space_id,tag_name)` 唯一 |
 | `kb_document_tag` | 文档-标签关联 | +`tag_id` 索引 |
 | `kb_comment` | 评论（`parent_id` 楼中楼） | 不变 |
@@ -56,6 +59,15 @@
 | `kb_sync_log` | kb→DB 单向增量同步审计：批次、原始路径、`action`(insert/update/delete/skip)、内容 hash、结果 |
 | `kb_space_member` | 空间级 ACL：成员可为**用户或角色**（复用用户中心），角色 `viewer/editor/admin` |
 | `kb_qa_log` | Query 历史：问题、答案、`citations`(JSON 引用)、作用域、provider/model、token、`useful` 反馈 |
+| `kb_agentic_trace` | Agentic 编排 trace（AI-7）：改写/子问题/每轮 steps_json、coverage、关联 `kb_qa_log.id` |
+
+### 平台配置（1 · T19）
+
+| 表 | 说明 |
+|----|------|
+| `kb_platform_llm_config` | 平台级 LLM 单例（`id=1`）：provider/base-url/加密 api-key/model；Web **系统管理 → 知识库 LLM** 维护 |
+| `kb_llm_call_log` | LLM 调用审计（KBOPS-9 Dashboard 调用率）；DDL [`18_kb_llm_call_log.sql`](18_kb_llm_call_log.sql) · **未合并** `scripts/moli.sql` 基线 |
+| `kb_eval_run` | 评测回归记录（AI-3）；Python `eval_ask.py --emit-db` 写、Java 只读；DDL [`31_kb_eval_run.sql`](31_kb_eval_run.sql) |
 
 > **向量库刻意不建**：ROADMAP §五把向量/ES 列为「按需」。先用 MySQL `ngram` 全文索引，文档量过千且召回变差时再外置 Meilisearch/ES/向量库，届时新增 `kb_chunk`/`kb_embedding` 即可，不影响现有表。
 
@@ -81,7 +93,7 @@
 - `slug`：空间内唯一（`uk_kb_document_slug(space_id, slug)`），作为 kb→DB 的**幂等 upsert 主键**，同时是干净 URL。
 - `source_path`：kb/ 中 markdown 的相对路径，便于回溯与删除（kb 删页 → DB 置 `is_delete`）。
 - `content_hash`：正文+frontmatter 的 SHA-256，**只同步变更页**（hash 未变则 `skip`）。
-- `source`：`kb`（同步来源，界面只读）/ `manual`（界面创建，可编辑）。
+- `source`：`kb`（wiki 同步，**Web 唯一来源**）/ `manual`（历史遗留行，Web 已停用直连写库；清理见 sync `--purge` 或 DBA）
 
 ### 3.3 图谱/体检从「运行时算」到「落库」
 

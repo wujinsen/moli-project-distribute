@@ -1,0 +1,15 @@
+---
+description: Wiki pages — reuse or create draw.io diagrams, no ASCII architecture art
+globs: moli-knowledge/kb/**/*.md
+alwaysApply: false
+---
+
+# draw.io in kb/wiki*
+
+Wiki pages are browsable docs. Same rule as `docs/`:
+
+- Architecture / ER / flows → **draw.io** via `.cursor/skills/drawio-diagrams/SKILL.md`
+- Prefer linking existing `docs/diagrams/moli-*.drawio` + PNG before creating duplicates
+- Ingest workflow still follows `moli-knowledge/kb/AGENTS.md` (L2)
+
+Do not add ASCII box-and-arrow diagrams as the primary visual.

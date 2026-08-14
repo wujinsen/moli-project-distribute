@@ -1,0 +1,341 @@
+---
+title: 面试小结之并发篇.note（原文插图 annex）
+slug: annex-面试小结之并发篇
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/面试笔试/面试小结/面试小结之并发篇.note.md
+related: [completablefuture-异步编排]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+最近⾯试⼀些公司，被问到的关于Java并发编程的问题，以及⾃⼰总结的回答。
+
+Java线程的状态及如何转换。
+
+![image 1](assets/imageFile1.png)
+
+线程状态及其转换图
+
+多个线程之间如何协调？
+
+wait()、notify()、notifyAl()：这三个⽅法⽤于协调多个线程对共享数据的存取，所以必须在同步语 句块内使⽤。wait⽅法要等待notify/notifyAl的线程释放锁后才能开始继续往下执⾏。
+
+<table>
+  <tr>
+    <th>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10 1<br><br><br>12<br>13<br>14<br></th>
+    <th>/ 等待⽅<br><br>synchronized(lockObj){ while(condition is false){ lockObj.wait(); }<br><br>/ do busines }<br><br>/ 通知⽅ synchronized(lockObj){ / change condition<br><br>lockObj.notifyAl(); }</th>
+  </tr>
+</table>
+
+
+15
+
+说说Java的线程池是如何实现的？
+
+创建线程要花费昂贵的资源和时间，如果任务来了才创建线程那么响应时间会变⻓，⽽且⼀个进程 能创建的线程数有限。为了避免这些问题，在程序启动的时候就创建若⼲线程来响应处理，它们被 称为线程池，⾥⾯的线程叫⼯作线程。
+
+maximumPolSize和corePolSize的区别：这个概念很重要，maximumPolSize为线程池最⼤容 量，也就是说线程池最多能起多少Worker。corePolSize是核⼼线程池的⼤⼩，当corePolSize满 了时，同时workQueueful（ArayBolckQueue是可能满的） 那么此时允许新建Worker去处理 workQueue中的Task，但是不能超过maximumPolSize。超过corePolSize之外的线程会在空闲超 时后终⽌。可以通过beforeExecute和afterExecute实现线程池的监听；
+
+![image 2](assets/imageFile2.png)
+
+线程池
+
+![image 3](assets/imageFile3.png)
+
+线程池处理流程
+
+<table>
+  <tr>
+    <th>1<br>2<br>3<br>4<br>5<br></th>
+    <th>public static ExecutorService newFixedThreadPol(int nThreads) {<br><br>return new ThreadPolExecutor(nThreads, nThreads, 0L, TimeUnit.MI LISECONDS, new LinkedBlockingQueue<Runable>();</th>
+  </tr>
+</table>
+
+
+}
+
+关于BlockingQueue和TransferQueue的异同。
+
+TransferQueue继承了BlockingQueue并扩展了⼀些新⽅法。BlockingQueue是Java 5中加⼊的接 ⼝，它是指这样的⼀个队列：当⽣产者向队列添加元素但队列已满时，⽣产者会被阻塞；当消费者 从队列移除元素但队列为空时，消费者会被阻塞。 TransferQueue则更进⼀步，⽣产者会⼀直阻塞直到所添加到队列的元素被某⼀个消费者所消费 （不仅仅是添加到队列⾥就完事），新添加的transfer⽅法⽤来实现这种约束。顾名思义，阻塞就是 发⽣在元素从⼀个线程transfer到另⼀个线程的过程中，它有效地实现了元素在线程之间的传递（以 建⽴Java内存模型中的hapens-before关系的⽅式）。 TransferQueue还包括了其他的⼀些⽅法：两个tryTransfer⽅法，⼀个是⾮阻塞的，另⼀个带有 timeout参 数 设 置 超 时 时 间 的 。 还 有 两 个 辅 助 ⽅ 法 hasWaitingConsumer()和 getWaitingConsumerCount()。
+
+TransferQueue相⽐SynchronousQueue⽤处更⼴、更好⽤，因为你可以决定是使⽤BlockingQueue 的⽅法（例如put⽅法）还是确保⼀次传递完成（即transfer⽅法）。在队列中已有元素的情况下， 调⽤transfer⽅法，可以确保队列中被传递元素之前的所有元素都能被处理。Doug Lea说从功能⻆ 度来讲，LinkedTransferQueue实际上是ConcurentLinkedQueue、SynchronousQueue（公平模 式）和LinkedBlockingQueue的超集。⽽且LinkedTransferQueue更好⽤，因为它不仅仅综合了这 ⼏个类的功能，同时也提供了更⾼效的实现。
+
+# 谈谈HashMap的实现。
+
+从结构实现来讲，HashMap是数组+链表+红⿊树（JDK1.8增加了红⿊树部分）实现的，如下如所 示。
+
+![image 4](assets/imageFile4.png)
+
+HashMap
+
+从源码可知，HashMap类中有⼀个⾮常重要的字段，就是 Node[] table，即哈希桶数组； Node是HashMap的⼀个内部类，实现了Map.Entry接⼝，本质是就是⼀个映射(键值对)。 HashMap就是使⽤哈希表来存储的。为解决冲突，Java中HashMap采⽤了链地址法，简单来说，就是数组加链表的结合。在 每个数组元素上都⼀个链表结构，当数据被Hash后，得到数组下标，把数据放在对应下标元素的链表上。 Node[] table的初始化⻓度默认值是16，Load factor为负载因⼦(默认值是0.75)，threshold是HashMap所能容纳的最⼤数据 量的Node(键值对)个数。threshold = length * Load factor。也就是说，在数组定义好⻓度之后，负载因⼦越⼤，所能容纳的 键值对个数越多。
+
+确定哈希桶数组索引位置：取key的hashCode值、⾼位运算(通过hashCode()的⾼16位异或低16位 实现的)、取模运算。
+
+static final int hash(Object key) { int h; return (key = nul) ? 0 : (h = key.hashCode() ^ (h > 16);
+
+}
+
+![image 5](assets/imageFile5.png)
+
+数组索引位置
+
+HashMap的put⽅法执⾏过程可以通过下图来理解。
+
+![image 6](assets/imageFile6.png)
+
+put⽅法执⾏过程
+
+<table>
+  <tr>
+    <th>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br><br><br>1<br><br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br><br><br>2<br><br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br><br><br>3<br><br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br><br><br>4<br><br><br>45<br>46<br>47<br>48<br>49<br>50<br>51<br>52<br>53<br>54<br></th>
+    <th>public V put(K key, V value) {<br><br>return putVal(hash(key), key, value, false, true); } final V putVal(int hash, K key, V value, bolean onlyIfAbsent,<br><br>bolean evict) { Node<K,V>[] tab; Node<K,V> p; int n, i;<br><br>/ 步骤①：tab为空则创建<br><br>if (tab = table) = nul | (n = tab.length) = 0) n = (tab = resize().length;<br><br>/ 步骤②：计算index，并对nul做处理<br><br>if (p = tab[i = (n - 1) & hash]) = nul) tab[i] = newNode(hash, key, value, nul); else { Node<K,V> e; K k;<br><br>/ 步骤③：节点key存在，直接覆盖value<br><br><br>if (p.hash = hash &<br><br>(k = p.key) = key| (key != nul & key.equals(k ) e = p;<br><br>/ 步骤④：判断该链为红⿊树 else if (p instanceof TreNode) e =(TreNode<K,V>)p).putTreVal(this, tab, hash, key,<br><br>value);<br><br>/ 步骤⑤：该链为链表 else { for (int binCount = 0; ; +binCount) { if (e = p.next) = nul) { p.next = newNode(hash, key, value, nul);<br><br>/链表⻓度⼤于8转换为红⿊树进⾏处理 if (binCount >= TREIFY_THRESHOLD - 1)/ -1 for 1st treifyBin(tab, hash); break; }<br><br>/ key已经存在直接覆盖value if (e.hash = hash &<br><br>(k = e.key) = key| (key != nul & key.equals(k ) break; p = e; } } if (e != nul) {/ existing maping for key V oldValue = e.value; if (!onlyIfAbsent | oldValue = nul) e.value = value; afterNodeAces(e); return oldValue; } }<br><br>+modCount;<br><br>/ 步骤⑥：超过最⼤容量 就扩容 if (+size > threshold) resize(); afterNodeInsertion(evict); return nul;</th>
+  </tr>
+</table>
+
+
+## }
+
+扩容机制：扩容(resize)就是重新计算容量，向HashMap对象⾥不停的添加元素，⽽HashMap对象 内部的数组⽆法装载更多的元素时，对象就需要扩⼤数组的⻓度，以便能装⼊更多的元素。当然 Java⾥的数组是⽆法⾃动扩容的，⽅法是使⽤⼀个新的数组代替已有的容量⼩的数组。在扩充 HashMap的时候，不需要像JDK1.7的实现那样重新计算hash，只需要看看原来的hash值新增的那 个bit是1还是0就好了，是0的话索引没变，是1的话索引变成“原索引+oldCap”。这个设计确实⾮常 的巧妙，既省去了重新计算hash值的时间，⽽且同时，由于新增的1bit是0还是1可以认为是随机 的，因此resize的过程，均匀的把之前的冲突的节点分散到新的bucket了。
+
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+
+
+final Node<K,V>[] resize() { Node<K,V>[] oldTab = table; int oldCap = (oldTab = nul) ? 0 : oldTab.length; int oldThr = threshold; int newCap, newThr = 0; if (oldCap > 0) {
+
+/ 超过最⼤值就不再扩充了，就只好随你碰撞去吧 if (oldCap >= MAXIMUM_CAPACITY) { threshold = Integer.MAX_VALUE; return oldTab; }
+
+- 1
+
+- 12
+- 13
+- 14
+- 15
+- 16
+- 17
+- 18
+- 19
+- 20
+- 21
+
+
+- 2
+
+- 23
+- 24
+- 25
+- 26
+- 27
+- 28
+- 29
+- 30
+- 31
+- 32
+
+
+- 3
+
+- 34
+- 35
+- 36
+- 37
+- 38
+- 39
+- 40
+- 41
+- 42
+- 43
+
+
+- 4
+
+- 45
+- 46
+- 47
+- 48
+- 49
+- 50
+- 51
+- 52
+- 53
+- 54
+
+
+- 5
+
+
+/ 没超过最⼤值，就扩充为原来的2倍 else if (newCap = oldCap < 1) < MAXIMUM_CAPACITY
+
+& oldCap >= DEFAULT_INITIAL_CAPACITY) newThr = oldThr < 1; / double threshold } else if (oldThr > 0)/ initial capacity was placed in
+
+threshold newCap = oldThr; else {/ zero initial threshold signifies using defaults newCap = DEFAULT_INITIAL_CAPACITY; newThr = (int)(DEFAULT_LOAD_FACTOR *
+
+DEFAULT_INITIAL_CAPACITY); }
+
+/ 计算新的resize上限 if (newThr = 0) { float ft = (float)newCap * loadFactor; newThr = (newCap < MAXIMUM_CAPACITY & ft <
+
+(float)MAXIMUM_CAPACITY ? (int)ft : Integer.MAX_VALUE); } threshold = newThr; @SupresWarnings({"rawtypes","unchecked"}) Node<K,V>[] newTab = (Node<K,V>[])new
+
+Node[newCap]; table = newTab; if (oldTab != nul) {
+
+/ 把每个bucket都移动到新的buckets中 for (int j = 0; j < oldCap; +j) { Node<K,V> e; if (e = oldTab[j]) != nul) { oldTab[j] = nul; if (e.next = nul) newTab[e.hash & (newCap - 1)] = e; else if (e instanceof TreNode)
+
+(TreNode<K,V>)e).split(this, newTab, j, oldCap); else {/ preserve order Node<K,V> loHead = nul, loTail = nul; Node<K,V> hiHead = nul, hiTail = nul; Node<K,V> next; do { next = e.next;
+
+/ 原索引 if (e.hash & oldCap) = 0) { if (loTail = nul) loHead = e; else loTail.next = e; loTail = e; }
+
+- 56
+- 57
+- 58
+- 59
+- 60
+- 61
+- 62
+- 63
+- 64
+
+
+/ 原索引+oldCap
+
+65 6
+
+else { if (hiTail = nul) hiHead = e; else hiTail.next = e; hiTail = e; } } while(e = next) != nul);
+
+- 67
+- 68
+- 69
+- 70
+- 71
+- 72
+- 73
+- 74
+- 75
+- 76
+- 77
+- 78
+- 79
+- 80
+- 81
+- 82
+- 83
+
+
+/ 原索引放到bucket⾥ if (loTail != nul) { loTail.next = nul; newTab[j] = loHead; }
+
+/ 原索引+oldCap放到bucket⾥ if (hiTail != nul) { hiTail.next = nul; newTab[j + oldCap] = hiHead; } } } } } return newTab; }
+
+# 谈谈线程安全的ConcurentHashMap的实现原理。
+
+ConcurentHashMap在jdk1.8中主要做了2⽅⾯的改进：改进⼀是取消segments字段，直接采⽤ transient volatile HashEntry[] table保存数据，采⽤table数组元素作为锁，从⽽实现了对每⼀⾏数 据进⾏加锁，进⼀步减少并发冲突的概率；改进⼆是将原先table数组＋单向链表的数据结构，变更 为table数组＋单向链表＋红⿊树的结构，对于hash表来说，最核⼼的能⼒在于将key hash之后能均 匀的分布在数组中，如果hash之后散列的很均匀，那么table数组中的每个队列⻓度主要为0或者1。 但实际情况并⾮总是如此理想，虽然ConcurentHashMap类默认的加载因⼦为0.75，但是在数据量 过⼤或者运⽓不佳的情况下，还是会存在⼀些队列⻓度过⻓的情况，如果还是采⽤单向列表⽅式， 那么查询某个节点的时间复杂度为O(n)；因此，对于个数超过8(默认值)的列表，jdk1.8中采⽤了红 ⿊树的结构，那么查询的时间复杂度可以降低到O(logN)，可以改进性能。 TreNode类：树节点类，另外⼀个核⼼的数据结构。当链表⻓度过⻓的时候，会转换为 TreNode。但是与HashMap不相同的是，它并不是直接转换为红⿊树，⽽是把这些结点包装成 TreNode放 在 TreBin对 象 中 ， 由 TreBin完 成 对 红 ⿊ 树 的 包 装 。 ⽽ 且 TreNode在 ConcurentHashMap继承⾃Node类，⽽并⾮HashMap中的集成⾃LinkedHashMap.Entry。 ⼆叉查找树，也称有序⼆叉树（ordered binary tre），是指⼀棵空树或者具有下列性质的⼆叉 树：
+
+- 1.若任意节点的左⼦树不空，则左⼦树上所有结点的值均⼩于它的根结点的值；
+
+- 2.若任意节点的右⼦树不空，则右⼦树上所有结点的值均⼤于它的根结点的值；
+
+- 3.任意节点的左、右⼦树也分别为⼆叉查找树。
+
+- 4.没有键值相等的节点（no duplicate nodes）。
+
+
+红⿊树虽然本质上是⼀棵⼆叉查找树，但它在⼆叉查找树的基础上增加了着⾊和相关的性质使得红 ⿊树相对平衡，从⽽保证了红⿊树的查找、插⼊、删除的时间复杂度最坏为O(log n)。但它是如何 保证⼀棵n个结点的红⿊树的⾼度始终保持在logn的呢？这就引出了红⿊树的5个性质：
+
+- 1.每个结点要么是红的要么是⿊的。
+
+- 2.根结点是⿊的。
+
+- 3.每个叶结点（叶结点即指树尾端NIL指针或NUL结点）都是⿊的。
+
+- 4.如果⼀个结点是红的，那么它的两个⼉⼦都是⿊的。
+
+- 5.对于任意结点⽽⾔，其到叶结点树尾端NIL指针的每条路径都包含相同数⽬的⿊结点。
+
+
+什么是⼀致性哈希？
+
+环形Hash空间：按照常⽤的hash算法来将对应的key哈希到⼀个具有2^32次⽅个桶的空间中，即 0~(2^32)-1的数字空间中。现在我们可以将这些数字头尾相连，想象成⼀个闭合的环形； 把数据通过⼀定的hash算法处理后映射到环上； 将机器通过hash算法映射到环上（⼀般情况下对机器的hash计算是采⽤机器的IP或者机器唯⼀的别 名作为输⼊值），然后以顺时针的⽅向计算，将所有对象存储到离⾃⼰最近的机器中； 机器的删除与添加：普通hash求余算法最为不妥的地⽅就是在有机器的添加或者删除之后会照成⼤ 量的对象存储位置失效，这样就⼤⼤的不满⾜单调性了。通过对节点的添加和删除的分析，⼀致性 哈希算法在保持了单调性的同时，还是数据的迁移达到了最⼩，这样的算法对分布式集群来说是⾮ 常合适的，避免了⼤量数据迁移，减⼩了服务器的的压⼒。 平衡性：在⼀致性哈希算法中，为了尽可能的满⾜平衡性，其引⼊了虚拟节点。它实际上是节点在 hash空间的复制品，⼀实际个节点对应了若⼲个“虚拟节点”，这个对应个数也成为“复制个数”，“虚 拟节点”在hash空间中以hash值排列。
+
+![image 7](assets/imageFile7.png)
+
+致性哈希
+
+Java有哪些实现锁的⽅式？
+
+synchronized同步锁：它⽆法中断⼀个正在等候获得锁的线程，也⽆法通过投票得到锁，如果不想 等下去，也就没法得到锁。但除⾮对锁的某个⾼级特性有明确的需要，或者有明确的证据表明在特 定情况下，同步已经成为瓶颈，否则还是应当继续使⽤synchronized。 volatile是⽐synchronized更轻量，因为它没有上下⽂切换；其实现是通过lock指令将缓存⾏数据写 到系统内存且让其他缓存数据⽆效； RentrantLock可以⽀持公平锁，当然公平锁性能会有影响，默认为⾮公平的；
+
+<table>
+  <tr>
+    <th>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br><br><br>1<br><br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br><br><br>2<br><br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br><br><br>3<br><br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br><br><br>4<br></th>
+    <th>/ 对于⾮公平锁，会执⾏该⽅法:<br><br>final bolean nonfairTryAcquire(int acquires) { final Thread curent = Thread.curentThread(); int c = getState();/获取状态变量 if (c = 0) {/表明没有线程占有该同步状态 if (compareAndSetState(0, acquires) {/以原⼦⽅式设置<br><br>该同步状态 setExclusiveOwnerThread(curent);/该线程拥有该<br><br>FairSync同步状态 return true; } } else if (curent = getExclusiveOwnerThread() {/当前线<br><br>程已经拥有该同步状态 int nextc = c + acquires; if (nextc < 0)/ overflow throw new Eror("Maximum lock count exceded"); setState(nextc);/重复设置状态变量（锁的可重⼊特性） return true; }<br><br>return false; }<br><br>/ ⽽对于公平锁，该⽅法则是这样：<br><br>protected final bolean tryAcquire(int acquires) { final Thread curent = Thread.curentThread(); int c = getState(); if (c = 0) {<br><br>/先判断该线程节点是否是队列的头结点 /是则以原⼦⽅式设置同步状态，获取锁 /否则失败返回<br><br>if (!hasQueuedPredecesors() & compareAndSetState(0, acquires) { setExclusiveOwnerThread(curent); return true; } } else if (curent = getExclusiveOwnerThread() {/重⼊ int nextc = c + acquires; if (nextc < 0) throw new Eror("Maximum lock count exceded"); setState(nextc); return true; }<br><br>return false;</th>
+  </tr>
+</table>
+
+
+}
+
+AQS管理的FIFO等待队列，获取锁状态失败的线程会被放⼊该队列，等待再次尝试获取锁。⽽state 成员变量，代表着锁的同步状态，⼀个线程成功获得锁，这个⾏为的实质就是该线程成功的设置了 state变量的状态。
+
+<table>
+  <tr>
+    <th>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br><br><br>1<br><br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br><br><br>2<br><br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br><br><br>3<br><br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br><br><br>4<br><br>45<br>46<br>47<br>48<br>49<br>50<br>51<br>52<br>53<br>54<br><br><br>5<br><br><br>56<br>57<br>58<br></th>
+    <th>public final void acquire(int arg) { if (!tryAcquire(arg) & acquireQueued(adWaiter(Node.EXCLUSIVE), arg)<br><br>selfInterupt(); }<br><br>private Node adWaiter(Node mode) {<br><br>Node node = new Node(Thread.curentThread(), mode); / Try the fast path of enq; backup to ful enq on failure Node pred = tail;<br><br>/ 这个if分⽀其实是⼀种优化：CAS操作失败的话才进⼊enq<br><br>中的循环。 if (pred != nul) { node.prev = pred; if (compareAndSetTail(pred, node) { pred.next = node; return node; } } enq(node); return node;<br><br>} private Node enq(final Node node) {<br><br>for (;) { Node t = tail; if (t = nul) {/ Must initialize if (compareAndSetHead(new Node( ) tail = head; } else { node.prev = t; if (compareAndSetTail(t, node) { t.next = node; return t; } } }<br><br>} final bolean acquireQueued(final Node node, int arg) {<br><br>bolean failed = true; try { bolean interupted = false; for (;) { final Node p = node.predecesor(); if (p = head & tryAcquire(arg) { setHead(node); p.next = nul; / help GC failed = false; return interupted; }<br><br>if (shouldParkAfterFailedAcquire(p, node) &<br><br>parkAndCheckInterupt() interupted = true; } } finaly { if (failed) cancelAcquire(node); }</th>
+  </tr>
+</table>
+
+
+}
+
+RentrantReadWriteLock对重⼊锁再进⼀步分离为读锁和写锁，在读多写少的场景下能显著提升性 能。
+
+ReadLock可以被多个线程持有并且在作⽤时排斥任何的WriteLock，⽽WriteLock则是完全的互 斥。 写线程获取写⼊锁后可以获取读取锁，然后释放写⼊锁，这样就从写⼊锁变成了读取锁，从⽽实现 锁降级的特性。读取锁是不能直接升级为写⼊锁的。因为获取⼀个写⼊锁需要释放所有读取锁，所 以如果有两个读取锁视图获取写⼊锁⽽都不释放读取锁时就会发⽣死锁。 如果读取执⾏情况很多，写⼊很少的情况下，使⽤RentrantReadWriteLock可能会使写⼊线程遭遇 饥饿问题，也就是写⼊线程吃吃⽆法竞争到锁定⽽⼀直处于等待状态。 StampedLock控制锁有三种模式（写，读，乐观读），⼀个StampedLock状态是由版本和模式两个 部分组成，锁获取⽅法返回⼀个数字作为票据stamp，它⽤相应的锁状态表示并控制访问，数字0表 示没有写锁被授权访问。在读锁上分为悲观锁和乐观锁。所谓的乐观读模式，也就是若读的操作很 多，写的操作很少的情况下，你可以乐观地认为，写⼊与读取同时发⽣⼏率很少，因此不悲观地使 ⽤完全的读取锁定，程序可以查看读取资料之后，是否遭到写⼊执⾏的变更，再采取后续的措施 （重新读取变更信息，或者抛出异常） ，这⼀个⼩⼩改进，可⼤幅度提⾼程序的吞吐量！
+
+<table>
+  <tr>
+    <th>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br><br><br>1<br><br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br><br><br>2<br><br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br><br><br>3<br><br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br><br><br>4<br><br><br>45<br>46<br>47<br>48<br>49<br>50<br>51<br>52<br></th>
+    <th>clas Point { private double x, y; private final StampedLock sl = new StampedLock(); void move(double deltaX, double deltaY) {/ an<br><br>exclusively locked method long stamp = sl.writeLock(); try {<br><br>x += deltaX;<br>y += deltaY; } finaly { sl.unlockWrite(stamp); } }<br><br><br>/下⾯看看乐观读锁案例 double distanceFromOrigin() {/ A read-only method long stamp = sl.tryOptimisticRead(); /获得⼀个乐观读锁 double curentX = x, curentY = y; /将两个字段读⼊本地<br><br>局部变量<br><br>if (!sl.validate(stamp) {/检查发出乐观读锁后同时是否有 其他写锁发⽣？<br><br>stamp = sl.readLock(); /如果没有，我们再次获得⼀个读悲 观锁<br><br>try {<br><br>curentX = x; / 将两个字段读⼊本地局部变量<br>curentY = y; / 将两个字段读⼊本地局部变量 } finaly { sl.unlockRead(stamp); } } return Math.sqrt(curentX * curentX + curentY *<br><br><br>curentY); } /下⾯是悲观读锁案例<br><br>void moveIfAtOrigin(double newX, double newY) {/ upgrade<br><br>/ Could instead start with optimistic, not read mode long stamp = sl.readLock(); try { while (x = 0.0 & y = 0.0) {/循环，检查当前状态是否符<br><br>合 long ws = sl.tryConvertToWriteLock(stamp); /将读锁转为<br><br>写锁 if (ws != 0L) {/这是确认转为写锁是否成功 stamp = ws; /如果成功 替换票据<br><br>x = newX; /进⾏状态改变<br>y = newY; /进⾏状态改变 break; } else {/如果不能成功转换为写锁 sl.unlockRead(stamp); /我们显式释放读锁 stamp = sl.writeLock(); /显式直接进⾏写锁 然后再通过循<br><br><br>环再试<br><br>} } } finaly {<br><br>sl.unlock(stamp); /释放读锁或写锁<br><br>} }</th>
+  </tr>
+</table>
+
+
+## }
+
+AtomicLong、LongAder和LongAcumulator的实现有何不同？
+
+AtomicLong是Java 5引⼊的基于CAS的⽆锁的操作⻓整形值的⼯具类； LongAder是Java8提供的累加器，基于Striped64实现。它常⽤于状态采集、统计等场景。 AtomicLong也可以⽤于这种场景，但在线程竞争激烈的情况下，LongAder要⽐AtomicLong拥有 更⾼的吞吐量，但会耗费更多的内存空间。 Striped64的设计核⼼思路就是通过内部的分散计算来避免竞争(⽐如多线程CAS操作时的竞争)。 Striped64内部包含⼀个基础值和⼀个单元哈希表。没有竞争的情况下，要累加的数会累加到这个基 础值上；如果有竞争的话，会将要累加的数累加到单元哈希表中的某个单元⾥⾯。所以整个 Striped64的值包括基础值和单元哈希表中所有单元的值的总和。
+
+<table>
+  <tr>
+    <th>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10 1<br><br><br>12<br>13<br>14<br>15<br></th>
+    <th>/*<br><br>* 存放Cel的hash表，⼤⼩为2的幂。<br>*/ transient volatile Cel[] cels; /*<br>* 基础值，没有竞争时会使⽤(更新)这个值，同时做为初始化 竞争失败的回退⽅案。<br>* 原⼦更新。<br>*/ transient volatile long base; /*<br>* ⾃旋锁，通过CAS操作加锁，⽤于保护创建或者扩展Cel 表。<br>*/<br></th>
+  </tr>
+</table>
+
+
+transient volatile int celsBusy;
+
+LongAcumulator和LongAder类似，也基于Striped64实现。但要⽐LongAder更加灵活(要传⼊ ⼀个函数接⼝)，LongAder相当于是LongAcumulator的⼀种特例。
+
+CompletableFuture对⽐Future有哪些改进，怎么⽤？
+
+Future对象代表⼀个尚未完成异步操作的结果。从Java5以来，JUC包⼀直提供着最基本的 Future，不过它太鸡肋了，除了get、cancel、isDone和isCanceled⽅法之外就没有其他的操作 了，对于结果的获取很不⽅便，只能通过阻塞或者轮询的⽅式得到任务的结果。阻塞的⽅式显然和 我们的异步编程的初衷相违背，轮询的⽅式⼜会耗费⽆谓的CPU资源，⽽且也不能及时地得到计算 结果，这样很不⽅便。 好在Java 8中引⼊了具有函数式⻛格的CompletableFuture，⽀持⼀系列的函数式的组合、运算操 作，⾮常⽅便，可以写出函数式⻛格的代码⽽摆脱calback hel。 主动完成计算：CompletableFuture类实现了CompletionStage和Future接⼝，所以你还是可以像以 前⼀样通过阻塞或者轮询的⽅式获得结果，尽管这种⽅式不推荐使⽤。 主要的API如下所示：
+
+suplyAsync/runAsync- 创建CompletableFuture对象； whenComplete/whenCompleteAsync/exceptionaly- 计算完成或者抛出异常的时可以执⾏特定的Action； thenAply/thenAplyAsync- 对数据进⾏⼀些处理或变换； thenAcept/thenAceptAsync- 纯消费，不返回新的计算值； thenAceptBoth/thenAceptBothAsync/runAfterBoth- 当两个CompletionStage都正常完成计算的时候，就会执⾏提供的 Action； thenCompose/thenComposeAsync- 这个Function的输⼊是当前的CompletableFuture的计算值，返回结果将是⼀个新的 CompletableFuture。 记住，thenCompose返回的对象并不⼀是函数fn返回的对象，如果原来的CompletableFuture还没有计算出来， 它就会⽣成⼀个新的组合后的CompletableFuture。可以⽤来实现异步pipline； thenCombine/thenCombineAsync - 并⾏执⾏的，它们之间并没有先后依赖顺序，和thenAceptBoth的区别在于有返回值； alOf/anyOf - 所有的/其中⼀个CompletableFuture都执⾏完后执⾏计算；
+
+# 其他⾯试⼩结
+
+⾯试⼩结之Elasticsearch篇
+
+⾯试⼩结之JVM篇 ⾯试⼩结之并发篇 ⾯试⼩结之IO篇
+
+⾯试⼩结之综合篇

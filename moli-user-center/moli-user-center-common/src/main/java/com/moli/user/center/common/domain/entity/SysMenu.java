@@ -42,4 +42,7 @@ public class SysMenu extends BaseEntity {
 
     @ApiModelProperty(value = "显示顺序")
     private Integer orderNum;
+
+    @ApiModelProperty(value = "所属业务系统 sys_system.id；NULL=全系统共享")
+    private Long systemId;
 }

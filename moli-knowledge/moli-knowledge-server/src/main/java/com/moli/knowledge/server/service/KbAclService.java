@@ -13,7 +13,7 @@ import java.util.List;
  *       写(canEdit)=成员 editor/admin、负责人、平台超管。未分配空间的登录用户不可见。</li>
  *   <li><b>管理侧（空间增删改、成员授权）</b>：由 RBAC 动作权限控制（{@code kb:space:add/edit/remove/member}）+
  *       平台超管；菜单 {@code kb:space:admin} 决定能否进入管理页并查看空间数据。<b>不</b>再叠加 per-space canAdmin。</li>
- *   <li>visibility（公开/内部/私有）仅作空间元数据展示，<b>不</b>再自动授予读权限。</li>
+ *   <li>visibility：{@code 公开(2)} 对任意已登录用户可读；{@code 私有/内部} 仍须负责人或 kb_space_member。</li>
  *   <li>成员 kb_space_member：member_type=0 用户 / 1 角色；role = viewer/editor/admin。</li>
  *   <li>负责人 owner_id：等同空间 admin（内容侧）。</li>
  *   <li>平台超管：{@link CommonConstant#hasFullPermission(String)} 或 Shiro {@code *:*:*}。</li>
@@ -92,4 +92,31 @@ public interface KbAclService {
 
     /** 按文档 ID 断言可编辑。 */
     void assertCanEditDocument(Long documentId);
+
+    /** 平台 LLM 系统设置（超管或 {@code kb:platform:llm}）。 */
+    void assertPlatformLlmManage();
+
+    /**
+     * 手动触发 Sync：平台超管、{@code kb:sync:trigger}（且可读该空间）、或空间 admin/owner。
+     */
+    void assertCanSyncTrigger(Long spaceId);
+
+    /** 查看 Sync 日志/状态：与 {@link #assertCanSyncTrigger(Long)} 相同。 */
+    void assertCanSyncView(Long spaceId);
+
+    /**
+     * 扫描并落库：平台超管、{@code kb:lint:scan}、或空间 editor（单空间 fallback）。
+     * {@code spaceId=null} 表示全库扫描，需超管或 {@code kb:lint:scan}。
+     */
+    void assertCanLintScan(Long spaceId);
+
+    /**
+     * Raw 浏览器投喂：平台超管、{@code kb:ingest:rawUpload}，且具备空间 editor（T20d）。
+     */
+    void assertCanRawUpload(Long spaceId);
+
+    /**
+     * 运维 Dashboard：平台超管、{@code kb:ops:dashboard}，或具备 Sync 查看权限的空间范围。
+     */
+    void assertCanOpsDashboard(Long spaceId);
 }

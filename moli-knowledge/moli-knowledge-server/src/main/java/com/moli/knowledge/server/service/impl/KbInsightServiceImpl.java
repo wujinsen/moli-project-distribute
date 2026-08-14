@@ -1,24 +1,37 @@
 package com.moli.knowledge.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
 import com.moli.common.core.IdGenerator;
+import com.moli.common.exception.BaseException;
+import com.moli.knowledge.server.config.KbLintScanProperties;
+import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.dto.LintIssuePageQuery;
 import com.moli.knowledge.server.dto.GraphVo;
+import com.moli.knowledge.server.dto.LintScanStatusVo;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbDocumentTag;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.entity.KbRelation;
+import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.enums.DocumentStatus;
 import com.moli.knowledge.server.mapper.KbCategoryMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
 import com.moli.knowledge.server.mapper.KbLintIssueMapper;
 import com.moli.knowledge.server.mapper.KbRelationMapper;
+import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbInsightService;
+import com.moli.knowledge.server.support.KbLintIssueDetector;
+import com.moli.knowledge.server.support.KbLintIssueTypes;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,6 +43,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -42,6 +56,10 @@ public class KbInsightServiceImpl implements KbInsightService {
     /** 匹配 [[目标]] 或 [[目标|显示文本]]，取第一段为目标。 */
     private static final Pattern WIKILINK = Pattern.compile("\\[\\[([^\\]]+)\\]\\]");
 
+    private static final String LINT_LAST_SCAN_PREFIX = "kb:lint:last-scan:";
+    private static final String DEFAULT_LINT_SCAN_CRON = "0 0 3 ? * MON";
+    private static final int LINT_ISSUE_PAGE_SIZE_MAX = 200;
+
     @Resource
     private KbDocumentMapper kbDocumentMapper;
     @Resource
@@ -53,7 +71,13 @@ public class KbInsightServiceImpl implements KbInsightService {
     @Resource
     private KbLintIssueMapper kbLintIssueMapper;
     @Resource
+    private KbSpaceMapper kbSpaceMapper;
+    @Resource
     private KbAclService kbAclService;
+    @Resource
+    private KbLintScanProperties kbLintScanProperties;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /** 图谱默认最多返回节点数（按度数降序保留），避免一次性把全库推给前端。 */
     private static final int GRAPH_DEFAULT_MAX_NODES = 300;
@@ -343,6 +367,104 @@ public class KbInsightServiceImpl implements KbInsightService {
     @Override
     public LintVo lint(Long spaceId) {
         assertSpaceReadable(spaceId);
+        return buildLintVo(spaceId);
+    }
+
+    @Override
+    public LintVo scan(Long spaceId) {
+        kbAclService.assertCanLintScan(spaceId);
+        LintVo vo = lintInternal(spaceId);
+        persistScanResults(spaceId, vo);
+        return vo;
+    }
+
+    @Override
+    public void scanScheduled(Long spaceId) {
+        LintVo vo = lintInternal(spaceId);
+        persistScanResults(spaceId, vo);
+    }
+
+    @Override
+    public LintScanStatusVo scanStatus(Long spaceId) {
+        assertSpaceReadable(spaceId);
+        if (spaceId == null && !kbAclService.isAdmin()) {
+            throw new BaseException("无权查看全库体检 scan 状态");
+        }
+
+        KbSpace space = spaceId != null ? kbSpaceMapper.selectById(spaceId) : null;
+
+        LintScanStatusVo vo = new LintScanStatusVo();
+        vo.setSpaceId(spaceId);
+        vo.setSpaceCode(space != null ? space.getSpaceCode() : null);
+        vo.setScheduleEnabled(kbLintScanProperties.isScheduleEnabled());
+        String cron = kbLintScanProperties.getScheduleCron();
+        vo.setScheduleCron(StringUtils.isNotBlank(cron) ? cron.trim() : DEFAULT_LINT_SCAN_CRON);
+        vo.setLastScanTime(resolveLastScanTime(spaceId));
+        vo.setOpenIssueCount(countOpenIssues(spaceId));
+        return vo;
+    }
+
+    private int countOpenIssues(Long spaceId) {
+        LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<KbLintIssue>()
+                .eq(KbLintIssue::getStatus, 0);
+        if (spaceId != null) {
+            w.eq(KbLintIssue::getSpaceId, spaceId);
+        }
+        Integer count = kbLintIssueMapper.selectCount(w);
+        return count == null ? 0 : count;
+    }
+
+    private Date resolveLastScanTime(Long spaceId) {
+        Date fromRedis = readLastScanFromRedis(spaceId);
+        if (fromRedis != null) {
+            return fromRedis;
+        }
+        LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<>();
+        if (spaceId != null) {
+            w.eq(KbLintIssue::getSpaceId, spaceId);
+        }
+        w.isNotNull(KbLintIssue::getScanTime)
+                .orderByDesc(KbLintIssue::getScanTime)
+                .last("limit 1");
+        KbLintIssue latest = kbLintIssueMapper.selectOne(w);
+        return latest != null ? latest.getScanTime() : null;
+    }
+
+    private Date readLastScanFromRedis(Long spaceId) {
+        if (stringRedisTemplate == null) {
+            return null;
+        }
+        try {
+            String raw = stringRedisTemplate.opsForValue().get(lintLastScanKey(spaceId));
+            if (StringUtils.isBlank(raw)) {
+                return null;
+            }
+            return new Date(Long.parseLong(raw.trim()));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private void recordLastScanTime(Long spaceId, Date when) {
+        if (stringRedisTemplate == null || when == null) {
+            return;
+        }
+        try {
+            stringRedisTemplate.opsForValue().set(lintLastScanKey(spaceId), String.valueOf(when.getTime()));
+        } catch (Exception ignored) {
+            // best effort
+        }
+    }
+
+    private static String lintLastScanKey(Long spaceId) {
+        return LINT_LAST_SCAN_PREFIX + (spaceId != null ? spaceId : "global");
+    }
+
+    private LintVo lintInternal(Long spaceId) {
+        return buildLintVo(spaceId);
+    }
+
+    private LintVo buildLintVo(Long spaceId) {
         Ctx ctx = build(spaceId);
         LintVo vo = new LintVo();
         vo.setBroken(ctx.broken);
@@ -355,25 +477,82 @@ public class KbInsightServiceImpl implements KbInsightService {
                 vo.getNoSummary().add(new LintVo.Ref(String.valueOf(d.getId()), d.getTitle()));
             }
         }
-        Map<String, Integer> counts = vo.getCounts();
-        counts.put("pages", ctx.docs.size());
-        counts.put("broken", ctx.broken.size());
-        counts.put("orphans", vo.getOrphans().size());
-        counts.put("noSummary", vo.getNoSummary().size());
+        applyExtendedLint(vo, ctx.docs, spaceId);
+        applyMissingConcepts(vo, ctx);
+        fillCounts(vo, ctx.docs.size());
         return vo;
     }
 
-    @Override
-    public LintVo scan(Long spaceId) {
-        if (spaceId != null) {
-            kbAclService.assertCanEdit(spaceId);
-        } else if (!kbAclService.isAdmin()) {
-            throw new com.moli.common.exception.BaseException("全库体检需全局管理员权限");
+    private void applyExtendedLint(LintVo vo, List<KbDocument> docs, Long spaceId) {
+        if (kbLintScanProperties.isDuplicateEnabled()) {
+            vo.setDuplicates(KbLintIssueDetector.detectDuplicateSlugs(docs));
         }
-        LintVo vo = lint(spaceId);
+        Map<Long, KbDocument> byId = new HashMap<>();
+        for (KbDocument d : docs) {
+            byId.put(d.getId(), d);
+        }
+        Map<Long, LintVo.Stale> staleByDoc = new LinkedHashMap<>();
+        if (kbLintScanProperties.getStaleDays() > 0) {
+            for (LintVo.Stale s : KbLintIssueDetector.detectStaleByAge(docs, kbLintScanProperties.getStaleDays())) {
+                staleByDoc.putIfAbsent(parseLong(s.getSlug()), s);
+            }
+        }
+        if (kbLintScanProperties.isStaleBySupersedes()) {
+            List<KbRelation> relations = loadSupersedesRelations(spaceId, byId.keySet());
+            for (LintVo.Stale s : KbLintIssueDetector.detectSupersededActive(relations, byId)) {
+                staleByDoc.putIfAbsent(parseLong(s.getSlug()), s);
+            }
+        }
+        vo.setStale(new ArrayList<>(staleByDoc.values()));
+        if (kbLintScanProperties.isConflictEnabled()) {
+            vo.setConflicts(KbLintIssueDetector.detectContentHashDuplicates(docs));
+        }
+        if (kbLintScanProperties.isFrontmatterEnabled()) {
+            KbLintIssueDetector.detectFrontmatterIssues(docs, vo);
+        }
+    }
+
+    private void applyMissingConcepts(LintVo vo, Ctx ctx) {
+        if (kbLintScanProperties.getMissingConceptMin() > 0 && ctx.brokenByTarget != null) {
+            vo.setMissingConcepts(KbLintIssueDetector.detectMissingConcepts(
+                    ctx.brokenByTarget, kbLintScanProperties.getMissingConceptMin()));
+        }
+    }
+
+    private List<KbRelation> loadSupersedesRelations(Long spaceId, Set<Long> docIds) {
+        if (docIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<KbRelation> w = new LambdaQueryWrapper<KbRelation>()
+                .eq(KbRelation::getIsDelete, CommonConstant.UN_DELETE)
+                .eq(KbRelation::getRelationType, "supersedes")
+                .in(KbRelation::getTargetDocId, docIds);
+        if (spaceId != null) {
+            w.eq(KbRelation::getSpaceId, spaceId);
+        }
+        return kbRelationMapper.selectList(w);
+    }
+
+    private void fillCounts(LintVo vo, int pages) {
+        Map<String, Integer> counts = vo.getCounts();
+        counts.put("pages", pages);
+        counts.put("broken", vo.getBroken().size());
+        counts.put("orphans", vo.getOrphans().size());
+        counts.put("noSummary", vo.getNoSummary().size());
+        counts.put("duplicates", vo.getDuplicates().size());
+        counts.put("stale", vo.getStale().size());
+        counts.put("conflicts", vo.getConflicts().size());
+        counts.put("missingSources", vo.getMissingSources().size());
+        counts.put("badTypes", vo.getBadTypes().size());
+        counts.put("missingTitles", vo.getMissingTitles().size());
+        counts.put("slugMismatches", vo.getSlugMismatches().size());
+        counts.put("missingDates", vo.getMissingDates().size());
+        counts.put("missingConcepts", vo.getMissingConcepts().size());
+    }
+
+    private void persistScanResults(Long spaceId, LintVo vo) {
         Date now = new Date();
 
-        // 清掉本空间「待处理」旧项后重建（保留已忽略/已修复的人工决定）
         LambdaQueryWrapper<KbLintIssue> del = new LambdaQueryWrapper<KbLintIssue>()
                 .eq(KbLintIssue::getStatus, 0);
         if (spaceId != null) {
@@ -382,45 +561,252 @@ public class KbInsightServiceImpl implements KbInsightService {
         kbLintIssueMapper.delete(del);
 
         for (LintVo.Broken b : vo.getBroken()) {
-            insertIssue(spaceId, parseLong(b.getPage()), "broken_link",
+            insertIssue(spaceId, parseLong(b.getPage()), KbLintIssueTypes.BROKEN_LINK,
                     b.getTitle() + " -> [[" + b.getTarget() + "]]", now);
         }
         for (LintVo.Ref r : vo.getOrphans()) {
-            insertIssue(spaceId, parseLong(r.getSlug()), "orphan", r.getTitle(), now);
+            insertIssue(spaceId, parseLong(r.getSlug()), KbLintIssueTypes.ORPHAN, r.getTitle(), now);
         }
         for (LintVo.Ref r : vo.getNoSummary()) {
-            insertIssue(spaceId, parseLong(r.getSlug()), "no_summary", r.getTitle(), now);
+            insertIssue(spaceId, parseLong(r.getSlug()), KbLintIssueTypes.NO_SUMMARY, r.getTitle(), now);
         }
-        return vo;
+        for (LintVo.Duplicate d : vo.getDuplicates()) {
+            String detail = "stem=" + d.getStem() + " slugs=" + String.join(", ", d.getSlugs());
+            insertIssue(spaceId, parseLong(d.getPage()), KbLintIssueTypes.DUPLICATE, detail, now);
+        }
+        for (LintVo.Stale s : vo.getStale()) {
+            insertIssue(spaceId, parseLong(s.getSlug()), KbLintIssueTypes.STALE,
+                    s.getTitle() + ": " + s.getReason(), now);
+        }
+        for (LintVo.Conflict c : vo.getConflicts()) {
+            insertIssue(spaceId, parseLong(c.getPage()), KbLintIssueTypes.CONFLICT,
+                    c.getDetail() != null ? c.getDetail() : String.join(", ", c.getSlugs()), now);
+        }
+        persistIssueItems(spaceId, vo.getMissingSources(), KbLintIssueTypes.MISSING_SOURCE, now);
+        persistIssueItems(spaceId, vo.getBadTypes(), KbLintIssueTypes.BAD_TYPE, now);
+        persistIssueItems(spaceId, vo.getMissingTitles(), KbLintIssueTypes.MISSING_TITLE, now);
+        persistIssueItems(spaceId, vo.getSlugMismatches(), KbLintIssueTypes.SLUG_MISMATCH, now);
+        persistIssueItems(spaceId, vo.getMissingDates(), KbLintIssueTypes.MISSING_DATES, now);
+        for (LintVo.IssueItem item : vo.getMissingConcepts()) {
+            insertIssue(spaceId, parseLong(item.getPage()), KbLintIssueTypes.MISSING_CONCEPT,
+                    item.getTitle() + ": " + item.getDetail(), now);
+        }
+        recordLastScanTime(spaceId, now);
+    }
+
+    private void persistIssueItems(Long spaceId, List<LintVo.IssueItem> items, String type, Date now) {
+        for (LintVo.IssueItem item : items) {
+            String detail = StringUtils.isNotBlank(item.getDetail()) ? item.getDetail() : item.getTitle();
+            insertIssue(spaceId, parseLong(item.getPage()), type, detail, now);
+        }
     }
 
     @Override
-    public List<KbLintIssue> issues(Long spaceId, Integer status) {
-        assertSpaceReadable(spaceId);
+    public Page<KbLintIssue> issuesPage(LintIssuePageQuery query) {
+        LintIssuePageQuery q = query != null ? query : new LintIssuePageQuery();
+        assertSpaceReadable(q.getSpaceId());
+
+        int pageNum = q.getPageNum() < 1 ? 1 : q.getPageNum();
+        int pageSize = q.getPageSize() < 1 ? 20 : q.getPageSize();
+        if (pageSize > LINT_ISSUE_PAGE_SIZE_MAX) {
+            pageSize = LINT_ISSUE_PAGE_SIZE_MAX;
+        }
+
+        LambdaQueryWrapper<KbLintIssue> w = buildIssueQueryWrapper(q);
+        w.orderByDesc(KbLintIssue::getPriority)
+                .orderByDesc(KbLintIssue::getScanTime);
+        return kbLintIssueMapper.selectPage(new Page<>(pageNum, pageSize), w);
+    }
+
+    private LambdaQueryWrapper<KbLintIssue> buildIssueQueryWrapper(LintIssuePageQuery q) {
         LambdaQueryWrapper<KbLintIssue> w = new LambdaQueryWrapper<>();
-        if (spaceId != null) {
-            w.eq(KbLintIssue::getSpaceId, spaceId);
+        if (q.getSpaceId() != null) {
+            w.eq(KbLintIssue::getSpaceId, q.getSpaceId());
         }
+        if (q.getStatus() != null) {
+            w.eq(KbLintIssue::getStatus, q.getStatus());
+        }
+        if (StringUtils.isNotBlank(q.getIssueType())) {
+            w.eq(KbLintIssue::getIssueType, q.getIssueType().trim());
+        }
+        if (q.isUnassignedOnly()) {
+            w.isNull(KbLintIssue::getAssigneeId);
+        } else if (q.getAssigneeId() != null) {
+            w.eq(KbLintIssue::getAssigneeId, q.getAssigneeId());
+        }
+        if (q.getPriority() != null) {
+            w.eq(KbLintIssue::getPriority, q.getPriority());
+        }
+        return w;
+    }
+
+    @Override
+    public void patchIssue(Long id, Integer status, Long assigneeId, boolean clearAssignee, Integer priority) {
+        if (status == null && assigneeId == null && !clearAssignee && priority == null) {
+            throw new BaseException("至少提供 status、assigneeId 或 priority 之一");
+        }
+        KbLintIssue issue = kbLintIssueMapper.selectById(id);
+        if (issue == null) {
+            throw new BaseException("体检问题不存在");
+        }
+        assertCanEditIssue(issue);
         if (status != null) {
-            w.eq(KbLintIssue::getStatus, status);
+            issue.setStatus(status);
         }
-        w.orderByDesc(KbLintIssue::getScanTime);
-        return kbLintIssueMapper.selectList(w);
+        if (clearAssignee) {
+            issue.setAssigneeId(null);
+        } else if (assigneeId != null) {
+            issue.setAssigneeId(assigneeId);
+        }
+        if (priority != null) {
+            if (priority < 0 || priority > 2) {
+                throw new BaseException("priority 非法（0普通/1高/2紧急）");
+            }
+            issue.setPriority(priority);
+        }
+        issue.setUpdateTime(new Date());
+        kbLintIssueMapper.updateById(issue);
+    }
+
+    private void assertCanEditIssue(KbLintIssue issue) {
+        if (issue.getSpaceId() != null) {
+            kbAclService.assertCanEdit(issue.getSpaceId());
+        } else if (!kbAclService.isAdmin()) {
+            throw new BaseException("无权处理该体检问题");
+        }
+    }
+
+    @Override
+    public int batchUpdateIssues(LintIssueBatchRequest request) {
+        if (request == null || request.getIds() == null || request.getIds().isEmpty()) {
+            throw new BaseException("ids 不能为空");
+        }
+        boolean clearAssignee = Boolean.TRUE.equals(request.getClearAssignee());
+        if (request.getStatus() == null && request.getAssigneeId() == null && !clearAssignee
+                && request.getPriority() == null) {
+            throw new BaseException("status、assigneeId、clearAssignee、priority 至少填一项");
+        }
+        if (request.getPriority() != null && (request.getPriority() < 0 || request.getPriority() > 2)) {
+            throw new BaseException("priority 非法（0普通/1高/2紧急）");
+        }
+
+        int updated = 0;
+        Date now = new Date();
+        for (Long id : request.getIds()) {
+            KbLintIssue issue = kbLintIssueMapper.selectById(id);
+            if (issue == null) {
+                continue;
+            }
+            assertCanEditIssue(issue);
+            if (request.getStatus() != null) {
+                issue.setStatus(request.getStatus());
+            }
+            if (clearAssignee) {
+                issue.setAssigneeId(null);
+            } else if (request.getAssigneeId() != null) {
+                issue.setAssigneeId(request.getAssigneeId());
+            }
+            if (request.getPriority() != null) {
+                issue.setPriority(request.getPriority());
+            }
+            issue.setUpdateTime(now);
+            kbLintIssueMapper.updateById(issue);
+            updated++;
+        }
+        return updated;
     }
 
     @Override
     public void updateIssueStatus(Long id, Integer status) {
-        KbLintIssue issue = kbLintIssueMapper.selectById(id);
-        if (issue != null) {
+        patchIssue(id, status, null, false, null);
+    }
+
+    @Override
+    public int batchUpdateIssueStatus(LintIssueBatchStatusRequest request) {
+        if (request == null || request.getIds() == null || request.getIds().isEmpty()) {
+            throw new BaseException("ids 不能为空");
+        }
+        if (request.getStatus() == null) {
+            throw new BaseException("status 不能为空");
+        }
+        int updated = 0;
+        Date now = new Date();
+        for (Long id : request.getIds()) {
+            KbLintIssue issue = kbLintIssueMapper.selectById(id);
+            if (issue == null) {
+                continue;
+            }
             if (issue.getSpaceId() != null) {
                 kbAclService.assertCanEdit(issue.getSpaceId());
             } else if (!kbAclService.isAdmin()) {
-                throw new com.moli.common.exception.BaseException("无权处理该体检问题");
+                throw new BaseException("无权处理该体检问题");
             }
-            issue.setStatus(status);
-            issue.setUpdateTime(new Date());
+            issue.setStatus(request.getStatus());
+            issue.setUpdateTime(now);
             kbLintIssueMapper.updateById(issue);
+            updated++;
         }
+        return updated;
+    }
+
+    @Override
+    public void assignIssue(Long id, Long assigneeId, Integer priority) {
+        KbLintIssue issue = kbLintIssueMapper.selectById(id);
+        if (issue == null) {
+            throw new BaseException("体检问题不存在");
+        }
+        if (issue.getSpaceId() != null) {
+            kbAclService.assertCanEdit(issue.getSpaceId());
+        } else if (!kbAclService.isAdmin()) {
+            throw new BaseException("无权处理该体检问题");
+        }
+        if (assigneeId != null) {
+            issue.setAssigneeId(assigneeId);
+        }
+        if (priority != null) {
+            if (priority < 0 || priority > 2) {
+                throw new BaseException("priority 非法（0普通/1高/2紧急）");
+            }
+            issue.setPriority(priority);
+        }
+        issue.setUpdateTime(new Date());
+        kbLintIssueMapper.updateById(issue);
+    }
+
+    @Override
+    public int batchAssignIssues(LintIssueBatchAssignRequest request) {
+        if (request == null || request.getIds() == null || request.getIds().isEmpty()) {
+            throw new BaseException("ids 不能为空");
+        }
+        if (request.getAssigneeId() == null && request.getPriority() == null) {
+            throw new BaseException("assigneeId 与 priority 至少填一项");
+        }
+        if (request.getPriority() != null && (request.getPriority() < 0 || request.getPriority() > 2)) {
+            throw new BaseException("priority 非法（0普通/1高/2紧急）");
+        }
+        int updated = 0;
+        Date now = new Date();
+        for (Long id : request.getIds()) {
+            KbLintIssue issue = kbLintIssueMapper.selectById(id);
+            if (issue == null) {
+                continue;
+            }
+            if (issue.getSpaceId() != null) {
+                kbAclService.assertCanEdit(issue.getSpaceId());
+            } else if (!kbAclService.isAdmin()) {
+                throw new BaseException("无权处理该体检问题");
+            }
+            if (request.getAssigneeId() != null) {
+                issue.setAssigneeId(request.getAssigneeId());
+            }
+            if (request.getPriority() != null) {
+                issue.setPriority(request.getPriority());
+            }
+            issue.setUpdateTime(now);
+            kbLintIssueMapper.updateById(issue);
+            updated++;
+        }
+        return updated;
     }
 
     private void insertIssue(Long spaceId, Long docId, String type, String detail, Date now) {
@@ -431,6 +817,7 @@ public class KbInsightServiceImpl implements KbInsightService {
         issue.setIssueType(type);
         issue.setDetail(detail == null ? "" : detail.substring(0, Math.min(500, detail.length())));
         issue.setStatus(0);
+        issue.setPriority(0);
         issue.setScanTime(now);
         issue.setCreateTime(now);
         issue.setUpdateTime(now);
@@ -460,13 +847,22 @@ public class KbInsightServiceImpl implements KbInsightService {
             ctx.categoryName.put(c.getId(), c.getCategoryName());
         }
 
-        // 标题 → 文档ID（wikilink 按标题解析；同名取其一）
+        // 标题 / slug → 文档ID（与 lint.py、KbWikiAiReviseServiceImpl 一致：标题 + 全路径 slug + 末段）
         Set<Long> idSet = new HashSet<>();
         Map<String, Long> titleIndex = new HashMap<>();
+        Map<String, Long> slugIndex = new HashMap<>();
         for (KbDocument d : ctx.docs) {
             idSet.add(d.getId());
             if (StringUtils.isNotBlank(d.getTitle())) {
-                titleIndex.putIfAbsent(d.getTitle().trim().toLowerCase(), d.getId());
+                titleIndex.putIfAbsent(d.getTitle().trim().toLowerCase(Locale.ROOT), d.getId());
+            }
+            if (StringUtils.isNotBlank(d.getSlug())) {
+                String slug = d.getSlug().trim().toLowerCase(Locale.ROOT);
+                slugIndex.putIfAbsent(slug, d.getId());
+                int slash = slug.lastIndexOf('/');
+                if (slash >= 0) {
+                    slugIndex.putIfAbsent(slug.substring(slash + 1), d.getId());
+                }
             }
         }
 
@@ -480,9 +876,13 @@ public class KbInsightServiceImpl implements KbInsightService {
                 if (target.isEmpty()) {
                     continue;
                 }
-                Long tid = titleIndex.get(target.toLowerCase());
+                Long tid = resolveWikilinkTarget(target, titleIndex, slugIndex);
                 if (tid == null) {
                     ctx.broken.add(new LintVo.Broken(String.valueOf(d.getId()), d.getTitle(), target));
+                    if (StringUtils.isNotBlank(d.getSlug())) {
+                        ctx.brokenByTarget.computeIfAbsent(target.trim(), k -> new HashSet<>())
+                                .add(d.getSlug());
+                    }
                 } else if (!tid.equals(d.getId()) && seen.add(tid)) {
                     addLink(ctx, d.getId(), tid, "links_to");
                     ctx.inbound.computeIfAbsent(tid, k -> new HashSet<>()).add(d.getId());
@@ -515,6 +915,39 @@ public class KbInsightServiceImpl implements KbInsightService {
             }
         }
         return ctx;
+    }
+
+    /**
+     * 解析 [[target]]：先标题，再全路径 slug，再 slug 末段（如 [[本地启动指南]] → guides/本地启动指南）。
+     * 与 {@link KbWikiAiReviseServiceImpl}、{@code lint.py resolve()} 对齐。
+     */
+    static Long resolveWikilinkTarget(String target, Map<String, Long> titleIndex, Map<String, Long> slugIndex) {
+        if (StringUtils.isBlank(target)) {
+            return null;
+        }
+        String t = target.trim().toLowerCase(Locale.ROOT);
+        Long byTitle = titleIndex.get(t);
+        if (byTitle != null) {
+            return byTitle;
+        }
+        Long bySlug = slugIndex.get(t);
+        if (bySlug != null) {
+            return bySlug;
+        }
+        int slash = t.lastIndexOf('/');
+        if (slash >= 0) {
+            Long byTail = slugIndex.get(t.substring(slash + 1));
+            if (byTail != null) {
+                return byTail;
+            }
+        }
+        for (Map.Entry<String, Long> e : slugIndex.entrySet()) {
+            String slug = e.getKey();
+            if (slug.endsWith("/" + t)) {
+                return e.getValue();
+            }
+        }
+        return null;
     }
 
     private List<KbDocument> loadDocs(Long spaceId) {
@@ -553,5 +986,7 @@ public class KbInsightServiceImpl implements KbInsightService {
         List<LintVo.Broken> broken = new ArrayList<>();
         Map<Long, Set<Long>> inbound = new HashMap<>();
         Map<Long, Integer> degree = new LinkedHashMap<>();
+        /** 断链目标 → 引用方 slug 集合（missing_concept）。 */
+        Map<String, Set<String>> brokenByTarget = new HashMap<>();
     }
 }

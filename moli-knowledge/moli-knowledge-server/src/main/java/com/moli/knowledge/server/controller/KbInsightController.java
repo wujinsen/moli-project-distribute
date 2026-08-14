@@ -1,16 +1,26 @@
 package com.moli.knowledge.server.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
 import com.moli.knowledge.server.dto.GraphVo;
 import com.moli.knowledge.server.dto.LintVo;
+import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.dto.LintIssuePageQuery;
+import com.moli.knowledge.server.dto.LintIssueTypeVo;
+import com.moli.knowledge.server.support.KbLintIssueTypes;
+import com.moli.knowledge.server.dto.LintScanStatusVo;
 import com.moli.knowledge.server.entity.KbLintIssue;
 import com.moli.knowledge.server.service.KbInsightService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,7 +55,7 @@ public class KbInsightController {
     }
 
     @GetMapping("/lint")
-    @ApiOperation("体检（断链 / 孤儿页 / 缺摘要）——只算不落库")
+    @ApiOperation("体检（对齐 lint.py：断链/孤儿/frontmatter/duplicate/stale/conflict 等）——只算不落库")
     public MoliResult<LintVo> lint(@RequestParam(required = false) Long spaceId) {
         return MoliResult.success(kbInsightService.lint(spaceId));
     }
@@ -56,17 +66,88 @@ public class KbInsightController {
         return MoliResult.success(kbInsightService.scan(spaceId));
     }
 
+    @GetMapping("/lint/scan/status")
+    @ApiOperation("DB 体检 scan 状态：定时是否开启 + 最近 scan 时间（只读）")
+    public MoliResult<LintScanStatusVo> scanStatus(@RequestParam(required = false) Long spaceId) {
+        return MoliResult.success(kbInsightService.scanStatus(spaceId));
+    }
+
     @GetMapping("/lint/issues")
-    @ApiOperation("查询已落库的体检问题（status 可空：0待处理/1已忽略/2已修复）")
-    public MoliResult<List<KbLintIssue>> issues(@RequestParam(required = false) Long spaceId,
-                                                @RequestParam(required = false) Integer status) {
-        return MoliResult.success(kbInsightService.issues(spaceId, status));
+    @ApiOperation("查询已落库的体检问题（分页；支持 type/assignee/priority 筛选）")
+    public MoliResult<Page<KbLintIssue>> issues(@RequestParam(required = false) Long spaceId,
+                                               @RequestParam(required = false) Integer status,
+                                               @RequestParam(required = false) Integer resolved,
+                                               @RequestParam(required = false) String issueType,
+                                               @RequestParam(required = false) Long assigneeId,
+                                               @RequestParam(required = false) Integer priority,
+                                               @RequestParam(required = false, defaultValue = "false") boolean unassignedOnly,
+                                               @RequestParam(defaultValue = "1") int pageNum,
+                                               @RequestParam(defaultValue = "20") int pageSize) {
+        LintIssuePageQuery query = new LintIssuePageQuery();
+        query.setSpaceId(spaceId);
+        query.setStatus(status != null ? status : resolved);
+        query.setIssueType(issueType);
+        query.setAssigneeId(assigneeId);
+        query.setPriority(priority);
+        query.setUnassignedOnly(unassignedOnly);
+        query.setPageNum(pageNum);
+        query.setPageSize(pageSize);
+        return MoliResult.success(kbInsightService.issuesPage(query));
+    }
+
+    @PutMapping("/lint/issues/batch")
+    @ApiOperation("O7/O8 · 统一批量更新体检问题（status / assignee / priority）")
+    public MoliResult<Integer> batchUpdateIssues(@RequestBody LintIssueBatchRequest request) {
+        return MoliResult.success(kbInsightService.batchUpdateIssues(request));
+    }
+
+    @PutMapping("/lint/issues/batch-status")
+    @ApiOperation("KBOPS-8 · 批量更新体检问题状态")
+    public MoliResult<Integer> batchUpdateIssueStatus(@RequestBody LintIssueBatchStatusRequest request) {
+        return MoliResult.success(kbInsightService.batchUpdateIssueStatus(request));
+    }
+
+    @PutMapping("/lint/issues/batch-assign")
+    @ApiOperation("KBOPS-8 · 批量指派处理人 / 调整优先级")
+    public MoliResult<Integer> batchAssignIssues(@RequestBody LintIssueBatchAssignRequest request) {
+        return MoliResult.success(kbInsightService.batchAssignIssues(request));
+    }
+
+    @GetMapping("/lint/issue-types")
+    @ApiOperation("KBOPS-8/10 · 体检问题类型（含 lint.py 对照）")
+    public MoliResult<List<LintIssueTypeVo>> issueTypes() {
+        return MoliResult.success(KbLintIssueTypes.descriptors());
+    }
+
+    @PutMapping("/lint/issue/{id}/assign")
+    @ApiOperation("KBOPS-8 · 指派处理人 / 调整优先级")
+    public MoliResult<Boolean> assignIssue(@PathVariable Long id,
+                                           @RequestParam(required = false) Long assigneeId,
+                                           @RequestParam(required = false) Integer priority) {
+        kbInsightService.assignIssue(id, assigneeId, priority);
+        return MoliResult.success(Boolean.TRUE);
     }
 
     @PutMapping("/lint/issue/{id}")
-    @ApiOperation("更新体检问题处理状态（0待处理/1已忽略/2已修复）")
-    public MoliResult<Boolean> updateIssue(@PathVariable Long id, @RequestParam Integer status) {
-        kbInsightService.updateIssueStatus(id, status);
+    @ApiOperation("更新体检问题：status / assigneeId（空字符串清空）/ priority")
+    public MoliResult<Boolean> updateIssue(@PathVariable Long id,
+                                           @RequestParam(required = false) Integer status,
+                                           @RequestParam(required = false) String assigneeId,
+                                           @RequestParam(required = false) Integer priority) {
+        boolean clearAssignee = assigneeId != null && assigneeId.isEmpty();
+        Long parsedAssignee = parseAssigneeId(assigneeId);
+        kbInsightService.patchIssue(id, status, parsedAssignee, clearAssignee, priority);
         return MoliResult.success(Boolean.TRUE);
+    }
+
+    private static Long parseAssigneeId(String assigneeId) {
+        if (StringUtils.isBlank(assigneeId)) {
+            return null;
+        }
+        try {
+            return Long.valueOf(assigneeId.trim());
+        } catch (NumberFormatException e) {
+            throw new com.moli.common.exception.BaseException("assigneeId 非法");
+        }
     }
 }

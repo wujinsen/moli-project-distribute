@@ -1,0 +1,46 @@
+---
+title: 申请域名.note（原文插图 annex）
+slug: annex-申请域名
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/大数据资料-王/hadoop/申请域名.note.md
+related: [hadoop-生态入门]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+- 1、访问⽹址：
+- 2、查域名
+- 3、选⼀个未注册的，加⼊清单
+- 4、付款
+
+
+w.net.cn
+
+![image 1](assets/imageFile1.png)
+
+![image 2](assets/imageFile2.png)
+
+设置域名，绑定ip
+
+- 1、进⼊管理⻚⾯
+- 2、进⼊域名管理
+
+
+![image 3](assets/imageFile3.png)
+
+![image 4](assets/imageFile4.png)
+
+- 3、解析
+- 4、新⼿指导
+- 5、设置
+- 6、输⼊公⽹ip即可
+
+
+![image 5](assets/imageFile5.png)
+
+![image 6](assets/imageFile6.png)
+
+![image 7](assets/imageFile7.png)

@@ -4,16 +4,21 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.knowledge.server.dto.IngestCommitResultVo;
 import com.moli.knowledge.server.dto.IngestDraftUpdateRequest;
 import com.moli.knowledge.server.dto.IngestDraftVo;
+import com.moli.knowledge.server.dto.IngestExpressStartVo;
 import com.moli.knowledge.server.dto.IngestGenerateResultVo;
 import com.moli.knowledge.server.dto.IngestJobCreateRequest;
 import com.moli.knowledge.server.dto.IngestJobFromTemplateRequest;
 import com.moli.knowledge.server.dto.IngestJobVo;
 import com.moli.knowledge.server.dto.IngestLintVo;
 import com.moli.knowledge.server.dto.IngestPlanUpdateRequest;
+import com.moli.knowledge.server.dto.IngestPrepareResultVo;
+import com.moli.knowledge.server.dto.IngestPublishResultVo;
 import com.moli.knowledge.server.dto.IngestSaveAsTemplateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateCreateRequest;
 import com.moli.knowledge.server.dto.IngestTemplateVo;
+import com.moli.knowledge.server.dto.RawPrefixVo;
 import com.moli.knowledge.server.dto.RawTreeNodeVo;
+import com.moli.knowledge.server.support.IngestGenerateProgressSink;
 
 import java.util.List;
 
@@ -24,11 +29,17 @@ public interface KbIngestService {
 
     List<RawTreeNodeVo> rawTree(String prefix);
 
+    /** T20g · raw 下一级目录 prefix 列表（Tab1 下拉）。 */
+    List<RawPrefixVo> rawPrefixes();
+
     IngestJobVo createJob(IngestJobCreateRequest request);
 
     Page<IngestJobVo> pageJobs(Long spaceId, String status, int pageNum, int pageSize);
 
     IngestJobVo getJob(Long id);
+
+    /** 软删历史批次（仅从列表隐藏；不回滚已 commit 的 wiki 文件）。 */
+    void deleteJob(Long id);
 
     IngestJobVo generatePlan(Long id);
 
@@ -36,8 +47,19 @@ public interface KbIngestService {
 
     String exportAgentPrompt(Long id);
 
-    /** 按 plan 生成草稿；resume=true 时跳过已有草稿（断点续跑）。 */
-    IngestGenerateResultVo generate(Long jobId, boolean resume);
+    /** 按 plan 生成草稿；resume=true 时跳过已有草稿（断点续跑）。useLlmGenerate=false 为模板模式（raw 直贴）。 */
+    IngestGenerateResultVo generate(Long jobId, boolean resume, boolean useLlmGenerate);
+
+    /** T15f · 与 generate 相同，但推送 ProgressSink（SSE 异步任务用）。 */
+    IngestGenerateResultVo generateWithProgress(Long jobId, boolean resume, boolean useLlmGenerate,
+                                               IngestGenerateProgressSink sink);
+
+    /** T15f · 校验 Plan 并返回应生成页数（start 接口用）。 */
+    int countGeneratePages(Long jobId);
+
+    default IngestGenerateResultVo generate(Long jobId, boolean resume) {
+        return generate(jobId, resume, true);
+    }
 
     List<IngestDraftVo> listDrafts(Long jobId);
 
@@ -45,13 +67,34 @@ public interface KbIngestService {
 
     IngestDraftVo updateDraft(Long jobId, String slug, IngestDraftUpdateRequest request);
 
-    IngestDraftVo regenerateDraft(Long jobId, String slug);
+    IngestDraftVo regenerateDraft(Long jobId, String slug, boolean useLlmGenerate);
+
+    default IngestDraftVo regenerateDraft(Long jobId, String slug) {
+        return regenerateDraft(jobId, slug, true);
+    }
 
     IngestDraftVo setApproval(Long jobId, String slug, String approval);
 
     IngestLintVo lint(Long jobId);
 
     IngestCommitResultVo commit(Long jobId, boolean sync);
+
+    /** T18 · Express Plan（分类推断 + slug stem）+ 生成草稿。 */
+    IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan, boolean useLlmGenerate);
+
+    default IngestPrepareResultVo prepare(Long jobId, boolean useLlmPlan) {
+        return prepare(jobId, useLlmPlan, true);
+    }
+
+    /** T18 · 可选全部批准 + lint + commit（+ Sync）。 */
+    IngestPublishResultVo publish(Long jobId, boolean sync, boolean approveAll);
+
+    /** T18 · 创建批次并 prepare 一步。 */
+    IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan, boolean useLlmGenerate);
+
+    default IngestExpressStartVo expressStart(IngestJobCreateRequest request, boolean useLlmPlan) {
+        return expressStart(request, useLlmPlan, true);
+    }
 
     // ---------------------------------------------------------------- T15e 模板
 

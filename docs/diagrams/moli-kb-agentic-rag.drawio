@@ -1,0 +1,53 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-agentic-rag" name="Agentic RAG State Machine">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;AI-7 Agentic RAG 编排状态机&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;POST /kb/ask/agentic · 复用 KbAskServiceImpl 召回/生成 · kb_agentic_trace&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lane" value="KbAgenticAskServiceImpl（有界：maxRounds≤3 · latency-budget-ms · ACL 每轮）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="1520" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="s0" value="&lt;b&gt;S0 rewrite_decompose&lt;/b&gt;&#xa;KbLlmClient §3.1&#xa;rewritten + subQuestions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="30" y="50" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="&lt;b&gt;S1 retrieve&lt;/b&gt;&#xa;recallHybridChunks / recallAndScoreChunks&#xa;多 query 合并候选池（chunkId/docId 去重）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="280" y="50" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="&lt;b&gt;S2 generate&lt;/b&gt;&#xa;单轮 SYSTEM_PROMPT + 合并上下文&#xa;引用 ⊆ 候选池 slug" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="590" y="50" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="&lt;b&gt;S3 self_check&lt;/b&gt;&#xa;§3.3 JSON&#xa;supported / unsupported / missingInfo&#xa;coverage = |sup|/(|sup|+|unsup|)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="880" y="50" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="&lt;b&gt;S4 decide&lt;/b&gt;&#xa;coverage &amp;lt; threshold&#xa;且 round &amp;lt; maxRounds&#xa;且未超 latency-budget?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="1170" y="45" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="&lt;b&gt;S5 finalize&lt;/b&gt;&#xa;AgenticAskVo + kb_agentic_trace&#xa;关联 kb_qa_log.id" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fontStyle=1;" vertex="1" parent="lane">
+          <mxGeometry x="1360" y="55" width="140" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="backfill" value="回补 S1：queries = missingInfo ∪ unsupported 关键词&#xa;round++ · 并入既有候选池" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;dashed=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="880" y="200" width="320" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="degrade" value="降级（A-INV-7）&#xa;LLM 不可用 → 单轮检索式 degraded&#xa;自检 JSON 失败 → 不回补 degraded" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#b85450;fontStyle=2;" vertex="1" parent="lane">
+          <mxGeometry x="30" y="200" width="360" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e01" style="endArrow=block;html=1;strokeColor=#9673a6;" edge="1" parent="lane" source="s0" target="s1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="lane" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" style="endArrow=block;html=1;strokeColor=#82b366;" edge="1" parent="lane" source="s2" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" style="endArrow=block;html=1;strokeColor=#d79b00;" edge="1" parent="lane" source="s3" target="s4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e45" value="是/否/超时" style="endArrow=block;html=1;strokeColor=#b85450;fontSize=10;" edge="1" parent="lane" source="s4" target="s5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4b" value="回补" style="endArrow=block;html=1;strokeColor=#d6b656;dashed=1;fontSize=10;" edge="1" parent="lane" source="s4" target="backfill"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb1" style="endArrow=block;html=1;strokeColor=#d6b656;dashed=1;" edge="1" parent="lane" source="backfill" target="s1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="410" y="235" /></Array></mxGeometry></mxCell>
+        <mxCell id="baseline" value="单轮基线（不动）：POST /kb/ask → KbAskServiceImpl.ask()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="470" width="520" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="eval" value="eval_ask.py --compare-agentic · dirty+multi-hop 子集 · hit@k / coverage / 延迟" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="600" y="470" width="520" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

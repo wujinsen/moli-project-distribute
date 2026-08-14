@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# CI / 本地统一入口：dry-run、初始化 schema、写库同步。
+# CI / 本地统一入口：dry-run、lint-strict、初始化 schema、写库同步。
+# PR 硬门禁（KBOPS-A1）：dry-run-all + lint-strict-all — 见 docs/ops/kb-sync-failure-runbook.md §7
 # 用法：
 #   bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 #   bash moli-knowledge/kb/tools/ci/run_sync.sh init-schema
@@ -11,9 +12,17 @@ TOOLS="$(cd "${HERE}/.." && pwd)"
 REPO_ROOT="$(cd "${TOOLS}/../../.." && pwd)"
 SCHEMA="${REPO_ROOT}/docs/sql/03_knowledge_schema.sql"
 SYNC_PY="${TOOLS}/sync_to_db.py"
+DRIFT_PY="${TOOLS}/detect_wiki_db_drift.py"
 LINT_PY="${TOOLS}/lint.py"
+ENRICH_PY="${TOOLS}/enrich.py"
 
 MODE="${1:-dry-run}"
+
+# EC2 / Amazon Linux 通常只有 python3；可用 KB_SYNC_PYTHON 覆盖（与 moli-knowledge.env 一致）
+PYTHON="${KB_SYNC_PYTHON:-python3}"
+if ! command -v "${PYTHON}" >/dev/null 2>&1; then
+  PYTHON=python
+fi
 
 KB_SYNC_HOST="${KB_SYNC_HOST:-127.0.0.1}"
 KB_SYNC_PORT="${KB_SYNC_PORT:-3306}"
@@ -26,7 +35,7 @@ KB_SYNC_SPACE="${KB_SYNC_SPACE:-enterprise-kb}"
 # dry-run-all / lint-strict-all / sync-all / verify-all 全部以它为准，避免单/多空间路径漂移。
 KB_SPACES=(
   "wiki:enterprise-kb"
-  "wiki-ops:moli-ops-manual"
+  "wiki-moli:moli-ops-manual"
   "wiki-jp-exam:jp-fe-ap-exam"
 )
 
@@ -36,24 +45,46 @@ mysql_cli() {
 
 case "${MODE}" in
   dry-run)
-    python "${SYNC_PY}" --dry-run
+    "${PYTHON}" "${SYNC_PY}" --dry-run
     ;;
   lint)
     # 知识治理体检（report-only：不因 ERROR/WARN 失败，便于在 dry-run 里观察）
-    python "${LINT_PY}" "${@:2}"
+    "${PYTHON}" "${LINT_PY}" "${@:2}"
+    ;;
+  enrich)
+    # Wiki enrich：已有页追加 patch（默认 dry-run；--apply 写盘）
+    "${PYTHON}" "${ENRICH_PY}" "${@:2}"
     ;;
   lint-strict)
     # 门禁模式：有 ERROR 即失败；加 --strict 时 WARN 也失败
-    python "${LINT_PY}" --strict "${@:2}"
+    "${PYTHON}" "${LINT_PY}" --strict "${@:2}"
     ;;
   lint-strict-all)
-    # 多空间门禁：逐个 wiki 空间跑 --strict，任一失败即整体失败（PR 阶段就拦住 wiki-ops / wiki-jp-exam）
+    # 多空间门禁：逐个 wiki 空间跑 --strict，任一失败即整体失败（merge 前严格治理时用）
     echo "[ci] lint-strict all wiki spaces ..."
     for entry in "${KB_SPACES[@]}"; do
       wiki_dir="${entry%%:*}"
       echo "[ci] lint-strict --wiki-dir ${wiki_dir} ..."
-      python "${LINT_PY}" --strict --wiki-dir "${wiki_dir}" "${@:2}"
+      "${PYTHON}" "${LINT_PY}" --strict --wiki-dir "${wiki_dir}" "${@:2}"
     done
+    ;;
+  lint-all)
+    # 多空间体检报告：三空间都跑完，始终 exit 0（PR / 渐进治理，不拦截 merge）
+    echo "[ci] lint report all wiki spaces (non-blocking) ..."
+    had_issue=0
+    for entry in "${KB_SPACES[@]}"; do
+      wiki_dir="${entry%%:*}"
+      echo "[ci] lint --wiki-dir ${wiki_dir} ..."
+      if ! "${PYTHON}" "${LINT_PY}" --wiki-dir "${wiki_dir}" "${@:2}"; then
+        had_issue=1
+      fi
+    done
+    if [[ "${had_issue}" -ne 0 ]]; then
+      echo "[ci] lint-all: issues found (report-only; fix wiki gradually, not blocking CI)"
+    else
+      echo "[ci] lint-all: no blocking issues"
+    fi
+    exit 0
     ;;
   init-schema)
     if [[ ! -f "${SCHEMA}" ]]; then
@@ -65,7 +96,7 @@ case "${MODE}" in
     echo "[ci] import kb schema (skip sys_* seed if tables absent) ..."
     # 03 脚本末尾含 sys_system 增量 INSERT，CI 最小库无 user-center 表，截断到 sys 段之前
     awk '/INSERT INTO `sys_system`/ {exit} {print}' "${SCHEMA}" | mysql_cli "${KB_SYNC_DB}"
-    for extra in "04_kb_space_jp_exam.sql" "07_kb_space_ops_manual.sql"; do
+    for extra in "04_kb_space_jp_exam.sql" "07_kb_space_ops_manual.sql" "10_kb_category_dir_slug.sql" "11_kb_category_enterprise_trim.sql" "16_kb_category_jp_certify.sql" "18_kb_llm_call_log.sql" "31_kb_eval_run.sql"; do
       extra_path="${REPO_ROOT}/docs/sql/${extra}"
       if [[ -f "${extra_path}" ]]; then
         echo "[ci] import optional space seed ${extra} ..."
@@ -75,7 +106,7 @@ case "${MODE}" in
     echo "[ci] schema ready."
     ;;
   sync)
-    python "${SYNC_PY}" \
+    "${PYTHON}" "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
@@ -84,7 +115,7 @@ case "${MODE}" in
       --space "${KB_SYNC_SPACE}"
     ;;
   purge-raw-archive)
-    python "${SYNC_PY}" \
+    "${PYTHON}" "${SYNC_PY}" \
       --host "${KB_SYNC_HOST}" \
       --port "${KB_SYNC_PORT}" \
       --user "${KB_SYNC_USER}" \
@@ -92,6 +123,34 @@ case "${MODE}" in
       --db "${KB_SYNC_DB}" \
       --space "${KB_SYNC_SPACE}" \
       --purge-raw-archive
+    ;;
+  purge-manual-web)
+    "${PYTHON}" "${SYNC_PY}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --space "${KB_SYNC_SPACE}" \
+      --purge-manual-web
+    ;;
+  purge-manual-web-all)
+    "${PYTHON}" "${SYNC_PY}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --purge-manual-web --all-spaces
+    ;;
+  purge-manual-web-dry-run)
+    "${PYTHON}" "${SYNC_PY}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --purge-manual-web --all-spaces --dry-run
     ;;
   verify)
     COUNT="$(mysql_cli -N -e "SELECT COUNT(*) FROM \`${KB_SYNC_DB}\`.kb_document WHERE is_delete=0 AND source='kb';")"
@@ -102,7 +161,7 @@ case "${MODE}" in
     fi
     ;;
   verify-all)
-    # 逐空间校验：每个空间至少 1 篇 active 文档，任一空间为 0 即失败，避免被总量掩盖。
+    # 逐空间校验：每个空间至少 1 篇 active 文档，且无已发布未分类 wiki 文档。
     echo "[ci] verify each wiki space has synced documents ..."
     fail=0
     for entry in "${KB_SPACES[@]}"; do
@@ -113,6 +172,15 @@ case "${MODE}" in
       echo "[ci] space=${space_code} kb_document(source=kb, active)=${count}"
       if [[ "${count}" -lt 1 ]]; then
         echo "[ci] verify-all failed: space '${space_code}' has 0 synced documents" >&2
+        fail=1
+      fi
+      uncat="$(mysql_cli -N -e "SELECT COUNT(*) FROM \`${KB_SYNC_DB}\`.kb_document d \
+        JOIN \`${KB_SYNC_DB}\`.kb_space s ON s.id = d.space_id \
+        WHERE s.space_code='${space_code}' AND s.is_delete=0 AND d.is_delete=0 \
+          AND d.source='kb' AND d.status=1 AND d.category_id IS NULL;")"
+      echo "[ci] space=${space_code} uncategorized(published kb)=${uncat}"
+      if [[ "${uncat}" -gt 0 ]]; then
+        echo "[ci] verify-all failed: space '${space_code}' has ${uncat} uncategorized published docs" >&2
         fail=1
       fi
     done
@@ -126,7 +194,7 @@ case "${MODE}" in
       wiki_dir="${entry%%:*}"
       space_code="${entry##*:}"
       echo "[ci] dry-run --wiki-dir ${wiki_dir} --space ${space_code} ..."
-      python "${SYNC_PY}" --dry-run --wiki-dir "${wiki_dir}" --space "${space_code}"
+      "${PYTHON}" "${SYNC_PY}" --dry-run --wiki-dir "${wiki_dir}" --space "${space_code}"
     done
     ;;
   sync-all)
@@ -135,7 +203,7 @@ case "${MODE}" in
       wiki_dir="${entry%%:*}"
       space_code="${entry##*:}"
       echo "[ci] sync --wiki-dir ${wiki_dir} --space ${space_code} ..."
-      python "${SYNC_PY}" \
+      "${PYTHON}" "${SYNC_PY}" \
         --wiki-dir "${wiki_dir}" \
         --host "${KB_SYNC_HOST}" \
         --port "${KB_SYNC_PORT}" \
@@ -145,8 +213,40 @@ case "${MODE}" in
         --space "${space_code}"
     done
     ;;
+  drift)
+    "${PYTHON}" "${DRIFT_PY}" \
+      --wiki-dir "${KB_SYNC_WIKI_DIR:-wiki}" \
+      --host "${KB_SYNC_HOST}" \
+      --port "${KB_SYNC_PORT}" \
+      --user "${KB_SYNC_USER}" \
+      --password "${KB_SYNC_PASSWORD}" \
+      --db "${KB_SYNC_DB}" \
+      --space "${KB_SYNC_SPACE}" \
+      --fail-on-drift
+    ;;
+  drift-all)
+    echo "[ci] drift check all wiki spaces ..."
+    fail=0
+    for entry in "${KB_SPACES[@]}"; do
+      wiki_dir="${entry%%:*}"
+      space_code="${entry##*:}"
+      echo "[ci] drift --wiki-dir ${wiki_dir} --space ${space_code} ..."
+      if ! "${PYTHON}" "${DRIFT_PY}" \
+        --wiki-dir "${wiki_dir}" \
+        --host "${KB_SYNC_HOST}" \
+        --port "${KB_SYNC_PORT}" \
+        --user "${KB_SYNC_USER}" \
+        --password "${KB_SYNC_PASSWORD}" \
+        --db "${KB_SYNC_DB}" \
+        --space "${space_code}" \
+        --fail-on-drift; then
+        fail=1
+      fi
+    done
+    exit "${fail}"
+    ;;
   *)
-    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-strict | lint-strict-all | init-schema | sync | sync-all | purge-raw-archive | verify | verify-all)" >&2
+    echo "Unknown mode: ${MODE} (dry-run | dry-run-all | lint | lint-all | lint-strict | lint-strict-all | enrich | init-schema | sync | sync-all | drift | drift-all | purge-raw-archive | purge-manual-web | purge-manual-web-all | purge-manual-web-dry-run | verify | verify-all)" >&2
     exit 1
     ;;
 esac

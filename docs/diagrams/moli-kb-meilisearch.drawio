@@ -1,0 +1,76 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-meilisearch" name="KB Meilisearch">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;知识库 · Meilisearch 接入规划&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;wiki 仍是真相；MySQL 存储/ACL/分类；Meilisearch 只接全文检索（派生副本，可重建）&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="760" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- 索引轨 -->
+        <mxCell id="lane-index" value="索引轨（写入后建索引）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="1080" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="wiki" value="&lt;b&gt;kb/wiki-moli/&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;markdown 真相源&lt;br&gt;frontmatter: type/tags/status&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="lane-index">
+          <mxGeometry x="30" y="60" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sync" value="&lt;b&gt;sync_to_db.py&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;增量 · 幂等&lt;br&gt;content_hash 比对&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane-index">
+          <mxGeometry x="250" y="60" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql" value="&lt;b&gt;MySQL moli&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;kb_document(kb_type,category_id)&lt;br&gt;kb_category / kb_relation&lt;br&gt;kb_space_member (ACL)&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="lane-index">
+          <mxGeometry x="470" y="50" width="190" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="indexer" value="&lt;b&gt;Meilisearch Indexer&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;sync 成功后触发&lt;br&gt;bulk 写文档 / 按 slug 删&lt;br&gt;软删 is_delete=1 → delete&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane-index">
+          <mxGeometry x="720" y="55" width="180" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="meili" value="&lt;b&gt;Meilisearch&lt;/b&gt;&lt;br&gt;index: kb&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;searchable: title/summary/content&lt;br&gt;filterable: space_id/category_id/kb_type/status/tags&lt;br&gt;sortable: update_time&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="lane-index">
+          <mxGeometry x="720" y="175" width="320" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ix1" value="改文件" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="wiki" target="sync"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ix2" value="upsert / 软删" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#d79b00;" edge="1" parent="1" source="sync" target="mysql"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ix3" value="reindex 钩子" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="mysql" target="indexer"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ix4" value="bulk / delete" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="indexer" target="meili"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- 查询轨 -->
+        <mxCell id="lane-query" value="查询轨（运行时检索）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="1080" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="fe" value="&lt;b&gt;meiling-ui&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;文档浏览：分类树 + 体裁 chip&lt;br&gt;文档搜索 / 问答&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="lane-query">
+          <mxGeometry x="30" y="55" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gw" value="&lt;b&gt;Gateway&lt;/b&gt;&lt;br&gt;/KnowledgeServer/**" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane-query">
+          <mxGeometry x="260" y="60" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ks" value="&lt;b&gt;knowledge-server :8090&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;/kb/document/search?kbType=&lt;br&gt;/kb/index/types (facet)&lt;br&gt;/kb/ask&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="lane-query">
+          <mxGeometry x="470" y="50" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="acl" value="ACL 解析&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;可读 space_id 列表&lt;br&gt;(Shiro/Dubbo)&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="lane-query">
+          <mxGeometry x="470" y="180" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="meiliq" value="&lt;b&gt;Meilisearch /search&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;q + filter:&lt;br&gt;space_id IN [可读] AND&lt;br&gt;category_id=? AND kb_type=?&lt;br&gt;facets:[kb_type,category_id]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="lane-query">
+          <mxGeometry x="730" y="50" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="mysqlq" value="&lt;b&gt;MySQL&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;取正文 / 关系 / 收藏&lt;br&gt;命中 id 回查&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=14;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="lane-query">
+          <mxGeometry x="800" y="185" width="160" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="q1" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="fe" target="gw"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q2" value="REST" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d6b656;" edge="1" parent="1" source="gw" target="ks"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q3" value="① 解析权限" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#b85450;" edge="1" parent="1" source="ks" target="acl"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q4" value="② 带 ACL filter 检索" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="ks" target="meiliq"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q5" value="③ 命中 id 回查正文" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="meiliq" target="mysqlq"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="q6" value="facet 计数 → 体裁 chip" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#82b366;" edge="1" parent="1" source="meiliq" target="ks"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- 备注 -->
+        <mxCell id="note1" value="&lt;b&gt;不变&lt;/b&gt;：wiki 真相 · 分类=目录 · 体裁改 frontmatter type → Sync · 禁止 Web 直写库" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;fontSize=11;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="745" width="520" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="note2" value="&lt;b&gt;新增&lt;/b&gt;：kb_type 进 filterableAttributes · ACL 必须进 filter · sync 后 reindex · lint 守 type 白名单" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="580" y="745" width="540" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

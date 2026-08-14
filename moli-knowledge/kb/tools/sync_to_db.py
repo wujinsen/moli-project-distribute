@@ -35,6 +35,12 @@ kb_relation / kb_sync_log）。方向严格单向：kb(markdown) -> DB；DB 侧�
     bash kb/tools/ci/run_sync.sh init-schema   # 需 mysql 客户端
     bash kb/tools/ci/run_sync.sh sync
 
+    # 清理 Web 直连 MySQL 遗留行（T14e 停用 POST /kb/document 后）
+    bash kb/tools/ci/run_sync.sh purge-manual-web-dry-run   # 预览
+    bash kb/tools/ci/run_sync.sh purge-manual-web-all       # 软删全空间
+    powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1              # Windows 预览
+    powershell -File moli-knowledge/kb/tools/purge_manual_web.ps1 -Execute     # Windows 执行
+
 参数默认值对齐 moli-knowledge-server 的 application-dev.yml 与建表种子数据。
 """
 
@@ -49,14 +55,15 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+HERE = Path(__file__).resolve().parent          # kb/tools
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+from chunk_split import split_markdown_body  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # 路径与常量
 # ---------------------------------------------------------------------------
 
-HERE = Path(__file__).resolve().parent          # kb/tools
 KB_DIR = HERE.parent                             # kb
 DEFAULT_WIKI_DIR = KB_DIR / "wiki"
 
@@ -67,6 +74,52 @@ KB_TYPES = {"guide", "service", "concept", "article", "interview", "output"}
 
 # frontmatter status -> kb_document.status
 STATUS_MAP = {"draft": 0, "active": 1, "archived": 2}
+
+# wiki 根下非文档目录（不参与「分类=目录」校验）
+WIKI_NON_CATEGORY_DIRS = frozenset({"graph", "raw", ".git"})
+
+
+def wiki_category_dir_slugs(wiki_dir: Path) -> set[str]:
+    """wiki 根下一级子目录名（dry-run 时作 dir_slug 代理）。"""
+    out: set[str] = set()
+    if not wiki_dir.is_dir():
+        return out
+    for p in wiki_dir.iterdir():
+        if p.is_dir() and p.name not in WIKI_NON_CATEGORY_DIRS and not p.name.startswith("."):
+            out.add(p.name)
+    return out
+
+
+def find_uncategorized_docs(docs, valid_dir_slugs: set[str]):
+    """返回 [(Doc, slug, reason), ...]：slug 一级目录不在 valid_dir_slugs 内。"""
+    bad = []
+    for d in docs:
+        if "/" not in d.slug:
+            bad.append((d, d.slug, "根目录页（无一级目录）"))
+            continue
+        top = d.slug.split("/", 1)[0]
+        if top not in valid_dir_slugs:
+            bad.append((d, d.slug, f"一级目录 '{top}' 未绑定 kb_category.dir_slug"))
+    return bad
+
+
+def report_uncategorized(bad, *, space: str, strict: bool) -> int:
+    if not bad:
+        return 0
+    print("\n" + "!" * 60)
+    print(f"[warn] 未分类文档 {len(bad)} 篇（space={space}）")
+    print("  分类=目录：slug 一级目录须与 kb_category.dir_slug 一致。")
+    print("  请移入正确 wiki 子目录或补建分类后重跑 Sync。")
+    print("!" * 60)
+    for d, slug, reason in bad[:30]:
+        print(f"  - {slug}  «{d.title}»  ({reason})")
+    if len(bad) > 30:
+        print(f"  ... 另有 {len(bad) - 30} 篇")
+    if strict:
+        print("\n[error] 存在未分类文档，Sync 已中止。"
+              "临时放行请加 --allow-uncategorized")
+        return 4
+    return 0
 
 
 # ---------------------------------------------------------------------------
@@ -324,6 +377,20 @@ def report_dry_run(docs, rels, wiki_dir: Path):
     print("\n[dry-run] 未连接数据库，未写入任何数据。")
 
 
+def check_uncategorized_before_sync(docs, wiki_dir: Path | None, dir_to_cat: dict | None, args) -> int:
+    """校验 slug 一级目录是否可映射到分类；默认 strict（exit 4）。"""
+    if getattr(args, "allow_uncategorized", False):
+        return 0
+    if dir_to_cat is not None:
+        valid = set(dir_to_cat.keys())
+    elif wiki_dir is not None:
+        valid = wiki_category_dir_slugs(wiki_dir)
+    else:
+        return 0
+    bad = find_uncategorized_docs(docs, valid)
+    return report_uncategorized(bad, space=args.space, strict=True)
+
+
 # ---------------------------------------------------------------------------
 # 真正写库（pymysql）
 # ---------------------------------------------------------------------------
@@ -344,7 +411,7 @@ def sync_to_db(docs, rels, args):
     idgen = IdGen()
     batch_no = datetime.now().strftime("%Y%m%d%H%M%S")
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    stats = {"insert": 0, "update": 0, "skip": 0, "delete": 0, "fail": 0}
+    stats = {"insert": 0, "update": 0, "skip": 0, "delete": 0, "fail": 0, "chunk": 0}
     try:
         with conn.cursor() as cur:
             # 解析 space_id
@@ -357,62 +424,144 @@ def sync_to_db(docs, rels, args):
             space_id = row[0]
             print(f"目标空间 {args.space} -> space_id={space_id}")
 
-            # 现存 kb 来源文档：slug -> (id, content_hash)
-            cur.execute("SELECT id, slug, content_hash FROM kb_document "
-                        "WHERE space_id=%s AND source='kb' AND is_delete=0", (space_id,))
-            existing = {r[1]: (r[0], r[2]) for r in cur.fetchall()}
+            # 空间内全部 slug（含软删 / manual / raw 遗留），避免 UK 冲突
+            cur.execute(
+                "SELECT id, slug, content_hash, is_delete, source FROM kb_document "
+                "WHERE space_id=%s",
+                (space_id,),
+            )
+            all_by_slug = {r[1]: (r[0], r[2], r[3], r[4]) for r in cur.fetchall()}
+            # 活跃 kb 行：用于 wiki 删页 → DB 软删判定
+            existing = {
+                slug: (info[0], info[1])
+                for slug, info in all_by_slug.items()
+                if info[2] == 0 and info[3] == "kb"
+            }
             slug_to_id: dict = {}
+
+            # 分类=目录映射：dir_slug -> category_id（文档按所在一级目录回填 category_id）
+            cur.execute("SELECT id, dir_slug FROM kb_category "
+                        "WHERE space_id=%s AND is_delete=0 AND dir_slug IS NOT NULL", (space_id,))
+            dir_to_cat = {r[1]: r[0] for r in cur.fetchall() if r[1]}
+
+            rc = check_uncategorized_before_sync(docs, None, dir_to_cat, args)
+            if rc != 0:
+                bad = find_uncategorized_docs(docs, set(dir_to_cat.keys()))
+                summary = f"未分类文档 {len(bad)} 篇，Sync 已中止"
+                if bad:
+                    summary += f"；示例 {bad[0][1]}：{bad[0][2]}"
+                _persist_batch_fail(args, batch_no, space_id, summary)
+                return rc
+
+            def _category_id(doc):
+                """按文档 slug 的一级目录匹配 kb_category.dir_slug；匹配不到归未分类(None)。"""
+                top = doc.slug.split("/", 1)[0] if "/" in doc.slug else ""
+                return dir_to_cat.get(top)
 
             # ---- upsert 文档 ----
             for d in docs:
-                if d.slug in existing:
-                    doc_id, old_hash = existing[d.slug]
-                    slug_to_id[d.slug] = doc_id
-                    if old_hash == d.content_hash:
-                        stats["skip"] += 1
+                try:
+                    if d.slug in all_by_slug:
+                        doc_id, old_hash, was_deleted, old_source = all_by_slug[d.slug]
+                        slug_to_id[d.slug] = doc_id
+                        reactivate = was_deleted != 0 or old_source != "kb"
+                        new_cat = _category_id(d)
+                        if not reactivate and old_hash == d.content_hash:
+                            cur.execute("SELECT category_id FROM kb_document WHERE id=%s", (doc_id,))
+                            old_cat = cur.fetchone()[0]
+                            if old_cat != new_cat:
+                                cur.execute(
+                                    "UPDATE kb_document SET category_id=%s, update_time=%s "
+                                    "WHERE id=%s",
+                                    (new_cat, now, doc_id))
+                                stats["update"] += 1
+                                _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                                     "category_fixup", d.content_hash, now)
+                            else:
+                                stats["skip"] += 1
+                                _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                                     "skip", d.content_hash, now)
+                            if _chunk_count(cur, doc_id) == 0:
+                                try:
+                                    stats["chunk"] += _sync_chunks(
+                                        cur, idgen, doc_id, d, space_id, new_cat,
+                                        args.operator, now)
+                                except Exception as ce:  # noqa: BLE001
+                                    stats["fail"] += 1
+                                    print(f"[error] chunk 同步失败 {d.slug}: {ce}")
+                            continue
+                        cur.execute(
+                            "UPDATE kb_document SET title=%s, summary=%s, content=%s, "
+                            "kb_type=%s, domain=%s, status=%s, source='kb', source_path=%s, "
+                            "category_id=%s, content_hash=%s, is_delete=0, "
+                            "version_no=version_no+1, update_id=%s, "
+                            "update_time=%s, publish_time=COALESCE(publish_time, %s) "
+                            "WHERE id=%s",
+                            (d.title, _summary(d), d.body, d.kb_type, _domain(d),
+                             d.status, d.rel_path, _category_id(d), d.content_hash, args.operator, now,
+                             now if d.status == 1 else None, doc_id))
+                        stats["update"] += 1
                         _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                             "skip", d.content_hash, now)
-                        continue
-                    cur.execute(
-                        "UPDATE kb_document SET title=%s, summary=%s, content=%s, "
-                        "kb_type=%s, domain=%s, status=%s, source_path=%s, "
-                        "content_hash=%s, version_no=version_no+1, update_id=%s, "
-                        "update_time=%s, publish_time=COALESCE(publish_time, %s) "
-                        "WHERE id=%s",
-                        (d.title, _summary(d), d.body, d.kb_type, _domain(d),
-                         d.status, d.rel_path, d.content_hash, args.operator, now,
-                         now if d.status == 1 else None, doc_id))
-                    stats["update"] += 1
+                             "reactivate" if reactivate else "update", d.content_hash, now)
+                        try:
+                            stats["chunk"] += _sync_chunks(
+                                cur, idgen, doc_id, d, space_id, _category_id(d),
+                                args.operator, now)
+                        except Exception as ce:  # noqa: BLE001
+                            stats["fail"] += 1
+                            print(f"[error] chunk 同步失败 {d.slug}: {ce}")
+                    else:
+                        doc_id = idgen.next()
+                        slug_to_id[d.slug] = doc_id
+                        cur.execute(
+                            "INSERT INTO kb_document (id, create_id, create_time, "
+                            "update_id, update_time, space_id, category_id, slug, source, "
+                            "source_path, content_hash, title, summary, content, doc_type, "
+                            "kb_type, domain, status, view_count, like_count, version_no, "
+                            "publish_time, is_delete) VALUES "
+                            "(%s,%s,%s,%s,%s,%s,%s,%s,'kb',%s,%s,%s,%s,%s,'markdown',"
+                            "%s,%s,%s,0,0,1,%s,0)",
+                            (doc_id, args.operator, now, args.operator, now, space_id,
+                             _category_id(d), d.slug, d.rel_path, d.content_hash, d.title, _summary(d),
+                             d.body, d.kb_type, _domain(d), d.status,
+                             now if d.status == 1 else None))
+                        stats["insert"] += 1
+                        _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
+                             "insert", d.content_hash, now)
+                        try:
+                            stats["chunk"] += _sync_chunks(
+                                cur, idgen, doc_id, d, space_id, _category_id(d),
+                                args.operator, now)
+                        except Exception as ce:  # noqa: BLE001
+                            stats["fail"] += 1
+                            print(f"[error] chunk 同步失败 {d.slug}: {ce}")
+                except Exception as e:                  # noqa: BLE001
+                    stats["fail"] += 1
+                    doc_id = slug_to_id.get(d.slug)
                     _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                         "update", d.content_hash, now)
-                else:
-                    doc_id = idgen.next()
-                    slug_to_id[d.slug] = doc_id
-                    cur.execute(
-                        "INSERT INTO kb_document (id, create_id, create_time, "
-                        "update_id, update_time, space_id, category_id, slug, source, "
-                        "source_path, content_hash, title, summary, content, doc_type, "
-                        "kb_type, domain, status, view_count, like_count, version_no, "
-                        "publish_time, is_delete) VALUES "
-                        "(%s,%s,%s,%s,%s,%s,NULL,%s,'kb',%s,%s,%s,%s,%s,'markdown',"
-                        "%s,%s,%s,0,0,1,%s,0)",
-                        (doc_id, args.operator, now, args.operator, now, space_id,
-                         d.slug, d.rel_path, d.content_hash, d.title, _summary(d),
-                         d.body, d.kb_type, _domain(d), d.status,
-                         now if d.status == 1 else None))
-                    stats["insert"] += 1
-                    _log(cur, idgen, batch_no, space_id, doc_id, d.rel_path,
-                         "insert", d.content_hash, now)
+                         "sync", d.content_hash, now, status="fail", message=str(e))
+                    print(f"[error] 文档同步失败 {d.slug}: {e}")
 
             # ---- 删除：DB 有、wiki 没有 ----
             wiki_slugs = {d.slug for d in docs}
             for slug, (doc_id, _h) in existing.items():
                 if slug not in wiki_slugs:
-                    cur.execute("UPDATE kb_document SET is_delete=1, update_time=%s "
-                                "WHERE id=%s", (now, doc_id))
-                    stats["delete"] += 1
-                    _log(cur, idgen, batch_no, space_id, doc_id, slug,
-                         "delete", None, now)
+                    try:
+                        cur.execute("UPDATE kb_document SET is_delete=1, update_time=%s "
+                                    "WHERE id=%s", (now, doc_id))
+                        cur.execute(
+                            "UPDATE kb_document_chunk SET is_delete=1, update_time=%s "
+                            "WHERE document_id=%s AND is_delete=0",
+                            (now, doc_id),
+                        )
+                        stats["delete"] += 1
+                        _log(cur, idgen, batch_no, space_id, doc_id, slug,
+                             "delete", None, now)
+                    except Exception as e:              # noqa: BLE001
+                        stats["fail"] += 1
+                        _log(cur, idgen, batch_no, space_id, doc_id, slug,
+                             "delete", None, now, status="fail", message=str(e))
+                        print(f"[error] 软删失败 {slug}: {e}")
 
             # ---- 标签 ----
             _sync_tags(cur, idgen, space_id, docs, slug_to_id, args.operator, now)
@@ -420,11 +569,18 @@ def sync_to_db(docs, rels, args):
             # ---- 关系 ----
             _sync_relations(cur, idgen, space_id, rels, slug_to_id, args.operator, now)
 
+            summary = " ".join(f"{k}={v}" for k, v in stats.items())
+            batch_status = "fail" if stats["fail"] > 0 else "success"
+            _log(cur, idgen, batch_no, space_id, None, None, "batch", None, now,
+                 status=batch_status, message=summary)
+
         conn.commit()
-        print("\n同步完成：", " ".join(f"{k}={v}" for k, v in stats.items()))
-        return 0
+        print(f"\n同步完成 batch={batch_no}：{summary}")
+        return 1 if stats["fail"] > 0 else 0
     except Exception as e:                          # noqa: BLE001
         conn.rollback()
+        if "space_id" in locals():
+            _persist_batch_fail(args, batch_no, space_id, str(e))
         print(f"[error] 同步失败，已回滚：{e}")
         return 1
     finally:
@@ -458,12 +614,44 @@ def _domain(d: "Doc") -> str | None:
     return None
 
 
-def _log(cur, idgen, batch_no, space_id, doc_id, path, action, chash, now):
+def _truncate_message(message: str | None, max_len: int = 512) -> str | None:
+    if message is None:
+        return None
+    text = str(message)
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 1] + "…"
+
+
+def _persist_batch_fail(args, batch_no, space_id, message: str) -> None:
+    """主事务回滚后，单独连接写入批次级 fail 日志（KBOPS-1）。"""
+    try:
+        import pymysql
+    except ImportError:
+        return
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        conn = pymysql.connect(
+            host=args.host, port=args.port, user=args.user,
+            password=args.password, database=args.db, charset="utf8mb4",
+            autocommit=True,
+        )
+        with conn.cursor() as cur:
+            _log(cur, IdGen(), batch_no, space_id, None, None, "batch", None, now,
+                 status="fail", message=message)
+        conn.close()
+    except Exception as e:                          # noqa: BLE001
+        print(f"[warn] 无法写入批次失败日志：{e}")
+
+
+def _log(cur, idgen, batch_no, space_id, doc_id, path, action, chash, now,
+         status: str = "success", message: str | None = None):
     cur.execute(
         "INSERT INTO kb_sync_log (id, batch_no, space_id, document_id, source_path, "
         "action, content_hash, status, message, create_time) VALUES "
-        "(%s,%s,%s,%s,%s,%s,%s,'success',NULL,%s)",
-        (idgen.next(), batch_no, space_id, doc_id, path, action, chash, now))
+        "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        (idgen.next(), batch_no, space_id, doc_id, path, action, chash,
+         status, _truncate_message(message), now))
 
 
 def _sync_tags(cur, idgen, space_id, docs, slug_to_id, operator, now):
@@ -502,6 +690,41 @@ def _sync_tags(cur, idgen, space_id, docs, slug_to_id, operator, now):
                 "VALUES (%s,%s,%s)", (idgen.next(), doc_id, tid))
 
 
+def _sync_chunks(cur, idgen, document_id: int, d: "Doc", space_id: int,
+                 category_id, operator: int, now: str) -> int:
+    """全量重建单篇文档的 chunk 行。返回写入段数。"""
+    cur.execute(
+        "UPDATE kb_document_chunk SET is_delete=1, update_time=%s "
+        "WHERE document_id=%s AND is_delete=0",
+        (now, document_id),
+    )
+    drafts = split_markdown_body(d.body)
+    if not drafts:
+        drafts = split_markdown_body(d.body or d.title or d.slug)
+    for ch in drafts:
+        cid = idgen.next()
+        cur.execute(
+            "INSERT INTO kb_document_chunk (id, create_id, create_time, update_id, "
+            "update_time, document_id, space_id, slug, kb_type, category_id, status, "
+            "chunk_index, heading, heading_level, content, char_count, content_hash, "
+            "is_delete) VALUES "
+            "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0)",
+            (cid, operator, now, operator, now, document_id, space_id, d.slug,
+             d.kb_type, category_id, d.status, ch.chunk_index, ch.heading,
+             ch.heading_level, ch.content, ch.char_count, ch.content_hash),
+        )
+    return len(drafts)
+
+
+def _chunk_count(cur, document_id: int) -> int:
+    cur.execute(
+        "SELECT COUNT(*) FROM kb_document_chunk WHERE document_id=%s AND is_delete=0",
+        (document_id,),
+    )
+    row = cur.fetchone()
+    return int(row[0]) if row else 0
+
+
 def _sync_relations(cur, idgen, space_id, rels, slug_to_id, operator, now):
     # 先清掉本空间旧关系（全量重建，保持与 wiki 一致）
     cur.execute("DELETE FROM kb_relation WHERE space_id=%s", (space_id,))
@@ -532,6 +755,108 @@ def resolve_wiki_dir(path_arg: str) -> Path:
 
 def purge_raw_archive(args) -> int:
     """Soft-delete legacy rows imported with source='raw' (removed L1 pipeline)."""
+    return _purge_by_source(args, source="raw", label="purge-raw-archive")
+
+
+def purge_manual_web(args) -> int:
+    """Soft-delete legacy Web MySQL-only rows (source='manual' or unset source without wiki slug)."""
+    import pymysql
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = pymysql.connect(
+        host=args.host,
+        port=args.port,
+        user=args.user,
+        password=args.password,
+        database=args.db,
+        charset="utf8mb4",
+        autocommit=False,
+    )
+    where = (
+        "is_delete=0 AND (source='manual' OR "
+        "(source IS NULL AND (slug IS NULL OR slug='')))"
+    )
+    try:
+        with conn.cursor() as cur:
+            if args.space:
+                cur.execute(
+                    "SELECT id FROM kb_space WHERE space_code=%s AND is_delete=0",
+                    (args.space,),
+                )
+                row = cur.fetchone()
+                if not row:
+                    print(f"[error] 找不到空间 space_code={args.space}")
+                    return 3
+                space_id = row[0]
+                cur.execute(
+                    f"SELECT COUNT(*) FROM kb_document WHERE space_id=%s AND {where}",
+                    (space_id,),
+                )
+            else:
+                cur.execute(f"SELECT COUNT(*) FROM kb_document WHERE {where}")
+
+            count = cur.fetchone()[0]
+            if args.dry_run:
+                print(f"purge-manual-web (dry-run): would soft-delete {count} rows"
+                      + (f" (space={args.space})" if args.space else " (all spaces)"))
+                _print_manual_purge_sample(cur, args.space)
+                return 0
+
+            if count == 0:
+                print("purge-manual-web: 0 rows (nothing to do)")
+                return 0
+
+            if args.space:
+                cur.execute(
+                    f"UPDATE kb_document SET is_delete=1, update_time=%s "
+                    f"WHERE space_id=%s AND {where}",
+                    (now, space_id),
+                )
+            else:
+                cur.execute(
+                    f"UPDATE kb_document SET is_delete=1, update_time=%s WHERE {where}",
+                    (now,),
+                )
+            print(f"purge-manual-web: {count} rows soft-deleted"
+                  + (f" (space={args.space})" if args.space else " (all spaces)"))
+        conn.commit()
+        return 0
+    except Exception as e:  # noqa: BLE001
+        conn.rollback()
+        print(f"[error] purge-manual-web 失败，已回滚：{e}")
+        return 1
+    finally:
+        conn.close()
+
+
+def _print_manual_purge_sample(cur, space_code, limit: int = 10) -> None:
+    """Print a few rows that would be purged (dry-run helper)."""
+    base_where = (
+        "(source='manual' OR (source IS NULL AND (slug IS NULL OR slug='')))"
+    )
+    if space_code:
+        cur.execute(
+            "SELECT d.id, d.slug, d.title, d.source FROM kb_document d "
+            "JOIN kb_space s ON s.id=d.space_id "
+            f"WHERE s.space_code=%s AND d.is_delete=0 AND {base_where} "
+            "ORDER BY d.update_time DESC LIMIT %s",
+            (space_code, limit),
+        )
+    else:
+        cur.execute(
+            f"SELECT id, slug, title, source FROM kb_document "
+            f"WHERE is_delete=0 AND {base_where} ORDER BY update_time DESC LIMIT %s",
+            (limit,),
+        )
+    rows = cur.fetchall()
+    if not rows:
+        return
+    print("  sample:")
+    for row in rows:
+        print(f"    id={row[0]} slug={row[1]!r} source={row[3]!r} title={row[2]!r}")
+
+
+def _purge_by_source(args, source: str, label: str) -> int:
     import pymysql
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -557,21 +882,21 @@ def purge_raw_archive(args) -> int:
             space_id = row[0]
             cur.execute(
                 "SELECT COUNT(*) FROM kb_document "
-                "WHERE space_id=%s AND source='raw' AND is_delete=0",
-                (space_id,),
+                "WHERE space_id=%s AND source=%s AND is_delete=0",
+                (space_id, source),
             )
             count = cur.fetchone()[0]
             cur.execute(
                 "UPDATE kb_document SET is_delete=1, update_time=%s "
-                "WHERE space_id=%s AND source='raw' AND is_delete=0",
-                (now, space_id),
+                "WHERE space_id=%s AND source=%s AND is_delete=0",
+                (now, space_id, source),
             )
-            print(f"purge-raw-archive: {count} rows (space={args.space})")
+            print(f"{label}: {count} rows (space={args.space})")
         conn.commit()
         return 0
     except Exception as e:  # noqa: BLE001
         conn.rollback()
-        print(f"[error] purge 失败，已回滚：{e}")
+        print(f"[error] {label} 失败，已回滚：{e}")
         return 1
     finally:
         conn.close()
@@ -596,10 +921,29 @@ def main():
         action="store_true",
         help="软删 source='raw' 的遗留归档行（已废弃的 L1 直写 DB，与 wiki 同步无关）",
     )
+    ap.add_argument(
+        "--purge-manual-web",
+        action="store_true",
+        help="软删 Web 直连 MySQL 遗留行（source=manual 或无 slug 的 NULL source）",
+    )
+    ap.add_argument(
+        "--all-spaces",
+        action="store_true",
+        help="与 --purge-manual-web 联用：清理全部空间（忽略 --space）",
+    )
+    ap.add_argument(
+        "--allow-uncategorized",
+        action="store_true",
+        help="允许未分类文档通过 Sync（不推荐；仅应急）",
+    )
     args = ap.parse_args()
 
     if args.purge_raw_archive:
         return purge_raw_archive(args)
+    if args.purge_manual_web:
+        if args.all_spaces:
+            args.space = None
+        return purge_manual_web(args)
 
     wiki_dir = resolve_wiki_dir(args.wiki_dir)
     rel_prefix = wiki_dir.name
@@ -614,7 +958,7 @@ def main():
 
     if args.dry_run:
         report_dry_run(docs, rels, wiki_dir)
-        return 0
+        return check_uncategorized_before_sync(docs, wiki_dir, None, args)
     return sync_to_db(docs, rels, args)
 
 

@@ -3,16 +3,24 @@
 **Languages / 语言 / 言語**: [中文](ARCHITECTURE.md) | [English](../en/ARCHITECTURE.md) | [日本語](../ja/ARCHITECTURE.md)
 
 > 本文档描述「外部请求 ↔ 网关 ↔ 服务 A ↔ 服务 B」全链路所采用的技术栈、调用方式与鉴权方式。
-> 映射到本项目：**服务 A = order-server / bi-server**（业务服务），**服务 B = user-center-server**（用户中心，被调方）。
+> 映射到本项目：**服务 A = order-server / ai-server**（业务服务），**服务 B = user-center-server**（用户中心，被调方）。
 
 ---
 
 ## 1. 链路全景
 
-> **可视化架构图（draw.io，可编辑）**：[`docs/diagrams/`](../diagrams/README.md)  
-> - [容器架构图](../diagrams/moli-container-architecture.drawio)  
-> - [鉴权流程图](../diagrams/moli-auth-flow.drawio)  
-> - [知识库同步双轨图](../diagrams/moli-knowledge-sync.drawio)
+> **可视化架构图（draw.io，可编辑）**：[`docs/diagrams/`](../diagrams/README.md)
+
+![全项目容器架构](../diagrams/png/moli-container-architecture.png)
+
+> 可编辑源文件：[moli-container-architecture.drawio](../diagrams/moli-container-architecture.drawio)
+
+![业务请求鉴权时序](../diagrams/png/moli-auth-flow.png)
+
+> 可编辑源文件：[moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio) · [网关路由](../diagrams/moli-gateway-routes.drawio) · [部署拓扑](../diagrams/moli-deploy-topology.drawio) · [知识库同步](../diagrams/moli-knowledge-sync.drawio)
+
+<details>
+<summary>ASCII 备查（链路简图）</summary>
 
 ```
 meiling-ui (浏览器)
@@ -21,22 +29,25 @@ meiling-ui (浏览器)
 moli-gateway :21000            Spring Cloud Gateway（路由/限流/CORS）
    │  lb://<service>  +  StripPrefix=1
    ▼
-order-server / bi-server       Shiro authc 校验会话（共享 Redis Session）
+order-server / ai-server       Shiro authc 校验会话（共享 Redis Session）
    │  Dubbo RPC（version=1.0.0, group=moli）
    ▼
-user-center-server :1127       Dubbo Provider → 业务处理
+user-center-server :8888       Dubbo Provider → 业务处理
    │
    ▼
 Redis（共享 Session/缓存）   /   MySQL（业务与权限数据）
 ```
 
-时序：
+</details>
+
+<details>
+<summary>Mermaid 备查（时序图）</summary>
 
 ```mermaid
 sequenceDiagram
     participant UI as meiling-ui
     participant GW as moli-gateway
-    participant A as order/bi-server (服务A)
+    participant A as order/ai-server (服务A)
     participant B as user-center-server (服务B)
     participant R as Redis
 
@@ -50,6 +61,8 @@ sequenceDiagram
     A-->>GW: MoliResult<T>
     GW-->>UI: JSON
 ```
+
+</details>
 
 ---
 
@@ -83,7 +96,12 @@ sequenceDiagram
 |----------|----------|------|
 | `/UserCenter/**` | `lb://user-center-server` | `StripPrefix=1` |
 | `/OrderServer/**` | `lb://order-server` | `StripPrefix=1` |
-| `/BiServer/**` | `lb://bi-server` | `StripPrefix=1` |
+| `/AiServer/**` | `lb://ai-server` | `StripPrefix=1` |
+| `/KnowledgeServer/**` | `lb://knowledge-server` | `StripPrefix=1` |
+
+![网关路由一览](../diagrams/png/moli-gateway-routes.png)
+
+> 可编辑源文件：[moli-gateway-routes.drawio](../diagrams/moli-gateway-routes.drawio)
 
 > `StripPrefix=1` 去掉第一段前缀，例如 `/UserCenter/user/list` → 转发 `/user/list`。
 
@@ -91,6 +109,12 @@ sequenceDiagram
 
 - 通过 Nacos 服务名 + Ribbon 选实例。
 - 透传 `Authorization` 头，供下游 Shiro 还原会话。
+
+### 3.2.1 秒杀链路（order-server）
+
+![秒杀全链路](../diagrams/png/moli-seckill-flow.png)
+
+> 可编辑源文件：[moli-seckill-flow.drawio](../diagrams/moli-seckill-flow.drawio) · 压测说明见 [`docs/test/README.md`](../test/README.md)
 
 ### 3.3 服务 A ↔ 服务 B（Dubbo RPC，统一方式）
 
@@ -117,7 +141,7 @@ public class UserServerProvider implements UserCenterServer {
 }
 ```
 
-- **消费方**：`order-server` / `bi-server` 依赖 `moli-user-center-shiro-starter`（传递依赖 `moli-user-center-api`），Starter 自动装配会话校验，无需手动 `@ComponentScan`：
+- **消费方**：`order-server` / `ai-server` 依赖 `moli-user-center-shiro-starter`（传递依赖 `moli-user-center-api`），Starter 自动装配会话校验，无需手动 `@ComponentScan`：
 
 ```xml
 <dependency>
@@ -147,6 +171,13 @@ public class UserServerProvider implements UserCenterServer {
 
 ## 4. 鉴权方式（分层）
 
+![鉴权分层](../diagrams/png/moli-auth-layers.png)
+
+> 可编辑源文件：[moli-auth-layers.drawio](../diagrams/moli-auth-layers.drawio) · 运行时流程见 [moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
+<details>
+<summary>Mermaid 备查（分层流程）</summary>
+
 ```mermaid
 flowchart TB
     L1[1. 网关层：限流 / CORS / 黑白名单]
@@ -157,6 +188,8 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
     L2 --> L5
 ```
+
+</details>
 
 | 层级 | 机制 | 实现 |
 |------|------|------|
@@ -191,7 +224,14 @@ flowchart TB
 
 ## 6. 单点登录链路（统一经 user-center）
 
-**登录 / 登出 / SSO 只在 user-center-server 完成**，order/bi 仅校验 user-center 写入的共享 Session。
+**登录 / 登出 / SSO 只在 user-center-server 完成**，order/ai 仅校验 user-center 写入的共享 Session。
+
+![用户中心与跨服务 Session](../diagrams/png/moli-user-center-position.png)
+
+> 可编辑源文件：[moli-user-center-position.drawio](../diagrams/moli-user-center-position.drawio)
+
+<details>
+<summary>ASCII 备查（SSO 步骤）</summary>
 
 ```
 1. 前端 POST /UserCenter/login  →  网关  →  user-center-server LoginController
@@ -201,6 +241,8 @@ flowchart TB
 5. 网关  →  order-server  →  shiro-starter 从 Redis 还原 Session（不在业务服务登录）
 6. Dubbo getUserById / getPermissionsByUserId  →  user-center-server
 ```
+
+</details>
 
 各业务服务与 user-center **共用同一 Redis**，同一 sessionId 可在 user-center / order / bi 间通用。
 
@@ -232,8 +274,12 @@ flowchart TB
 
 ## 9. 启动顺序
 
-1. Nacos（`:8848`）、Redis、MySQL
-2. `moli-gateway`（`:21000`）
-3. `user-center-server`（`:1127`，Dubbo `20881`）
-4. `order-server`（`:8087`，Dubbo `20882`）、`bi-server`（`:1128`，Dubbo `20883`）
-5. 前端 `meiling-ui` 代理指向 `http://localhost:21000/UserCenter`
+![本地部署拓扑](../diagrams/png/moli-deploy-topology.png)
+
+> 可编辑源文件：[moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio) · 操作细节见 [`kb/wiki-moli/guides/本地启动指南`](../../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md)
+
+1. **基础设施**：Nacos（`:8848`）、MySQL（`:3306`）、Redis（`:6379`，db=2）
+2. **user-center-server**（`:8888`，Dubbo `20881`）—— 权限中枢，须先于业务服务
+3. **order-server**（`:8087`，Dubbo `20882`）、**ai-server**（`:1128`，Dubbo `20883`）、**knowledge-server**（`:8090`，可选）
+4. **moli-gateway**（`:21000`）—— 统一入口，建议最后启动
+5. 前端 **meiling-ui** 代理指向 `http://localhost:21000`

@@ -33,3 +33,18 @@ build/
 # system ignore
 .DS_Store
 Thumbs.db
+
+# 生产环境本地配置（含密钥与 pro yaml，勿提交）
+/pro/
+**/application-pro.yml
+**/application-pro.yaml
+**/conf/moli-*.env
+!deploy/application-pro/*.yml.example
+!deploy/linux/*.env.example
+
+# Certify サーティファイ 考试语料（本地维护，不推送 GitHub）
+moli-knowledge/kb/raw/school/certify/
+moli-knowledge/kb/wiki-jp-exam/certify/
+
+# KB eval reports (local artifacts)
+moli-knowledge/kb/eval/reports/

@@ -31,13 +31,28 @@
 | `02_seckill_schema.sql` | 秒杀压测表（在 moli.sql 之后追加） |
 | `03_knowledge_schema.sql` | 企业知识库表（在 moli.sql 之后追加） |
 | [`KNOWLEDGE_SCHEMA.md`](KNOWLEDGE_SCHEMA.md) | 知识库表结构设计说明 + ER 关系图 |
+| [`USER_CENTER_SCHEMA.md`](USER_CENTER_SCHEMA.md) | **用户中心**表结构（sys_* + operation_*） |
 | [`KNOWLEDGE_SCHEMA_ER.png`](KNOWLEDGE_SCHEMA_ER.png) | ER 关系图 PNG（任意 MD 阅读器可看） |
 | `04_knowledge_menu.sql` | 知识库菜单 + sys_action 动作（在 03 之后追加） |
 | `05_knowledge_action_patch.sql` | 已有环境修正 sys_action 分组（空间 CRUD / 体检+同步） |
 | `06_remove_kb_admin.sql` | 移除废弃的 kb:admin 动作与菜单 906 |
 | `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 04_knowledge_menu 之后追加） |
-| `07_kb_space_ops_manual.sql` | **茉莉系统操作手册**独立空间 `moli-ops-manual` + 成员示例 |
-| `07_kb_space_ops_manual_fix_charset.sql` | 修复 `moli-ops-manual` 因错误导入导致的中文乱码 |
+| `07_kb_space_ops_manual.sql` | **茉莉系统手册**独立空间 `moli-ops-manual` + 成员示例 |
+| `07_kb_space_ops_manual_fix_charset.sql` | 修复乱码或刷新 `moli-ops-manual` 空间名为「茉莉系统手册」 |
+| `08_kb_ingest_workbench.sql` | Ingest 工作台表（job/plan/draft 等） |
+| `09_kb_ingest_t15e.sql` | Ingest T15e 增量字段 |
+| `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug` + 三空间目录种子（已有库必跑） |
+| `15_kb_category_drop_default_type.sql` | 删除已废弃列 `kb_category.default_type`（体裁仅 frontmatter `type:`） |
+| `11_kb_category_enterprise_trim.sql` | **enterprise-kb 精简为 3 类**（软删 guides/services/outputs） |
+| `13_kb_category_enterprise_topic.sql` | **enterprise-kb 方案 B**：新建 **11** 个主题分类（id 141–**151**，含 `bigdata`）；§2 软删旧类见下 |
+| `14_kb_category_bigdata.sql` | **增量**：仅补 `bigdata` 分类（已跑旧 §1 且无 151 时用） |
+| `13_kb_category_enterprise_topic_retire_old.sql` | Sync 后**物理删除** enterprise-kb 旧三类 concepts/articles/interview |
+| （脚本）`moli-knowledge/kb/tools/seed_enterprise_kb_topic_categories.py` | 与 `13_…sql` §1 等价；`--execute` 写库，`--retire-old` 软删旧类 |
+| `14_kb_space_member_enterprise.sql` | enterprise-kb 成员：superadmin/admin/editor 演示账号 |
+| `11_kb_wiki_govern_menu.sql` | Wiki 治理菜单 + `kb:wiki:govern` 动作 |
+| `11_kb_platform_llm_config.sql` | **T19** 平台 LLM 配置表 `kb_platform_llm_config` |
+| `12_kb_platform_llm_menu.sql` | **T19** 系统管理菜单「知识库 LLM」+ `kb:platform:llm` |
+| `16_kb_import_entry_menu.sql` | **T20** Ingest Tab1 · `kb:ingest:rawUpload` 动作 + 角色 2/3 授权 |
 
 ## 新环境初始化
 
@@ -54,6 +69,7 @@
 | `operation_component_deploy_info` | 8 | 是 |
 | `operation_platform_info` | 6 | 是 |
 | `operation_project_deploy_info` | 6 | 是 |
+| `operation_project_component` | 6 | 是 |
 | `operation_server_component` | 10 | 是 |
 | `operation_server_info` | 6 | 是 |
 | `operation_server_project` | 6 | 是 |
@@ -62,12 +78,12 @@
 | `sys_dict_data` | 35 | 是 |
 | `sys_dict_type` | 12 | 是 |
 | `sys_login_log` | 39 | 否（审计表） |
-| `sys_menu` | 31 | 是 |
+| `sys_menu` | 32 | 是 |
 | `sys_operation_log` | 166 | 否（审计表） |
 | `sys_post` | 39 | 是 |
 | `sys_role` | 10 | 是 |
 | `sys_role_action` | 56 | 是 |
-| `sys_role_menu` | 45 | 是 |
+| `sys_role_menu` | 47 | 是 |
 | `sys_system` | 35 | 是 |
 | `sys_user` | 33 | 是 |
 | `sys_user_post` | 1 | 是 |

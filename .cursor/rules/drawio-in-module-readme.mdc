@@ -1,0 +1,15 @@
+---
+description: Module READMEs — link or create draw.io for architecture sections
+globs: moli-*/README.md
+alwaysApply: false
+---
+
+# draw.io in moli-*/README.md
+
+Each microservice README is the **first draft** for that service (see root `AGENTS.md` §4).
+
+If the README includes architecture, deployment, or call-chain sections:
+
+1. Use `.cursor/skills/drawio-diagrams/SKILL.md` — do not leave ASCII diagrams as the main figure
+2. Put sources in `docs/diagrams/`; README links to PNG + `.drawio`
+3. Point full design docs to `docs/design/` or `docs/zh-CN/ARCHITECTURE.md`

@@ -154,7 +154,9 @@ moli-knowledge-server/
 | GET | `/graph/ego?spaceId=&docId=&depth=&maxNodes=` | 以 `docId` 为中心 BFS（depth 1~3，逐层查 `kb_relation`，不加载全图）。供点击节点展开邻居。返回同 `GraphVo` |
 | GET | `/lint?spaceId=` | 体检（只算不落库）：断链 / 孤儿页 / 缺摘要，返回 `LintVo{broken,orphans,noSummary,counts}` |
 | POST | `/lint/scan?spaceId=` | 体检并落库 `kb_lint_issue`（清旧待处理项后重建），返回同 `LintVo` |
-| GET | `/lint/issues?spaceId=&status=` | 查询已落库体检问题（status：0待处理/1已忽略/2已修复），返回 `KbLintIssue[]` |
+| GET | `/lint/scan/status?spaceId=` | 定时 scan 是否开启 + 最近 scan 时间（只读） |
+| GET | `/lint/issues?spaceId=&status=&pageNum=&pageSize=` | 查询已落库体检问题（**分页** Page），支持 `resolved`/`unassignedOnly` |
+| PUT | `/lint/issues/batch` | 统一批量更新 status/assignee/priority（O7/O8） |
 | PUT | `/lint/issue/{id}?status=` | 更新某条体检问题状态 |
 
 ### 问答 Query `/kb`（T2）
@@ -190,12 +192,21 @@ moli-knowledge-server/
 ### 请求示例
 ```bash
 # 搜索文档（MySQL ngram 全文索引，失败自动降级 LIKE）
-GET /kb/document/search?spaceId=900000000000000001&keyword=上手
+GET /kb/document/search?spaceId=900000000000000001&source=kb&keyword=上手
 
-# 保存文档
-POST /kb/document
-{ "spaceId": 900000000000000001, "categoryId": 900000000000000103,
-  "title": "新文档", "content": "# Hello", "status": 0 }
+# 编辑正文（唯一写路径）
+PUT /kb/wiki/page
+{ "slug": "guides/xxx", "spaceId": 900000000000000001, "content": "---\n...\n---\n\n# ..." }
+# 已有页 enrich（追加 patch + log/index/edges，可选 sync）
+POST /kb/wiki/enrich
+{ "slug": "guides/xxx", "spaceId": 900000000000000001, "patch": "## 补充\n\n...", "dryRun": false, "appendLog": true, "sync": true }
+# Web：Wiki 编辑页工具栏「Enrich 治理」→ 预览合并 → 应用（meiling-ui KnowledgeWikiEditView）
+# CLI：python kb/tools/enrich.py --slug guides/xxx --patch-file patch.md --apply
+# 然后 POST /kb/sync/trigger 或 sync_to_db.py（enrich 请求 sync:true 时可省略）
+# 空间级文件 Lint（文件真值，T16a；治理工作台 / Sync 前门禁）
+POST /kb/wiki/lint-space
+{ "spaceId": 900000000000000001, "strict": false }
+# CLI 等价：python kb/tools/lint.py --wiki-dir wiki --json /tmp/lint.json
 ```
 
 ---

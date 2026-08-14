@@ -11,6 +11,10 @@ spring:
     timeout-per-shutdown-phase: 30s
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: ${OPS_UPLOAD_MAX_FILE_SIZE:200MB}
+      max-request-size: ${OPS_UPLOAD_MAX_REQUEST_SIZE:210MB}
 
 captcha:
   enabled: false
@@ -23,3 +27,55 @@ sso:
   ticket-ttl-seconds: 60
   entry-path: /sso/login
   shared-secret: ${SSO_SHARED_SECRET:}
+
+ops:
+  secret:
+    key: ${OPS_SECRET_KEY:}
+  health:
+    probe-enabled: ${OPS_HEALTH_PROBE_ENABLED:true}
+    probe-cron: ${OPS_HEALTH_PROBE_CRON:0 0/15 * * * ?}
+    probe-parallelism: ${OPS_HEALTH_PROBE_PARALLELISM:8}
+    probe-timeout-seconds: ${OPS_HEALTH_PROBE_TIMEOUT_SECONDS:120}
+  deploy:
+    enabled: ${OPS_DEPLOY_ENABLED:false}
+    deploy-root: ${OPS_DEPLOY_ROOT:/opt/moli-project-distribute}
+    script-path: ${OPS_DEPLOY_SCRIPT:}
+    timeout-seconds: 15
+    status-sync-mode: ${OPS_DEPLOY_STATUS_SYNC_MODE:ssh}
+    allow-local: ${OPS_DEPLOY_ALLOW_LOCAL:false}
+    services:
+      - key: user-center
+        label: 用户中心
+        aliases: [user-center, moli-user-center, user-center-server, moli-server]
+      - key: gateway
+        label: 网关
+        aliases: [gateway, moli-gateway]
+      - key: knowledge
+        label: 知识库
+        aliases: [knowledge, moli-knowledge, knowledge-server]
+      - key: order
+        label: 订单服务
+        aliases: [order, moli-order]
+      - key: ai
+        label: AI 服务
+        aliases: [ai, moli-ai, ai-server]
+  ssh:
+    connect-timeout-ms: ${OPS_SSH_CONNECT_TIMEOUT_MS:5000}
+    command-timeout-seconds: ${OPS_SSH_COMMAND_TIMEOUT:120}
+    default-port: ${OPS_SSH_DEFAULT_PORT:22}
+    default-user: ${OPS_SSH_DEFAULT_USER:ubuntu}
+    strict-host-key-checking: ${OPS_SSH_STRICT_HOST_KEY:false}
+  task:
+    pool-size: ${OPS_TASK_POOL_SIZE:2}
+    log-max-chars: ${OPS_TASK_LOG_MAX_CHARS:1000000}
+    retention-days: ${OPS_TASK_RETENTION_DAYS:7}
+  upload:
+    enabled: ${OPS_UPLOAD_ENABLED:false}
+    temp-dir: ${OPS_UPLOAD_TEMP_DIR:}
+    max-bytes: ${OPS_UPLOAD_MAX_BYTES:209715200}
+    allowed-paths: ${OPS_UPLOAD_ALLOWED_PATHS:/opt/moli/frontend/,/opt/moli-project-distribute/}
+    allow-any-under: ${OPS_UPLOAD_ALLOW_ANY_UNDER:/opt/,/home/ubuntu/}
+  command:
+    enabled: ${OPS_COMMAND_ENABLED:false}
+    max-chars: ${OPS_COMMAND_MAX_CHARS:8192}
+    default-work-dir: ${OPS_COMMAND_DEFAULT_WORK_DIR:/opt/moli-project-distribute}

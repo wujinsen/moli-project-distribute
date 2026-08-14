@@ -22,6 +22,18 @@ public class CategoryTreeVo {
     @ApiModelProperty("分类名称")
     private String categoryName;
 
+    @ApiModelProperty("图标")
+    private String icon;
+
+    @ApiModelProperty("绑定的 wiki 子目录名")
+    private String dirSlug;
+
+    @ApiModelProperty("该分类下文档数（withCount=true；与浏览一致：已发布 source=kb）")
+    private Integer docCount;
+
+    @ApiModelProperty("虚拟节点（如「未分类」）；true 时 id 为 null，dirSlug=uncategorized")
+    private Boolean virtualNode;
+
     @ApiModelProperty("排序")
     private Integer sort;
 

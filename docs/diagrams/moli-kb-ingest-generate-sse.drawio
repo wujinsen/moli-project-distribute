@@ -1,0 +1,88 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="ingest-generate-sse" name="T15f Generate SSE">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="520" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;T15f · Ingest generate 异步 + SSE&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;start 立即返回 taskId · stream 逐页推送 · 同步 POST 保留兼容&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="720" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="lane" value="主路径（推荐）" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="72" width="1320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ui" value="KnowledgeIngest&lt;br&gt;WorkbenchView" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="20" y="48" width="130" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="gw" value="Gateway&lt;br&gt;/KnowledgeServer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="180" y="48" width="110" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="ctrl" value="KbIngestController&lt;br&gt;POST .../generate/start" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="320" y="48" width="170" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="task" value="IngestGenerateTaskService&lt;br&gt;taskId · job=generating" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="520" y="48" width="180" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="async" value="@Async generatePages&lt;br&gt;+ ProgressSink" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="730" y="48" width="150" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="llm" value="KbLlmClient&lt;br&gt;PageWriter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="910" y="48" width="120" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="draft" value="kb_ingest_draft&lt;br&gt;(P0 批量落库)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="1060" y="48" width="130" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="ui2" value="fetch stream&lt;br&gt;GET .../generate/stream" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="20" y="120" width="150" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="sse" value="SSE events&lt;br&gt;page_start · progress · complete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;dashed=1;" vertex="1" parent="lane">
+          <mxGeometry x="200" y="120" width="200" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="review" value="job.status → reviewing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="lane">
+          <mxGeometry x="1060" y="120" width="130" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane" source="ui" target="gw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane" source="gw" target="ctrl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane" source="ctrl" target="task">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane" source="task" target="async">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane" source="async" target="llm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane" source="async" target="draft">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;rounded=0;" edge="1" parent="lane" source="async" target="sse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;endArrow=open;dashed=1;rounded=0;" edge="1" parent="lane" source="sse" target="ui2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane" source="draft" target="review">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lane2" value="兼容路径" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=28;fontStyle=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="296" width="1320" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_ui" value="旧前端 / 脚本" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="lane2">
+          <mxGeometry x="20" y="40" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_api" value="POST .../generate&lt;br&gt;(同步 300s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="lane2">
+          <mxGeometry x="180" y="40" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_note" value="内部复用 generatePages(sink=null)" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;align=left;" vertex="1" parent="lane2">
+          <mxGeometry x="360" y="44" width="280" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;rounded=0;" edge="1" parent="lane2" source="sync_ui" target="sync_api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

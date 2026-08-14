@@ -50,10 +50,12 @@ CREATE TABLE IF NOT EXISTS `kb_category` (
   `parent_id` bigint DEFAULT 0 COMMENT '父分类ID',
   `category_name` varchar(128) NOT NULL COMMENT '分类名称',
   `icon` varchar(64) DEFAULT NULL COMMENT '图标',
+  `dir_slug` varchar(64) DEFAULT NULL COMMENT '绑定的 wiki 子目录名（分类=目录，单一真相源）；空=不绑定目录',
   `sort` int DEFAULT 0 COMMENT '排序',
   `is_delete` int DEFAULT 0 COMMENT '0未删除 1已删除',
   PRIMARY KEY (`id`),
-  KEY `idx_kb_category_space` (`space_id`)
+  KEY `idx_kb_category_space` (`space_id`),
+  UNIQUE KEY `uk_kb_category_dir` (`space_id`, `dir_slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识分类';
 
 -- -------------------------------------------------------------
@@ -229,7 +231,8 @@ CREATE TABLE IF NOT EXISTS `kb_relation` (
 
 -- -------------------------------------------------------------
 -- 11. 体检问题（Lint 结果持久化 + 处理状态）
---     issue_type：broken_link/orphan/no_summary/duplicate/stale/conflict
+--     issue_type：broken_link/orphan/no_summary/duplicate/stale/conflict/
+--                missing_source/bad_type/missing_title/slug_mismatch/missing_dates/missing_concept
 -- -------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `kb_lint_issue` (
   `id` bigint NOT NULL COMMENT '主键',
@@ -238,6 +241,8 @@ CREATE TABLE IF NOT EXISTS `kb_lint_issue` (
   `issue_type` varchar(32) NOT NULL COMMENT '问题类型',
   `detail` varchar(512) DEFAULT NULL COMMENT '问题详情',
   `status` tinyint DEFAULT 0 COMMENT '0待处理 1已忽略 2已修复',
+  `assignee_id` bigint DEFAULT NULL COMMENT '处理人用户ID',
+  `priority` tinyint DEFAULT 0 COMMENT '0普通 1高 2紧急',
   `scan_time` datetime DEFAULT NULL COMMENT '扫描时间',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
@@ -311,14 +316,82 @@ CREATE TABLE IF NOT EXISTS `kb_qa_log` (
   KEY `idx_kb_qa_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识问答日志';
 
+-- -------------------------------------------------------------
+-- 15. 文档切段（/kb/ask 按段召回；sync_to_db 写入）
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `kb_document_chunk` (
+  `id` bigint NOT NULL COMMENT '主键',
+  `create_id` bigint DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `update_id` bigint DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
+  `document_id` bigint NOT NULL COMMENT 'kb_document.id',
+  `space_id` bigint NOT NULL COMMENT '冗余 ACL/filter',
+  `slug` varchar(512) NOT NULL COMMENT '冗余引用',
+  `kb_type` varchar(32) DEFAULT NULL COMMENT '冗余体裁',
+  `category_id` bigint DEFAULT NULL COMMENT '冗余分类',
+  `status` tinyint DEFAULT 1 COMMENT '与文档一致',
+  `chunk_index` int NOT NULL DEFAULT 0 COMMENT '页内顺序',
+  `heading` varchar(255) DEFAULT NULL COMMENT '节标题',
+  `heading_level` tinyint DEFAULT 0 COMMENT '0页首 2=## 3=###',
+  `content` mediumtext NOT NULL COMMENT '切段正文',
+  `char_count` int DEFAULT 0,
+  `content_hash` char(64) DEFAULT NULL COMMENT 'SHA-256',
+  `is_delete` tinyint DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_kb_chunk_document` (`document_id`, `chunk_index`),
+  KEY `idx_kb_chunk_space` (`space_id`),
+  KEY `idx_kb_chunk_slug` (`space_id`, `slug`(191)),
+  FULLTEXT KEY `ftx_kb_document_chunk` (`heading`, `content`) WITH PARSER ngram
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库文档切段';
+
+-- -------------------------------------------------------------
+-- 15. 评测回归记录（AI-3 · Python --emit-db 写、Java 只读）
+--     增量迁移：docs/sql/31_kb_eval_run.sql
+-- -------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `kb_eval_run` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `run_at` datetime NOT NULL COMMENT '报告 time',
+  `strategy` varchar(16) DEFAULT NULL COMMENT 'ngram/hybrid/hybrid-rerank',
+  `use_llm` tinyint(1) NOT NULL DEFAULT 0 COMMENT '检索式0/生成式1',
+  `golden_total` int NOT NULL DEFAULT 0 COMMENT '报告 total',
+  `answerable_total` int NOT NULL DEFAULT 0 COMMENT '可答题数',
+  `negative_total` int NOT NULL DEFAULT 0 COMMENT 'negative 题数',
+  `errors` int NOT NULL DEFAULT 0 COMMENT 'HTTP/请求错误数',
+  `hit1` decimal(5,4) DEFAULT NULL COMMENT 'hit@1',
+  `hit3` decimal(5,4) DEFAULT NULL COMMENT 'hit@3',
+  `hit5` decimal(5,4) DEFAULT NULL COMMENT 'hit@5',
+  `hit8` decimal(5,4) DEFAULT NULL COMMENT 'hit@8',
+  `mrr` decimal(5,4) DEFAULT NULL COMMENT 'MRR',
+  `coverage` decimal(5,4) DEFAULT NULL COMMENT 'coverage',
+  `refusal_accuracy` decimal(5,4) DEFAULT NULL COMMENT '拒答准确率',
+  `p95_ms` int DEFAULT NULL COMMENT 'P95 延迟毫秒',
+  `by_difficulty_json` json DEFAULT NULL COMMENT 'by_difficulty 原样',
+  `report_path` varchar(255) DEFAULT NULL COMMENT 'kb/eval/reports 相对路径',
+  `git_sha` varchar(64) DEFAULT NULL COMMENT '关联 git 提交',
+  `gate_pass` tinyint(1) DEFAULT NULL COMMENT '§1.2 门禁是否通过',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '落库时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_kb_eval_run_at` (`run_at`),
+  KEY `idx_kb_eval_strategy_run` (`strategy`, `run_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库评测回归记录';
+
 -- =============================================================
 -- 演示种子数据
 -- =============================================================
 INSERT INTO `kb_space` VALUES (900000000000000001, 1, NOW(), 1, NOW(), 'enterprise-kb', '企业知识库', '公司级知识沉淀与协作空间', 'book-open', 2, 1, 1, 1, 0);
 
-INSERT INTO `kb_category` VALUES (900000000000000101, 1, NOW(), 1, NOW(), 900000000000000001, 0, '产品文档', NULL, 1, 0);
-INSERT INTO `kb_category` VALUES (900000000000000102, 1, NOW(), 1, NOW(), 900000000000000001, 0, '研发规范', NULL, 2, 0);
-INSERT INTO `kb_category` VALUES (900000000000000103, 1, NOW(), 1, NOW(), 900000000000000001, 900000000000000101, '需求说明', NULL, 1, 0);
+-- 分类=目录（单一真相源）：enterprise-kb 仅 3 类，与 wiki/ 一级目录一致
+INSERT INTO `kb_category`
+  (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`sort`,`is_delete`)
+VALUES
+  (900000000000000113, 1, NOW(), 1, NOW(), 900000000000000001, 0, '概念',     NULL, 'concepts',  1, 0),
+  (900000000000000114, 1, NOW(), 1, NOW(), 900000000000000001, 0, '技术文章', NULL, 'articles',  2, 0),
+  (900000000000000115, 1, NOW(), 1, NOW(), 900000000000000001, 0, '面试题',   NULL, 'interview', 3, 0)
+ON DUPLICATE KEY UPDATE
+  `category_name` = VALUES(`category_name`),
+  `sort`          = VALUES(`sort`),
+  `is_delete`     = 0;
 
 INSERT INTO `kb_tag` VALUES (900000000000000201, 1, NOW(), 1, NOW(), 900000000000000001, '入门', '#409EFF', 0);
 INSERT INTO `kb_tag` VALUES (900000000000000202, 1, NOW(), 1, NOW(), 900000000000000001, '最佳实践', '#67C23A', 0);
@@ -328,7 +401,7 @@ INSERT INTO `kb_document`
    `slug`,`source`,`source_path`,`content_hash`,`title`,`summary`,`content`,
    `doc_type`,`kb_type`,`domain`,`status`,`view_count`,`like_count`,`version_no`,`publish_time`,`is_delete`)
 VALUES
-  (900000000000000301, 1, NOW(), 1, NOW(), 900000000000000001, 900000000000000103,
+  (900000000000000301, 1, NOW(), 1, NOW(), 900000000000000001, 900000000000000113,
    'kb-quickstart', 'manual', NULL, NULL, '知识库快速上手', '介绍企业知识库的核心功能与使用方式',
    '# 企业知识库\n\n## 功能概览\n- 空间管理\n- 分类树\n- 文档编辑与发布\n- 标签检索\n- 版本历史\n- 评论与收藏',
    'markdown', 'guide', NULL, 1, 0, 0, 1, NOW(), 0);

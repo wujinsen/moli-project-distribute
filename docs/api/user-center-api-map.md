@@ -5,8 +5,8 @@
 
 ## 1. 基本结论
 
-- 控制器数量: 15
-- HTTP 接口数量: 约 70（`GET/POST/PUT/DELETE` 注解统计）
+- 控制器数量: 17
+- HTTP 接口数量: 约 75（`GET/POST/PUT/DELETE` 注解统计）
 - 统一返回: `MoliResult<T>`
 - 分页返回: `PageRes<T>`
 - 鉴权方式: Shiro Session（token 实际为 sessionId）
@@ -36,7 +36,7 @@
 
 ### `SystemController`（前缀 `/system`）
 
-- `GET /system/my`：当前用户可访问系统；`SystemVo` 含 `systemGroup`（门户分组，见 `docs/portal-system-group.md`）
+- `GET /system/my`：当前用户可访问系统；`SystemVo` 含 `systemGroup`（门户分组，见 [`docs/design/portal-system-group.md`](../design/portal-system-group.md)）
 - `POST /system/enter`、`POST /system/switch`：进入/切换系统（同一 Session）；INTERNAL 返回 `menuVoList`；EXTERNAL 返回 `redirectUrl`
   - `SystemEnterVo` 含 `permissions`、`fullPermission`（与 `LoginVo` 对齐）
 - `GET /auth/capabilities`：当前系统上下文 `{ permissions, fullPermission }`；F5 / 缓存缺失时补拉
@@ -101,7 +101,7 @@
 
 ### 菜单管理 `MenuController`（前缀 `/menu`，8个）
 
-- `GET /menu/getRouters`：当前用户菜单树
+- `GET /menu/getRouters`：当前用户菜单树；门户开启时按 Session `currentSystemId` + `sys_menu.system_id` 过滤（**SSO-MENU-1**）；未 enter 返回 **`[]`**（见 [sso-menu-frontend-handoff.md](sso-menu-frontend-handoff.md)）
 - `GET /menu/list`：菜单列表（`menuName`、`status`）；权限 `system:menu:list`
 - `POST /menu`：新增菜单；权限 `system:menu:add` + `system:menu:list`
 - `PUT /menu`：更新菜单；权限 `system:menu:edit` + `system:menu:list`
@@ -149,35 +149,126 @@
 
 ## 4. 运维域接口
 
-### 平台管理 `OperationPlatformController`（前缀 `/operation/platform`，5个）
+### 4.0 前端依赖与 links 契约（2026-07-13）
 
-- `GET /operation/platform/list`：`operation:platform:list`
+| 项 | 状态 | 说明 |
+|----|------|------|
+| `PUT .../project\|component/links` 同步主表 | ✅ | N:N 全量替换 + `server_id`/`server_ip` 对齐首台 |
+| `GET .../links` 与 list `serverIds` | ✅ | N:N 为空时回退 `[serverId]`；与 `OperationRelationQuerySupport` 一致 |
+| `serverCount` / `componentCount` | ✅ 凡 `toVo()` 出口 | **`toVo()` 派生**；`serverCount === serverIds.length`；前端 [operation-frontend-handoff.md](operation-frontend-handoff.md) §0 |
+| 历史脏数据 | 运维一次性 | `GET /operation/audit/reconcile-relations` |
+
+**给后端总览**：[frontend-backend-dependencies.md](frontend-backend-dependencies.md) · [frontend-gaps.md](../frontend-gaps.md)
+
+### 平台管理 `OperationPlatformController`（前缀 `/operation/platform`，6个）
+
+- `GET /operation/platform/list`：`operation:platform:list`；返回 `OperationPlatformVo`（含 `passwordConfigured` / `passwordMask`，无明文）
 - `POST`：`operation:platform:add` + `list`；`PUT`：`edit` + `list`；`DELETE`：`remove` + `list`
-- `GET /operation/platform/{id}`：`operation:platform:list`
+- `GET /operation/platform/{id}`：`operation:platform:list`；返回 VO
+- `GET /operation/platform/{id}/secret`：`operation:secret:view`；返回 `{ password }` 明文（记审计日志）
 
-### 服务器管理 `OperationServerController`（前缀 `/operation/server`，5个）
+### 服务器管理 `OperationServerController`（前缀 `/operation/server`，11个）
 
-- `GET /operation/server/list`
-- `POST /operation/server`
-- `PUT /operation/server`
-- `GET /operation/server/{id}`
-- `DELETE /operation/server/{ids}`
+- `GET /operation/server/list`：`operation:server:list`；返回 `OperationServerVo`（含 `status` / `lastCheckTime` / `projectCount` / `componentCount` / `tags` / `serverRole`）；支持 `projectId`、`componentId` 反向过滤
+- `POST /operation/server`：`operation:server:add` + `list`；**响应 `data` 为新建 `id`（Long）**
+- `PUT /operation/server`：`operation:server:edit` + `list`
+- `GET /operation/server/{id}`：`operation:server:list`；返回 VO（含 **`projectCount` / `componentCount`**）
+- `DELETE /operation/server/{ids}`：`operation:server:remove` + `list`
+- `GET /operation/server/{id}/links`：`operation:server:list`；N:N 项目/组件 ID
+- ~~`GET /operation/server/{id}/topology`~~：**已删除**（SVR-5）；改用 `GET /operation/relations/server/{id}`
+- `POST /operation/server/{id}/check`：`operation:server:list`；TCP 探活，更新并返回 `OperationServerVo`
+- `GET /operation/server/{id}/links`：`operation:server:list`；返回 `OperationServerLinksVo`（`projectIds` / `componentIds`）
+- `PUT /operation/server/{id}/links`：`operation:server:edit` + `list`；全量替换 N:N 关联
+- `PUT /operation/server/{id}/ssh`：`operation:ssh:manage`；保存 SSH 凭据 + `uploadAllowedRoots`（只写不读）
+- `POST /operation/server/{id}/ssh/test`：`operation:ssh:manage`；测试 SSH，返回 `OperationSshTestVo`
 
-### 项目管理 `OperationProjectController`（前缀 `/operation/project`，5个）
+### 项目管理 `OperationProjectController`（前缀 `/operation/project`，9个）
 
-- `GET /operation/project/list`
-- `POST /operation/project`
-- `PUT /operation/project`
-- `GET /operation/project/{id}`
-- `DELETE /operation/project/{ids}`
+- `GET /operation/project/list`：`operation:project:list`；返回 `OperationProjectVo`（含 `serverIds` / `serverCount` / `componentCount` / `expectedPort` / `portMatchStatus` / `deployRunning`）；支持 `serverId`、`componentId` 反向过滤
+- `POST /operation/project`：`operation:project:add` + `list`；body 可传 `serverIds[]`，同步 `operation_server_project`；**响应 `data` 为新建 `id`（Long）**
+- `POST /operation/component`：同上对称；**响应 `data` 为新建 `id`（Long）**
+- `PUT /operation/project`：`operation:project:edit` + `list`
+- `GET /operation/project/{id}`：`operation:project:list`；返回 VO（含 `serverIds`、**`serverCount` / `componentCount`**）
+- `DELETE /operation/project/{ids}`：`operation:project:remove` + `list`
+- `GET /operation/project/{id}/links`：`operation:project:list`；返回 `{ projectId, serverIds }`
+- `GET /operation/project/links/batch?ids=`：`operation:project:list`；逗号分隔最多 50；返回 `{ items: OperationProjectLinksVo[] }`
+- `PUT /operation/project/{id}/links`：`operation:project:edit` + `list`；全量替换 N:N，**并同步主表 `server_id`/`server_ip` 为 `serverIds[0]`**（2026-07-13）
+- `GET /operation/project/{id}/component-links`：`operation:project:list`；返回 `{ projectId, componentIds }`（SVR-26a）
+- `PUT /operation/project/{id}/component-links`：`operation:project:edit` + `list`；全量替换 `operation_project_component`
 
-### 组件管理 `OperationComponentController`（前缀 `/operation/component`，5个）
+### 组件管理 `OperationComponentController`（前缀 `/operation/component`，9个）
 
-- `GET /operation/component/list`
-- `POST /operation/component`
-- `PUT /operation/component`
-- `GET /operation/component/{id}`
-- `DELETE /operation/component/{ids}`
+- `GET /operation/component/list`：`operation:component:list`；返回 `OperationComponentVo`（含 `serverIds` / `serverCount` / `projectCount` / `status` / `lastCheckTime`）；支持 `serverId`（含 N:N）、`projectId` 反向过滤
+- `POST /operation/component`：`operation:component:add` + `list`；body 可传 `serverIds[]`
+- `PUT /operation/component`：`operation:component:edit` + `list`
+- `GET /operation/component/{id}`：`operation:component:list`；返回 VO（含 `serverIds`、**`serverCount` / `projectCount`**）
+- `GET /operation/component/{id}/secret`：`operation:secret:view`
+- `DELETE /operation/component/{ids}`：`operation:component:remove` + `list`
+- `POST /operation/component/{id}/check`：`operation:component:list`；TCP 探活，更新并返回 `OperationComponentVo`
+- `GET /operation/component/{id}/links`：`operation:component:list`；返回 `{ componentId, serverIds }`
+- `GET /operation/component/links/batch?ids=`：`operation:component:list`；逗号分隔最多 50；返回 `{ items: OperationComponentLinksVo[] }`
+- `PUT /operation/component/{id}/links`：`operation:component:edit` + `list`；全量替换 N:N，**并同步主表 `server_id`**（2026-07-13）
+
+> **前端对接专稿**：[operation-frontend.md](operation-frontend.md) · **后端联调通知（给前端）**：[operation-backend-handoff.md](operation-backend-handoff.md)
+> **部署中心 HTTP 契约**：[operation-deploy-api.md](operation-deploy-api.md)（SVR-13~20）  
+> **路线图 / 待办**：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) §5.1
+
+### 运维审计 `OperationAuditController`（前缀 `/operation/audit`，1个）
+
+- `GET /operation/audit/port-matrix`：`operation:project:list`；对照 DB 端口矩阵校验项目/组件端口（SVR-21 后数据源为 `operation_port_matrix`）
+
+### 端口矩阵管理 `OperationPortMatrixController`（前缀 `/operation/port-matrix`，5个 · SVR-21 设计稿）
+
+- `GET /operation/port-matrix/list`：`operation:port-matrix:list`；分页列表
+- `GET /operation/port-matrix/{id}`：`operation:port-matrix:list`
+- `POST /operation/port-matrix`：`operation:port-matrix:add` + `list`
+- `PUT /operation/port-matrix`：`operation:port-matrix:edit` + `list`
+- `DELETE /operation/port-matrix/{ids}`：`operation:port-matrix:remove` + `list`
+
+> 契约：[`operation-port-matrix-api.md`](operation-port-matrix-api.md) · 设计：[`operation-port-matrix-config.md`](../design/operation-port-matrix-config.md)
+
+### 运维统计 `OperationStatsController`（前缀 `/operation`，1个）
+
+- `GET /operation/stats`：`operation:project:list`；台账计数 + 端口不符数 + 健康 DOWN 数（驾驶舱 ops 用）
+
+### 全局拓扑 `OperationTopologyController`（前缀 `/operation/topology`，1个 · SVR-25a）
+
+- `GET /operation/topology`：`operation:server:list`；返回 `OperationTopologyGraphVo`（servers/projects/components 节点 + `deploys`/`depends_on` 边）
+
+### 关联关系 `OperationRelationsController`（前缀 `/operation/relations`，1个 · SVR-28b）
+
+- `GET /operation/relations/{entityType}/{id}`：`operation:project:list`；`entityType` = `server`|`project`|`component`；返回 `OperationRelationsVo`（关联实体 + 最近 5 条任务）
+
+### 部署与发布 `OperationDeployController` / `OperationFileController` / `OperationCommandController` / `OperationTaskController`
+
+> 字段级说明见 **[operation-deploy-api.md](operation-deploy-api.md)**。
+
+**`OperationDeployController`**（`/operation/deploy`）
+
+- `GET /operation/deploy/presets?serverId=`：`operation:server:list`；常用上传路径 + 快捷后置动作 + **`serviceKeys`**
+- `GET /operation/deploy/{serviceKey}/status?serverId=`：`operation:server:list`；SSH 远程或（`allow-local=true` 且 serverId 空）本机 status
+- `POST /operation/deploy/{serviceKey}/{action}`：`operation:deploy:exec` + `list`；同步执行（少用）
+- `POST /operation/deploy/{serviceKey}/{action}/task?serverId=&projectId=`：`operation:deploy:exec` + `list`；异步启停，返回 `taskId`；可选 `projectId` 关联项目台账
+- `POST /operation/deploy/batch/task`：`operation:deploy:exec` + `list`；JSON 批量滚动重启（`steps[]` / `stopOnFailure` / `intervalSeconds`）→ 单父 `deploy_batch` 任务
+
+**`OperationFileController`**（`/operation/file`）
+
+- `POST /operation/file/upload`：`operation:file:upload` + `list`；multipart：`file, serverId, targetPath, postAction?, postCommand?`；`custom` 需 `operation:command:exec`
+
+**`OperationCommandController`**（`/operation/command`）
+
+- `POST /operation/command/exec/task`：`operation:command:exec` + `list`；JSON `{ serverId, command, workDir? }` → `taskId`
+
+**`OperationTaskController`**（`/operation/task`）
+
+- `GET /operation/task/{id}?logOffset=`：`operation:server:list`；轮询进度与增量日志
+- `POST /operation/task/{id}/cancel`：`operation:server:list`；协作式取消 pending/running
+- `GET /operation/task/list`：`operation:server:list`；分页历史（不含大段 log）；可按 `projectId` 过滤
+- `GET /operation/task/groups`：`operation:server:list`；按 `projectId` 分组分页（`tasksPerGroup` 控制组内条数）；可选 `status` 过滤
+
+### 运维健康 `OperationHealthController`（前缀 `/operation/health`，1个）
+
+- `POST /operation/health/probe-all`：`operation:server:list`；**异步**创建 `health_probe` 任务，返回 **`taskId`**（Breaking）；轮询 `GET /operation/task/{id}`；定时调度仍内部同步（`ops.health.probe-enabled` / `ops.health.probe-cron`）
 
 ## 5. 当前可见接口风险（用于迭代排期）
 
@@ -206,6 +297,15 @@
 - 返回结构变更: `insertUserRole` / `addUserRole` / `removeUsers` 成功时 `msg` 含刷新提示
 - 前端联调影响: 无权限时 `code=10009`；角色授权成功需展示 `msg` 并建议用户刷新
 - 回归验证: 非授权角色访问管理接口应被拒绝；授权后刷新可见新菜单
+
+### 2026-07-11 部署中心灵活化（SVR-18~20）
+
+- 新增接口: `GET /operation/deploy/presets`、`POST /operation/command/exec/task`；`POST /operation/file/upload` 增 `postCommand`
+- 变更接口: `PUT /operation/server/{id}/ssh` 增 `uploadAllowedRoots`；上传 `targetPath` 改手输 + 三层路径白名单
+- 鉴权变更: 新增 `operation:command:exec`（`22_operation_command_flex.sql`）
+- 配置变更: `ops.command.enabled`、`ops.upload.allow-any-under`
+- 契约文档: [operation-deploy-api.md](operation-deploy-api.md)
+- 前端联调影响: 部署中心路径/后置/远程命令改 API 驱动；详见 [operation-frontend.md](operation-frontend.md) §11
 
 ### [日期-迭代号]
 

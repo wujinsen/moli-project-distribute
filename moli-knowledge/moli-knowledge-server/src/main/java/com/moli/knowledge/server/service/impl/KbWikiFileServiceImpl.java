@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -126,6 +127,94 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
         return vo;
     }
 
+    @Override
+    public WikiSaveResultVo movePage(Long spaceId, String fromSlug, String toSlug) {
+        assertEnabled();
+        KbSpace space = resolveSpace(spaceId);
+        kbAclService.assertCanEdit(space.getId());
+
+        String from = normalizeSlug(fromSlug);
+        String to = normalizeSlug(toSlug);
+        if (from.equals(to)) {
+            throw new BaseException("源与目标分类相同，无需移动");
+        }
+        String wikiDir = resolveWikiDir(space.getSpaceCode());
+        Path fromFile = resolveFile(wikiDir, from);
+        Path toFile = resolveFile(wikiDir, to);
+        if (!Files.exists(fromFile)) {
+            throw new BaseException("源文件不存在: " + from);
+        }
+        if (Files.exists(toFile)) {
+            throw new BaseException("目标分类下已存在同名文档: " + to);
+        }
+
+        try {
+            if (toFile.getParent() != null) {
+                Files.createDirectories(toFile.getParent());
+            }
+            Files.move(fromFile, toFile);
+            rewriteReferences(wikiDir, from, to);
+        } catch (IOException e) {
+            log.error("移动 wiki 文件失败: {} -> {}", fromFile, toFile, e);
+            throw new BaseException("移动 wiki 文件失败：" + e.getMessage());
+        }
+
+        log.info("[wiki-move] space={} {} -> {}", space.getSpaceCode(), from, to);
+        WikiSaveResultVo vo = new WikiSaveResultVo();
+        vo.setSlug(to);
+        vo.setSpaceId(space.getId());
+        vo.setRelativePath(wikiDir + "/" + to + ".md");
+        vo.setCreated(false);
+        vo.setSavedAt(new Date());
+        return vo;
+    }
+
+    /** 扫描该空间所有 .md + graph/edges.jsonl，把全路径引用 from -> to 改写。 */
+    private void rewriteReferences(String wikiDir, String from, String to) throws IOException {
+        Path root = com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
+        Path base = root.resolve(wikiDir).normalize();
+        if (!Files.exists(base)) {
+            return;
+        }
+        String linkClose = "[[" + from + "]]";
+        String linkPipe = "[[" + from + "|";
+        try (java.util.stream.Stream<Path> stream = Files.walk(base)) {
+            List<Path> mdFiles = stream
+                    .filter(p -> p.toString().endsWith(".md"))
+                    .collect(java.util.stream.Collectors.toList());
+            for (Path p : mdFiles) {
+                String text = new String(Files.readAllBytes(p), StandardCharsets.UTF_8);
+                if (!text.contains(linkClose) && !text.contains(linkPipe)) {
+                    continue;
+                }
+                String updated = text.replace(linkClose, "[[" + to + "]]")
+                        .replace(linkPipe, "[[" + to + "|");
+                if (!updated.equals(text)) {
+                    Files.write(p, updated.getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        }
+        // graph/edges.jsonl：from/to 全路径 slug 改写
+        Path edges = base.resolve("graph").resolve("edges.jsonl");
+        if (Files.exists(edges)) {
+            List<String> lines = Files.readAllLines(edges, StandardCharsets.UTF_8);
+            boolean changed = false;
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                String repl = line
+                        .replace("\"" + from + "\"", "\"" + to + "\"");
+                if (!repl.equals(line)) {
+                    lines.set(i, repl);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                Files.write(edges, lines.stream().collect(java.util.stream.Collectors.joining("\n", "", "\n"))
+                        .getBytes(StandardCharsets.UTF_8));
+            }
+        }
+    }
+
     private void assertEnabled() {
         if (!wikiProperties.isEnabled()) {
             throw new BaseException("Wiki 在线编辑已禁用（kb.wiki.enabled=false）");
@@ -174,10 +263,7 @@ public class KbWikiFileServiceImpl implements KbWikiFileService {
 
     /** 解析并校验目标文件在 wiki 目录内（防目录穿越）。 */
     private Path resolveFile(String wikiDir, String slug) {
-        Path root = Paths.get(wikiProperties.getRoot());
-        if (!root.isAbsolute()) {
-            root = Paths.get(System.getProperty("user.dir")).resolve(root);
-        }
+        Path root = com.moli.knowledge.server.util.KbRepoPathUtil.resolveKbRoot(wikiProperties.getRoot());
         Path base = root.resolve(wikiDir).normalize();
         Path file = base.resolve(slug + ".md").normalize();
         if (!file.startsWith(base)) {

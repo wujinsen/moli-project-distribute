@@ -1,0 +1,84 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-operation-port-matrix" name="Operation Port Matrix">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="运维端口矩阵 · SVR-21&#xa;DB 权威 + 内存缓存 · 审计读 Provider · 管理页 CRUD" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="600" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tbl_matrix" value="operation_port_matrix&#xa;─────────────&#xa;id PK&#xa;matrix_key UK&#xa;display_name&#xa;expected_port&#xa;sort_order · enabled&#xa;source · remark&#xa;create_id · create_time&#xa;update_id · update_time" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="260" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tbl_alias" value="operation_port_matrix_alias&#xa;─────────────&#xa;id PK&#xa;matrix_id → matrix&#xa;alias UK (全局唯一)&#xa;create_time" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="260" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_matrix_alias" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="tbl_matrix" target="tbl_alias">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_matrix_alias_lbl" value="1 ─ N" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=10;" vertex="1" connectable="0" parent="e_matrix_alias">
+          <mxGeometry x="-0.1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="ledger_project" value="operation_project_deploy_info&#xa;project_name + port" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="480" y="140" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ledger_component" value="operation_component_deploy_info&#xa;component_name + port" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="480" y="230" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="provider" value="OperationPortMatrixProvider&#xa;(内存快照 · CRUD 后 refresh)" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="360" width="260" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="audit_api" value="GET /operation/audit/port-matrix&#xa;operation:project:list" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="820" y="340" width="240" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="crud_api" value="CRUD /operation/port-matrix/*&#xa;operation:port-matrix:*&#xa;菜单 406" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="820" y="120" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui_admin" value="meiling-ui&#xa;operation/port-matrix/index" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="120" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_db_provider" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#9673a6;dashed=1;" edge="1" parent="1" source="tbl_matrix" target="provider">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="400" y="210" /><mxPoint x="400" y="390" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e_db_provider_lbl" value="load / refresh" style="edgeLabel;html=1;fontSize=10;" vertex="1" connectable="0" parent="e_db_provider">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="10" y="-8" as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e_proj_provider" style="endArrow=block;html=1;rounded=0;strokeWidth=1;strokeColor=#d6b656;" edge="1" parent="1" source="ledger_project" target="provider">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_comp_provider" style="endArrow=block;html=1;rounded=0;strokeWidth=1;strokeColor=#d6b656;" edge="1" parent="1" source="ledger_component" target="provider">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_match_lbl" value="check(name, port)" style="text;html=1;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="620" y="300" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_provider_audit" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" edge="1" parent="1" source="provider" target="audit_api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_crud_db" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="crud_api" target="tbl_matrix">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="760" y="150" /><mxPoint x="760" y="200" /></Array></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e_ui_crud" style="endArrow=block;html=1;rounded=0;strokeWidth=1;dashed=1;" edge="1" parent="1" source="ui_admin" target="crud_api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="图例&#xa;─────&#xa;MATCH / MISMATCH / UNMAPPED / SKIPPED&#xa;名称归一化: lower + _→-&#xa;DB 空表 → Java 内置 8 条兜底&#xa;权威: DB &gt; 内置默认 &gt; checklist 文档" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="820" y="440" width="280" height="120" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

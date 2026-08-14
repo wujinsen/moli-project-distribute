@@ -21,9 +21,18 @@ public class AskRequest {
     @ApiModelProperty("多空间ID（非空时在上述空间内检索，须均有读权限）")
     private List<Long> spaceIds;
 
-    @ApiModelProperty("选用的候选页数上限，默认 8")
-    private Integer topK = 8;
+    @ApiModelProperty("引用列表候选页数上限；省略则用 kb.ask.citation-top-k（默认 8）")
+    private Integer topK;
+
+    @ApiModelProperty("LLM 上下文候选页数上限；省略则用 kb.ask.llm-context-top-k（默认 3）")
+    private Integer llmContextTopK;
 
     @ApiModelProperty("是否启用 LLM 生成式作答（默认 false；须后端 kb.llm 已配置且 usable）")
     private Boolean useLlm = false;
+
+    @ApiModelProperty("召回策略覆盖：ngram | hybrid | hybrid-rerank；省略用 kb.search.retrieval-strategy")
+    private String retrievalStrategy;
+
+    @ApiModelProperty("GraphRAG 扩跳覆盖：true/false；null=用 kb.search.graph.enabled（ngram 档忽略）")
+    private Boolean graphExpand;
 }

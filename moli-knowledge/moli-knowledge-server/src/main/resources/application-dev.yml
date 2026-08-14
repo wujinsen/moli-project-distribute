@@ -80,30 +80,157 @@ kb:
     model: glm-4-flash
     temperature: 0.3
     timeout-seconds: 90
+    # T19 · 平台 DB 存 api-key 时的 AES 密钥（32 字节 Base64 或任意字符串 SHA-256）
+    # 生产须设环境变量 KB_LLM_CONFIG_SECRET；本地 dev 默认占位，勿用于生产
+    config-secret: ${KB_LLM_CONFIG_SECRET:moli-dev-kb-llm-config-secret-local}
+    call-log-enabled: true
+    # AI-8 LLM 路由 / failover（默认关，零回归；密钥走 env）
+    router:
+      enabled: false
+      mode: failover
+      retry: 0
+      retry-backoff-ms: 200
+      fallbacks: []
+      # - provider: deepseek
+      #   base-url: https://api.deepseek.com/v1
+      #   api-key-env: KB_LLM_FALLBACK_1_KEY
+      #   model: deepseek-chat
+      #   timeout-seconds: 60
+    # AI-8 语义缓存（默认关，零回归）
+    cache:
+      enabled: false
+      ttl-seconds: 3600
+      approx-enabled: false
+      similarity-threshold: 0.92
+      approx-max-entries: 500
+      embed-timeout-ms: 800
+  guardrails:
+    # AI-9 输入 Guardrails（默认关，零回归）
+    enabled: false
+    inject:
+      enabled: true
+      fail-open: true
+    pii:
+      enabled: true
+      types: email,phone,id_card
+    grounding:
+      enabled: true
+      low-threshold: 0.8
+      timeout-ms: 8000
+  ask:
+    # citations 条数（页级）；LLM prompt 单独限页数，默认 3 以省 token、减干扰
+    citation-top-k: 8
+    llm-context-top-k: 3
+    llm-context-max-chars: 12000
+  agentic:
+    # AI-7 Agentic RAG（默认关，A-INV-4 零回归；POST /kb/ask/agentic 或 agentic=true 启用）
+    enabled: false
+    max-rounds: 2
+    decompose: true
+    max-sub-questions: 3
+    self-check: true
+    coverage-threshold: 0.8
+    latency-budget-ms: 20000
+    per-round-context-top-k: 0
+  research:
+    # AI-10 DeepResearch（默认关；需 deep-research sidecar :8095）
+    enabled: false
+    sidecar-base-url: http://127.0.0.1:8095
+    sidecar-timeout-ms: 120000
+    max-sections: 6
+    max-retrieve-rounds: 2
+    latency-budget-ms: 90000
+    per-section-top-k: 8
+    coverage-threshold: 0.75
+    retriever-agentic: false
+    default-retrieval-strategy: hybrid
+    writeback-auto-sync: true
+    guardrails: true
+    sse-timeout-ms: 120000
+    writeback-space-id: 900000000000000003
+    writeback-raw-path: deep-research/writeback-stub.md
   search:
     # fulltext：用 kb_document 上 ngram 全文索引 ftx_kb_document（MATCH AGAINST）；like：旧三字段 LIKE
     mode: fulltext
-    # Query(/kb/ask) 候选召回上限：先用全文索引按相关度取至多 N 页，再做内存 bigram 精排，避免全量扫描
+    # Query(/kb/ask) 候选召回上限：先用全文索引按相关度取至多 N 页/段，再做内存 bigram 精排，避免全量扫描
     ask-candidate-limit: 100
+    # true：按 kb_document_chunk 切段召回（需 sync 写入 chunk）；false：整页召回
+    chunk-enabled: true
+    # AI-2 hybrid 检索（默认 ngram=与现状一致；hybrid/hybrid-rerank 需 sidecar + 向量索引）
+    retrieval-strategy: ngram
+    vector:
+      base-url: http://127.0.0.1:8099
+      top-n: 20
+      timeout-ms: 1500
+    fusion:
+      rrf-k: 60
+    rerank:
+      top-m: 8
+      pool: 30
+      timeout-ms: 30000
+    # AI-5 GraphRAG overlay（默认关，G-INV-1 零回归；eval 用 AskRequest.graphExpand 或此处 enabled）
+    graph:
+      enabled: false
+      max-hops: 1
+      entry-top-e: 5
+      fanout-per-node: 5
+      max-neighbors: 20
+      chunks-per-neighbor: 2
+      hop-decay: 0.5
+      graph-boost-cap: 0.5
+      reinforce-factor: 0.5
+      protect-base-top-k: 3
+      hub-fan-in-threshold: 15
+      hub-penalty: 0.25
+      inbound: false
+      include-same-tag: false
+      query-timeout-ms: 800
   sync:
     enabled: true
     python: python
-    script-path: moli-knowledge/kb/tools/sync_to_db.py
+    # 相对 cwd 解析；KbRepoPathUtil 兼容 monorepo 根与 moli-knowledge-server 模块目录
+    script-path: ../kb/tools/sync_to_db.py
     space-code: enterprise-kb
     timeout-seconds: 300
+    lock-enabled: true
+    lock-extra-seconds: 60
+    schedule-space-codes:
+      - enterprise-kb
+      - moli-ops-manual
+      - jp-fe-ap-exam
     schedule-enabled: false
     schedule-cron: "0 0 2 * * ?"
+    alert:
+      enabled: false
+      type: feishu
+      webhook-url: ${KB_SYNC_ALERT_WEBHOOK_URL:}
+      scheduled-only: true
+      timeout-seconds: 10
+      include-output-tail: true
+      output-tail-max-chars: 500
   wiki:
     # Web 在线编辑（T14）读写 kb/wiki* markdown 文件
     enabled: true
-    # kb/ 根目录（相对进程 cwd 或绝对路径），需指向部署机 git wiki 目录
+    # kb/ 根目录（KbRepoPathUtil：monorepo 根或 server 模块 cwd）
     root: moli-knowledge/kb
     # space_code → wiki 子目录（相对 root）
     space-dirs:
       enterprise-kb: wiki
-      moli-ops-manual: wiki-ops
+      moli-ops-manual: wiki-moli
       jp-fe-ap-exam: wiki-jp-exam
     max-bytes: 2097152
+    lint-script-path: moli-knowledge/kb/tools/lint.py
+    lint-timeout-seconds: 120
+    # T22 R0 inline 图片：slug=java/foo → java/foo.assets/
+    asset-subdir-suffix: .assets
+    allow-svg: false
+    asset-cache-max-age-seconds: 3600
+    # T20e · Tab3 成品导入附带 assetsZip
+    import-assets-zip-max-bytes: 52428800
+    import-assets-max-entries: 200
+    govern:
+      # 治理页模型下拉（可选）；留空则仅 kb.llm.model
+      models: []
   ingest:
     # Ingest 工作台（T15）：raw 只读树 + 批次规划。落盘在 T15b/c
     enabled: true
@@ -115,3 +242,22 @@ kb:
     max-tree-nodes: 5000
     # Plan 生成时单个 raw 文件喂给 LLM 的最大字符数
     raw-snippet-chars: 4000
+    # Expert commit / Express publish 未传 sync 时自动 wiki→MySQL（ingest 完即入库）
+    commit-auto-sync: true
+    # T20a · Raw 浏览器投喂
+    raw-upload-max-bytes: 5242880
+    raw-upload-max-files: 20
+    raw-upload-zip-max-bytes: 52428800
+    raw-upload-zip-max-entries: 200
+  lint:
+    schedule-enabled: false
+    schedule-cron: "0 0 3 ? * MON"
+    stale-days: 180
+    stale-by-supersedes: true
+    duplicate-enabled: true
+    conflict-enabled: true
+    frontmatter-enabled: true
+    missing-concept-min: 3
+  browse:
+    # 浏览与管理统一按分类（= wiki 一级目录）；groupBy=type 已废弃
+    default-group-by: category

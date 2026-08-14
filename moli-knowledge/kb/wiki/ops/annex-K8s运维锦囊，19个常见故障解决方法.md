@@ -1,0 +1,263 @@
+---
+title: K8s运维锦囊，19个常见故障解决方法.note（原文插图 annex）
+slug: annex-K8s运维锦囊，19个常见故障解决方法
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/架构/容器/k8s/K8s运维锦囊，19个常见故障解决方法.note.md
+related: [k8s入门与容器编排]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+htps:/mp.weixin.q.com/s/hI7xYdF-WhBqQaYbuzFtMA
+
+- 问题1：K8S集群服务访问失败？
+
+原因分析：证书不能被识别，其原因为：⾃定义证书，过期等。 解决⽅法：更新证书即可。
+
+- 问题2：K8S集群服务访问失败？ curl: (7) Failed connect to 10.103.22.158:3000; Connection refused 原因分析：端⼝映射错误，服务正常⼯作，但不能提供服务。 解决⽅法：删除svc，重新映射端⼝即可。 kubectl delete svc nginx-deployment
+
+- 问题3：K8S集群服务暴露失败？ Error from server (AlreadyExists): services "nginx-deployment" already exists 原因分析：该容器已暴露服务了。 解决⽅法：删除svc，重新映射端⼝即可。
+
+- 问题4：外⽹⽆法访问K8S集群提供的服务？ 原因分析：K8S集群的type为ClusterIP，未将服务暴露⾄外⽹。 解决⽅法：修改K8S集群的type为NodePort即可，于是可通过所有K8S集群节点访问服务。 kubectl edit svc nginx-deployment
+
+- 问题5：pod状态为ErImagePul？ readiness-httpget-pod 0/1 ErrImagePull 0 10s
+
+
+![image 1](assets/imageFile1.png)
+
+![image 2](assets/imageFile2.png)
+
+![image 3](assets/imageFile3.png)
+
+原因分析：image⽆法拉取；
+
+![image 4](assets/imageFile4.png)
+
+![image 5](assets/imageFile5.png)
+
+解决⽅法：更换镜像即可。
+
+# 问题6：创建init C容器后，其状态不正常？ NAME READY STATUS RESTARTS AGE
+
+- myapp-pod 0/1 Init:0/2 0 20s 原因分析：查看⽇志发现，pod⼀直出于初始化中；然后查看pod详细信息，定位pod创建失败的 原因为：初始化容器未执⾏完毕。 Error from server (BadRequest): container "myapp-container" in pod "myapppod" is waiting to start: PodInitializing
+
+
+![image 6](assets/imageFile6.png)
+
+![image 7](assets/imageFile7.png)
+
+![image 8](assets/imageFile8.png)
+
+waiting for myservice
+
+Server: 10.96.0.10 Address: 10.96.0.10:53
+
+** server can't find myservice.default.svc.cluster.local: NXDOMAIN
+
+*** Can't find myservice.svc.cluster.local: No answer
+
+*** Can't find myservice.cluster.local: No answer
+
+*** Can't find myservice.default.svc.cluster.local: No answer
+
+*** Can't find myservice.svc.cluster.local: No answer
+
+*** Can't find myservice.cluster.local: No answer
+
+解决⽅法：创建相关service，将SVC的name写⼊K8S集群的coreDNS服务器中，于是coreDNS 就能对POD的initC容器执⾏过程中的域名解析了。
+
+kubectl apply -f myservice.yaml
+
+![image 9](assets/imageFile9.png)
+
+![image 10](assets/imageFile10.png)
+
+![image 11](assets/imageFile11.png)
+
+NAME READY STATUS RESTARTS AGE
+
+- myapp-pod 0/1 Init:1/2 0 27m
+
+
+- myapp-pod 0/1 PodInitializing 0 28m
+
+- myapp-pod 1/1 Running 0 28m
+
+
+![image 12](assets/imageFile12.png)
+
+- 问题7：探测存活pod状态为CrashLopBackOf？ 原因分析：镜像问题，导致容器重启失败。 解决⽅法：更换镜像即可。
+
+- 问题8：POD创建失败？
+
+
+![image 13](assets/imageFile13.png)
+
+![image 14](assets/imageFile14.png)
+
+readiness-httpget-pod 0/1 Pending 0 0s readiness-httpget-pod 0/1 Pending 0 0s readiness-httpget-pod 0/1 ContainerCreating 0 0s
+
+- readiness-httpget-pod 0/1 Error 0 2s
+
+- readiness-httpget-pod 0/1 Error 1 3s
+
+- readiness-httpget-pod 0/1 CrashLoopBackOff 1 4s
+
+readiness-httpget-pod 0/1 Error 2 15s
+
+- readiness-httpget-pod 0/1 CrashLoopBackOff 2 26s
+
+readiness-httpget-pod 0/1 Error 3 37s
+
+- readiness-httpget-pod 0/1 CrashLoopBackOff 3 52s
+
+
+- readiness-httpget-pod 0/1 Error 4 82s 原因分析：镜像问题导致容器⽆法启动。
+
+
+![image 15](assets/imageFile15.png)
+
+解决⽅法：更换镜像。
+
+![image 16](assets/imageFile16.png)
+
+![image 17](assets/imageFile17.png)
+
+# 问题9：POD的ready状态未进⼊？ readiness-httpget-pod 0/1 Running 0 116s 原因分析：POD的执⾏命令失败，⽆法获取资源。
+
+![image 18](assets/imageFile18.png)
+
+解决⽅法：进⼊容器内部，创建yaml定义的资源
+
+![image 19](assets/imageFile19.png)
+
+![image 20](assets/imageFile20.png)
+
+# 问题10：pod创建失败？
+
+![image 21](assets/imageFile21.png)
+
+原因分析：yml⽂件内容出错—-使⽤中⽂字符； 解决⽅法：修改myregistrykey内容即可。
+
+![image 22](assets/imageFile22.png)
+
+# 1、kube-flanel-ds-amd64-ndsf7插件pod的status为Init:0/1？
+
+![image 23](assets/imageFile23.png)
+
+排查思路：kubectl -n kube-system describe pod kube-flanel-ds-amd64-ndsf7 #查询pod描述信 息；
+
+![image 24](assets/imageFile24.png)
+
+原因分析：k8s-slave1节点拉取镜像失败。 解决⽅法：登录k8s-slave1，重启docker服务，⼿动拉取镜像。
+
+![image 25](assets/imageFile25.png)
+
+k8s-master节点，重新安装插件即可。
+
+kubectl create -f kube-flannel.yml;kubectl get nodes
+
+![image 26](assets/imageFile26.png)
+
+# 12、K8S创建服务status为ErImagePul？
+
+![image 27](assets/imageFile27.png)
+
+排查思路：
+
+kubectl describe pod test-nginx
+
+![image 28](assets/imageFile28.png)
+
+原因分析：拉取镜像名称问题。 解决⽅法：删除错误pod；重新拉取镜像；
+
+kubectl delete pod test-nginx;kubectl run test-nginx --image=10.0.0.81:5000/nginx:alpine
+
+# 13、不能进⼊指定容器内部？
+
+![image 29](assets/imageFile29.png)
+
+原因分析：yml⽂件comtainers字段重复，导致该pod没有该容器。 解决⽅法：去掉yml⽂件中多余的containers字段，重新⽣成pod。
+
+![image 30](assets/imageFile30.png)
+
+![image 31](assets/imageFile31.png)
+
+# 14、创建PV失败？
+
+![image 32](assets/imageFile32.png)
+
+原因分析：pv的name字段重复。 解决⽅法：修改pv的name字段即可。
+
+![image 33](assets/imageFile33.png)
+
+# 15、pod⽆法挂载PVC？
+
+![image 34](assets/imageFile34.png)
+
+![image 35](assets/imageFile35.png)
+
+原因分析：pod⽆法挂载PVC。
+
+![image 36](assets/imageFile36.png)
+
+![image 37](assets/imageFile37.png)
+
+acesModes与可使⽤的PV不⼀致，导致⽆法挂载PVC，由于只能挂载⼤于1G且acesModes为 RWO的PV，故只能成功创建1个pod，第2个pod⼀致pending，按序创建时则第3个pod⼀直未被创 建； 解决⽅法：修改yml⽂件中acesModes或PV的acesModes即可。
+
+![image 38](assets/imageFile38.png)
+
+# 16、问题：pod使⽤PV后，⽆法访问其内容？
+
+![image 39](assets/imageFile39.png)
+
+原因分析：nfs卷中没有⽂件或权限不对。
+
+![image 40](assets/imageFile40.png)
+
+![image 41](assets/imageFile41.png)
+
+解决⽅法：在nfs卷中创建⽂件并授予权限。
+
+![image 42](assets/imageFile42.png)
+
+![image 43](assets/imageFile43.png)
+
+- 17、查看节点状态失败？ Error from server (NotFound): the server could not find the requested resource (get services
+
+http:heapster:)
+
+原因分析：没有heapster服务。 解决⽅法：安装promethus监控组件即可。
+
+- 18、pod⼀直处于pendingʼ状态？
+
+
+![image 44](assets/imageFile44.png)
+
+![image 45](assets/imageFile45.png)
+
+![image 46](assets/imageFile46.png)
+
+原因分析：由于已使⽤同样镜像发布了pod，导致⽆节点可调度。
+
+![image 47](assets/imageFile47.png)
+
+解决⽅法：删除所有pod后部署pod即可。
+
+![image 48](assets/imageFile48.png)
+
+- 19、helm安装组件失败？ [root@k8s-master01 hello-world]# helm install
+
+
+Error: This command needs 1 argument: chart nam
+
+[root@k8s-master01 hello-world]# helm install ./ Error: no Chart.yaml exists in directory "/root/hello-world"
+
+原因分析：⽂件名格式不对。 解决⽅法：mv chart.yaml Chart.yaml
+
+![image 49](assets/imageFile49.png)
+
+- END -

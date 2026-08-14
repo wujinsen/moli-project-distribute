@@ -17,4 +17,10 @@ public interface KbWikiFileService {
 
     /** 写 wiki 文件（必要时新建父目录）；可带 baselineHash 做乐观锁。 */
     WikiSaveResultVo writePage(WikiSaveRequest request);
+
+    /**
+     * 移动 wiki 文件到另一目录（=换分类）：移动 .md + 自动改其它页/edges 中的全路径引用，
+     * newType 非空时同步改本页 frontmatter 的 type。返回新 slug。调用方负责随后触发 Sync。
+     */
+    WikiSaveResultVo movePage(Long spaceId, String fromSlug, String toSlug);
 }

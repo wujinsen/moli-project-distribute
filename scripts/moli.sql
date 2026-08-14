@@ -28,6 +28,7 @@ CREATE TABLE `operation_component_deploy_info`  (
   `update_id` bigint NULL DEFAULT NULL COMMENT '修改人',
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
   `component_name` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '组件名',
+  `server_id` bigint NULL DEFAULT NULL COMMENT '服务器ID',
   `server_ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '服务器IP',
   `account` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '账户',
   `password` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '密码',
@@ -36,20 +37,25 @@ CREATE TABLE `operation_component_deploy_info`  (
   `version` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '版本',
   `environment` int NULL DEFAULT NULL COMMENT '环境',
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`id`) USING BTREE
+  `status` tinyint NULL DEFAULT 0 COMMENT '健康 0未知 1可达 2不可达 3跳过',
+  `last_check_time` datetime NULL DEFAULT NULL COMMENT '最近探测时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_operation_component_server_id`(`server_id` ASC) USING BTREE,
+  INDEX `idx_operation_component_env`(`environment` ASC) USING BTREE,
+  INDEX `idx_operation_component_name`(`component_name`(64) ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '组件部署信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of operation_component_deploy_info
 -- ----------------------------
-INSERT INTO `operation_component_deploy_info` VALUES (301, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', '10.0.3.20', 'root', 'change-me', '/var/lib/mysql', '3306', '8.0.36', 4, 'moli 业务库');
-INSERT INTO `operation_component_deploy_info` VALUES (302, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', '10.0.3.30', '-', 'change-me', '/var/lib/redis', '6379', '7.2', 4, 'Session / 验证码缓存');
-INSERT INTO `operation_component_deploy_info` VALUES (303, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Nginx', '52.62.xxx.xxx', 'root', 'change-me', '/etc/nginx', '443', '1.24', 4, 'HTTPS 反向代理');
-INSERT INTO `operation_component_deploy_info` VALUES (304, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MinIO', '127.0.0.1', 'minioadmin', 'change-me', '/data/minio', '9000', 'RELEASE.2024', 1, '开发环境文件存储');
-INSERT INTO `operation_component_deploy_info` VALUES (305, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Java Runtime', '52.62.xxx.xxx', 'ec2-user', '-', '/usr/lib/jvm/java-11-amazon-corretto', '-', '11', 4, 'Spring Boot 运行环境');
-INSERT INTO `operation_component_deploy_info` VALUES (306, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', '127.0.0.1', '-', 'change-me', '/var/lib/redis', '6379', '7.2', 1, '本地开发 Redis');
-INSERT INTO `operation_component_deploy_info` VALUES (307, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', '127.0.0.1', 'root', 'change-me', '/var/lib/mysql', '3306', '8.0.36', 1, '本地 moli 库');
-INSERT INTO `operation_component_deploy_info` VALUES (308, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Systemd', '52.62.xxx.xxx', 'root', '-', '/etc/systemd/system/moli-server.service', '-', '-', 4, '后端进程托管');
+INSERT INTO `operation_component_deploy_info` VALUES (301, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', 205, '10.0.3.20', 'root', NULL, '/var/lib/mysql', '3306', '8.0.36', 4, 'moli 业务库', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (302, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', 206, '10.0.3.30', '-', NULL, '/var/lib/redis', '6379', '7.2', 4, 'Session / 验证码缓存', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (303, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Nginx', 204, '52.62.xxx.xxx', 'root', NULL, '/etc/nginx', '443', '1.24', 4, 'HTTPS 反向代理', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (304, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MinIO', 201, '127.0.0.1', 'minioadmin', NULL, '/data/minio', '9000', 'RELEASE.2024', 1, '开发环境文件存储', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (305, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Java Runtime', 204, '52.62.xxx.xxx', 'ec2-user', '-', '/usr/lib/jvm/java-11-amazon-corretto', '-', '11', 4, 'Spring Boot 运行环境', 3, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (306, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Redis', 201, '127.0.0.1', '-', NULL, '/var/lib/redis', '6379', '7.2', 1, '本地开发 Redis', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (307, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MySQL', 201, '127.0.0.1', 'root', NULL, '/var/lib/mysql', '3306', '8.0.36', 1, '本地 moli 库', 0, NULL);
+INSERT INTO `operation_component_deploy_info` VALUES (308, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Systemd', 204, '52.62.xxx.xxx', 'root', '-', '/etc/systemd/system/moli-server.service', '-', '-', 4, '后端进程托管', 3, NULL);
 
 -- ----------------------------
 -- Table structure for operation_platform_info
@@ -73,12 +79,12 @@ CREATE TABLE `operation_platform_info`  (
 -- ----------------------------
 -- Records of operation_platform_info
 -- ----------------------------
-INSERT INTO `operation_platform_info` VALUES (101, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'AWS 控制台', 'https://console.aws.amazon.com', 'ops@wu-jinsen.com', 'change-me', 4, '悉尼区域 ap-southeast-2，EC2/RDS/S3 管理');
-INSERT INTO `operation_platform_info` VALUES (102, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'GitHub', 'https://github.com/wujinsen/moli-project-single', 'wujinsen', 'change-me', 4, '后端代码仓库');
-INSERT INTO `operation_platform_info` VALUES (103, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Jenkins', 'https://jenkins.wu-jinsen.com', 'jenkins', 'change-me', 4, 'CI/CD 构建与部署');
-INSERT INTO `operation_platform_info` VALUES (104, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MinIO 控制台', 'http://localhost:9000', 'minioadmin', 'change-me', 1, '本地/开发环境对象存储');
+INSERT INTO `operation_platform_info` VALUES (101, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'AWS 控制台', 'https://console.aws.amazon.com', 'ops@wu-jinsen.com', NULL, 4, '悉尼区域 ap-southeast-2，EC2/RDS/S3 管理');
+INSERT INTO `operation_platform_info` VALUES (102, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'GitHub', 'https://github.com/wujinsen/moli-project-single', 'wujinsen', NULL, 4, '后端代码仓库');
+INSERT INTO `operation_platform_info` VALUES (103, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Jenkins', 'https://jenkins.wu-jinsen.com', 'jenkins', NULL, 4, 'CI/CD 构建与部署');
+INSERT INTO `operation_platform_info` VALUES (104, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'MinIO 控制台', 'http://localhost:9000', 'minioadmin', NULL, 1, '本地/开发环境对象存储');
 INSERT INTO `operation_platform_info` VALUES (105, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Swagger 文档', 'http://localhost:9080/swagger-ui.html', '-', '-', 1, '开发环境 API 文档');
-INSERT INTO `operation_platform_info` VALUES (106, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Route 53 / DNS', 'https://console.aws.amazon.com/route53', 'ops@wu-jinsen.com', 'change-me', 4, 'wu-jinsen.com 域名解析');
+INSERT INTO `operation_platform_info` VALUES (106, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'Route 53 / DNS', 'https://console.aws.amazon.com/route53', 'ops@wu-jinsen.com', NULL, 4, 'wu-jinsen.com 域名解析');
 
 -- ----------------------------
 -- Table structure for operation_project_deploy_info
@@ -99,8 +105,12 @@ CREATE TABLE `operation_project_deploy_info`  (
   `port` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '端口',
   `environment` int NULL DEFAULT NULL COMMENT '环境',
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
+  `deploy_running` tinyint(1) NULL DEFAULT NULL COMMENT '部署进程是否运行（定时同步）',
+  `last_deploy_check_time` datetime NULL DEFAULT NULL COMMENT '最近部署状态同步时间',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_operation_project_deploy_server_id`(`server_id` ASC) USING BTREE
+  INDEX `idx_operation_project_deploy_server_id`(`server_id` ASC) USING BTREE,
+  INDEX `idx_operation_project_env`(`environment` ASC) USING BTREE,
+  INDEX `idx_operation_project_name`(`project_name`(64) ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '项目部署信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -114,6 +124,30 @@ INSERT INTO `operation_project_deploy_info` VALUES (405, 1, '2026-06-10 00:28:39
 INSERT INTO `operation_project_deploy_info` VALUES (406, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 201, '127.0.0.1', '127.0.0.1', 'http://localhost:9528', 'moli-admin', '/dev/moli-admin', '9528', 1, '本地前端开发服务');
 
 -- ----------------------------
+-- Table structure for operation_project_component
+-- ----------------------------
+DROP TABLE IF EXISTS `operation_project_component`;
+CREATE TABLE `operation_project_component`  (
+  `id` bigint NOT NULL COMMENT '主键',
+  `project_id` bigint NOT NULL COMMENT '项目 ID',
+  `component_id` bigint NOT NULL COMMENT '组件 ID',
+  `remark` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '依赖说明，如 业务库/会话缓存',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_operation_project_component`(`project_id` ASC, `component_id` ASC) USING BTREE,
+  INDEX `idx_opc_component`(`component_id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '项目→组件依赖（手工维护）' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of operation_project_component
+-- ----------------------------
+INSERT INTO `operation_project_component` VALUES (9201, 401, 307, '本地业务库');
+INSERT INTO `operation_project_component` VALUES (9202, 401, 306, '会话缓存');
+INSERT INTO `operation_project_component` VALUES (9203, 402, 301, '生产 MySQL');
+INSERT INTO `operation_project_component` VALUES (9204, 402, 302, '生产 Redis');
+INSERT INTO `operation_project_component` VALUES (9205, 404, 301, '测试 MySQL');
+INSERT INTO `operation_project_component` VALUES (9206, 404, 302, '测试 Redis');
+
+-- ----------------------------
 -- Table structure for operation_server_component
 -- ----------------------------
 DROP TABLE IF EXISTS `operation_server_component`;
@@ -123,7 +157,8 @@ CREATE TABLE `operation_server_component`  (
   `component_id` bigint NULL DEFAULT NULL COMMENT '组件ID',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_operation_server_component_server_id`(`server_id` ASC) USING BTREE,
-  INDEX `idx_operation_server_component_component_id`(`component_id` ASC) USING BTREE
+  INDEX `idx_operation_server_component_component_id`(`component_id` ASC) USING BTREE,
+  UNIQUE INDEX `uk_server_component`(`server_id` ASC, `component_id` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '服务器-组件关联' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -155,19 +190,33 @@ CREATE TABLE `operation_server_info`  (
   `inner_ip` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '内网IP',
   `port` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '端口',
   `environment` int NULL DEFAULT NULL COMMENT '环境',
+  `server_role` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '角色 app/db/cache/mq/gateway/bastion/middleware/other',
+  `tags` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标签 JSON 数组',
   `remark` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
-  PRIMARY KEY (`id`) USING BTREE
+  `status` tinyint NULL DEFAULT 0 COMMENT '健康 0未知 1可达 2不可达 3跳过',
+  `last_check_time` datetime NULL DEFAULT NULL COMMENT '最近探测时间',
+  `ssh_port` int NULL DEFAULT 22 COMMENT 'SSH 端口',
+  `ssh_user` varchar(64) NULL DEFAULT 'ubuntu' COMMENT 'SSH 登录用户',
+  `ssh_auth_type` tinyint NULL DEFAULT 1 COMMENT '1私钥 2密码',
+  `ssh_private_key` text NULL COMMENT 'SSH 私钥 AES-GCM 密文',
+  `ssh_passphrase` varchar(512) NULL COMMENT '私钥口令/登录密码 AES-GCM 密文',
+  `conn_pref` varchar(16) NULL DEFAULT 'auto' COMMENT '连接偏好 auto/inner/public',
+  `upload_allowed_roots` text NULL COMMENT '该服务器允许上传的路径前缀',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_operation_server_env`(`environment` ASC) USING BTREE,
+  INDEX `idx_operation_server_ip`(`ip` ASC) USING BTREE,
+  INDEX `idx_operation_server_role`(`server_role` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '服务器信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of operation_server_info
 -- ----------------------------
-INSERT INTO `operation_server_info` VALUES (201, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-dev', '127.0.0.1', '127.0.0.1', '9080', 1, '本地开发机，跑 moli-server + Redis');
-INSERT INTO `operation_server_info` VALUES (202, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-test', '10.0.1.10', '172.31.10.10', '9080', 2, '测试环境 EC2');
-INSERT INTO `operation_server_info` VALUES (203, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pre', '10.0.2.10', '172.31.20.10', '9080', 3, '预发布环境 EC2');
-INSERT INTO `operation_server_info` VALUES (204, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pro', '52.62.xxx.xxx', '172.31.30.10', '443', 4, '生产 EC2，Nginx 反代 api.wu-jinsen.com');
-INSERT INTO `operation_server_info` VALUES (205, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-mysql-pro', '10.0.3.20', '172.31.30.20', '3306', 4, 'RDS MySQL 或自建数据库');
-INSERT INTO `operation_server_info` VALUES (206, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-redis-pro', '10.0.3.30', '172.31.30.30', '6379', 4, 'Redis，Shiro Session 存储');
+INSERT INTO `operation_server_info` VALUES (201, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-dev', '127.0.0.1', '127.0.0.1', '9080', 1, 'app', '["local","dev"]', '本地开发机，跑 moli-server + Redis', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (202, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-test', '10.0.1.10', '172.31.10.10', '9080', 2, 'app', '["test"]', '测试环境 EC2', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (203, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pre', '10.0.2.10', '172.31.20.10', '9080', 3, 'app', '["pre"]', '预发布环境 EC2', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (204, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-backend-pro', '52.62.xxx.xxx', '172.31.30.10', '443', 4, 'gateway', '["pro","gateway"]', '生产 EC2，Nginx 反代 api.wu-jinsen.com', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (205, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-mysql-pro', '10.0.3.20', '172.31.30.20', '3306', 4, 'db', '["pro","db"]', 'RDS MySQL 或自建数据库', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
+INSERT INTO `operation_server_info` VALUES (206, 1, '2026-06-10 00:28:39', 1, '2026-06-10 00:28:39', 'moli-redis-pro', '10.0.3.30', '172.31.30.30', '6379', 4, 'cache', '["pro","cache"]', 'Redis，Shiro Session 存储', 0, NULL, 22, 'ubuntu', 1, NULL, NULL, 'auto', NULL);
 
 -- ----------------------------
 -- Table structure for operation_server_project
@@ -179,7 +228,8 @@ CREATE TABLE `operation_server_project`  (
   `project_id` bigint NULL DEFAULT NULL COMMENT '项目ID',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_operation_server_project_server_id`(`server_id` ASC) USING BTREE,
-  INDEX `idx_operation_server_project_project_id`(`project_id` ASC) USING BTREE
+  INDEX `idx_operation_server_project_project_id`(`project_id` ASC) USING BTREE,
+  UNIQUE INDEX `uk_server_project`(`server_id` ASC, `project_id` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '服务器-项目关联' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -191,6 +241,100 @@ INSERT INTO `operation_server_project` VALUES (9003, 202, 404);
 INSERT INTO `operation_server_project` VALUES (9004, 203, 405);
 INSERT INTO `operation_server_project` VALUES (9005, 204, 402);
 INSERT INTO `operation_server_project` VALUES (9006, 204, 403);
+
+-- ----------------------------
+-- Table structure for operation_task
+-- ----------------------------
+DROP TABLE IF EXISTS `operation_task`;
+CREATE TABLE `operation_task`  (
+  `id` bigint NOT NULL COMMENT '主键',
+  `create_id` bigint NULL DEFAULT NULL,
+  `create_time` datetime NULL DEFAULT NULL,
+  `update_id` bigint NULL DEFAULT NULL,
+  `update_time` datetime NULL DEFAULT NULL,
+  `task_type` varchar(32) NULL DEFAULT NULL COMMENT 'deploy/upload/command/health_probe',
+  `server_id` bigint NULL DEFAULT NULL COMMENT '目标服务器',
+  `project_id` bigint NULL DEFAULT NULL COMMENT '关联项目台账 ID',
+  `service_key` varchar(64) NULL DEFAULT NULL COMMENT 'user-center/gateway/knowledge',
+  `action` varchar(64) NULL DEFAULT NULL COMMENT 'start/stop/restart/upload 等',
+  `target_name` varchar(512) NULL DEFAULT NULL COMMENT '目标描述',
+  `status` varchar(16) NULL DEFAULT 'pending' COMMENT 'pending/running/success/failed',
+  `progress` int NULL DEFAULT 0 COMMENT '0-100',
+  `task_log` mediumtext NULL COMMENT '执行日志',
+  `message` varchar(512) NULL DEFAULT NULL COMMENT '结果摘要',
+  `finish_time` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_operation_task_server`(`server_id` ASC) USING BTREE,
+  INDEX `idx_operation_task_project`(`project_id` ASC) USING BTREE,
+  INDEX `idx_operation_task_type_status`(`task_type` ASC, `status` ASC) USING BTREE,
+  INDEX `idx_operation_task_create_time`(`create_time` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '运维异步任务' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for operation_port_matrix
+-- ----------------------------
+DROP TABLE IF EXISTS `operation_port_matrix_alias`;
+DROP TABLE IF EXISTS `operation_port_matrix`;
+CREATE TABLE `operation_port_matrix`  (
+  `id` bigint NOT NULL COMMENT '主键',
+  `matrix_key` varchar(64) NOT NULL COMMENT '矩阵主键，如 user-center',
+  `display_name` varchar(128) NULL DEFAULT NULL COMMENT '展示名',
+  `expected_port` varchar(16) NOT NULL COMMENT '期望端口',
+  `sort_order` int NOT NULL DEFAULT 0 COMMENT '排序',
+  `enabled` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1启用 0停用',
+  `source` varchar(256) NULL DEFAULT 'ops-console' COMMENT '来源说明',
+  `remark` varchar(512) NULL DEFAULT NULL COMMENT '备注',
+  `create_id` bigint NULL DEFAULT NULL COMMENT '创建人',
+  `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  `update_id` bigint NULL DEFAULT NULL COMMENT '修改人',
+  `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_matrix_key`(`matrix_key` ASC) USING BTREE,
+  INDEX `idx_port_matrix_enabled`(`enabled` ASC, `sort_order` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '运维端口矩阵' ROW_FORMAT = Dynamic;
+
+CREATE TABLE `operation_port_matrix_alias`  (
+  `id` bigint NOT NULL COMMENT '主键',
+  `matrix_id` bigint NOT NULL COMMENT 'operation_port_matrix.id',
+  `alias` varchar(128) NOT NULL COMMENT '别名，全局唯一',
+  `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_alias`(`alias` ASC) USING BTREE,
+  INDEX `idx_matrix_alias_matrix_id`(`matrix_id` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '运维端口矩阵别名' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of operation_port_matrix
+-- ----------------------------
+INSERT INTO `operation_port_matrix` VALUES (501, 'gateway', '网关', '21000', 10, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (502, 'user-center', '用户中心', '8888', 20, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (503, 'order', '订单服务', '8087', 30, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (504, 'knowledge', '知识库', '8090', 40, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (505, 'ai', 'AI 服务', '1128', 50, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (506, 'nacos', 'Nacos', '8848', 60, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (507, 'mysql', 'MySQL', '3306', 70, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix` VALUES (508, 'redis', 'Redis', '6379', 80, 1, 'migration:java-default', NULL, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00');
+
+-- ----------------------------
+-- Records of operation_port_matrix_alias
+-- ----------------------------
+INSERT INTO `operation_port_matrix_alias` VALUES (601, 501, 'gateway', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (602, 501, 'moli-gateway', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (603, 502, 'user-center', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (604, 502, 'moli-user-center', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (605, 502, 'user-center-server', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (606, 502, 'moli-server', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (607, 503, 'order', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (608, 503, 'moli-order', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (609, 504, 'knowledge', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (610, 504, 'moli-knowledge', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (611, 504, 'knowledge-server', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (612, 505, 'ai', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (613, 505, 'moli-ai', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (617, 505, 'ai-server', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (614, 506, 'nacos', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (615, 507, 'mysql', '2026-07-11 00:00:00');
+INSERT INTO `operation_port_matrix_alias` VALUES (616, 508, 'redis', '2026-07-11 00:00:00');
 
 -- ----------------------------
 -- Table structure for sys_action
@@ -208,7 +352,7 @@ CREATE TABLE `sys_action`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_perm_code`(`perm_code` ASC) USING BTREE,
   INDEX `idx_menu_id`(`menu_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 341 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '系统动作目录（非导航）' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 348 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '系统动作目录（非导航）' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_action
@@ -251,6 +395,15 @@ INSERT INTO `sys_action` VALUES (71, 'operation:project:remove', 'project', 'rem
 INSERT INTO `sys_action` VALUES (72, 'operation:component:add', 'component', 'add', '新增组件', 404, 1, 1);
 INSERT INTO `sys_action` VALUES (73, 'operation:component:edit', 'component', 'edit', '修改组件', 404, 2, 1);
 INSERT INTO `sys_action` VALUES (74, 'operation:component:remove', 'component', 'remove', '删除组件', 404, 3, 1);
+INSERT INTO `sys_action` VALUES (75, 'operation:secret:view', 'operation', 'secretView', '查看运维凭据', 400, 5, 1);
+INSERT INTO `sys_action` VALUES (340, 'operation:deploy:exec', 'operation', 'deployExec', '执行部署脚本', 405, 1, 1);
+INSERT INTO `sys_action` VALUES (341, 'operation:ssh:manage', 'operation', 'sshManage', '配置服务器SSH', 402, 7, 1);
+INSERT INTO `sys_action` VALUES (342, 'operation:file:upload', 'operation', 'fileUpload', '上传文件发布', 405, 2, 1);
+INSERT INTO `sys_action` VALUES (343, 'operation:command:exec', 'operation', 'commandExec', '远程执行命令', 405, 3, 1);
+INSERT INTO `sys_action` VALUES (344, 'operation:port-matrix:list', 'operation', 'portMatrixList', '端口矩阵列表', 406, 1, 1);
+INSERT INTO `sys_action` VALUES (345, 'operation:port-matrix:add', 'operation', 'portMatrixAdd', '新增端口矩阵', 406, 2, 1);
+INSERT INTO `sys_action` VALUES (346, 'operation:port-matrix:edit', 'operation', 'portMatrixEdit', '编辑端口矩阵', 406, 3, 1);
+INSERT INTO `sys_action` VALUES (347, 'operation:port-matrix:remove', 'operation', 'portMatrixRemove', '删除端口矩阵', 406, 4, 1);
 INSERT INTO `sys_action` VALUES (75, 'system:role:assignPerm', 'role', 'assignPerm', '分配权限', 3, 4, 1);
 INSERT INTO `sys_action` VALUES (76, 'system:role:assignUser', 'role', 'assignUser', '分配用户', 3, 5, 1);
 
@@ -505,44 +658,62 @@ CREATE TABLE `sys_menu`  (
   `status` int NULL DEFAULT NULL COMMENT '1启用 0禁用',
   `icon` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '图标',
   `order_num` int NULL DEFAULT NULL COMMENT '显示顺序',
+  `system_id` bigint NULL DEFAULT NULL COMMENT '所属业务系统 sys_system.id；NULL=全系统共享',
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_sys_menu_parent_id`(`parent_id` ASC) USING BTREE
+  INDEX `idx_sys_menu_parent_id`(`parent_id` ASC) USING BTREE,
+  INDEX `idx_sys_menu_system_id`(`system_id` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜单' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_menu
 -- ----------------------------
-INSERT INTO `sys_menu` VALUES (1, NULL, NULL, 1, '2026-06-11 02:18:14', '系统管理', 'System', 'システム', 0, 'system', NULL, 'System', 'M', NULL, 1, 'system', 2);
-INSERT INTO `sys_menu` VALUES (2, NULL, NULL, NULL, NULL, '用户管理', 'Users', 'ユーザー管理', 1, 'user', 'system/user/index', NULL, 'C', 'system:user:list', 1, 'user', 1);
-INSERT INTO `sys_menu` VALUES (3, NULL, NULL, NULL, NULL, '角色管理', 'Roles', 'ロール管理', 1, 'role', 'system/role/index', NULL, 'C', 'system:role:list', 1, 'peoples', 2);
-INSERT INTO `sys_menu` VALUES (4, NULL, NULL, NULL, NULL, '菜单管理', 'Menus', 'メニュー管理', 1, 'menu', 'system/menu/index', NULL, 'C', 'system:menu:list', 1, 'tree-table', 3);
-INSERT INTO `sys_menu` VALUES (5, NULL, NULL, NULL, NULL, '部门管理', 'Departments', '部署管理', 1, 'dept', 'system/dept/index', NULL, 'C', 'system:dept:list', 1, 'tree', 4);
-INSERT INTO `sys_menu` VALUES (6, NULL, NULL, NULL, NULL, '岗位管理', 'Posts', 'ポスト管理', 1, 'post', 'system/post/index', NULL, 'C', 'system:post:list', 1, 'post', 5);
-INSERT INTO `sys_menu` VALUES (7, NULL, NULL, NULL, NULL, '字典管理', 'Dictionary', '辞書管理', 1, 'dict', 'system/dict/index', NULL, 'C', 'system:dict:list', 1, 'dict', 6);
-INSERT INTO `sys_menu` VALUES (8, NULL, NULL, NULL, NULL, '参数设置', 'Parameters', 'パラメータ', 1, 'config', 'system/config/index', NULL, 'C', 'system:config:list', 1, 'edit', 7);
-INSERT INTO `sys_menu` VALUES (9, NULL, NULL, NULL, NULL, '通知公告', 'Notices', 'お知らせ', 1, 'notice', 'system/notice/index', NULL, 'C', 'system:notice:list', 1, 'message', 8);
-INSERT INTO `sys_menu` VALUES (400, NULL, NULL, NULL, NULL, '运营管理', 'Operations', '運用管理', 0, 'operation', NULL, NULL, 'M', NULL, 1, 'guide', 4);
-INSERT INTO `sys_menu` VALUES (401, NULL, NULL, NULL, NULL, '项目管理', 'Projects', 'プロジェクト', 400, 'project', 'operation/project/index', NULL, 'C', 'operation:project:list', 1, 'example', 1);
-INSERT INTO `sys_menu` VALUES (402, NULL, NULL, NULL, NULL, '服务器管理', 'Servers', 'サーバー', 400, 'server', 'operation/server/index', NULL, 'C', 'operation:server:list', 1, 'server', 2);
-INSERT INTO `sys_menu` VALUES (403, NULL, NULL, NULL, NULL, '平台管理', 'Platforms', 'プラットフォーム', 400, 'platform', 'operation/platform/index', NULL, 'C', 'operation:platform:list', 1, 'tree', 3);
-INSERT INTO `sys_menu` VALUES (404, NULL, NULL, NULL, NULL, '组件管理', 'Components', 'コンポーネント', 400, 'component', 'operation/component/index', NULL, 'C', 'operation:component:list', 1, 'component', 4);
-INSERT INTO `sys_menu` VALUES (500, NULL, NULL, 2, '2026-06-09 21:58:01', 'ChatGPT', 'ChatGPT', 'ChatGPT', 0, 'chatgpt', NULL, 'Chatgpt', 'M', NULL, 0, 'message', 5);
-INSERT INTO `sys_menu` VALUES (501, NULL, NULL, 2, '2026-06-09 21:58:08', '智能对话', 'AI Chat', 'AI対話', 500, 'completion', 'chatgpt/completion/index', NULL, 'C', 'chatgpt:completion:list', 0, 'message', 1);
-INSERT INTO `sys_menu` VALUES (600, NULL, NULL, 1, '2026-06-09 23:00:34', '烛龙', 'Candlelight', '燭龍データ', 0, 'candlelight', NULL, NULL, 'M', NULL, 1, 'chart', 6);
-INSERT INTO `sys_menu` VALUES (601, NULL, NULL, NULL, NULL, 'BI分析', 'BI', 'BI分析', 600, 'bi', 'CandlelightDragon/bi/index', NULL, 'C', 'candlelight:bi:list', 1, 'chart', 1);
-INSERT INTO `sys_menu` VALUES (602, NULL, NULL, NULL, NULL, '数据驾驶舱', 'Cockpit', 'コックピット', 600, 'cockpit', 'CandlelightDragon/cockpit/index', NULL, 'C', 'candlelight:cockpit:list', 1, 'dashboard', 2);
-INSERT INTO `sys_menu` VALUES (603, NULL, NULL, NULL, NULL, '用户画像', 'User Portrait', 'ユーザーピクチャ', 600, 'userportrait', 'CandlelightDragon/userportrait/index', NULL, 'C', 'candlelight:userportrait:list', 1, 'user', 3);
-INSERT INTO `sys_menu` VALUES (700, NULL, NULL, 1, '2026-06-11 02:19:30', '洞察与控制', 'Insight & Control', '洞察と制御', 0, 'insight', NULL, 'Insight', 'M', NULL, 1, 'chart', 7);
-INSERT INTO `sys_menu` VALUES (701, NULL, NULL, NULL, NULL, '报表', 'Reports', 'レポート', 700, 'reports', 'meiling/reports/index', NULL, 'C', 'meiling:reports:list', 1, 'documentation', 1);
-INSERT INTO `sys_menu` VALUES (702, NULL, NULL, NULL, NULL, 'Pulse', 'Pulse', 'Pulse', 700, 'pulse', 'meiling/pulse/index', NULL, 'C', 'meiling:pulse:list', 1, 'message', 2);
-INSERT INTO `sys_menu` VALUES (703, NULL, NULL, NULL, NULL, '工作流', 'Workflows', 'ワークフロー', 700, 'workflows', 'meiling/workflows/index', NULL, 'C', 'meiling:workflows:list', 1, 'guide', 3);
-INSERT INTO `sys_menu` VALUES (800, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '身份与门户', 'Identity & Portal', 'マルチシステム', 0, 'portal', NULL, 'Portal', 'M', NULL, 1, 'guide', 1);
-INSERT INTO `sys_menu` VALUES (810, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '安全审计', 'Security Audit', '監査ログ', 0, 'audit', NULL, 'Audit', 'M', NULL, 1, 'monitor', 9);
-INSERT INTO `sys_menu` VALUES (719698282376331264, 1, '2026-06-09 23:44:02', 1, '2026-06-09 23:44:47', '操作日志', '', '', 810, 'operlog', 'system/operlog/index', NULL, 'C', 'system:operlog:list', 1, 'monitor', 1);
-INSERT INTO `sys_menu` VALUES (719706422979330048, 1, '2026-06-10 00:16:23', NULL, NULL, '登录日志', '', '', 810, 'loginlog', 'system/loginlog/index', NULL, 'C', 'system:loginlog:list', 1, 'monitor', 2);
-INSERT INTO `sys_menu` VALUES (720069615614427136, 1, '2026-06-11 00:19:35', 1, '2026-06-11 00:19:57', '系统注册', '', '', 800, 'system', 'system/system/index', 'SystemRegistry', 'C', 'system:system:list', 1, 'system', 1);
-INSERT INTO `sys_menu` VALUES (720092589008617472, 1, '2026-06-11 01:50:52', 1, '2026-06-11 01:51:24', '分配系统', '', '', 800, 'system-user', 'system/system-user/index', 'SystemUserAssign', 'C', 'system:user:list', 1, 'system', 2);
-INSERT INTO `sys_menu` VALUES (720092589008617473, NULL, '2026-06-11 18:47:37', NULL, NULL, '动作目录', NULL, NULL, 1, 'action', 'system/action/index', 'ActionManage', 'C', 'system:menu:list', 1, NULL, 4);
+INSERT INTO `sys_menu` VALUES (1, NULL, NULL, 1, '2026-06-11 02:18:14', '系统管理', 'System', 'システム', 0, 'system', NULL, 'System', 'M', NULL, 1, 'system', 2, NULL);
+INSERT INTO `sys_menu` VALUES (2, NULL, NULL, NULL, NULL, '用户管理', 'Users', 'ユーザー管理', 1, 'user', 'system/user/index', NULL, 'C', 'system:user:list', 1, 'user', 1, NULL);
+INSERT INTO `sys_menu` VALUES (3, NULL, NULL, NULL, NULL, '角色管理', 'Roles', 'ロール管理', 1, 'role', 'system/role/index', NULL, 'C', 'system:role:list', 1, 'peoples', 2, NULL);
+INSERT INTO `sys_menu` VALUES (4, NULL, NULL, NULL, NULL, '菜单管理', 'Menus', 'メニュー管理', 1, 'menu', 'system/menu/index', NULL, 'C', 'system:menu:list', 1, 'tree-table', 3, NULL);
+INSERT INTO `sys_menu` VALUES (5, NULL, NULL, NULL, NULL, '部门管理', 'Departments', '部署管理', 1, 'dept', 'system/dept/index', NULL, 'C', 'system:dept:list', 1, 'tree', 4, NULL);
+INSERT INTO `sys_menu` VALUES (6, NULL, NULL, NULL, NULL, '岗位管理', 'Posts', 'ポスト管理', 1, 'post', 'system/post/index', NULL, 'C', 'system:post:list', 1, 'post', 5, NULL);
+INSERT INTO `sys_menu` VALUES (7, NULL, NULL, NULL, NULL, '字典管理', 'Dictionary', '辞書管理', 1, 'dict', 'system/dict/index', NULL, 'C', 'system:dict:list', 1, 'dict', 6, NULL);
+INSERT INTO `sys_menu` VALUES (8, NULL, NULL, NULL, NULL, '参数设置', 'Parameters', 'パラメータ', 1, 'config', 'system/config/index', NULL, 'C', 'system:config:list', 1, 'edit', 7, NULL);
+INSERT INTO `sys_menu` VALUES (9, NULL, NULL, NULL, NULL, '通知公告', 'Notices', 'お知らせ', 1, 'notice', 'system/notice/index', NULL, 'C', 'system:notice:list', 1, 'message', 8, NULL);
+INSERT INTO `sys_menu` VALUES (400, NULL, NULL, NULL, NULL, '运营管理', 'Operations', '運用管理', 0, 'operation', NULL, NULL, 'M', NULL, 1, 'guide', 4, NULL);
+INSERT INTO `sys_menu` VALUES (401, NULL, NULL, NULL, NULL, '项目管理', 'Projects', 'プロジェクト', 400, 'project', 'operation/project/index', NULL, 'C', 'operation:project:list', 1, 'example', 1, NULL);
+INSERT INTO `sys_menu` VALUES (402, NULL, NULL, NULL, NULL, '服务器管理', 'Servers', 'サーバー', 400, 'server', 'operation/server/index', NULL, 'C', 'operation:server:list', 1, 'server', 2, NULL);
+INSERT INTO `sys_menu` VALUES (403, NULL, NULL, NULL, NULL, '平台管理', 'Platforms', 'プラットフォーム', 400, 'platform', 'operation/platform/index', NULL, 'C', 'operation:platform:list', 1, 'tree', 3, NULL);
+INSERT INTO `sys_menu` VALUES (404, NULL, NULL, NULL, NULL, '组件管理', 'Components', 'コンポーネント', 400, 'component', 'operation/component/index', NULL, 'C', 'operation:component:list', 1, 'component', 4, NULL);
+INSERT INTO `sys_menu` VALUES (405, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '部署中心', 'Deploy Center', 'デプロイセンター', 400, 'deploy', 'operation/deploy/index', 'OperationDeployCenter', 'C', 'operation:server:list', 1, 'upload', 5, NULL);
+INSERT INTO `sys_menu` VALUES (406, 1, '2026-07-11 00:00:00', 1, '2026-07-11 00:00:00', '端口矩阵', 'Port Matrix', 'ポートマトリクス', 400, 'port-matrix', 'operation/port-matrix/index', 'OperationPortMatrix', 'C', 'operation:port-matrix:list', 1, 'table', 6, NULL);
+INSERT INTO `sys_menu` VALUES (407, 1, '2026-07-12 00:00:00', 1, '2026-07-12 00:00:00', '拓扑图', 'Topology', 'トポロジ図', 400, 'topology', 'operation/topology/index', 'OperationTopology', 'C', 'operation:server:list', 1, 'git-branch', 7, NULL);
+INSERT INTO `sys_menu` VALUES (500, NULL, NULL, 2, '2026-06-09 21:58:01', 'ChatGPT', 'ChatGPT', 'ChatGPT', 0, 'chatgpt', NULL, 'Chatgpt', 'M', NULL, 0, 'message', 5, NULL);
+INSERT INTO `sys_menu` VALUES (501, NULL, NULL, 2, '2026-06-09 21:58:08', '智能对话', 'AI Chat', 'AI対話', 500, 'completion', 'chatgpt/completion/index', NULL, 'C', 'chatgpt:completion:list', 0, 'message', 1, NULL);
+INSERT INTO `sys_menu` VALUES (600, NULL, NULL, 1, '2026-06-09 23:00:34', '烛龙', 'Candlelight', '燭龍データ', 0, 'candlelight', NULL, NULL, 'M', NULL, 1, 'chart', 6, NULL);
+INSERT INTO `sys_menu` VALUES (601, NULL, NULL, NULL, NULL, 'BI分析', 'BI', 'BI分析', 600, 'bi', 'CandlelightDragon/bi/index', NULL, 'C', 'candlelight:bi:list', 1, 'chart', 1, NULL);
+INSERT INTO `sys_menu` VALUES (602, NULL, NULL, NULL, NULL, '数据驾驶舱', 'Cockpit', 'コックピット', 600, 'cockpit', 'CandlelightDragon/cockpit/index', NULL, 'C', 'candlelight:cockpit:list', 1, 'dashboard', 2, NULL);
+INSERT INTO `sys_menu` VALUES (603, NULL, NULL, NULL, NULL, '用户画像', 'User Portrait', 'ユーザーピクチャ', 600, 'userportrait', 'CandlelightDragon/userportrait/index', NULL, 'C', 'candlelight:userportrait:list', 1, 'user', 3, NULL);
+INSERT INTO `sys_menu` VALUES (700, NULL, NULL, 1, '2026-06-11 02:19:30', '洞察与控制', 'Insight & Control', '洞察と制御', 0, 'insight', NULL, 'Insight', 'M', NULL, 1, 'chart', 7, NULL);
+INSERT INTO `sys_menu` VALUES (701, NULL, NULL, NULL, NULL, '报表', 'Reports', 'レポート', 700, 'reports', 'meiling/reports/index', NULL, 'C', 'meiling:reports:list', 1, 'documentation', 1, NULL);
+INSERT INTO `sys_menu` VALUES (702, NULL, NULL, NULL, NULL, 'Pulse', 'Pulse', 'Pulse', 700, 'pulse', 'meiling/pulse/index', NULL, 'C', 'meiling:pulse:list', 1, 'message', 2, NULL);
+INSERT INTO `sys_menu` VALUES (703, NULL, NULL, NULL, NULL, '工作流', 'Workflows', 'ワークフロー', 700, 'workflows', 'meiling/workflows/index', NULL, 'C', 'meiling:workflows:list', 1, 'guide', 3, NULL);
+INSERT INTO `sys_menu` VALUES (800, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '身份与门户', 'Identity & Portal', 'マルチシステム', 0, 'portal', NULL, 'Portal', 'M', NULL, 1, 'guide', 1, NULL);
+INSERT INTO `sys_menu` VALUES (810, 1, '2026-06-11 03:16:58', 1, '2026-06-11 03:16:58', '安全审计', 'Security Audit', '監査ログ', 0, 'audit', NULL, 'Audit', 'M', NULL, 1, 'monitor', 9, NULL);
+INSERT INTO `sys_menu` VALUES (719698282376331264, 1, '2026-06-09 23:44:02', 1, '2026-06-09 23:44:47', '操作日志', '', '', 810, 'operlog', 'system/operlog/index', NULL, 'C', 'system:operlog:list', 1, 'monitor', 1, NULL);
+INSERT INTO `sys_menu` VALUES (719706422979330048, 1, '2026-06-10 00:16:23', NULL, NULL, '登录日志', '', '', 810, 'loginlog', 'system/loginlog/index', NULL, 'C', 'system:loginlog:list', 1, 'monitor', 2, NULL);
+INSERT INTO `sys_menu` VALUES (720069615614427136, 1, '2026-06-11 00:19:35', 1, '2026-06-11 00:19:57', '系统注册', '', '', 800, 'system', 'system/system/index', 'SystemRegistry', 'C', 'system:system:list', 1, 'system', 1, NULL);
+INSERT INTO `sys_menu` VALUES (720092589008617472, 1, '2026-06-11 01:50:52', 1, '2026-06-11 01:51:24', '分配系统', '', '', 800, 'system-user', 'system/system-user/index', 'SystemUserAssign', 'C', 'system:user:list', 1, 'system', 2, NULL);
+INSERT INTO `sys_menu` VALUES (720092589008617473, NULL, '2026-06-11 18:47:37', NULL, NULL, '动作目录', NULL, NULL, 1, 'action', 'system/action/index', 'ActionManage', 'C', 'system:menu:list', 1, NULL, 4, NULL);
+
+-- SSO-MENU-1 · sys_menu.system_id backfill（设计 docs/design/sso-menu-system-isolation.md · Q5-A 900→moli-admin）
+SET @SYS_MOLI_ADMIN := 1;
+SET @SYS_AI_COPILOT := 4;
+SET @SYS_BI_REPORT := 6;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 1 OR (`parent_id` = 1 AND `id` NOT IN (800, 810));
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 800 OR `parent_id` = 800;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 810 OR `parent_id` = 810;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 400 OR `parent_id` = 400;
+UPDATE `sys_menu` SET `system_id` = @SYS_AI_COPILOT WHERE `id` = 500 OR `parent_id` = 500;
+UPDATE `sys_menu` SET `system_id` = @SYS_BI_REPORT WHERE `id` = 600 OR `parent_id` = 600;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 700 OR `parent_id` = 700;
+UPDATE `sys_menu` SET `system_id` = @SYS_MOLI_ADMIN WHERE `id` = 900 OR `parent_id` = 900;
 
 -- ----------------------------
 -- Table structure for sys_operation_log
@@ -886,6 +1057,24 @@ INSERT INTO `sys_role_action` VALUES (1, 'operation:server:edit');
 INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:server:edit');
 INSERT INTO `sys_role_action` VALUES (1, 'operation:server:remove');
 INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:server:remove');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:secret:view');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:secret:view');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:deploy:exec');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:deploy:exec');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:ssh:manage');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:ssh:manage');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:file:upload');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:file:upload');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:command:exec');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:command:exec');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:port-matrix:list');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:port-matrix:list');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:port-matrix:add');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:port-matrix:add');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:port-matrix:edit');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:port-matrix:edit');
+INSERT INTO `sys_role_action` VALUES (1, 'operation:port-matrix:remove');
+INSERT INTO `sys_role_action` VALUES (720354230530998272, 'operation:port-matrix:remove');
 INSERT INTO `sys_role_action` VALUES (1, 'system:dept:add');
 INSERT INTO `sys_role_action` VALUES (3, 'system:dept:add');
 INSERT INTO `sys_role_action` VALUES (720354230530998272, 'system:dept:add');
@@ -1001,6 +1190,12 @@ INSERT INTO `sys_role_menu` VALUES (722982329663881217, 720354230530998272, 401)
 INSERT INTO `sys_role_menu` VALUES (722982329668075520, 720354230530998272, 402);
 INSERT INTO `sys_role_menu` VALUES (722982329668075521, 720354230530998272, 403);
 INSERT INTO `sys_role_menu` VALUES (722982329672269824, 720354230530998272, 404);
+INSERT INTO `sys_role_menu` VALUES (910400405, 1, 405);
+INSERT INTO `sys_role_menu` VALUES (910402405, 720354230530998272, 405);
+INSERT INTO `sys_role_menu` VALUES (910400406, 1, 406);
+INSERT INTO `sys_role_menu` VALUES (910720406, 720354230530998272, 406);
+INSERT INTO `sys_role_menu` VALUES (910400407, 1, 407);
+INSERT INTO `sys_role_menu` VALUES (910720407, 720354230530998272, 407);
 INSERT INTO `sys_role_menu` VALUES (722982329672269825, 720354230530998272, 500);
 INSERT INTO `sys_role_menu` VALUES (722982329672269826, 720354230530998272, 501);
 INSERT INTO `sys_role_menu` VALUES (722982329676464128, 720354230530998272, 600);

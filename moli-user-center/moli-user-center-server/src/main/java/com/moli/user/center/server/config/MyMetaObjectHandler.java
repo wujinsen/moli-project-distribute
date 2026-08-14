@@ -28,7 +28,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         log.info("start update fill ....");
         this.strictUpdateFill(metaObject, "updateTime", () -> new Date(), Date.class);
         if (ShiroUtils.getUserInfo() != null) {
-            this.strictInsertFill(metaObject, "updateId", () -> ShiroUtils.getUserInfo().getId(), Long.class);
+            this.strictUpdateFill(metaObject, "updateId", () -> ShiroUtils.getUserInfo().getId(), Long.class);
         }
     }
 

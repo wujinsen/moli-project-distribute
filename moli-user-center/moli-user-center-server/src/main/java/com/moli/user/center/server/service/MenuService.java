@@ -50,4 +50,9 @@ public interface MenuService {
      */
     List<MenuVo> getMenuTreeAll();
 
+    /**
+     * 运行时路由：按门户开关与 Session currentSystemId + sys_menu.system_id 过滤（SSO-MENU-1）。
+     */
+    List<MenuVo> resolveRoutersForCurrentSystem(Long userId);
+
 }

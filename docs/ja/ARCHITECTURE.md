@@ -3,11 +3,22 @@
 **Languages / 语言 / 言語**: [中文](../zh-CN/ARCHITECTURE.md) | [English](../en/ARCHITECTURE.md) | [日本語](ARCHITECTURE.md)
 
 > 「外部リクエスト ↔ ゲートウェイ ↔ サービス A ↔ サービス B」全経路の技術スタック・呼び出し方式・認証方式を記載する。
-> 対応：**サービス A = order-server / bi-server**（業務サービス）、**サービス B = user-center-server**（呼び出される側）。
+> 対応：**サービス A = order-server / ai-server**（業務サービス）、**サービス B = user-center-server**（呼び出される側）。
 
 ---
 
 ## 1. リクエストの流れ
+
+![コンテナアーキテクチャ](../diagrams/png/moli-container-architecture.png)
+
+> ソース：[moli-container-architecture.drawio](../diagrams/moli-container-architecture.drawio)
+
+![認証・業務リクエスト](../diagrams/png/moli-auth-flow.png)
+
+> ソース：[moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
+<details>
+<summary>ASCII 備考</summary>
 
 ```
 meiling-ui (ブラウザ)
@@ -16,20 +27,25 @@ meiling-ui (ブラウザ)
 moli-gateway :21000            Spring Cloud Gateway（ルーティング/限流/CORS）
    │  lb://<service>  +  StripPrefix=1
    ▼
-order-server / bi-server       Shiro authc がセッション検証（Redis 共有セッション）
+order-server / ai-server       Shiro authc がセッション検証（Redis 共有セッション）
    │  Dubbo RPC（version=1.0.0, group=moli）
    ▼
-user-center-server :1127       Dubbo Provider → 業務処理
+user-center-server :8888       Dubbo Provider → 業務処理
    │
    ▼
 Redis（共有セッション/キャッシュ）  /  MySQL（業務・権限データ）
 ```
 
+</details>
+
+<details>
+<summary>Mermaid 備考</summary>
+
 ```mermaid
 sequenceDiagram
     participant UI as meiling-ui
     participant GW as moli-gateway
-    participant A as order/bi-server (A)
+    participant A as order/ai-server (A)
     participant B as user-center-server (B)
     participant R as Redis
 
@@ -43,6 +59,8 @@ sequenceDiagram
     A-->>GW: MoliResult<T>
     GW-->>UI: JSON
 ```
+
+</details>
 
 ---
 
@@ -75,7 +93,7 @@ sequenceDiagram
 |------------|------|----------|
 | `/UserCenter/**` | `lb://user-center-server` | `StripPrefix=1` |
 | `/OrderServer/**` | `lb://order-server` | `StripPrefix=1` |
-| `/BiServer/**` | `lb://bi-server` | `StripPrefix=1` |
+| `/AiServer/**` | `lb://ai-server` | `StripPrefix=1` |
 
 `StripPrefix=1` は先頭セグメントを除去（例：`/UserCenter/user/list` → `/user/list`）。
 
@@ -123,6 +141,13 @@ public class ShiroConfig {
 
 ## 4. 認証（多層）
 
+![認証レイヤ](../diagrams/png/moli-auth-layers.png)
+
+> ソース：[moli-auth-layers.drawio](../diagrams/moli-auth-layers.drawio)
+
+<details>
+<summary>Mermaid 備考</summary>
+
 ```mermaid
 flowchart TB
     L1[1. ゲートウェイ：限流 / CORS / 許可拒否リスト]
@@ -133,6 +158,8 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
     L2 --> L5
 ```
+
+</details>
 
 | 層 | 仕組み | 実装 |
 |----|--------|------|
@@ -202,5 +229,5 @@ flowchart TB
 1. Nacos（`:8848`）、Redis、MySQL
 2. `moli-gateway`（`:21000`）
 3. `user-center-server`（`:1127`、Dubbo `20881`）
-4. `order-server`（`:8087`、Dubbo `20882`）、`bi-server`（`:1128`、Dubbo `20883`）
+4. `order-server`（`:8087`、Dubbo `20882`）、`ai-server`（`:1128`、Dubbo `20883`）
 5. `meiling-ui` プロキシ → `http://localhost:21000/UserCenter`

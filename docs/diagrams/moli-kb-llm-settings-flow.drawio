@@ -1,0 +1,105 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-kb-llm-settings" name="KB LLM Platform Settings">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="560" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;知识库 LLM · 平台系统设置（T19）&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;配置存 MySQL · 全站 Ask / Ingest / Wiki 治理共用 · 不放 moli-ai&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=15;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="760" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="ui_lane" value="meiling-ui · 平台系统管理" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=30;fontStyle=1;rounded=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="72" width="250" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" value="&lt;b&gt;平台管理员&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;superadmin · kb:platform:llm&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="ui_lane">
+          <mxGeometry x="20" y="42" width="210" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="settings_page" value="&lt;b&gt;系统管理 → 知识库 LLM&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;enabled · provider · base-url&#xa;api-key（脱敏）· model · timeout&#xa;【保存】【测试连接】&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="ui_lane">
+          <mxGeometry x="20" y="100" width="210" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="consumers_ui" value="&lt;font style=&quot;font-size:10px;&quot;&gt;&lt;b&gt;消费页（只读探测）&lt;/b&gt;&#xa;Ask · Ingest Express · Wiki 治理&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;align=left;spacingLeft=10;verticalAlign=middle;fontSize=11;" vertex="1" parent="ui_lane">
+          <mxGeometry x="20" y="220" width="210" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="server_lane" value="moli-knowledge-server :8090" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=30;fontStyle=1;rounded=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="72" width="470" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="ctrl" value="&lt;b&gt;KbPlatformLlmConfigController&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;GET / PUT  /kb/platform/llm-config&#xa;POST .../test&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="server_lane">
+          <mxGeometry x="24" y="42" width="200" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="runtime" value="&lt;b&gt;KbLlmRuntime&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;DB 优先 → yaml 兜底&#xa;PUT 后 refresh 内存&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="server_lane">
+          <mxGeometry x="246" y="42" width="200" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="ask_probe" value="&lt;b&gt;GET /kb/ask/llm-config&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;available（不回传 key）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;verticalAlign=middle;fontSize=11;" vertex="1" parent="server_lane">
+          <mxGeometry x="24" y="148" width="200" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="client" value="&lt;b&gt;KbLlmClient&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;Ask · Ingest · Wiki ai-revise&#xa;OpenAI /chat/completions&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="server_lane">
+          <mxGeometry x="246" y="138" width="200" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="data_lane" value="存储" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e6;strokeColor=#d79b00;startSize=30;fontStyle=1;rounded=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="72" width="260" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql" value="&lt;b&gt;kb_platform_llm_config&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;MySQL · id=1 单例行&#xa;api_key_cipher（AES）&#xa;api_key_mask&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=14;fillColor=#ffe6cc;strokeColor=#d79b00;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="data_lane">
+          <mxGeometry x="48" y="46" width="164" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="yaml" value="&lt;font style=&quot;font-size:10px;&quot;&gt;kb.llm.*（yaml / Nacos）&#xa;冷启动兜底 · 不写 key 回 Git&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="data_lane">
+          <mxGeometry x="38" y="220" width="184" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="ext_lane" value="外部 LLM 服务" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;startSize=26;fontStyle=1;rounded=1;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="430" width="470" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="llm_vendor" value="&lt;b&gt;OpenAI 兼容 LLM&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;DeepSeek · Qwen · GLM …&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;align=center;verticalAlign=middle;fontSize=11;" vertex="1" parent="ext_lane">
+          <mxGeometry x="135" y="34" width="200" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;一期非目标&lt;/b&gt;&#xa;&lt;font style=&quot;font-size:10px;&quot;&gt;moli-ai 独立服务 · 按空间多套 Key · 用户自带 Key&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffffcc;strokeColor=#d6b656;size=14;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="430" width="250" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;endArrow=block;endFill=1;" edge="1" parent="1" source="admin" target="settings_page">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="PUT / GET" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="settings_page" target="ctrl">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="300" y="176" />
+              <mxPoint x="300" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="persist" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ctrl" target="runtime">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="读写" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#d79b00;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="runtime" target="mysql">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="fallback" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#666666;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="runtime" target="yaml">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="120" />
+              <mxPoint x="780" y="324" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="getConfig" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82b366;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="runtime" target="client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#b85450;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="client" target="llm_vendor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="探测" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9673a6;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="consumers_ui" target="ask_probe">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="318" />
+              <mxPoint x="290" y="196" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="读配置" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;endArrow=block;endFill=1;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="ask_probe" target="runtime">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

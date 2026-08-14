@@ -16,6 +16,13 @@ Classic **User — Role — Permission (Menu)** model:
 
 **Apache Shiro** handles auth; Session and permission cache stored in **Redis** for distributed deployment.
 
+![RBAC model](../diagrams/png/moli-rbac-model.png)
+
+> Source: [moli-rbac-model.drawio](../diagrams/moli-rbac-model.drawio)
+
+<details>
+<summary>ASCII backup</summary>
+
 ```
 User (SysUser) ──N:N──▶ Role (SysRole) ──N:N──▶ Menu (SysMenu)
                                                       │
@@ -24,6 +31,8 @@ User (SysUser) ──N:N──▶ Role (SysRole) ──N:N──▶ Menu (SysMen
      ▼ deptId
 Department (SysDept)
 ```
+
+</details>
 
 ---
 
@@ -100,6 +109,10 @@ Use `@RequiresPermissions("sys:user:create")` when Shiro authorization is enable
 
 ## 4. Authentication Flow
 
+![Login and request auth](../diagrams/png/moli-auth-flow.png)
+
+> Source: [moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
 ### Login — `POST /login`
 
 1. Client sends `{userName, password}`
@@ -133,9 +146,18 @@ Use `@RequiresPermissions("sys:user:create")` when Shiro authorization is enable
 
 ### Menu Authorization (Implemented)
 
+![Menu query chain](../diagrams/png/moli-rbac-menu-query.png)
+
+> Source: [moli-rbac-menu-query.drawio](../diagrams/moli-rbac-menu-query.drawio)
+
+<details>
+<summary>ASCII backup</summary>
+
 ```
 User ID → sys_user_role → sys_role_menu → sys_menu → MenuVo tree
 ```
+
+</details>
 
 - **Super admin**: username `admin` bypasses role filter, gets all menus
 - Implementation: `MenuServiceImpl.selectMenuListByUserId()`
@@ -190,7 +212,14 @@ Department CRUD; linked via `deptId`, independent from RBAC roles.
 
 ## 7. Cross-Service Auth
 
-Other services use **`moli-user-center-client`**:
+![User center and shared Session](../diagrams/png/moli-user-center-position.png)
+
+> Source: [moli-user-center-position.drawio](../diagrams/moli-user-center-position.drawio)
+
+Other services use **`moli-user-center-shiro-starter`**:
+
+<details>
+<summary>ASCII backup</summary>
 
 ```
 Business service                  User center
@@ -199,8 +228,10 @@ Business service                  User center
     │── Authorization header ────────│  External traffic via gateway
 ```
 
+</details>
+
 - **`ShiroConfig`**: `@DubboReference UserCenterServer`, passed to `ShiroRealm` via setter
-- **`ShiroRealm`**: fetches user via Dubbo during login, validates password locally
+- **`ShiroRealm` (starter)**: restores user-center Session; loads permissions via Dubbo
 - See [Architecture / Invocation / Auth](ARCHITECTURE.md)
 
 ---

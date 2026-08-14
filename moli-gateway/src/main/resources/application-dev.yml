@@ -21,11 +21,11 @@ spring:
         - Path=/OrderServer/**
         filters:
         - StripPrefix=1
-      # spring cloud route config -- BI Server
-      - id: bi-route
-        uri: lb://bi-server
+      # spring cloud route config -- AI Server
+      - id: ai-route
+        uri: lb://ai-server
         predicates:
-        - Path=/BiServer/**
+        - Path=/AiServer/**
         filters:
         - StripPrefix=1
       # spring cloud route config -- Knowledge Server

@@ -1,2 +1,2 @@
-# kb/tools/sync_to_db.py 依赖（CI / 本地写库）
+# sync_to_db.py / run_sync.sh sync (CI and production DB write)
 pymysql>=1.1.0

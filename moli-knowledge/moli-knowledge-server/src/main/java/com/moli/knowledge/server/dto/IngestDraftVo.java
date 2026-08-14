@@ -45,4 +45,22 @@ public class IngestDraftVo {
 
     @ApiModelProperty("修改时间")
     private Date updateTime;
+
+    @ApiModelProperty("Plan 指定的分类 ID（create 项 categoryId，只读）")
+    private Long categoryId;
+
+    @ApiModelProperty("落盘一级目录 dir_slug（只读）")
+    private String dirSlug;
+
+    @ApiModelProperty("分类名称（只读）")
+    private String categoryName;
+
+    @ApiModelProperty("重生成时：是否模板模式")
+    private Boolean templateMode;
+
+    @ApiModelProperty("重生成时：是否 LLM 不可用自动降级")
+    private Boolean llmFallback;
+
+    @ApiModelProperty("重生成时：LLM 自动降级说明（供前端 Toast）")
+    private String llmFallbackReason;
 }

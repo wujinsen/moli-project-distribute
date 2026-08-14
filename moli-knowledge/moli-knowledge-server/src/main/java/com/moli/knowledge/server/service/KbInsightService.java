@@ -1,10 +1,14 @@
 package com.moli.knowledge.server.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.knowledge.server.dto.GraphVo;
+import com.moli.knowledge.server.dto.LintIssueBatchAssignRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchRequest;
+import com.moli.knowledge.server.dto.LintIssueBatchStatusRequest;
+import com.moli.knowledge.server.dto.LintIssuePageQuery;
+import com.moli.knowledge.server.dto.LintScanStatusVo;
 import com.moli.knowledge.server.dto.LintVo;
 import com.moli.knowledge.server.entity.KbLintIssue;
-
-import java.util.List;
 
 /**
  * 知识库图谱与体检。
@@ -39,9 +43,30 @@ public interface KbInsightService {
     /** 体检并落库 kb_lint_issue（清掉旧的待处理项后重建），返回本次结果。 */
     LintVo scan(Long spaceId);
 
-    /** 查询已落库的体检问题（status 可空：0待处理/1已忽略/2已修复）。 */
-    List<KbLintIssue> issues(Long spaceId, Integer status);
+    /** 查询已落库的体检问题（分页；status 可空：0待处理/1已忽略/2已修复）。 */
+    Page<KbLintIssue> issuesPage(LintIssuePageQuery query);
 
     /** 更新某条体检问题的处理状态。 */
     void updateIssueStatus(Long id, Integer status);
+
+    /** 单条 patch：status / assigneeId（clearAssignee 清空）/ priority，至少一项。 */
+    void patchIssue(Long id, Integer status, Long assigneeId, boolean clearAssignee, Integer priority);
+
+    /** 批量更新体检问题状态（KBOPS-8）。 */
+    int batchUpdateIssueStatus(LintIssueBatchStatusRequest request);
+
+    /** 统一批量更新（O7/O8 · {@code PUT /kb/lint/issues/batch}）。 */
+    int batchUpdateIssues(LintIssueBatchRequest request);
+
+    /** 指派处理人 / 调整优先级（KBOPS-8）。 */
+    void assignIssue(Long id, Long assigneeId, Integer priority);
+
+    /** 批量指派处理人 / 优先级（KBOPS-8）。 */
+    int batchAssignIssues(LintIssueBatchAssignRequest request);
+
+    /** 定时任务调用 scan（无 ACL，仅调度器）。 */
+    void scanScheduled(Long spaceId);
+
+    /** DB 体检 scan 状态：定时开关（只读）+ 最近 scan 时间。 */
+    LintScanStatusVo scanStatus(Long spaceId);
 }

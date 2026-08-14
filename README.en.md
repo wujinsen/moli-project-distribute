@@ -1,11 +1,44 @@
 # Moli Microservices (moli-project-distribute)
 
-**Languages / 语言 / 言語**: [中文](README.zh-CN.md) | [English](README.en.md) | [日本語](README.ja.md)
+**Languages / 语言 / 言語**: [中文](README.md) | [English](README.en.md) | [日本語](README.ja.md)
 
 [![Java](https://img.shields.io/badge/Java-1.8-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.3.12-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-Hoxton.SR12-blue.svg)](https://spring.io/projects/spring-cloud)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
+[![RAG](https://img.shields.io/badge/RAG-Retrieval%2BLLM-8A2BE2.svg)](moli-knowledge/README.md)
+[![LLM](https://img.shields.io/badge/LLM-OpenAI%20Compatible-412991.svg)](moli-knowledge/moli-knowledge-server/src/main/java/com/moli/knowledge/server/service/KbLlmClient.java)
+[![Agentic Coding](https://img.shields.io/badge/Agentic%20Coding-AGENTS%2BSkills-000000.svg)](AGENTS.md)
+[![Python](https://img.shields.io/badge/Python-KB%20Tooling-3776AB.svg)](moli-knowledge/kb/tools)
+
+> 🤖 **In one line**: an open-source system combining a **Spring Cloud microservices backend** with an **enterprise-grade LLM knowledge base** — production backend × RAG Q&A × retrieval evaluation × Agentic Coding.
+
+## ✨ AI Highlights (quick read)
+
+![Knowledge base architecture](docs/diagrams/png/moli-kb-architecture.png)
+
+| Capability | What's built |
+|------------|--------------|
+| 🔎 **RAG Q&A** | Chunk splitting → retrieval (`/kb/ask`) → **LLM generative answers with citations**; OpenAI-compatible client (DB config first + yaml fallback + call logging) |
+| 📊 **Retrieval eval** | `golden.jsonl` → **hit@k / MRR / coverage**, retrieval-only vs generative comparison |
+| 🧠 **LLM-Wiki governance** | Ingest / Lint / Enrich; knowledge "compiled once, kept fresh"; one-way incremental idempotent sync |
+| 🤝 **Agentic Coding** | Layered `AGENTS.md` rules + custom Cursor Skills (diagrams / SQL migration / KB ingest), a reusable AI dev workflow |
+| 🏗️ **Production backend** | Spring Cloud Alibaba (Nacos / Dubbo / Sentinel / Gateway) + Shiro distributed auth + GitHub Actions CI |
+
+**📈 Key metrics** (auto-filled by `kb/tools/fill_eval_metrics.py`):
+<!-- KB_METRICS:START -->
+hit@1 `66.7%` | hit@3 `100.0%` | hit@8 `100.0%` | MRR `0.833` | coverage `100.0%` | avg latency `0.47s` | `12` questions
+<!-- KB_METRICS:END -->
+
+**🎬 Demo**
+- Live demo: `<link after deploy>`
+- Demo GIF: `docs/portfolio/kb-demo.gif` `<to record>`
+- 30-sec local run (zero deps): `python moli-knowledge/kb/tools/serve.py` → http://127.0.0.1:8765
+
+**📄 One-pager**: see [PORTFOLIO.md](PORTFOLIO.md)
+
+---
 
 ## Introduction
 
@@ -38,12 +71,13 @@ moli-project-distribute/
 │   └── moli-user-center-server/  # Shiro, Dubbo Provider
 ├── moli-order/
 │   └── moli-order-server/
-├── moli-bi/
-│   └── moli-bi-server/
-└── docs/
-    ├── zh-CN/
-    ├── en/
-    └── ja/
+├── moli-ai/                      # BI (Nacos: ai-server)
+│   └── moli-ai-server/
+├── moli-knowledge/
+│   └── moli-knowledge-server/
+└── docs/                         # See docs/README.md
+    ├── product/ design/ api/ test/ ops/ sql/
+    └── zh-CN/ en/ ja/
 ```
 
 ### Services
@@ -51,9 +85,10 @@ moli-project-distribute/
 | Module | Service Name | Default Port | Description |
 |--------|--------------|--------------|-------------|
 | moli-gateway | `moli-gateway` | 21000 | Unified API Gateway |
-| moli-user-center-server | `user-center-server` | 1127 | Users, roles, menus, dictionaries |
-| moli-order-server | `order-server` | 8087 | Orders; calls user center via Dubbo |
-| moli-bi-server | `bi-server` | 1128 | BI service |
+| moli-user-center-server | `user-center-server` | **8888** | Users, roles, menus, dictionaries |
+| moli-order-server | `order-server` | 8087 | Orders (incl. seckill); Dubbo to user center |
+| moli-ai-server | `ai-server` | 1128 | BI skeleton (v1 placeholder) |
+| moli-knowledge-server | `knowledge-server` | see module README | Knowledge base / Ingest / Ask |
 
 ### Gateway Routes
 
@@ -61,6 +96,10 @@ moli-project-distribute/
 |--------------|----------------|
 | `/UserCenter/**` | `lb://user-center-server` |
 | `/OrderServer/**` | `lb://order-server` |
+| `/AiServer/**` | `lb://ai-server` |
+| `/KnowledgeServer/**` | `lb://knowledge-server` |
+
+> See [docs/api/gateway-routes.md](docs/api/gateway-routes.md).
 
 ---
 
@@ -145,14 +184,17 @@ cd ../moli-user-center && mvn clean package -DskipTests
 
 1. `moli-user-center-server`
 2. `moli-order-server`
-3. `moli-bi-server` (optional)
-4. `moli-gateway`
+3. `moli-ai-server` (optional, v1 skeleton)
+4. `moli-knowledge-server` (optional)
+5. `moli-gateway`
 
 Access via gateway:
 
 ```
 http://localhost:21000/UserCenter/...
 http://localhost:21000/OrderServer/...
+http://localhost:21000/AiServer/...
+http://localhost:21000/KnowledgeServer/...
 ```
 
 ---
@@ -204,6 +246,7 @@ User (SysUser) ──N:N──▶ Role (SysRole) ──N:N──▶ Menu (SysMen
 
 ## Documentation
 
+- [Docs hub](docs/README.md) · [Documentation audit](docs/DOCUMENTATION_AUDIT.md)
 - [Architecture / Invocation / Auth (EN)](docs/en/ARCHITECTURE.md)
 - [Tech Stack (EN)](docs/en/TECH_STACK.md)
 - [RBAC Design (EN)](docs/en/RBAC.md)

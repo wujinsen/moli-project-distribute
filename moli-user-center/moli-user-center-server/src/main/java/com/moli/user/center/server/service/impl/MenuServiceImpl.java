@@ -3,17 +3,21 @@ package com.moli.user.center.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
+import com.moli.common.constant.SystemConstant;
 import com.moli.common.utils.MenuRouteNameUtils;
 import com.moli.user.center.common.domain.entity.SysMenu;
 import com.moli.user.center.common.domain.entity.SysRole;
 import com.moli.user.center.common.domain.entity.SysRoleMenu;
+import com.moli.user.center.common.domain.entity.SysSystem;
 import com.moli.user.center.common.domain.entity.SysUser;
 import com.moli.user.center.common.domain.entity.SysUserRole;
 import com.moli.user.center.common.domain.vo.MenuMetaVo;
 import com.moli.user.center.common.domain.vo.MenuVo;
+import com.moli.user.center.server.config.util.ShiroUtils;
 import com.moli.user.center.server.mapper.MenuMapper;
 import com.moli.user.center.server.mapper.RoleMapper;
 import com.moli.user.center.server.mapper.RoleMenuMapper;
+import com.moli.user.center.server.mapper.SysSystemMapper;
 import com.moli.user.center.server.mapper.SysUserMapper;
 import com.moli.user.center.server.mapper.SysUserRoleMapper;
 import com.moli.user.center.server.service.MenuService;
@@ -23,12 +27,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +43,9 @@ import java.util.stream.Collectors;
 public class MenuServiceImpl implements MenuService {
 
     private static final String MENU_TYPE_BUTTON = "F";
+
+    /** 门户已开启但未 enter / 当前为 EXTERNAL 系统时，运行时菜单返回空树（Q3-A）。 */
+    private static final Long PORTAL_MENU_BLOCKED = -1L;
 
     @Autowired
     private SysUserMapper sysUserMapper;
@@ -51,6 +61,12 @@ public class MenuServiceImpl implements MenuService {
 
     @Autowired
     private SysUserRoleMapper sysUserRoleMapper;
+
+    @Autowired
+    private SysSystemMapper sysSystemMapper;
+
+    @Value("${sso.enabled:true}")
+    private boolean ssoEnabled;
 
 
     @Override
@@ -96,6 +112,32 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
+    public List<MenuVo> resolveRoutersForCurrentSystem(Long userId) {
+        if (userId == null) {
+            return new ArrayList<>();
+        }
+        Long filterSystemId = resolveEffectiveSystemId();
+        if (PORTAL_MENU_BLOCKED.equals(filterSystemId)) {
+            return new ArrayList<>();
+        }
+        SysUser user = sysUserMapper.selectById(userId);
+        if (user == null) {
+            return new ArrayList<>();
+        }
+        List<SysMenu> menuList;
+        if (CommonConstant.hasFullPermission(user.getUserName())) {
+            menuList = loadAllMenusForRuntime(filterSystemId);
+        } else {
+            menuList = loadRoleMenusForRuntime(userId, filterSystemId);
+        }
+        List<MenuVo> menuVoList = new ArrayList<>();
+        menuList.stream()
+                .filter(menu -> !MENU_TYPE_BUTTON.equals(menu.getMenuType()))
+                .forEach(menu -> menuVoList.add(toMenuVo(menu, true)));
+        return createTree(menuVoList);
+    }
+
+    @Override
     public List<MenuVo> selectMenuList(MenuVo menuVo) {
         LambdaQueryWrapper<SysMenu> lambdaQueryWrapper = new LambdaQueryWrapper();
         if (StringUtils.isNotBlank(menuVo.getMenuName())) {
@@ -123,7 +165,19 @@ public class MenuServiceImpl implements MenuService {
             menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
             return menuVoList;
         }
-        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, menuVo.getUserId()));
+        List<Long> menuIdList = resolveRoleMenuIds(menuVo.getUserId());
+        if (CollectionUtils.isEmpty(menuIdList)) {
+            return new ArrayList<>();
+        }
+        List<SysMenu> menuList = loadMenusWithAncestors(menuIdList);
+        List<MenuVo> menuVoList = new ArrayList<>();
+        menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
+        return menuVoList;
+    }
+
+    private List<Long> resolveRoleMenuIds(Long userId) {
+        List<SysUserRole> userRoleList = sysUserRoleMapper.selectList(new QueryWrapper<SysUserRole>().lambda()
+                .eq(SysUserRole::getUserId, userId));
         if (CollectionUtils.isEmpty(userRoleList)) {
             return new ArrayList<>();
         }
@@ -135,15 +189,105 @@ public class MenuServiceImpl implements MenuService {
             return new ArrayList<>();
         }
         roleIdList = enabledRoles.stream().map(SysRole::getId).collect(Collectors.toList());
-        List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda().in(SysRoleMenu::getRoleId, roleIdList));
-        List<Long> menuIdList = roleMenuList.stream().map(SysRoleMenu::getMenuId).distinct().collect(Collectors.toList());
+        List<SysRoleMenu> roleMenuList = roleMenuMapper.selectList(new QueryWrapper<SysRoleMenu>().lambda()
+                .in(SysRoleMenu::getRoleId, roleIdList));
+        return roleMenuList.stream().map(SysRoleMenu::getMenuId).distinct().collect(Collectors.toList());
+    }
+
+    private List<SysMenu> loadRoleMenusForRuntime(Long userId, Long filterSystemId) {
+        List<Long> menuIdList = resolveRoleMenuIds(userId);
         if (CollectionUtils.isEmpty(menuIdList)) {
             return new ArrayList<>();
         }
         List<SysMenu> menuList = loadMenusWithAncestors(menuIdList);
-        List<MenuVo> menuVoList = new ArrayList<>();
-        menuList.forEach(e -> menuVoList.add(toMenuVo(e, true)));
-        return menuVoList;
+        if (filterSystemId == null) {
+            return menuList;
+        }
+        return filterMenusBySystemWithAncestors(menuList, filterSystemId);
+    }
+
+    private List<SysMenu> loadAllMenusForRuntime(Long filterSystemId) {
+        List<SysMenu> menuList = menuMapper.selectList(new QueryWrapper<SysMenu>().lambda()
+                .eq(SysMenu::getStatus, CommonConstant.YES)
+                .orderByAsc(SysMenu::getOrderNum));
+        if (filterSystemId == null) {
+            return menuList;
+        }
+        return filterMenusBySystemWithAncestors(menuList, filterSystemId);
+    }
+
+    private Long resolveEffectiveSystemId() {
+        if (!isPortalEnabled()) {
+            return null;
+        }
+        Long currentSystemId = ShiroUtils.getCurrentSystemId();
+        if (currentSystemId == null) {
+            return PORTAL_MENU_BLOCKED;
+        }
+        SysSystem system = sysSystemMapper.selectById(currentSystemId);
+        if (system == null || isExternalSystem(system)) {
+            return PORTAL_MENU_BLOCKED;
+        }
+        return currentSystemId;
+    }
+
+    private boolean isPortalEnabled() {
+        if (!ssoEnabled) {
+            return false;
+        }
+        try {
+            Integer count = sysSystemMapper.selectCount(new LambdaQueryWrapper<SysSystem>()
+                    .eq(SysSystem::getStatus, SystemConstant.STATUS_ENABLED));
+            return count != null && count > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isExternalSystem(SysSystem system) {
+        return SystemConstant.SSO_MODE_EXTERNAL.equalsIgnoreCase(system.getSsoMode());
+    }
+
+    private boolean menuVisibleForSystem(SysMenu menu, Long systemId) {
+        return menu.getSystemId() == null || systemId.equals(menu.getSystemId());
+    }
+
+    private List<SysMenu> filterMenusBySystemWithAncestors(List<SysMenu> menus, Long systemId) {
+        if (CollectionUtils.isEmpty(menus) || systemId == null) {
+            return menus;
+        }
+        Map<Long, SysMenu> byId = new HashMap<>();
+        for (SysMenu menu : menus) {
+            byId.put(menu.getId(), menu);
+        }
+        Set<Long> keepIds = new LinkedHashSet<>();
+        for (SysMenu menu : menus) {
+            if (!menuVisibleForSystem(menu, systemId)) {
+                continue;
+            }
+            keepIds.add(menu.getId());
+            appendAncestorIds(menu.getParentId(), byId, keepIds);
+        }
+        return menus.stream()
+                .filter(menu -> keepIds.contains(menu.getId()))
+                .collect(Collectors.toList());
+    }
+
+    private void appendAncestorIds(Long parentId, Map<Long, SysMenu> knownMenus, Set<Long> keepIds) {
+        Long currentParentId = parentId;
+        while (currentParentId != null && currentParentId > 0) {
+            if (!keepIds.add(currentParentId)) {
+                break;
+            }
+            SysMenu parent = knownMenus.get(currentParentId);
+            if (parent == null) {
+                parent = menuMapper.selectById(currentParentId);
+                if (parent != null) {
+                    knownMenus.put(currentParentId, parent);
+                }
+            }
+            currentParentId = parent == null ? null : parent.getParentId();
+        }
     }
 
     /**

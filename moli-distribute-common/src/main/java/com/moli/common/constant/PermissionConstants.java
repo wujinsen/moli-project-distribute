@@ -67,6 +67,21 @@ public final class PermissionConstants {
     public static final String OPERATION_COMPONENT_ADD = "operation:component:add";
     public static final String OPERATION_COMPONENT_EDIT = "operation:component:edit";
     public static final String OPERATION_COMPONENT_REMOVE = "operation:component:remove";
+    /** 查看运维平台/组件明文凭据 */
+    public static final String OPERATION_SECRET_VIEW = "operation:secret:view";
+    /** 执行部署脚本 start/stop/restart（status/logs 仅需 list） */
+    public static final String OPERATION_DEPLOY_EXEC = "operation:deploy:exec";
+    /** 管理服务器 SSH 凭据（上传私钥/密码、测试连接）（SVR-13） */
+    public static final String OPERATION_SSH_MANAGE = "operation:ssh:manage";
+    /** 通过系统上传文件到远程服务器并执行后置动作（SVR-16） */
+    public static final String OPERATION_FILE_UPLOAD = "operation:file:upload";
+    /** 远程执行受控 shell 命令（SVR-18） */
+    public static final String OPERATION_COMMAND_EXEC = "operation:command:exec";
+    /** 端口矩阵管理（SVR-21） */
+    public static final String OPERATION_PORT_MATRIX_LIST = "operation:port-matrix:list";
+    public static final String OPERATION_PORT_MATRIX_ADD = "operation:port-matrix:add";
+    public static final String OPERATION_PORT_MATRIX_EDIT = "operation:port-matrix:edit";
+    public static final String OPERATION_PORT_MATRIX_REMOVE = "operation:port-matrix:remove";
 
     /** 企业知识库 · 空间管理（C 菜单 perms） */
     public static final String KB_SPACE_ADMIN = "kb:space:admin";
@@ -74,6 +89,16 @@ public final class PermissionConstants {
     public static final String KB_SPACE_EDIT = "kb:space:edit";
     public static final String KB_SPACE_REMOVE = "kb:space:remove";
     public static final String KB_SPACE_MEMBER = "kb:space:member";
+    /** 企业知识库 · 平台 LLM 系统设置（T19） */
+    public static final String KB_PLATFORM_LLM = "kb:platform:llm";
+    /** 企业知识库 · 健康体检 · 扫描并落库（KBOPS-3） */
+    public static final String KB_LINT_SCAN = "kb:lint:scan";
+    /** 企业知识库 · 触发 Wiki→MySQL 同步（KBOPS-3） */
+    public static final String KB_SYNC_TRIGGER = "kb:sync:trigger";
+    /** 企业知识库 · 运维 Dashboard（KBOPS-9） */
+    public static final String KB_OPS_DASHBOARD = "kb:ops:dashboard";
+    /** 企业知识库 · Ingest Raw 浏览器投喂（T20d） */
+    public static final String KB_INGEST_RAW_UPLOAD = "kb:ingest:rawUpload";
 
     public static final String ROLE_ASSIGN_REFRESH_MSG = "角色授权已更新，请通知相关用户刷新页面后查看新菜单";
 }

@@ -14,3 +14,15 @@ spring:
       discovery:
         server-addr: http://127.0.0.1:8848
         namespace: dev
+
+---
+
+spring:
+  profiles: pro
+  cloud:
+    nacos:
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:prod}

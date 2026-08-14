@@ -3,23 +3,29 @@ package com.moli.knowledge.server.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.constant.CommonConstant;
-import com.moli.common.core.IdGenerator;
 import com.moli.common.exception.BaseException;
 import com.moli.knowledge.server.config.KbSearchProperties;
 import com.moli.knowledge.server.dto.DocumentDetailVo;
+import com.moli.knowledge.server.dto.DocumentMoveResultVo;
 import com.moli.knowledge.server.dto.DocumentSaveRequest;
 import com.moli.knowledge.server.dto.DocumentSearchRequest;
+import com.moli.knowledge.server.dto.SyncTriggerVo;
+import com.moli.knowledge.server.entity.KbCategory;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbDocumentTag;
 import com.moli.knowledge.server.entity.KbDocumentVersion;
 import com.moli.knowledge.server.entity.KbFavorite;
-import com.moli.knowledge.server.enums.DocumentStatus;
+import com.moli.knowledge.server.mapper.KbCategoryMapper;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbDocumentTagMapper;
 import com.moli.knowledge.server.mapper.KbDocumentVersionMapper;
 import com.moli.knowledge.server.mapper.KbFavoriteMapper;
 import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbDocumentService;
+import com.moli.knowledge.server.service.KbSyncService;
+import com.moli.knowledge.server.service.KbWikiFileService;
+import com.moli.knowledge.server.support.KbDocumentFilterSupport;
+import com.moli.knowledge.server.support.KbDocumentFilterSupport.CategoryFilterScope;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,10 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +55,12 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     private KbAclService kbAclService;
     @Resource
     private KbSearchProperties kbSearchProperties;
+    @Resource
+    private KbCategoryMapper kbCategoryMapper;
+    @Resource
+    private KbWikiFileService kbWikiFileService;
+    @Resource
+    private KbSyncService kbSyncService;
 
     @Override
     public Page<KbDocument> search(DocumentSearchRequest request) {
@@ -72,21 +82,42 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             documentIds = relations.stream().map(KbDocumentTag::getDocumentId).collect(Collectors.toList());
         }
 
+        CategoryFilterScope categoryScope = KbDocumentFilterSupport.resolveCategoryScope(
+                request.getCategoryIds(), request.getCategoryId(), request.getUncategorizedOnly());
+        List<String> kbTypes = KbDocumentFilterSupport.resolveKbTypes(request.getKbTypes(), request.getKbType());
+
         if (StringUtils.isNotBlank(request.getKeyword()) && kbSearchProperties.fullTextEnabled()) {
             try {
-                return kbDocumentMapper.searchFullText(
+                Page<KbDocument> result = kbDocumentMapper.searchFullText(
                         new Page<>(request.getPageNum(), request.getPageSize()),
                         singleSpaceId,
                         multiSpaceIds,
-                        request.getCategoryId(),
+                        categoryScope.getCategoryIds(),
+                        categoryScope.isIncludeUncategorized(),
                         request.getStatus(),
                         documentIds,
-                        request.getKeyword().trim());
+                        request.getKeyword().trim(),
+                        StringUtils.trimToNull(request.getSource()),
+                        kbTypes);
+                if (result.getTotal() > 0) {
+                    return result;
+                }
+                log.debug("Fulltext search returned 0 hits, fallback to LIKE for keyword: {}",
+                        request.getKeyword());
             } catch (Exception e) {
                 log.warn("Fulltext search failed, fallback to LIKE: {}", e.getMessage());
             }
         }
 
+        return searchByLike(request, singleSpaceId, scopeSpaces, categoryScope, kbTypes, documentIds);
+    }
+
+    private Page<KbDocument> searchByLike(DocumentSearchRequest request,
+                                          Long singleSpaceId,
+                                          List<Long> scopeSpaces,
+                                          CategoryFilterScope categoryScope,
+                                          List<String> kbTypes,
+                                          List<Long> documentIds) {
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KbDocument::getIsDelete, CommonConstant.UN_DELETE);
         if (singleSpaceId != null) {
@@ -94,19 +125,23 @@ public class KbDocumentServiceImpl implements KbDocumentService {
         } else {
             wrapper.in(KbDocument::getSpaceId, scopeSpaces);
         }
-        if (request.getCategoryId() != null) {
-            wrapper.eq(KbDocument::getCategoryId, request.getCategoryId());
-        }
+        KbDocumentFilterSupport.applyCategoryScope(wrapper, categoryScope);
         if (request.getStatus() != null) {
             wrapper.eq(KbDocument::getStatus, request.getStatus());
         }
+        KbDocumentFilterSupport.applyKbTypes(wrapper, kbTypes);
         if (StringUtils.isNotBlank(request.getKeyword())) {
-            wrapper.and(w -> w.like(KbDocument::getTitle, request.getKeyword())
-                    .or().like(KbDocument::getSummary, request.getKeyword())
-                    .or().like(KbDocument::getContent, request.getKeyword()));
+            String keyword = request.getKeyword().trim();
+            wrapper.and(w -> w.like(KbDocument::getTitle, keyword)
+                    .or().like(KbDocument::getSlug, keyword)
+                    .or().like(KbDocument::getSummary, keyword)
+                    .or().like(KbDocument::getContent, keyword));
         }
         if (request.getTagId() != null) {
             wrapper.in(KbDocument::getId, documentIds);
+        }
+        if (StringUtils.isNotBlank(request.getSource())) {
+            wrapper.eq(KbDocument::getSource, request.getSource().trim());
         }
         wrapper.orderByDesc(KbDocument::getUpdateTime);
         return kbDocumentMapper.selectPage(new Page<>(request.getPageNum(), request.getPageSize()), wrapper);
@@ -127,76 +162,74 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Long save(DocumentSaveRequest request) {
-        if (request.getId() == null) {
-            return createDocument(request);
-        }
-        return updateDocument(request);
+        rejectDirectDocumentWrite();
+        return null; // unreachable
     }
 
-    private Long createDocument(DocumentSaveRequest request) {
-        kbAclService.assertCanEdit(request.getSpaceId());
-        KbDocument document = new KbDocument();
-        BeanUtils.copyProperties(request, document);
-        document.setId(IdGenerator.getId());
-        document.setDocType(StringUtils.defaultIfBlank(request.getDocType(), "markdown"));
-        document.setStatus(request.getStatus() == null ? DocumentStatus.DRAFT.getCode() : request.getStatus());
-        document.setViewCount(0);
-        document.setLikeCount(0);
-        document.setVersionNo(1);
-        if (DocumentStatus.PUBLISHED.getCode() == document.getStatus()) {
-            document.setPublishTime(new Date());
-        }
-        kbDocumentMapper.insert(document);
-        saveDocumentTags(document.getId(), request.getTagIds());
-        saveVersion(document, request.getChangeLog());
-        return document.getId();
-    }
-
-    private Long updateDocument(DocumentSaveRequest request) {
-        KbDocument existing = getActiveDocument(request.getId());
-        kbAclService.assertCanEdit(existing.getSpaceId());
-        int nextVersion = existing.getVersionNo() == null ? 1 : existing.getVersionNo() + 1;
-
-        KbDocument document = new KbDocument();
-        BeanUtils.copyProperties(request, document);
-        document.setVersionNo(nextVersion);
-        if (DocumentStatus.PUBLISHED.getCode() == document.getStatus() && existing.getPublishTime() == null) {
-            document.setPublishTime(new Date());
-        }
-        kbDocumentMapper.updateById(document);
-        kbDocumentTagMapper.delete(new LambdaQueryWrapper<KbDocumentTag>().eq(KbDocumentTag::getDocumentId, document.getId()));
-        saveDocumentTags(document.getId(), request.getTagIds());
-        saveVersion(document, request.getChangeLog());
-        return document.getId();
+    private void rejectDirectDocumentWrite() {
+        throw new BaseException(
+                "已停用 Web 直连写库：请通过 PUT /kb/wiki/page 保存 wiki 源文件，再触发 Wiki 同步（sync_to_db）");
     }
 
     @Override
     public void publish(Long id) {
-        KbDocument document = getActiveDocument(id);
-        kbAclService.assertCanEdit(document.getSpaceId());
-        document.setStatus(DocumentStatus.PUBLISHED.getCode());
-        if (document.getPublishTime() == null) {
-            document.setPublishTime(new Date());
-        }
-        kbDocumentMapper.updateById(document);
+        rejectDirectDocumentWrite();
     }
 
     @Override
     public void archive(Long id) {
-        KbDocument document = getActiveDocument(id);
-        kbAclService.assertCanEdit(document.getSpaceId());
-        document.setStatus(DocumentStatus.ARCHIVED.getCode());
-        kbDocumentMapper.updateById(document);
+        rejectDirectDocumentWrite();
     }
 
     @Override
     public void delete(Long id) {
-        KbDocument document = getActiveDocument(id);
-        kbAclService.assertCanEdit(document.getSpaceId());
-        document.setIsDelete(CommonConstant.IS_DELETE);
-        kbDocumentMapper.updateById(document);
+        rejectDirectDocumentWrite();
+    }
+
+    @Override
+    public DocumentMoveResultVo move(Long docId, Long toCategoryId) {
+        if (toCategoryId == null) {
+            throw new BaseException("目标分类不能为空");
+        }
+        KbDocument doc = getActiveDocument(docId);
+        kbAclService.assertCanEdit(doc.getSpaceId());
+        if (!"kb".equals(doc.getSource())) {
+            throw new BaseException("仅 wiki 来源文档可移动分类（manual 文档不支持）");
+        }
+        if (StringUtils.isBlank(doc.getSlug())) {
+            throw new BaseException("文档缺少 slug，无法定位 wiki 文件");
+        }
+
+        KbCategory category = kbCategoryMapper.selectById(toCategoryId);
+        if (category == null || !CommonConstant.UN_DELETE.equals(category.getIsDelete())) {
+            throw new BaseException("目标分类不存在");
+        }
+        if (!category.getSpaceId().equals(doc.getSpaceId())) {
+            throw new BaseException("不能跨空间移动分类");
+        }
+        if (StringUtils.isBlank(category.getDirSlug())) {
+            throw new BaseException("目标分类未绑定目录，无法移动");
+        }
+
+        String fromSlug = doc.getSlug();
+        String stem = fromSlug.contains("/") ? fromSlug.substring(fromSlug.lastIndexOf('/') + 1) : fromSlug;
+        String toSlug = category.getDirSlug() + "/" + stem;
+        if (toSlug.equals(fromSlug)) {
+            throw new BaseException("文档已在该分类下");
+        }
+
+        kbWikiFileService.movePage(doc.getSpaceId(), fromSlug, toSlug);
+        SyncTriggerVo sync = kbSyncService.triggerAfterEdit(doc.getSpaceId());
+
+        DocumentMoveResultVo vo = new DocumentMoveResultVo();
+        vo.setDocId(docId);
+        vo.setFromSlug(fromSlug);
+        vo.setToSlug(toSlug);
+        vo.setCategoryId(toCategoryId);
+        vo.setSyncSuccess(sync != null && sync.isSuccess());
+        vo.setSyncOutputTail(sync == null ? null : sync.getOutputTail());
+        return vo;
     }
 
     @Override
@@ -215,32 +248,6 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             throw new BaseException("文档不存在");
         }
         return document;
-    }
-
-    private void saveDocumentTags(Long documentId, List<Long> tagIds) {
-        if (CollectionUtils.isEmpty(tagIds)) {
-            return;
-        }
-        for (Long tagId : tagIds) {
-            KbDocumentTag relation = new KbDocumentTag();
-            relation.setId(IdGenerator.getId());
-            relation.setDocumentId(documentId);
-            relation.setTagId(tagId);
-            kbDocumentTagMapper.insert(relation);
-        }
-    }
-
-    private void saveVersion(KbDocument document, String changeLog) {
-        KbDocumentVersion version = new KbDocumentVersion();
-        version.setId(IdGenerator.getId());
-        version.setDocumentId(document.getId());
-        version.setVersionNo(document.getVersionNo());
-        version.setTitle(document.getTitle());
-        version.setContent(document.getContent());
-        version.setChangeLog(changeLog);
-        version.setCreateId(ShiroUtils.getUserId());
-        version.setCreateTime(new Date());
-        kbDocumentVersionMapper.insert(version);
     }
 
     private List<Long> listTagIds(Long documentId) {

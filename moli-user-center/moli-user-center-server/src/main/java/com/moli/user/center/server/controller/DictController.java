@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,7 @@ public class DictController {
         page.setCurrent(dictTypeVo.getPageNum());
         page.setSize(dictTypeVo.getPageSize());
         dictTypeMapper.selectPage(page, lambdaQueryWrapper);
+
         Long total = page.getTotal();
         result.setTotal(total.intValue());
         result.setList(page.getRecords());

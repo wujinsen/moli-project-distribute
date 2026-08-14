@@ -16,6 +16,13 @@
 
 认证与鉴权由 **Apache Shiro** 实现，Session 与权限缓存存储在 **Redis**，支持多实例部署下的分布式会话。
 
+![RBAC 模型](../diagrams/png/moli-rbac-model.png)
+
+> 可编辑源文件：[moli-rbac-model.drawio](../diagrams/moli-rbac-model.drawio)
+
+<details>
+<summary>ASCII 备查（实体关系简图）</summary>
+
 ```
 ┌─────────┐     N:N      ┌─────────┐     N:N      ┌─────────┐
 │  用户   │─────────────▶│  角色   │─────────────▶│  菜单   │
@@ -29,6 +36,8 @@
 │ SysDept │
 └─────────┘
 ```
+
+</details>
 
 ---
 
@@ -114,6 +123,13 @@
 
 ### 4.1 登录
 
+![登录与业务鉴权流程](../diagrams/png/moli-auth-flow.png)
+
+> 可编辑源文件：[moli-auth-flow.drawio](../diagrams/moli-auth-flow.drawio)
+
+<details>
+<summary>ASCII 备查（登录时序简图）</summary>
+
 ```
 客户端                    用户中心                         Redis
   │                         │                              │
@@ -127,6 +143,8 @@
   │◀── LoginVo ────────────│                              │
   │   token + user + menus  │                              │
 ```
+
+</details>
 
 **登录接口**：`POST /login`
 
@@ -172,7 +190,12 @@
 
 ### 5.1 菜单授权（已实现）
 
-普通用户菜单查询链路：
+![菜单授权查询链路](../diagrams/png/moli-rbac-menu-query.png)
+
+> 可编辑源文件：[moli-rbac-menu-query.drawio](../diagrams/moli-rbac-menu-query.drawio)
+
+<details>
+<summary>ASCII 备查（查询步骤）</summary>
 
 ```
 用户 ID
@@ -181,6 +204,8 @@
   → sys_menu（查菜单详情）
   → 构建 MenuVo 树（createTree）
 ```
+
+</details>
 
 **超级管理员**：用户名为 `admin` 时，跳过角色过滤，返回全部菜单。
 
@@ -262,7 +287,14 @@ public MoliResult delete(@PathVariable Long[] userIds) { ... }
 
 ## 7. 跨服务认证
 
-其他微服务（如 `moli-order`、`moli-bi`）通过 **`moli-user-center-shiro-starter`** 集成会话校验与 Dubbo：
+![用户中心平台定位与跨服务 Session](../diagrams/png/moli-user-center-position.png)
+
+> 可编辑源文件：[moli-user-center-position.drawio](../diagrams/moli-user-center-position.drawio)
+
+其他微服务（如 `moli-order`、`moli-ai`）通过 **`moli-user-center-shiro-starter`** 集成会话校验与 Dubbo：
+
+<details>
+<summary>ASCII 备查（跨服务交互简图）</summary>
 
 ```
 业务服务                         用户中心
@@ -273,6 +305,8 @@ public MoliResult delete(@PathVariable Long[] userIds) { ... }
     │                               │
     │── Authorization 请求头 ────────│  外部流量经网关透传 sessionId
 ```
+
+</details>
 
 - **`ShiroConfig`**：在 Spring `@Configuration` 上使用 `@DubboReference` 注入 `UserCenterServer`，创建 `ShiroRealm` 时通过 `setUserCenterServer()` 传入
 - **`ShiroRealm`（starter）**：不在业务服务登录；仅还原 user-center 签发的 Session，授权时 Dubbo 拉权限

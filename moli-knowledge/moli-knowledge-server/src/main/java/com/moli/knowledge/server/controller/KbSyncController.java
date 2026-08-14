@@ -2,9 +2,11 @@ package com.moli.knowledge.server.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.common.core.MoliResult;
+import com.moli.knowledge.server.dto.KbDriftReportVo;
 import com.moli.knowledge.server.dto.SyncStatusVo;
 import com.moli.knowledge.server.dto.SyncTriggerVo;
 import com.moli.knowledge.server.entity.KbSyncLog;
+import com.moli.knowledge.server.service.KbDriftService;
 import com.moli.knowledge.server.service.KbSyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +25,15 @@ public class KbSyncController {
 
     @Resource
     private KbSyncService kbSyncService;
+    @Resource
+    private KbDriftService kbDriftService;
+
+    @GetMapping("/drift")
+    @ApiOperation("KBOPS-A3 · wiki 磁盘 vs kb_document 漂移检测（按 contentHash）")
+    public MoliResult<KbDriftReportVo> drift(@RequestParam Long spaceId,
+                                             @RequestParam(required = false) Integer sampleLimit) {
+        return MoliResult.success(kbDriftService.drift(spaceId, sampleLimit));
+    }
 
     @GetMapping("/logs")
     @ApiOperation("同步日志分页（需空间管理权限）")
@@ -40,9 +51,10 @@ public class KbSyncController {
     }
 
     @PostMapping("/trigger")
-    @ApiOperation("触发 sync_to_db.py 写库")
+    @ApiOperation("触发 sync_to_db.py 写库；async=true 时后台执行并轮询 status")
     public MoliResult<SyncTriggerVo> trigger(@RequestParam(required = false) Long spaceId,
-                                             @RequestParam(required = false) String spaceCode) {
-        return MoliResult.success(kbSyncService.trigger(spaceId, spaceCode));
+                                             @RequestParam(required = false) String spaceCode,
+                                             @RequestParam(required = false, defaultValue = "false") boolean async) {
+        return MoliResult.success(kbSyncService.trigger(spaceId, spaceCode, async));
     }
 }

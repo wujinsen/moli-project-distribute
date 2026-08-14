@@ -1,0 +1,139 @@
+# KB eval regression gate (AI-3)
+#
+# - ngram-gate: blocking on PR / manual dispatch (no sidecar)
+# - hybrid-observe: non-blocking nightly (needs full stack + sidecar)
+# - Thresholds only from kb/eval/baselines.json (--gate-from-baselines)
+#
+# Secrets (optional; missing → job skipped with notice):
+#   MOLI_LOGIN_BASE / MOLI_KB_BASE / MOLI_EVAL_USER / MOLI_EVAL_PASS
+#   KB_SYNC_DB_* or MYSQL_* for --emit-db
+
+name: KB Eval Gate
+
+on:
+  pull_request:
+    paths:
+      - 'moli-knowledge/kb/**'
+      - 'moli-knowledge/moli-knowledge-server/**'
+      - 'docs/sql/31_kb_eval_run.sql'
+      - '.github/workflows/kb-eval.yml'
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: 'Eval strategy (ngram | hybrid | hybrid-rerank | all)'
+        required: true
+        default: ngram
+        type: choice
+        options:
+          - ngram
+          - hybrid
+          - hybrid-rerank
+          - all
+  schedule:
+    - cron: '0 18 * * *'
+
+concurrency:
+  group: kb-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ngram-gate:
+    name: ngram gate (blocking)
+    if: >
+      github.event_name == 'pull_request'
+      || (github.event_name == 'workflow_dispatch' && (github.event.inputs.strategy == 'ngram' || github.event.inputs.strategy == 'all'))
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Install dependencies
+        run: pip install -r moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Check eval stack secrets
+        id: stack
+        env:
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+          MOLI_KB_BASE: ${{ secrets.MOLI_KB_BASE }}
+          MOLI_EVAL_USER: ${{ secrets.MOLI_EVAL_USER }}
+          MOLI_EVAL_PASS: ${{ secrets.MOLI_EVAL_PASS }}
+        run: |
+          if [[ -z "${MOLI_LOGIN_BASE}" || -z "${MOLI_KB_BASE}" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::KB eval skipped: set MOLI_LOGIN_BASE + MOLI_KB_BASE secrets for live stack"
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Run ngram eval + baselines gate
+        if: steps.stack.outputs.skip != 'true'
+        env:
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+          MOLI_KB_BASE: ${{ secrets.MOLI_KB_BASE }}
+          MOLI_EVAL_USER: ${{ secrets.MOLI_EVAL_USER }}
+          MOLI_EVAL_PASS: ${{ secrets.MOLI_EVAL_PASS }}
+          KB_SYNC_HOST: ${{ secrets.KB_SYNC_DB_HOST }}
+          KB_SYNC_PORT: ${{ secrets.KB_SYNC_DB_PORT }}
+          KB_SYNC_USER: ${{ secrets.KB_SYNC_DB_USER }}
+          KB_SYNC_PASSWORD: ${{ secrets.KB_SYNC_DB_PASSWORD }}
+          KB_SYNC_DB: ${{ secrets.KB_SYNC_DB_NAME }}
+          GITHUB_SHA: ${{ github.sha }}
+        working-directory: moli-knowledge/kb/tools
+        run: |
+          python eval_ask.py --strategy ngram --gate-from-baselines --emit-db
+
+  hybrid-observe:
+    name: hybrid observe (non-blocking)
+    if: >
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.strategy == 'hybrid' || github.event.inputs.strategy == 'all'))
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Install dependencies
+        run: pip install -r moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Check eval stack secrets
+        id: stack
+        env:
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+          MOLI_KB_BASE: ${{ secrets.MOLI_KB_BASE }}
+        run: |
+          if [[ -z "${MOLI_LOGIN_BASE}" || -z "${MOLI_KB_BASE}" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::hybrid observe skipped: missing stack secrets"
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Run hybrid eval + baselines gate (observe only)
+        if: steps.stack.outputs.skip != 'true'
+        env:
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+          MOLI_KB_BASE: ${{ secrets.MOLI_KB_BASE }}
+          MOLI_EVAL_USER: ${{ secrets.MOLI_EVAL_USER }}
+          MOLI_EVAL_PASS: ${{ secrets.MOLI_EVAL_PASS }}
+          KB_SYNC_HOST: ${{ secrets.KB_SYNC_DB_HOST }}
+          KB_SYNC_PORT: ${{ secrets.KB_SYNC_DB_PORT }}
+          KB_SYNC_USER: ${{ secrets.KB_SYNC_DB_USER }}
+          KB_SYNC_PASSWORD: ${{ secrets.KB_SYNC_DB_PASSWORD }}
+          KB_SYNC_DB: ${{ secrets.KB_SYNC_DB_NAME }}
+          GITHUB_SHA: ${{ github.sha }}
+        working-directory: moli-knowledge/kb/tools
+        run: |
+          python eval_ask.py --strategy hybrid --gate-from-baselines --emit-db || \
+            echo "::warning::hybrid observe gate failed (non-blocking)"

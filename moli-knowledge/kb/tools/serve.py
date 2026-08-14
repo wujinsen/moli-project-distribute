@@ -287,11 +287,15 @@ def score_page(page: dict, terms) -> int:
     title = page["title"].lower()
     tags = " ".join(page["tags"]).lower()
     body = page["body"].lower()
+    slug = (page.get("slug") or "").lower()
     score = 0
     for t in terms:
         score += title.count(t) * 5
         score += tags.count(t) * 3
-        score += body.count(t) * 1
+        score += min(body.count(t), 8)
+        score += slug.count(t) * 4
+    if "/annex-" in slug and score > 0:
+        score //= 3
     return score
 
 
@@ -440,7 +444,15 @@ def detect_scope(query: str):
         return ["interview"], exclude, "命中『面试题』意图 → 限 type:interview"
     if re.search(r"方案|解决|最佳实践|优化|调优|排查", q):
         return ["article", "concept"], exclude, "命中『方案/最佳实践』意图 → 限 type:article + concept"
-    if re.search(r"怎么|如何|启动|部署|配置|登录|操作|步骤|开通", q):
+    if re.search(r"是怎么设计|如何设计|怎样设计|怎么设计|设计思路|概要设计|架构设计|"
+                 r"是怎么工作|如何工作|怎样工作|怎么工作|工作原理|什么原理|怎么实现|如何实现", q):
+        return ["concept", "article", "service"], exclude, "命中『设计/原理』意图 → 限 concept + article + service"
+    if not re.search(r"三操作", q) and re.search(
+            r"怎么启动|如何启动|怎么部署|如何部署|怎么配置|如何配置|"
+            r"怎么登录|如何登录|怎么操作|如何操作|操作步骤|怎么用|如何使用|怎么使用|"
+            r"怎么跑|如何跑|怎么开通|如何开通|怎么提问|如何提问|怎么查询|如何查询|"
+            r"怎么向|如何向|怎么同步|如何同步|怎么初始化|如何初始化|"
+            r"体检怎么|提问怎么|查询怎么|同步怎么|启动|部署|配置|登录|步骤|开通|体检", q):
         return ["guide", "service"], exclude, "命中『怎么操作』意图 → 限 type:guide + service"
     return None, exclude, "未识别明确类型 → 全库检索"
 

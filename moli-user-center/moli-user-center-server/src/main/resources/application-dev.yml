@@ -21,8 +21,8 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: ${OPS_UPLOAD_MAX_FILE_SIZE:200MB}
+      max-request-size: ${OPS_UPLOAD_MAX_REQUEST_SIZE:210MB}
 
   output:
     ansi:
@@ -64,3 +64,13 @@ minio:
 
 swagger:
   show: true
+
+ops:
+  secret:
+    key: your-local-dev-secret
+  command:
+    enabled: true
+  deploy:
+    enabled: true                # 若要用 restartService 后置
+  upload:
+    enabled: true

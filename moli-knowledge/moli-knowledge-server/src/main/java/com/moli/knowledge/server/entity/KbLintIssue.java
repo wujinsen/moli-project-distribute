@@ -33,6 +33,12 @@ public class KbLintIssue implements Serializable {
     @ApiModelProperty("0待处理 1已忽略 2已修复")
     private Integer status;
 
+    @ApiModelProperty("处理人用户ID")
+    private Long assigneeId;
+
+    @ApiModelProperty("0普通 1高 2紧急")
+    private Integer priority;
+
     @ApiModelProperty("扫描时间")
     private Date scanTime;
 

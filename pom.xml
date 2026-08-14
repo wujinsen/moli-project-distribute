@@ -18,7 +18,7 @@
         <module>moli-gateway</module>
         <module>moli-user-center</module>
         <module>moli-order</module>
-        <module>moli-bi</module>
+        <module>moli-ai</module>
         <module>moli-knowledge</module>
     </modules>
 

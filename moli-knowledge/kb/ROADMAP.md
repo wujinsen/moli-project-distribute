@@ -1,6 +1,6 @@
 # 企业级知识库 · 功能规划（LLM-Wiki 范式）
 
-> 更新：2026-06-22
+> 更新：2026-06-28
 > 范式：Karpathy「LLM-Wiki」为主。知识 = 由 Agent 维护的、持久互链的 markdown wiki。
 > 规则契约见 [AGENTS.md](AGENTS.md)。本文件是功能规划的**唯一入口**。
 >
@@ -54,9 +54,11 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 | **M2 同步打通** | kb + server | ✅ 同步脚本 [`kb/tools/sync_to_db.py`](tools/sync_to_db.py)（dry-run 已通）；✅ `kb_document` 加 `slug` 唯一键 + 同步三件套；✅ Java 只读查询/详情 API |
 | **M3 Web 门面** | server | ✅ 前端展示（目录树/页面/关系图/搜索）+ 接 Shiro ACL（见 TASKS T5/T6/T11） |
 | **M4 检索后端** | server | ✅ **第一阶段：MySQL ngram 全文索引**（browse `search` + Query `ask` 均走 `MATCH AGAINST`，ask 改为全文召回 top-N + 内存精排，去掉全量扫描）；🔜 信号触发再上 Meilisearch/ES（见 §五③） |
-| **M5 Web Wiki 编辑** | kb + server + meiling-ui | 🔜 **界面编辑 wiki**：Markdown 编辑 + **AI 协助改稿** + **改前/后 diff** + 保存回 `kb/wiki/*.md` → Sync（见 [[Wiki在线编辑与AI协助改稿]]、TASKS T14） |
+| **M5 Web Wiki 编辑** | kb + server + meiling-ui | ✅ **单篇**编辑：Markdown + AI 改稿 + enrich + 保存 → Sync（[[Wiki在线编辑与AI协助改稿]]、T14） |
+| **M6 Ingest 工作台** | kb + server + meiling-ui | ✅ **批次 Ingest**：raw→Plan→多页→lint→commit→Sync（[[Ingest工作台产品方案]]、T15）；前端 nextSteps/conflicts UI 🔵 |
+| **M7 Wiki 治理** | kb + server + meiling-ui | ✅ 后端 lint-space + script/ai/auto-fix + merge-hint（T16a/e/g）；🔵 前端 T16f 全链路 UI |
 
-> **M5 与铁律**：仍保持 **wiki 为唯一正文源**；Web 不写 `kb_document` 正文，而是通过 `PUT /kb/wiki/page` 写服务器 wiki 文件后再 Sync。Java 服务不提供「只改 MySQL 不回 wiki」的默认路径。
+> **M5 / M6 / M7 与铁律**：仍保持 **wiki 为唯一正文源**；Web 不写 `kb_document` 正文，而是写服务器 wiki 文件后再 Sync。
 
 ---
 
@@ -111,7 +113,7 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 |------|----------|--------|------|
 | ① 纯 index | < ~300 页 | `index.md` 直读 + 全文读 | ✅ Agent 层（kb/ + serve.py）现仍用 |
 | ② 本地混合检索 | ~300–1000 页 / 召回变差 | qmd（本地 BM25+小向量+rerank，无服务） | 💤 暂不需要（Agent 层 index 仍够用） |
-| ③ 检索后端 | >1000–2000 页 / 多人产品 | **MySQL ngram 全文（已上）** → Meilisearch/Typesense → ES（海量）→ 向量库（语义） | ✅ **MySQL ngram 全文已落地**（产品层 browse+ask）；Meilisearch/ES 留待召回/规模信号 |
+| ③ 检索后端 | >1000–2000 页 / 多人产品 | **MySQL ngram 全文（已上）** → **chunk 切段（规范已定）** → Meilisearch/Typesense → ES（海量）→ 向量库（语义） | ✅ ngram 已落地；🔜 chunk 实现（[[知识库-chunk切段规范]]） |
 
 > 详见 [AGENTS.md §7](AGENTS.md)。原则：先把 markdown wiki 跑厚，搜不准再上 qmd，产品化才谈服务端。
 >
@@ -121,6 +123,10 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 > 「ngram 全文按相关度召回 ≤`kb.search.ask-candidate-limit`(默认100) 页 → 内存 bigram 精排」，
 > 并保留全文未启用/0 命中时的全量扫描兜底。只有当召回明显变差或文档量再上一个量级、
 > 或需要语义检索时，才升级到 Meilisearch/Typesense（独立服务）或向量库。
+>
+> **2026-07-16**：向量/Hybrid/Rerank 已从「按需再说」升级为**排期任务**（AI-2），连同评测扩容（AI-1）、
+> GraphRAG（AI-5）、Agentic RAG（AI-7）等统一规划——见
+> [`docs/design/ai-capability-roadmap.md`](../../docs/design/ai-capability-roadmap.md)。
 
 ---
 
@@ -130,9 +136,11 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 |------|------|------|
 | 图谱浏览 | Obsidian 打开 `kb/` 看关系图；或基于 `edges.jsonl` 自渲染 | 🔜 |
 | 多人 Web | kb → `kb_document` 单向同步，Java `moli-knowledge-server` 对外服务（M2/M3） | ✅ 浏览/问答/图谱/体检 |
-| **Wiki 在线编辑** | 浏览/体检入口 → 编辑页 → AI 改稿 → diff → 保存 wiki → Sync | 🔜 M5 / T14 |
+| **Wiki 在线编辑（单篇）** | 浏览/体检 → 编辑页 → AI 改稿 → diff → 保存 wiki → Sync | ✅ M5 / T14 |
+| **Ingest 工作台（批次）** | raw 选源 → Plan → 多页草稿 → diff → lint → commit → Sync | ✅ M6 / T15（前端部分 🔵） |
+| **Wiki 治理（空间级）** | lint-space → script/ai/auto-fix → merge-hint → Sync | ✅ 后端 T16；🔵 T16f UI |
 | 权限隔离 | 复用现有 Shiro + Dubbo，在服务层/检索选页时做 ACL 过滤 | ✅ 空间 viewer/editor |
-| 评测 | 标准问答集 + 答对率/命中率/引用可追溯，回归看改动好坏 | 💤 |
+| 评测 | 标准问答集 + 答对率/命中率/引用可追溯，回归看改动好坏 | 🔜 骨架已建：`kb/eval/golden.jsonl`（12 题）+ `kb/tools/eval_ask.py`（hit@k/MRR/coverage，`--min-hit` 可作 CI 门禁）；待跑通基线并扩题 |
 
 ---
 
@@ -140,5 +148,9 @@ kb/wiki/*.md ──[同步脚本: 解析 frontmatter+正文]──▶ kb_documen
 
 - ✅ 已定范式、写好 `AGENTS.md` 契约、搭好 wiki 骨架。
 - ✅ 已示范 ingest 顶层 README → 5 页（guides/services/concepts），含关系边。
-- ✅ **Agent 知识治理自动化落地**：`kb/tools/lint.py` 分级体检（断链/孤儿/缺来源/缺概念/过时/重复/frontmatter），CI 已挂 report-only 步骤，详见 [查询与体检指南](wiki/guides/查询与体检指南.md)。
-- 🔜 下一步候选：治理 lint 报告里的 66 处断链（多为大小写写错，可批量修）与 988 孤儿页（批量页未进 index/未交叉引用）；之后把 CI 的 `lint` 升级为 `lint-strict` 门禁。
+- ✅ **Phase 0 治理（2026-06-25）**：运维页归位 `wiki-moli/`；清批次占位页；wiki **375 页**；CI **`lint-strict` 门禁** + `sync-all` 三空间。
+- ✅ **Agent 知识治理自动化**：[`kb/tools/lint.py`](tools/lint.py) 分级体检；PR 阻断 ERROR/WARN。
+- ✅ **M5 T14**：单篇 Wiki 在线编辑 + AI 改稿 + enrich（[[Wiki在线编辑与AI协助改稿]]）。
+- ✅ **M6 T15**：批次 Ingest 工作台（[[Ingest工作台产品方案]]）；前端 nextSteps/conflicts 🔵。
+- ✅ **M7 T16 后端**：Wiki 治理 lint-space + 批量修复 + merge-hint；**T16f 前端** 🔵。
+- 💤 `serve.py` 提炼 Tab：保留为**本地辅助**，不进 Web 产品主线。

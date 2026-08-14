@@ -27,7 +27,7 @@ Built on **Spring Cloud + Spring Cloud Alibaba**, covering service discovery, AP
 
 - **Service ↔ Service uses Dubbo only**: high-performance binary RPC, not exposed over HTTP, which avoids the risk of internal endpoints being reachable from outside.
   - Provider: user-center `UserServerProvider` (`@DubboService(version="1.0.0", group="moli")`).
-  - Consumers: `order-server` / `bi-server` use `@DubboReference` in `ShiroConfig`, then inject into `ShiroRealm` for login authentication.
+  - Consumers: `order-server` / `ai-server` use `@DubboReference` in `ShiroConfig`, then inject into `ShiroRealm` for login authentication.
   - Registry: Dubbo mounts to Nacos via `spring-cloud://`, sharing the Spring Cloud registry.
 - **External traffic uses HTTP/REST**: browser / `meiling-ui` → gateway → service controllers, unified `MoliResult<T>` response.
 - Note: the earlier OpenFeign example (`UserCenterClient`) has been removed to avoid exposing REST endpoints for internal calls. See `docs/en/ARCHITECTURE.md`.
@@ -103,7 +103,7 @@ Built on **Spring Cloud + Spring Cloud Alibaba**, covering service discovery, AP
 | moli-user-center-server | Nacos, Sentinel, Dubbo, MyBatis-Plus, Shiro, Redis, MinIO |
 | moli-user-center-client | Nacos Discovery, Spring Cloud Dubbo, `UserCenterServer` contract, Shiro integration |
 | moli-order-server | Nacos, Sentinel, Dubbo, MyBatis-Plus, Shiro (client module) |
-| moli-bi-server | Nacos, Dubbo, Shiro (client module) |
+| moli-ai-server | Nacos, Dubbo, Shiro (client module); application name `ai-server` |
 
 ---
 

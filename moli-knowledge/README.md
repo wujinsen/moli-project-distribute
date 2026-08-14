@@ -2,27 +2,36 @@
 
 茉莉的企业级知识库模块。采用 **AutoSci / LLM-Wiki 范式**（以 Karpathy「LLM-Wiki」为主、AutoSci 为辅），由两条轨道组成：
 
+![知识库双轨架构](../docs/diagrams/png/moli-kb-architecture.png)
+
+> 可编辑源文件：[moli-kb-architecture.drawio](../docs/diagrams/moli-kb-architecture.drawio) · 全链路见 [moli-kb-raw-pipeline.drawio](../docs/diagrams/moli-kb-raw-pipeline.drawio)
+
+<details>
+<summary>ASCII 备查</summary>
+
 ```
                  投喂源 / 提问 / 定方向
                           │
                           ▼
    ┌──────────────────────────────────────────┐
-   │  kb/   LLM-Wiki（大脑 · 单一知识源）        │   ← AI Agent 维护的 markdown 互链知识库
-   │  raw/ 原始源 → wiki/ 结构化页 + 交叉引用      │     编写 / 去重 / 提炼 / 体检都在这里
+   │  kb/   LLM-Wiki（大脑 · 单一知识源）        │
+   │  raw/ 原始源 → wiki/ 结构化页 + 交叉引用      │
    └──────────────────────────────────────────┘
-                          │  单向同步（规划中：kb → kb_document）
+                          │
                           ▼
    ┌──────────────────────────────────────────┐
-   │  moli-knowledge-server/  Java REST 后端     │   ← 下游只读门面 + 对外 Web API / 鉴权
-   │  Spring Boot + MyBatis-Plus + MySQL         │     接 Shiro/Dubbo，未来出 /kb/ask Query
+   │  moli-knowledge-server/  Java REST 后端     │
    └──────────────────────────────────────────┘
 
-   kb/tools/serve.py  轻量 Viewer（零依赖）        ← 浏览器里浏览 wiki + 试 Query，看效果用
+   kb/tools/serve.py  轻量 Viewer
 ```
+
+</details>
 
 **一句话分工**：知识在 `kb/`（markdown）里产生与保鲜；`moli-knowledge-server` 把它对外服务化；`viewer` 用来快速看效果。详见 [`kb/ROADMAP.md`](kb/ROADMAP.md)。
 
-**架构图（draw.io，可编辑）**：[`docs/diagrams/`](../docs/diagrams/README.md) — 系统架构 · ER · RAW→落地全链路 · 功能流程。
+**架构图（draw.io）**：[`docs/diagrams/`](../docs/diagrams/README.md)  
+**五类文档规范**：[`docs/README.md`](../docs/README.md)
 
 ---
 
@@ -34,6 +43,8 @@
 | **`moli-knowledge-server/`** | Java REST 后端（Spring Boot），对外提供空间/分类/文档/标签/评论/收藏 + 鉴权 | `mvn spring-boot:run -Dspring-boot.run.profiles=dev`（:8090） | [README](moli-knowledge-server/README.md) |
 | **`kb/tools/serve.py`** | 零依赖本地 Viewer：浏览 wiki + 检索式 Query + 高亮引用 | `python kb/tools/serve.py` → `http://127.0.0.1:8765` | 见下「看效果」 |
 | **`kb/tools/sync_to_db.py`** | kb→DB 单向增量同步：把 wiki 写进 `kb_document` 供 Java/前端使用 | `python kb/tools/sync_to_db.py --dry-run`（先校验）/ 去掉 `--dry-run` 写库 | 见下「同步到数据库」 |
+| **`kb/tools/enrich.py`** | 已有 wiki 页 **Enrich 治理**：追加 patch + log/index/edges（与 Web `POST /kb/wiki/enrich`、Ingest EnrichWriter 对齐） | `python kb/tools/enrich.py --slug guides/foo --patch-file p.md --apply` | [`KNOWLEDGE_API.md`](../docs/api/KNOWLEDGE_API.md) §8.4 |
+| **`deep-research/`** | **AI-10 DeepResearch** sidecar（Planner/Retriever/Writer/Reviewer） | `uvicorn deep_research.main:app --port 8095` · [`deep-research/README.md`](deep-research/README.md) | [`AI-10-contract.md`](../docs/design/contracts/AI-10-contract.md) · [`KNOWLEDGE_API.md`](../docs/api/KNOWLEDGE_API.md) §3 |
 
 ---
 
@@ -72,16 +83,26 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 ## 同步到数据库（kb → kb_document）
 
-`kb/` 的 markdown 是**唯一写入源**；Java 服务只读 MySQL，不直接扫文件。
-用 `kb/tools/sync_to_db.py` 把 wiki **单向、增量、幂等**地写进 `kb_document`：
+`kb/` 下三个 wiki 目录是**唯一写入源**；Java 服务只读 MySQL，不直接扫文件。
+
+| wiki 目录 | space_code | 用途 |
+|-----------|------------|------|
+| `kb/wiki/` | `enterprise-kb` | 占位 index（茉莉正文在 wiki-moli） |
+| `kb/wiki-moli/` | `moli-ops-manual` | **茉莉系统手册**（全项目文档） |
+| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 日版 FE/AP 题库 |
+
+用 `sync_to_db.py` / `run_sync.sh` **单向、增量、幂等**写进 `kb_document`：
 
 ```powershell
-# 1. 先 dry-run，仅解析并打印计划（不连库，强烈建议先跑）
-python kb/tools/sync_to_db.py --dry-run
+# 1. 预览（三空间或单空间）
+bash kb/tools/ci/run_sync.sh dry-run-all
+# 或仅 enterprise-kb：python kb/tools/sync_to_db.py --dry-run
 
-# 2. 真正写库（需 pymysql：pip install pymysql；参数默认对齐 application-dev.yml）
-python kb/tools/sync_to_db.py --host 127.0.0.1 --user root --password 12345678 --db moli --space enterprise-kb
+# 2. 写库（推荐三空间一次同步；需 pymysql）
+bash kb/tools/ci/run_sync.sh sync-all
 ```
+
+详表与单空间命令见 `kb/wiki-moli/ops/wiki同步指南.md`。
 
 机制：
 - **slug** = wiki 相对路径去扩展名（如 `services/用户中心`），空间内唯一、与 `edges.jsonl` 节点命名一致。
@@ -108,6 +129,7 @@ python kb/tools/sync_to_db.py --host 127.0.0.1 --user root --password 12345678 -
 moli-knowledge/
   README.md                  # 本文（模块总览）
   moli-knowledge-server/     # Java REST 后端（见其 README）
+  deep-research/             # AI-10 DeepResearch Python sidecar
   kb/                        # LLM-Wiki 知识库
     AGENTS.md                #   契约（Agent 工作前必读）
     README.md  ROADMAP.md    #   说明 / 功能规划
@@ -121,9 +143,11 @@ moli-knowledge/
 ## 文档导航
 
 - 模块总览（本文）：`README.md`
+- **工程概要设计**：[`docs/design/knowledge-module-overview.md`](../docs/design/knowledge-module-overview.md)
 - Java 服务：[`moli-knowledge-server/README.md`](moli-knowledge-server/README.md)
 - 知识库范式与用法：[`kb/README.md`](kb/README.md)
 - 知识库契约（schema / 三操作）：[`kb/AGENTS.md`](kb/AGENTS.md)
-- **自我进化操作手册**（Ingest/Lint/Sync/Crystallize、AI 审校 MD）：[`kb/wiki/guides/AI自我进化与MD审校流程.md`](kb/wiki/guides/AI自我进化与MD审校流程.md)
+- **自我进化操作手册**（Ingest/Lint/Sync/Crystallize、AI 审校 MD）：[`kb/wiki-moli/develop/AI自我进化与MD审校流程.md`](kb/wiki-moli/develop/AI自我进化与MD审校流程.md)
+- **DeepResearch（AI-10）**：[`deep-research/README.md`](deep-research/README.md) · 契约 [`docs/design/contracts/AI-10-contract.md`](../docs/design/contracts/AI-10-contract.md)
 - 功能规划与双轨分工：[`kb/ROADMAP.md`](kb/ROADMAP.md)
 - 现有知识页目录：[`kb/wiki/index.md`](kb/wiki/index.md)

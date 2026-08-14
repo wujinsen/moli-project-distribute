@@ -34,7 +34,7 @@ public class MenuControllerApiTest extends AbstractApiTest {
 
     @Test
     public void GET_menu_getRouters() {
-        when(menuService.selectMenuTreeByUserId(2L)).thenReturn(Collections.emptyList());
+        when(menuService.resolveRoutersForCurrentSystem(2L)).thenReturn(Collections.emptyList());
         try (MockedStatic<SecurityUtils> shiro = ShiroMockSupport.mockUser("operator", 2L)) {
             ControllerTestSupport.assertSuccess(controller.getRouters());
         }

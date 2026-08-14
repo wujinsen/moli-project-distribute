@@ -8,6 +8,7 @@ import com.moli.user.center.common.domain.entity.SysUser;
 import com.moli.knowledge.server.entity.KbDocument;
 import com.moli.knowledge.server.entity.KbSpace;
 import com.moli.knowledge.server.entity.KbSpaceMember;
+import com.moli.knowledge.server.enums.SpaceVisibility;
 import com.moli.knowledge.server.mapper.KbDocumentMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMapper;
 import com.moli.knowledge.server.mapper.KbSpaceMemberMapper;
@@ -39,12 +40,20 @@ public class KbAclServiceImpl implements KbAclService {
     @Override
     public boolean isAdmin() {
         try {
+            if (SecurityUtils.getSubject().isPermitted(PermissionConstants.SUPER_ADMIN)) {
+                return true;
+            }
             SysUser user = ShiroUtils.getUserInfo();
-            if (user != null && StringUtils.isNotBlank(user.getUserName())
+            if (user == null) {
+                return false;
+            }
+            if (StringUtils.isNotBlank(user.getUserName())
                     && CommonConstant.hasFullPermission(user.getUserName())) {
                 return true;
             }
-            return SecurityUtils.getSubject().isPermitted(PermissionConstants.SUPER_ADMIN);
+            // Redis Session 里 SysUser 可能缺 userName，仍按种子 superadmin/admin 识别
+            Long uid = user.getId();
+            return Long.valueOf(1L).equals(uid) || Long.valueOf(2L).equals(uid);
         } catch (Exception e) {                            // 未登录/无 Subject
             return false;
         }
@@ -229,6 +238,89 @@ public class KbAclServiceImpl implements KbAclService {
     }
 
     @Override
+    public void assertPlatformLlmManage() {
+        if (isAdmin() || isPermitted(PermissionConstants.KB_PLATFORM_LLM)) {
+            return;
+        }
+        throw new BaseException("无权管理平台 LLM 配置");
+    }
+
+    @Override
+    public void assertCanSyncTrigger(Long spaceId) {
+        if (isAdmin()) {
+            return;
+        }
+        if (spaceId == null) {
+            throw new BaseException("无权触发全库同步");
+        }
+        if (isPermitted(PermissionConstants.KB_SYNC_TRIGGER)) {
+            assertCanRead(spaceId);
+            return;
+        }
+        assertCanAdmin(spaceId);
+    }
+
+    @Override
+    public void assertCanSyncView(Long spaceId) {
+        assertCanSyncTrigger(spaceId);
+    }
+
+    @Override
+    public void assertCanLintScan(Long spaceId) {
+        if (isAdmin()) {
+            return;
+        }
+        if (isPermitted(PermissionConstants.KB_LINT_SCAN)) {
+            if (spaceId != null) {
+                assertCanRead(spaceId);
+            }
+            return;
+        }
+        if (spaceId != null) {
+            assertCanEdit(spaceId);
+            return;
+        }
+        throw new BaseException("全库体检需 kb:lint:scan 或全局管理员权限");
+    }
+
+    @Override
+    public void assertCanRawUpload(Long spaceId) {
+        if (spaceId == null) {
+            throw new BaseException("spaceId 不能为空");
+        }
+        if (isAdmin()) {
+            assertCanEdit(spaceId);
+            return;
+        }
+        if (!isPermitted(PermissionConstants.KB_INGEST_RAW_UPLOAD)) {
+            throw new BaseException("无权 Raw 投喂上传（需 kb:ingest:rawUpload）");
+        }
+        assertCanEdit(spaceId);
+    }
+
+    @Override
+    public void assertCanOpsDashboard(Long spaceId) {
+        if (isAdmin()) {
+            return;
+        }
+        if (isPermitted(PermissionConstants.KB_OPS_DASHBOARD)) {
+            if (spaceId != null) {
+                assertCanRead(spaceId);
+            }
+            return;
+        }
+        if (isPermitted(PermissionConstants.KB_SYNC_TRIGGER)) {
+            if (spaceId != null) {
+                assertCanRead(spaceId);
+            } else if (accessibleSpaceIds().isEmpty()) {
+                throw new BaseException("无权查看运维 Dashboard");
+            }
+            return;
+        }
+        throw new BaseException("无权查看运维 Dashboard（需 kb:ops:dashboard 或 kb:sync:trigger）");
+    }
+
+    @Override
     public List<Long> resolveReadableSpaceIds(Long spaceId, List<Long> spaceIds) {
         if (spaceIds != null && !spaceIds.isEmpty()) {
             Set<Long> distinct = spaceIds.stream()
@@ -302,11 +394,19 @@ public class KbAclServiceImpl implements KbAclService {
         if (userId == null) {
             return false;
         }
+        // 公开空间：任意已登录用户可读（enterprise-kb 默认 visibility=公开）
+        if (SpaceVisibility.PUBLIC.getCode() == nullSafeInt(space.getVisibility())) {
+            return true;
+        }
         // 未在 kb_space_member 分配的用户不可见；负责人默认可读
         if (userId.equals(space.getOwnerId())) {
             return true;
         }
         return memberRole(space.getId(), userId) != null;
+    }
+
+    private static int nullSafeInt(Integer value) {
+        return value == null ? SpaceVisibility.INTERNAL.getCode() : value;
     }
 
     private KbSpace loadSpace(Long spaceId) {

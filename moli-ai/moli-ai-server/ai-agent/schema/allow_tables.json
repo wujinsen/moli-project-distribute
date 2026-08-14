@@ -1,0 +1,30 @@
+{
+  "tables": [
+    {
+      "table": "seckill_order",
+      "comment": "秒杀订单",
+      "columns": [
+        {"name": "id", "type": "bigint", "comment": "订单ID"},
+        {"name": "activity_id", "type": "bigint", "comment": "活动ID"},
+        {"name": "user_id", "type": "varchar", "comment": "用户ID"},
+        {"name": "request_id", "type": "varchar", "comment": "幂等请求号"},
+        {"name": "status", "type": "tinyint", "comment": "1=成功"},
+        {"name": "create_time", "type": "datetime", "comment": "创建时间"}
+      ]
+    },
+    {
+      "table": "seckill_activity",
+      "comment": "秒杀活动",
+      "columns": [
+        {"name": "id", "type": "bigint", "comment": "活动ID"},
+        {"name": "name", "type": "varchar", "comment": "活动名称"},
+        {"name": "stock", "type": "bigint", "comment": "初始库存"},
+        {"name": "sold", "type": "bigint", "comment": "已售数量"},
+        {"name": "status", "type": "tinyint", "comment": "1=进行中"},
+        {"name": "start_time", "type": "datetime", "comment": "开始时间"},
+        {"name": "end_time", "type": "datetime", "comment": "结束时间"},
+        {"name": "create_time", "type": "datetime", "comment": "创建时间"}
+      ]
+    }
+  ]
+}

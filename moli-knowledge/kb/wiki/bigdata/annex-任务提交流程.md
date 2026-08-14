@@ -1,0 +1,120 @@
+---
+title: 任务提交流程.note（原文插图 annex）
+slug: annex-任务提交流程
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/大数据资料-王/spark/spark源码分析/任务提交流程.note.md
+related: [spark-核心概念与实践]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+- 1.
+- 2.
+
+- a.
+- b.
+- c.
+- d.
+
+
+- 3.
+
+
+在任务启动时，sparksubmit已经通过反射的⽅式调⽤了⽤户提交任务的主类中的main⽅法，所 以，本节以wordcount为例讲解 在wordcount中主要由以下⼏步：
+
+创建SparkConf，设置名字 创建SparkContent，书写程序 程序逻辑，启动任务 停⽌任务
+
+所以最重要的源码分析应该在newSparkContent（）这个步骤⾥
+
+- a.
+- b.
+
+- ⅰ.
+- ⅱ.
+
+- 1.
+- 2.
+
+
+- ⅲ.
+- ⅳ.
+- ⅴ.
+
+
+- c.
+
+- ⅰ.
+
+- 1.
+- 2. a.
+
+
+- ⅱ. 1.
+
+
+- a.
+- b.
+- c.
+
+
+- ⅰ.
+- ⅱ.
+
+
+- d.
+
+
+在281⾏定义了createSparkEnv（）⽅法，⽤来创建sparkEnv，但是还没 在526⾏定义了createTaskScheduler（）⽅法，创建了taskscheduler
+
+匹配master的模式，SPARK_REGEX(sparkUrl)为standalone模式 创建TaskSchedulerImpl
+
+定义initialize（）⽅法，接受参数为SchedulerBackend；逻辑中定义调度器类型 （默认是FIFO），在创建rotPol等 定义start（）⽅法，创建executor的通信actor
+
+创建SparkDeploySchedulerBackend（） 执⾏TaskSchedulerImpl 的initialize⽅法，将SparkDeploySchedulerBackend最为参 数传⼊ 返回SparkDeploySchedulerBackend和TaskSchedulerImpl
+
+在529⾏new DAGScheduler(this)，创建了DAGScheduler
+
+new DAGSchedulerEventProcesLop() 定义inRecive（）⽅法，调⽤doOnRecive（）⽅法 定义doOnRecive（）⽅法中匹配任务⽅式
+
+匹配JobSubmit，调⽤dagScheduler.handleJobSubmitted（） 在new DAGScheduler（）最后⼀⾏，1473⾏调⽤eventProcesLop.start()
+
+调⽤⽗类EventLop的start（）⽅法 在⽗类的start（）⽅法中，调⽤onStart（）⽅法 然后调⽤线程eventThread（）的start（）⽅法 启动线程的run（）⽅法
+
+从队列中获取事件 回调DAGSchedulerEventProcesLop的onRecive（）⽅法处理事件
+
+调⽤TaskSchedulerImpl 的start（）⽅法 调⽤⼦类SparkDeploySchedulerBackend的start⽅法，因为在init⽅法中已经传⼊了⼦类 在SparkDeploySchedulerBackend的start⽅法中：
+
+- ⅰ.
+- ⅱ. 1.
+
+
+调⽤⽗类CoarseGrainedSchedulerBackend的start⽅法 注册driverEndPoint
+
+a.
+
+b.
+
+new DriverEndPoint（） 执⾏onstart（） 定期接收任务，向⾃⼰发送ReviveOfers的case object 调⽤makeOfers（）⽅法 在makeOfers（）⽅法中，调⽤launchTask（）
+
+ⅰ.
+
+- 1.
+- 2.
+- 3.
+- 4.
+- 5.
+- 6.
+
+
+在launchTask（）中，判断集群是否有资源，决定是否发送任务 发送任务到CoarseGrainedExecutorBackend 在 CoarseGrainedExecutorBackend中提交任务
+
+- 1. a.
+- 2.
+
+
+创建ApClient（） 创建ClientEndPoint，⽤于和master通信 调⽤AppClient的start（）⽅法，创建AppClient的endpoint
+
+![image 1](assets/imageFile1.png)

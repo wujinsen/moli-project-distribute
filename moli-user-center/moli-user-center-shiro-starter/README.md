@@ -1,6 +1,6 @@
 # moli-user-center-shiro-starter
 
-用户中心 **Shiro Spring Boot Starter**：配合 user-center **单点登录**，在 order/bi 等节点只校验已签发的 Session，**不提供登录接口**。
+用户中心 **Shiro Spring Boot Starter**：配合 user-center **单点登录**，在 order/ai 等节点只校验已签发的 Session，**不提供登录接口**。
 
 自动配置类：`com.moli.user.center.starter.autoconfigure.UserCenterShiroAutoConfiguration`（`META-INF/spring.factories`）。
 

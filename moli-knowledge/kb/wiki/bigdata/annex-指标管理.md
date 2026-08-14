@@ -1,0 +1,523 @@
+---
+title: 指标管理.note（原文插图 annex）
+slug: annex-指标管理
+type: article
+status: active
+tags: [wujinsen, annex, 插图]
+sources:
+  - raw/wujinsen_markdown/BigData/架构设计/Daas/数仓建设/指标管理.note.md
+related: [数仓分层与建模]
+created: 2026-07-05
+updated: 2026-07-05
+---
+
+# ⼀、指标管理
+
+![image 1](assets/imageFile1.png)
+
+指标管理数据库模型设计
+
+![image 2](assets/imageFile2.png)
+
+- 1.数据地图
+- 2.指标字典
+- 3.元数据管理
+
+
+- 3.1数据库管理
+- 3.2数据表管理 3.3维度及指标规范管理
+
+
+3.3.1维度管理
+
+- 3.3.2原⼦指标管理
+
+- 3.3.3 修饰词管理
+- 3.3.4 时间周期管理
+
+
+- 4.指标审核
+- 5.统计项
+
+
+派⽣指标审批: 当天(周期)⼿机(修饰词)⽀付订单量(原⼦指标) 原⼦指标名：⽀付订单量 维度信息：⽇期，⼀级品类 数据库: crm_dev 表名: order_M 业务含义: 当天在热线回访⽀付成功的订单数量 计算逻辑：当天在热线回访⽀付成功的订单数量。SQL: select x from
+
+创建⼈: 张三
+
+- 1.事实表管理
+- 2.指标管理
+- 3.维度管理:
+- 4.原⼦指标管理:
+
+
+<table>
+  <tr>
+    <th>id</th>
+    <th>表名</th>
+    <th>中⽂名</th>
+    <th>表类型</th>
+    <th>数据库</th>
+    <th>负责⼈</th>
+    <th>创建时间</th>
+    <th>审核状态</th>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>user</td>
+    <td>⽤户表</td>
+    <td>事实表</td>
+    <td>test1</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td>维度表</td>
+    <td>test2</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td>其他</td>
+    <td>test3</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>
+    <th>id</th>
+    <th>派⽣指标 名</th>
+    <th>原⼦指标</th>
+    <th>数据库</th>
+    <th>表名</th>
+    <th>业务含义</th>
+    <th>计算逻辑</th>
+    <th>维度信息</th>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>
+    <th>维度类型</th>
+    <th>中⽂名</th>
+    <th>英⽂名</th>
+    <th>⽗维度</th>
+    <th>数据类型</th>
+    <th>描述</th>
+    <th> </th>
+    <th> </th>
+  </tr>
+  <tr>
+    <td>商品</td>
+    <td>正品</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>特殊商品</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td rowspan="3">地理位置</td>
+    <td>省份</td>
+    <td> </td>
+    <td>-</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>城市</td>
+    <td>city</td>
+    <td>省份</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>区</td>
+    <td> </td>
+    <td>城市</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>
+    <th>数据域</th>
+    <th>中⽂名称</th>
+    <th>英⽂名</th>
+    <th>数据类型</th>
+    <th>描述</th>
+    <th>关联指标 数量</th>
+    <th>创建时间</th>
+    <th>修改时间</th>
+  </tr>
+  <tr>
+    <td>交易</td>
+    <td>下单⽤户 数</td>
+    <td> </td>
+    <td>int</td>
+    <td>⽤户下单 产⽣的订 单数</td>
+    <td>15</td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>下单商品 数</td>
+    <td> </td>
+    <td>int</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>下单订单 数</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>⽀付⽤户 数</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>⽀付订单 数</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>⽀付商品 数</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>⽤户</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>订单</td>
+    <td>签收订单 数</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td>订单数量</td>
+    <td> </td>
+    <td> </td>
+    <td>除审核未 通过、已 取消订单 状态 且 （订单实 收⾦额、 订单消费 ⾦额）不</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td>得同是为0</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+</table>
+
+
+## 5.时间周期管理:
+
+<table>
+  <tr>
+    <th>中⽂名</th>
+    <th> </th>
+    <th> </th>
+    <th> </th>
+    <th> </th>
+    <th> </th>
+    <th> </th>
+    <th> </th>
+  </tr>
+  <tr>
+    <td>当前</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>最近3天</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>最近⼀周</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>最近⼀个 ⽉</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>最近⼀年</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+</table>
+
+
+- 6.指标字典
+
+
+指标快速筛选模块: 计算类型： 实时 离线 维度: ⽇期 ⼀级品类 ⼆级品类 终端 省份 数据类型: ⽤户 商品 订单 渠道 推送 私信 留⾔(数据域，⽐如交易) 业务类型: 平台 商业⼴告
+
+打标签
+
+<table>
+  <tr>
+    <th>id</th>
+    <th>维度</th>
+    <th>原⼦指 标</th>
+    <th>指标描 述</th>
+    <th>统计规 则</th>
+    <th>指标标 签</th>
+    <th>⻚⾯位 置</th>
+    <th>负责⼈</th>
+    <th>审核状 态</th>
+    <th>操作</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>⽇期</td>
+    <td>⽀付订 单数</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>⽇期， 终端</td>
+    <td> </td>
+    <td>采⽤线 上⽀付 的订单 总数/下 单⼈数</td>
+    <td>act=pay Suces ,a Id= 0|apId =1</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td>*10%</td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+  <tr>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+    <td> </td>
+  </tr>
+</table>

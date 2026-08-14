@@ -1,0 +1,16 @@
+---
+description: When editing docs, use draw.io skill for architecture/ER/flow diagrams
+globs: docs/**/*.md
+alwaysApply: false
+---
+
+# draw.io in docs/
+
+You are editing under `docs/`. For any **architecture / topology / sequence / ER / pipeline / flow** content:
+
+1. **Read** `.cursor/skills/drawio-diagrams/SKILL.md` before writing diagrams
+2. Output `docs/diagrams/moli-*.drawio` + PNG; embed in this MD file
+3. Replace ASCII arrow diagrams used as main figures (example: user-center positioning chain)
+4. Tables and code blocks are fine without draw.io
+
+See [`AGENTS.md`](../../AGENTS.md) §3 and [`docs/diagrams/README.md`](../../docs/diagrams/README.md).

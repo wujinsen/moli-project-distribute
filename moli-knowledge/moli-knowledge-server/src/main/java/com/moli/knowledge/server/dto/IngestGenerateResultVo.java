@@ -28,6 +28,15 @@ public class IngestGenerateResultVo {
     @ApiModelProperty("是否续跑模式")
     private boolean resume;
 
+    @ApiModelProperty("是否模板模式（useLlmGenerate=false 或 LLM 不可用自动降级）")
+    private boolean templateMode;
+
+    @ApiModelProperty("是否因 LLM 不可用而从 useLlmGenerate=true 自动降级为模板模式")
+    private boolean llmFallback;
+
+    @ApiModelProperty("LLM 自动降级说明（供前端 Toast）")
+    private String llmFallbackReason;
+
     @ApiModelProperty("当前全部草稿")
     private List<IngestDraftVo> drafts;
 }

@@ -1,0 +1,118 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="sso-menu-flow" name="SSO Menu System Isolation">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;SSO 菜单按系统隔离&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;Session: CURRENT_SYSTEM_ID · 过滤 sys_menu.system_id IS NULL OR = currentSystemId&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="520" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-fe" value="A. meiling-ui（前端）" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;startSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="1520" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="fe1" value="1. POST&lt;br&gt;/UserCenter/login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="lane-fe">
+          <mxGeometry x="40" y="48" width="110" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fe2" value="2. 选系统页&lt;br&gt;或单系统直进" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="lane-fe">
+          <mxGeometry x="190" y="48" width="120" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fe3" value="3. POST&lt;br&gt;/system/enter|switch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="lane-fe">
+          <mxGeometry x="350" y="48" width="130" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fe4" value="4. GET&lt;br&gt;/menu/getRouters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" vertex="1" parent="lane-fe">
+          <mxGeometry x="520" y="48" width="120" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fe5" value="5. 清路由缓存&lt;br&gt;重建侧栏+动态路由" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="lane-fe">
+          <mxGeometry x="680" y="48" width="150" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-uc" value="B. user-center（Login / System / Menu）" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;startSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="230" width="1520" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="uc1" value="LoginController&lt;br&gt;fillLoginContext" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="lane-uc">
+          <mxGeometry x="40" y="55" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-d1" value="portal&lt;br&gt;enabled?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane-uc">
+          <mxGeometry x="210" y="48" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="uc2" value="SysSystemService&lt;br&gt;enterSystem" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="lane-uc">
+          <mxGeometry x="350" y="55" width="140" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="uc3" value="ShiroUtils&lt;br&gt;setCurrentSystem" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="lane-uc">
+          <mxGeometry x="530" y="55" width="140" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-d2" value="sso_mode&lt;br&gt;= EXTERNAL?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane-uc">
+          <mxGeometry x="710" y="48" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="uc4" value="MenuService&lt;br&gt;selectMenuTreeBySystem" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="lane-uc">
+          <mxGeometry x="870" y="55" width="160" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="uc5" value="MenuController&lt;br&gt;getRouters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="lane-uc">
+          <mxGeometry x="1070" y="55" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-ext" value="空 menuVoList&lt;br&gt;+ redirectUrl" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="lane-uc">
+          <mxGeometry x="710" y="140" width="130" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-fallback" value="门户关闭：&lt;br&gt;systemId=null 不过滤" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffcc;strokeColor=#999999;" vertex="1" parent="lane-uc">
+          <mxGeometry x="210" y="140" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-db" value="C. 数据层（MySQL + Redis Session）" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;startSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="460" width="1520" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="db1" value="sys_user_role&lt;br&gt;→ sys_role_menu" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="lane-db">
+          <mxGeometry x="40" y="55" width="140" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="db2" value="sys_menu&lt;br&gt;WHERE system_id&lt;br&gt;IS NULL OR = :sid" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="lane-db">
+          <mxGeometry x="220" y="50" width="160" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="db3" value="loadMenusWithAncestors&lt;br&gt;补齐父级目录" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="lane-db">
+          <mxGeometry x="420" y="55" width="150" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="db4" value="createTree()&lt;br&gt;MenuVo 树" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="lane-db">
+          <mxGeometry x="610" y="55" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="db5" value="Redis shiro:session:*&lt;br&gt;CURRENT_SYSTEM_ID" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="lane-db">
+          <mxGeometry x="780" y="48" width="150" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="db6" value="sys_system&lt;br&gt;id ↔ system_code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="lane-db">
+          <mxGeometry x="970" y="55" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-admin" value="D. 超管 / 管理端（菜单 CRUD）" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;startSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="1520" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="adm1" value="GET /menu/list&lt;br&gt;getMenuTreeAll" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="lane-admin">
+          <mxGeometry x="40" y="45" width="140" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="adm2" value="不按 system 过滤&lt;br&gt;（授权勾选全树）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="lane-admin">
+          <mxGeometry x="220" y="45" width="150" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="adm3" value="getRouters / enter&lt;br&gt;按 currentSystemId 过滤" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="lane-admin">
+          <mxGeometry x="410" y="45" width="180" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;约定&lt;/b&gt;&lt;br&gt;• 运行时三入口共用 MenuService.resolveRoutersForCurrentSystem(userId)&lt;br&gt;• NULL system_id = 全系统共享（如未来公共组件）&lt;br&gt;• 单系统部署 portal 关闭时与现网行为一致（无 system_id 过滤）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffcc;strokeColor=#999999;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="770" width="520" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="efe1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#9673a6;" edge="1" parent="1" source="fe1" target="fe2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="efe2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#9673a6;" edge="1" parent="1" source="fe2" target="fe3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="efe3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#9673a6;" edge="1" parent="1" source="fe3" target="fe4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="efe4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="fe4" target="fe5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="fe1" target="uc1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="95" y="210" /><mxPoint x="105" y="210" /></Array></mxGeometry></mxCell>
+        <mxCell id="euc2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="uc1" target="uc-d1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc3" value="是" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="uc-d1" target="uc2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="uc2" target="uc3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="uc3" target="uc-d2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc6" value="INTERNAL" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="uc-d2" target="uc4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc7" value="EXTERNAL" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#999999;dashed=1;" edge="1" parent="1" source="uc-d2" target="uc-ext"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="fe4" target="uc5"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="580" y="210" /><mxPoint x="1135" y="210" /></Array></mxGeometry></mxCell>
+        <mxCell id="euc9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="uc5" target="uc4"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1135" y="350" /><mxPoint x="950" y="350" /></Array></mxGeometry></mxCell>
+        <mxCell id="edb1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#d79b00;" edge="1" parent="1" source="uc4" target="db1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="950" y="440" /><mxPoint x="110" y="440" /></Array></mxGeometry></mxCell>
+        <mxCell id="edb2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#d79b00;" edge="1" parent="1" source="db1" target="db2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edb3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#d79b00;" edge="1" parent="1" source="db2" target="db3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edb4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1" source="db3" target="db4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edb5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#d79b00;dashed=1;" edge="1" parent="1" source="uc3" target="db5"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="600" y="440" /><mxPoint x="855" y="440" /></Array></mxGeometry></mxCell>
+        <mxCell id="edb6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#82b366;dashed=1;" edge="1" parent="1" source="db4" target="fe5"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="670" y="600" /><mxPoint x="755" y="600" /><mxPoint x="755" y="200" /></Array></mxGeometry></mxCell>
+        <mxCell id="euc-no" value="否" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#999999;" edge="1" parent="1" source="uc-d1" target="uc-fallback"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="euc-fb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#999999;dashed=1;" edge="1" parent="1" source="uc-fallback" target="uc4"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="285" y="350" /><mxPoint x="870" y="350" /></Array></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
