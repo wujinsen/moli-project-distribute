@@ -4,8 +4,8 @@
 # - push main/master / workflow_dispatch ci：同上通过后 → sync-all + verify-all
 # - 失败 Runbook：docs/ops/kb-sync-failure-runbook.md
 #
-# 三个 wiki 空间（唯一清单在 run_sync.sh 的 KB_SPACES）：
-#   wiki -> enterprise-kb / wiki-moli -> moli-ops-manual / wiki-jp-exam -> jp-fe-ap-exam
+# 两个 wiki 空间（唯一清单在 run_sync.sh 的 KB_SPACES）：
+#   wiki -> enterprise-kb / wiki-moli -> moli-ops-manual
 #
 # 远程库 Secrets（手动 sync 时用）：
 #   必填：KB_SYNC_DB_HOST / KB_SYNC_DB_USER / KB_SYNC_DB_PASSWORD
@@ -20,7 +20,6 @@ on:
     paths: &kb_paths
       - 'moli-knowledge/kb/wiki/**'
       - 'moli-knowledge/kb/wiki-moli/**'
-      - 'moli-knowledge/kb/wiki-jp-exam/**'
       - 'moli-knowledge/kb/tools/**'
       - 'docs/sql/03_knowledge_schema.sql'
       - '.github/workflows/kb-sync.yml'

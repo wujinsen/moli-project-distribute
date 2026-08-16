@@ -83,18 +83,17 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 ## 同步到数据库（kb → kb_document）
 
-`kb/` 下三个 wiki 目录是**唯一写入源**；Java 服务只读 MySQL，不直接扫文件。
+`kb/` 下两个 wiki 目录是**唯一写入源**；Java 服务只读 MySQL，不直接扫文件。
 
 | wiki 目录 | space_code | 用途 |
 |-----------|------------|------|
 | `kb/wiki/` | `enterprise-kb` | 占位 index（茉莉正文在 wiki-moli） |
 | `kb/wiki-moli/` | `moli-ops-manual` | **茉莉系统手册**（全项目文档） |
-| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 日版 FE/AP 题库 |
 
 用 `sync_to_db.py` / `run_sync.sh` **单向、增量、幂等**写进 `kb_document`：
 
 ```powershell
-# 1. 预览（三空间或单空间）
+# 1. 预览（两空间或单空间）
 bash kb/tools/ci/run_sync.sh dry-run-all
 # 或仅 enterprise-kb：python kb/tools/sync_to_db.py --dry-run
 

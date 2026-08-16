@@ -28,7 +28,6 @@
 |-----------|--------------|
 | `wiki/` | `enterprise-kb` |
 | `wiki-moli/` | `moli-ops-manual` |
-| `wiki-jp-exam/` | `jp-fe-ap-exam` |
 
 ---
 
@@ -183,7 +182,6 @@ kb:
 | space_code | 常见 space_id |
 |------------|---------------|
 | `enterprise-kb` | `900000000000000001` |
-| `jp-fe-ap-exam` | `900000000000000002` |
 | `moli-ops-manual` | `900000000000000003` |
 
 以库内 `kb_space` 为准。

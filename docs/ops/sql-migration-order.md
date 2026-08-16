@@ -30,7 +30,7 @@
 |------|------|------|
 | 6 | `05_knowledge_action_patch.sql` | sys_action 分组修正 |
 | 7 | `06_remove_kb_admin.sql` | 移除废弃 kb:admin |
-| 8 | `04_kb_space_jp_exam.sql` | 考试空间（可选） |
+| 8 | ~~`04_kb_space_jp_exam.sql`~~ | **已删除**；已有库用 `40_purge_jp_exam.sql` 清理 |
 | 9 | `08_kb_ingest_workbench.sql` | Ingest 批次表 |
 | 10 | `09_kb_ingest_t15e.sql` | Ingest enrich 列 |
 | 11 | `10_kb_category_dir_slug.sql` | 分类 dir_slug |
@@ -56,6 +56,7 @@
 | 31 | `35_kb_llm_call_log_ai8.sql` | AI-8 W14 · `kb_llm_call_log` 增 `cache_hit`/`failover`/成本估算列 |
 | 32 | `36_kb_research_run.sql` | AI-10 · DeepResearch trace `kb_research_run` |
 | 33 | `37_kb_research_menu.sql` | AI-10 · 主题调研菜单 911 + 角色绑定 |
+| — | `40_purge_jp_exam.sql` | **一次性**：删除 jp-fe-ap-exam 空间及 FE/AP 误入文档（上线瘦身） |
 
 ---
 
@@ -83,7 +84,6 @@ SHOW COLUMNS FROM kb_category LIKE 'dir_slug';
 06_remove_kb_admin.sql
 07_kb_space_ops_manual.sql
 07_kb_space_ops_manual_fix_charset.sql   # 仅乱码修复
-04_kb_space_jp_exam.sql                  # 需要考试空间时
 08_kb_ingest_workbench.sql
 09_kb_ingest_t15e.sql
 10_kb_category_dir_slug.sql

@@ -12,11 +12,14 @@ import com.moli.user.center.common.domain.entity.OperationTask;
 import com.moli.user.center.common.domain.entity.OperationServerComponent;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
 import com.moli.user.center.common.domain.entity.OperationServerProject;
+import com.moli.user.center.common.domain.entity.SysConfig;
 import com.moli.user.center.common.domain.entity.SysDept;
 import com.moli.user.center.common.domain.entity.SysDictData;
 import com.moli.user.center.common.domain.entity.SysDictType;
 import com.moli.user.center.common.domain.entity.SysLoginLog;
 import com.moli.user.center.common.domain.entity.SysMenu;
+import com.moli.user.center.common.domain.entity.SysNotice;
+import com.moli.user.center.common.domain.entity.SysNoticeReadCursor;
 import com.moli.user.center.common.domain.entity.SysOperationLog;
 import com.moli.user.center.common.domain.entity.SysPost;
 import com.moli.user.center.common.domain.entity.SysRole;
@@ -60,6 +63,9 @@ public final class MybatisPlusTestSupport {
                     SysUserPost.class,
                     SysUserSystem.class,
                     SysRoleMenu.class,
+                    SysConfig.class,
+                    SysNotice.class,
+                    SysNoticeReadCursor.class,
                     OperationPlatformInfo.class,
                     OperationServerInfo.class,
                     OperationProjectDeployInfo.class,

@@ -32,8 +32,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class KbRawCoverageServiceImplAssertTest {
 
-    private static final Long SPACE_ID = 900000000000000002L;
-    private static final String SPACE_CODE = "jp-fe-ap-exam";
+    private static final Long SPACE_ID = 900000000000000001L;
     private static final Long JOB_ID = 900000000000000100L;
 
     @InjectMocks
@@ -69,32 +68,32 @@ public class KbRawCoverageServiceImplAssertTest {
     @Test
     public void assertRawOpenForCommit_throwsStructuredConflict() throws Exception {
         Path kbRoot = Files.createTempDirectory("kb-raw-cov-test-");
-        Path wikiRoot = kbRoot.resolve("wiki-jp-exam");
+        Path wikiRoot = kbRoot.resolve("wiki");
         Path guides = wikiRoot.resolve("guides");
         Files.createDirectories(guides);
 
         String guideMd = "---\n"
-                + "title: 日本語試験知识库说明\n"
-                + "slug: 日本語試験知识库说明\n"
+                + "title: Raw覆盖说明\n"
+                + "slug: guides/raw-coverage-guide\n"
                 + "type: guide\n"
                 + "status: active\n"
                 + "tags: [test]\n"
                 + "sources:\n"
-                + "  - kb/raw/school/fe/\n"
+                + "  - kb/raw/prd/\n"
                 + "related: []\n"
                 + "created: 2026-06-27\n"
                 + "updated: 2026-06-27\n"
                 + "---\n\n"
                 + "# body\n";
-        Files.write(guides.resolve("日本語試験知识库说明.md"), guideMd.getBytes(StandardCharsets.UTF_8));
+        Files.write(guides.resolve("raw-coverage-guide.md"), guideMd.getBytes(StandardCharsets.UTF_8));
 
         KbSpace space = new KbSpace();
         space.setId(SPACE_ID);
-        space.setSpaceCode(SPACE_CODE);
+        space.setSpaceCode("enterprise-kb");
         when(kbSpaceMapper.selectById(SPACE_ID)).thenReturn(space);
 
         Map<String, String> dirs = new LinkedHashMap<>();
-        dirs.put(SPACE_CODE, wikiRoot.toString());
+        dirs.put("enterprise-kb", wikiRoot.toString());
         when(wikiProperties.getSpaceDirs()).thenReturn(dirs);
         when(wikiProperties.getRoot()).thenReturn(kbRoot.toString());
 
@@ -102,23 +101,23 @@ public class KbRawCoverageServiceImplAssertTest {
             service.assertRawOpenForCommit(
                     SPACE_ID,
                     JOB_ID,
-                    new HashSet<>(Collections.singletonList("fe/new-page")),
-                    Collections.singletonList("school/fe/fe_kamoku_b_set_sample_qs2.md"));
+                    new HashSet<>(Collections.singletonList("articles/new-page")),
+                    Collections.singletonList("prd/conflict-sample.md"));
 
             Assert.fail("expected IngestRawConflictException");
         } catch (IngestRawConflictException e) {
-            Assert.assertTrue(e.getErrorMsg().contains("raw/school/fe/fe_kamoku_b_set_sample_qs2.md"));
+            Assert.assertTrue(e.getErrorMsg().contains("prd/conflict-sample.md"));
             IngestRawConflictVo detail = e.getDetail();
             Assert.assertNotNull(detail);
             Assert.assertEquals(IngestRawConflictVo.ERROR_KIND, detail.getErrorKind());
             Assert.assertEquals(SPACE_ID, detail.getSpaceId());
             Assert.assertEquals(JOB_ID, detail.getJobId());
             Assert.assertEquals(1, detail.getConflicts().size());
-            Assert.assertEquals("school/fe/fe_kamoku_b_set_sample_qs2.md", detail.getConflicts().get(0).getPath());
+            Assert.assertEquals("prd/conflict-sample.md", detail.getConflicts().get(0).getPath());
             Assert.assertEquals("cluster", detail.getConflicts().get(0).getCoverage());
             Assert.assertEquals("dir_prefix", detail.getConflicts().get(0).getMatchKind());
             Assert.assertTrue(detail.getConflicts().get(0).getWikiSlugs()
-                    .contains("guides/日本語試験知识库说明"));
+                    .contains("guides/raw-coverage-guide"));
         }
     }
 

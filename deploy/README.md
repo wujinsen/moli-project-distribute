@@ -6,7 +6,8 @@
 |--------|------|------|
 | **腾讯云 CVM** | **[`腾讯云上线流程.md`](腾讯云上线流程.md)** | Ubuntu · 完整上线 |
 | **腾讯云 CVM** | [`docs/ops/tencent-cloud-cvm-bootstrap.md`](../docs/ops/tencent-cloud-cvm-bootstrap.md) | Ubuntu · **仅基础环境安装** |
-| **AWS EC2** | [`上线流程.md`](上线流程.md) | Amazon Linux |
+| **AWS EC2** | [`上线流程.md`](上线流程.md) | Amazon Linux · 完整上线 |
+| **AWS EC2** | [`docs/ops/aws-ec2-bootstrap.md`](../docs/ops/aws-ec2-bootstrap.md) | Amazon Linux · **仅基础环境安装** |
 
 工程索引：[`docs/ops/tencent-cloud-release-runbook.md`](../docs/ops/tencent-cloud-release-runbook.md)（腾讯）· [`docs/ops/v1-release-runbook.md`](../docs/ops/v1-release-runbook.md)（通用）
 
@@ -16,6 +17,7 @@
 |------|------|
 | [`腾讯云上线流程.md`](腾讯云上线流程.md) | **腾讯云** 首次安装 + 迁移 + 上线检查表 |
 | [`上线流程.md`](上线流程.md) | **AWS EC2** 上线检查表 + 上传 + systemd + Wiki Sync |
+| [`docs/ops/aws-ec2-bootstrap.md`](../docs/ops/aws-ec2-bootstrap.md) | **AWS EC2** 仅基础环境（JDK/MySQL/Redis/Nginx/Nacos） |
 | [`linux/`](linux/) | `moli-*.service` · `moli-*.env.example` · `moli-service.sh` |
 | [`user-center/`](user-center/) | `application-pro.yml` 模板 · `conf/moli-user-center.env`（**不提交 Git**） |
 | [`gateway/`](gateway/) | 网关配置模板 |

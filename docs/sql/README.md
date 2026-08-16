@@ -36,8 +36,8 @@
 | `04_knowledge_menu.sql` | 知识库菜单 + sys_action 动作（在 03 之后追加） |
 | `05_knowledge_action_patch.sql` | 已有环境修正 sys_action 分组（空间 CRUD / 体检+同步） |
 | `06_remove_kb_admin.sql` | 移除废弃的 kb:admin 动作与菜单 906 |
-| `04_kb_space_jp_exam.sql` | 日本語試験私有空间 + 成员示例（在 04_knowledge_menu 之后追加） |
 | `07_kb_space_ops_manual.sql` | **茉莉系统手册**独立空间 `moli-ops-manual` + 成员示例 |
+| `40_purge_jp_exam.sql` | **一次性**：删除已下线的 jp-fe-ap-exam 空间数据 |
 | `07_kb_space_ops_manual_fix_charset.sql` | 修复乱码或刷新 `moli-ops-manual` 空间名为「茉莉系统手册」 |
 | `08_kb_ingest_workbench.sql` | Ingest 工作台表（job/plan/draft 等） |
 | `09_kb_ingest_t15e.sql` | Ingest T15e 增量字段 |

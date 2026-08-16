@@ -2,7 +2,7 @@
 
 > **正文 SOP**：[`deploy/腾讯云上线流程.md`](../../deploy/腾讯云上线流程.md)  
 > **仅装 CVM 基础环境**（JDK/MySQL/Redis/Nginx）：[tencent-cloud-cvm-bootstrap.md](tencent-cloud-cvm-bootstrap.md)  
-> **AWS 专版**：[`deploy/上线流程.md`](../../deploy/上线流程.md)  
+> **AWS 基础环境**：[`aws-ec2-bootstrap.md`](aws-ec2-bootstrap.md) · **AWS 完整上线**：[`deploy/上线流程.md`](../../deploy/上线流程.md)  
 > **通用发布步骤**（与云平台无关）：[v1-release-runbook.md](v1-release-runbook.md)  
 > 更新：2026-07-13
 
@@ -14,7 +14,8 @@
 |------|--------|------|
 | **[deploy/腾讯云上线流程.md](../../deploy/腾讯云上线流程.md)** | **腾讯云 CVM** | Ubuntu 22.04 / 24.04 · 完整上线 |
 | **[tencent-cloud-cvm-bootstrap.md](tencent-cloud-cvm-bootstrap.md)** | **腾讯云 CVM** | Ubuntu · **仅基础环境安装 + 自检** |
-| [deploy/上线流程.md](../../deploy/上线流程.md) | **AWS EC2** | Amazon Linux |
+| **[aws-ec2-bootstrap.md](aws-ec2-bootstrap.md)** | **AWS EC2** | Amazon Linux · **仅基础环境安装 + 自检** |
+| [deploy/上线流程.md](../../deploy/上线流程.md) | **AWS EC2** | Amazon Linux · 完整上线 |
 | [v1-release-runbook.md](v1-release-runbook.md) | 通用 | DB / 配置 / 启动顺序 / Sync |
 | [production-checklist.md](production-checklist.md) | 通用 | 安全与配置项 |
 

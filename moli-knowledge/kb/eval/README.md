@@ -23,7 +23,7 @@
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `id` | 是 | 唯一编号；`M*`=moli-ops-manual、`E*`=enterprise-kb、`J*`=jp-fe-ap-exam |
+| `id` | 是 | 唯一编号；`M*`=moli-ops-manual、`E*`=enterprise-kb |
 | `space` | 是 | `kb_space.space_code`，运行时解析成 spaceId |
 | `question` | 是 | 用户视角提问，尽量口语化、换说法（考召回，别照抄页标题） |
 | `expect_slugs` | 条件 | **`expect_answerable=true` 时必填非空**；`negative` 题必须为 `[]` |
@@ -43,7 +43,7 @@
 | `multi-hop` | 8 | 需综合 2+ 页 |
 | `negative` | 7 | 库内无据，期望拒答 |
 
-空间分布：moli-ops-manual ≥60%、enterprise-kb ≥20%、jp-fe-ap-exam ≥10%。
+空间分布：moli-ops-manual ≥60%、enterprise-kb ≥40%。
 
 ## 运行
 

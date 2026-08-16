@@ -134,7 +134,7 @@ kb:
     per-round-context-top-k: 0
   research:
     # AI-10 DeepResearch（默认关；需 deep-research sidecar :8095）
-    enabled: false
+    enabled: true
     sidecar-base-url: http://127.0.0.1:8095
     sidecar-timeout-ms: 120000
     max-sections: 6
@@ -197,7 +197,6 @@ kb:
     schedule-space-codes:
       - enterprise-kb
       - moli-ops-manual
-      - jp-fe-ap-exam
     schedule-enabled: false
     schedule-cron: "0 0 2 * * ?"
     alert:
@@ -217,7 +216,6 @@ kb:
     space-dirs:
       enterprise-kb: wiki
       moli-ops-manual: wiki-moli
-      jp-fe-ap-exam: wiki-jp-exam
     max-bytes: 2097152
     lint-script-path: moli-knowledge/kb/tools/lint.py
     lint-timeout-seconds: 120

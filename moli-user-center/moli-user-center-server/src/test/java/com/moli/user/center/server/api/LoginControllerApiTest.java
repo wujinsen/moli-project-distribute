@@ -14,9 +14,13 @@ import com.moli.user.center.server.mapper.SysLoginLogMapper;
 
 import com.moli.user.center.server.mapper.SysUserMapper;
 
+import com.moli.user.center.server.service.ConfigService;
+
 import com.moli.user.center.server.service.MenuService;
 
 import com.moli.user.center.server.service.SysSystemService;
+
+import com.moli.user.center.server.sysparam.ConfigKey;
 
 import com.moli.user.center.server.config.util.RedisUtil;
 
@@ -27,8 +31,6 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
 import org.junit.Assert;
-
-import org.junit.Before;
 
 import org.junit.Test;
 
@@ -41,8 +43,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 
 import org.mockito.junit.MockitoJUnitRunner;
-
-import org.springframework.test.util.ReflectionTestUtils;
 
 
 
@@ -98,13 +98,9 @@ public class LoginControllerApiTest extends AbstractApiTest {
 
 
 
-    @Before
+    @Mock
 
-    public void setUp() {
-
-        ReflectionTestUtils.setField(controller, "captchaEnabled", false);
-
-    }
+    private ConfigService configService;
 
 
 
@@ -131,6 +127,10 @@ public class LoginControllerApiTest extends AbstractApiTest {
     @Test
 
     public void POST_captchaImage_disabled() {
+
+        // 验证码开关改为运行期从 ConfigService 读取（原先是 @Value 注入的字段）
+
+        when(configService.getBoolean(ConfigKey.CAPTCHA_ENABLED)).thenReturn(false);
 
         Assert.assertEquals((int) ResponseCodeEnums.SERVICE_ERROR_CODE.getCode(), controller.captchaImage().getCode());
 

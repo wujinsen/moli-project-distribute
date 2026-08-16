@@ -45,9 +45,6 @@ kb/
     api/                 #   API 说明外部稿（契约权威在 docs/api/）
     test/                #   测试 / 压测 / QA 外部稿
     ops/                 #   运维 SOP / 变更说明外部稿
-    school/              #   日本語試験 raw（FE/AP，见 school/README.md）
-      fe/                #     基本情報技術者
-      ap/                #     応用情報技術者
     docs/                #   项目文档副本（README、ARCHITECTURE 等）
     articles/            #   技术文章(P1)
     interview/           #   面试题原始材料(P2)
@@ -57,7 +54,6 @@ kb/
     guides/ product/ develop/ ops/ test/   # 一级分类 = Web dir_slug
     develop/outputs/     #   Query crystallize 汇总（项目向）
   wiki/                  # enterprise-kb · **通用技术文库**（articles / concepts / interview）
-  wiki-jp-exam/          # 日本語試験（空间 jp-fe-ap-exam）
     graph/edges.jsonl
 ```
 
@@ -66,13 +62,12 @@ kb/
 > `develop/outputs/` 等为 develop 下二级目录；Sync 仍按 slug **首段**回填分类。  
 > **通用技术语料**（Dubbo/MySQL/Redis 等 articles、concepts、interview）在 **`wiki/`（enterprise-kb）**，**禁止**写入 wiki-moli 或在其正文加「茉莉触点」模板节。
 
-**三空间 wiki 源**（见 `wiki-moli/ops/wiki同步指南`）：
+**两空间 wiki 源**（见 `wiki-moli/ops/wiki同步指南`）：
 
 | 空间 | wiki 源 | 定位 |
 |------|---------|------|
 | **moli-ops-manual**（茉莉系统手册） | **`wiki-moli/`** | **项目文档**：产品 · 服务实体 · 架构索引 · 运维 Runbook · 项目测试 · outputs 汇总 |
 | **enterprise-kb** | **`wiki/`** | **通用技术文库**（ingest articles / concepts / interview）；与项目手册分空间 |
-| jp-fe-ap-exam | `wiki-jp-exam/` | 日本語 FE/AP 试题 |
 
 **所有权规则**：
 - `raw/` —— 用户拥有，Agent 只读，绝不覆盖。
@@ -86,7 +81,6 @@ kb/
 |----------|----------|----------|
 | **`wiki-moli/`** | PRD、服务实体、Runbook、项目架构、outputs 汇总 | 通用八股/面试题整库、`raw/wujinsen_markdown` 批量骨架 |
 | **`wiki/`** | Dubbo/MySQL/Redis/Vue 等**通用** articles/concepts/interview | 任何「茉莉触点」节、项目端口拓扑、链到 `[[项目文档总览]]` 等手册页 |
-| **`wiki-jp-exam/`** | 日本語 FE/AP | 其它 |
 
 Ingest / Enrich / 批量脚本落盘前自检：
 
@@ -111,7 +105,6 @@ Ingest / Enrich / 批量脚本落盘前自检：
 | 面试题语料 | `raw/interview/` | **`wiki/interview/`**（enterprise-kb） | — |
 | 运维 / 发布 | `raw/ops/` | **`ops/`** | `docs/ops/` 索引 |
 | Query 汇总 | — | **`develop/outputs/`** | — |
-| 日本語 FE/AP | **`raw/school/fe/`**、**`raw/school/ap/`** | **`wiki-jp-exam/`** | — |
 
 **铁律**：茉莉项目正文 **只维护 `wiki-moli/`**，禁止再写 `wiki/guides/`、`wiki/services/` 等 enterprise-kb 副本。API **只维护 `docs/api/`**。
 
@@ -144,7 +137,6 @@ Ingest / Enrich / 批量脚本落盘前自检：
 
 ```
 茉莉项目任意文档？           → wiki-moli/（按 guides/product/develop/ops/test）
-日本語試験？                 → wiki-jp-exam/
 HTTP 契约给前端/测试？       → 只链 docs/api/
 工程索引 / 未入库设计稿？    → docs/（权威）+ 可选 enrich wiki-moli
 ```
@@ -154,7 +146,7 @@ HTTP 契约给前端/测试？       → 只链 docs/api/
 ### 1.3 分类优先 · 新建分类（Ingest / 新 raw）
 
 1. **浏览与落盘只认分类**（`{dir_slug}/{slug}.md`），不认「按体裁分目录」为新页默认路径。
-2. Ingest Plan 的 `create[]` **必须**带 `categoryId`；Express/骨架 Plan 会按 `raw/` 路径首段推断（如 `raw/prd/`→`product`，`raw/school/fe/`→`fe`）。
+2. Ingest Plan 的 `create[]` **必须**带 `categoryId`；Express/骨架 Plan 会按 `raw/` 路径首段推断（如 `raw/prd/`→`product`）。
 3. **无合适分类时**（新主题 raw）：
    - **Web**：空间 → 分类管理 → 新建（填 `categoryName` + `dir_slug`，系统自动 `mkdir` wiki 子目录）。
    - **Cursor Agent**：与用户确认 `dir_slug`（单段 `[A-Za-z0-9_-]`）→ 告知用户在 Web 建分类，或自行在 `wiki*/{dir_slug}/` 建目录并让用户补分类 → 再落盘 → `sync`。
@@ -165,7 +157,7 @@ HTTP 契约给前端/测试？       → 只链 docs/api/
 ## 2. 页面格式约定
 
 ### 2.1 文件名（slug）
-- 路径：`wiki/{分类dir_slug}/{slug}.md`（或 `wiki-moli/`、`wiki-jp-exam/` 下同级结构）
+- 路径：`wiki/{分类dir_slug}/{slug}.md`（或 `wiki-moli/` 下同级结构）
 - slug 允许中文、英文、数字，词间用连字符 `-`；**同一分类目录内** stem 唯一。
 - 例：`wiki-moli/develop/用户中心.md`、`wiki/guides/本地启动指南.md`
 - DB / API 全路径 slug：`develop/用户中心`（含分类前缀）

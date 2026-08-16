@@ -17,19 +17,20 @@ updated: 2026-07-01
 
 # wiki 同步指南
 
-> markdown 权威源在 `moli-knowledge/kb/` 下 **三个 wiki 目录**；Java 后端只读 `kb_document`。服务实体 [[知识库服务]]；API 浏览见 [[知识库使用指南]]。
+> markdown 权威源在 `moli-knowledge/kb/` 下 **两个 wiki 目录**；Java 后端只读 `kb_document`。服务实体 [[知识库服务]]；API 浏览见 [[知识库使用指南]]。
 
 面向「wiki 改完后怎么进 MySQL、让 `/kb/page` 有正链/反链」的操作说明。
 
-## 1. 三空间映射（单一真相表）
+## 1. 两空间映射（单一真相表）
 
-**改完任意 wiki 目录后，优先用 §4 的 `sync-all` 一次同步三空间**，避免只 sync 一个空间或 `--space` 写错。
+**改完任意 wiki 目录后，优先用 §4 的 `sync-all` 一次同步两空间**，避免只 sync 一个空间或 `--space` 写错。
 
 | wiki 目录（相对 `kb/`） | `space_code` | `space_id` | 用途 | 初始化 SQL |
 |-------------------------|--------------|------------|------|------------|
 | `wiki/` | `enterprise-kb` | `900000000000000001` | **仅占位 index**（茉莉正文勿写此目录） | `docs/sql/03_knowledge_schema.sql` |
-| `wiki-moli/` | `moli-ops-manual` | `900000000000000003` | **茉莉系统手册**：产品·技术·测试·运维·操作（全项目） | `docs/sql/07_kb_space_ops_manual.sql` |
-| `wiki-jp-exam/` | `jp-fe-ap-exam` | `900000000000000002` | 日本語 FE/AP 题库 | `docs/sql/04_kb_space_jp_exam.sql` |
+| `wiki-moli/` | `moli-ops-manual` | `900000000000000003` | **茉莉系统手册** | `docs/sql/07_kb_space_ops_manual.sql` |
+
+> 日本語試験空间（`jp-fe-ap-exam`）已下线；已有库执行 `docs/sql/40_purge_jp_exam.sql` 清理。
 
 **规则**：
 
@@ -65,14 +66,13 @@ slug = wiki 相对路径去扩展名，与 `[[知识库设计哲学-docs-as-code
 | `wiki-moli/guides/本地启动指南.md` | `guides/本地启动指南` |
 | `wiki-moli/develop/用户中心.md` | `develop/用户中心` |
 | `wiki-moli/ops/wiki同步指南.md` | `ops/wiki同步指南` |
-| `wiki-jp-exam/interview/fe-xxx.md` | `interview/fe-xxx` |
 
 API 请求示例：`GET /kb/page?slug=guides/本地启动指南&spaceId=900000000000000003`（ops 空间）。
 
 ## 4. 前置条件
 
 1. MySQL 已导入全库 + 知识库表（见 [[数据库初始化指南]]）
-2. 三空间种子已导入：`03_knowledge_schema.sql` + 按需 `04_kb_space_jp_exam.sql`、`07_kb_space_ops_manual.sql`
+2. 两空间种子已导入：`03_knowledge_schema.sql` + `07_kb_space_ops_manual.sql`
 3. Python 3 + `pip install pymysql`（仅真正写库时需要）
 
 CI / 本地统一入口：`moli-knowledge/kb/tools/ci/run_sync.sh`（`lint-strict-all` · `sync-all` · `init-schema`）。**PR 合并前须过** `dry-run-all` + `lint-strict-all`（KBOPS-A1）。
@@ -88,19 +88,19 @@ cd D:\work\moli_project\moli-project-distribute
 python moli-knowledge/kb/tools/sync_to_db.py --dry-run
 ```
 
-**三空间逐个预览**（改动了哪个目录就跑哪条；或一次跑全）：
+**两空间逐个预览**（改动了哪个目录就跑哪条；或一次跑全）：
 
 ```bash
 bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run-all
 ```
 
-等价于对 `wiki` / `wiki-moli` / `wiki-jp-exam` 各执行一次 `--dry-run`。
+等价于对 `wiki` / `wiki-moli` 各执行一次 `--dry-run`。
 
 输出：待 insert/update/skip/delete 的 slug 列表、关系边统计。**先核对再写库。**
 
 ### 5.2 真正同步（推荐）
 
-**日常默认：三空间一次同步**
+**日常默认：两空间一次同步**
 
 ```bash
 bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all
@@ -119,11 +119,6 @@ python moli-knowledge/kb/tools/sync_to_db.py \
 # moli-ops-manual
 python moli-knowledge/kb/tools/sync_to_db.py \
   --wiki-dir wiki-moli --space moli-ops-manual \
-  --host 127.0.0.1 --port 3306 --user root --password 12345678 --db moli
-
-# jp-fe-ap-exam
-python moli-knowledge/kb/tools/sync_to_db.py \
-  --wiki-dir wiki-jp-exam --space jp-fe-ap-exam \
   --host 127.0.0.1 --port 3306 --user root --password 12345678 --db moli
 ```
 

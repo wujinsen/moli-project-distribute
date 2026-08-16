@@ -35,7 +35,6 @@ VALID_DIFFICULTIES = frozenset({"easy", "paraphrase", "dirty", "multi-hop", "neg
 ID_PREFIX_BY_SPACE = {
     "moli-ops-manual": "M",
     "enterprise-kb": "E",
-    "jp-fe-ap-exam": "J",
 }
 
 # 拒答短语集合（契约 §3.3；大小写/全半角归一后子串匹配）
@@ -55,7 +54,6 @@ REFUSAL_MARKERS = (
 # space_code -> spaceId 兜底映射（/kb/space/mine 不可用时使用）
 FALLBACK_SPACE_IDS = {
     "enterprise-kb": 900000000000000001,
-    "jp-fe-ap-exam": 900000000000000002,
     "moli-ops-manual": 900000000000000003,
 }
 

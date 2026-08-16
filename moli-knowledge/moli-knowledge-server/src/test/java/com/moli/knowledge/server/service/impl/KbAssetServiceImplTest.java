@@ -97,12 +97,12 @@ public class KbAssetServiceImplTest {
 
     @Test
     public void serveRawAsset_stripsRawPrefix() throws Exception {
-        Path img = rawRoot.resolve("school/fe/a.png");
+        Path img = rawRoot.resolve("wujinsen_markdown/demo/a.png");
         Files.createDirectories(img.getParent());
         Files.write(img, new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47});
 
         MockHttpServletResponse response = new MockHttpServletResponse();
-        service.serveRawAsset(SPACE_ID, "raw/school/fe/a.png", response);
+        service.serveRawAsset(SPACE_ID, "raw/wujinsen_markdown/demo/a.png", response);
 
         Assert.assertEquals("image/png", response.getContentType());
     }

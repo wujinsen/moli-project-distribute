@@ -36,7 +36,6 @@ KB_SYNC_SPACE="${KB_SYNC_SPACE:-enterprise-kb}"
 KB_SPACES=(
   "wiki:enterprise-kb"
   "wiki-moli:moli-ops-manual"
-  "wiki-jp-exam:jp-fe-ap-exam"
 )
 
 mysql_cli() {
@@ -96,7 +95,7 @@ case "${MODE}" in
     echo "[ci] import kb schema (skip sys_* seed if tables absent) ..."
     # 03 脚本末尾含 sys_system 增量 INSERT，CI 最小库无 user-center 表，截断到 sys 段之前
     awk '/INSERT INTO `sys_system`/ {exit} {print}' "${SCHEMA}" | mysql_cli "${KB_SYNC_DB}"
-    for extra in "04_kb_space_jp_exam.sql" "07_kb_space_ops_manual.sql" "10_kb_category_dir_slug.sql" "11_kb_category_enterprise_trim.sql" "16_kb_category_jp_certify.sql" "18_kb_llm_call_log.sql" "31_kb_eval_run.sql"; do
+    for extra in "07_kb_space_ops_manual.sql" "10_kb_category_dir_slug.sql" "11_kb_category_enterprise_trim.sql" "18_kb_llm_call_log.sql" "31_kb_eval_run.sql"; do
       extra_path="${REPO_ROOT}/docs/sql/${extra}"
       if [[ -f "${extra_path}" ]]; then
         echo "[ci] import optional space seed ${extra} ..."

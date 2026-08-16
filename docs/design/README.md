@@ -16,6 +16,7 @@
 |------|-----------|
 | 跨模块概念（RBAC、秒杀、网关） | `concepts/` |
 | **用户中心 + 门户 + SSO** | [`user-center-overview.md`](user-center-overview.md) · [`user-center-detailed-design.md`](user-center-detailed-design.md) · [`portal-system-group.md`](portal-system-group.md) · [`sso-menu-system-isolation.md`](sso-menu-system-isolation.md) |
+| **系统管理 · 参数设置 / 通知公告** | [`sys-config-notice.md`](sys-config-notice.md)（`sys_config` + `sys_notice`，菜单 8/9 补齐后端） |
 | **产品 PRD（运维/SSO）** | [`../product/operation-server-ops-prd.md`](../product/operation-server-ops-prd.md) · [`../product/sso-menu-isolation-prd.md`](../product/sso-menu-isolation-prd.md) |
 | **订单 · 秒杀** | [`order-seckill-design.md`](order-seckill-design.md) |
 | **知识库 LLM 平台设置（T19）** | [`kb-llm-platform-settings.md`](kb-llm-platform-settings.md) · 前端 [`../api/kb-llm-platform-frontend.md`](../api/kb-llm-platform-frontend.md) |

@@ -41,6 +41,15 @@ public final class PermissionConstants {
     public static final String SYSTEM_DICT_ADD = "system:dict:add";
     public static final String SYSTEM_DICT_EDIT = "system:dict:edit";
     public static final String SYSTEM_DICT_REMOVE = "system:dict:remove";
+    /** 参数设置。无 add：参数由代码 ConfigKey 注册表声明，不能由 UI 创建；remove 语义是「重置为默认」 */
+    public static final String SYSTEM_CONFIG_LIST = "system:config:list";
+    public static final String SYSTEM_CONFIG_EDIT = "system:config:edit";
+    public static final String SYSTEM_CONFIG_REMOVE = "system:config:remove";
+    /** 通知公告。发布/撤回复用 edit */
+    public static final String SYSTEM_NOTICE_LIST = "system:notice:list";
+    public static final String SYSTEM_NOTICE_ADD = "system:notice:add";
+    public static final String SYSTEM_NOTICE_EDIT = "system:notice:edit";
+    public static final String SYSTEM_NOTICE_REMOVE = "system:notice:remove";
     public static final String SYSTEM_OPERLOG_LIST = "system:operlog:list";
     public static final String SYSTEM_OPERLOG_REMOVE = "system:operlog:remove";
     public static final String SYSTEM_LOGINLOG_LIST = "system:loginlog:list";

@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -29,7 +30,7 @@ public class KbRepoPathUtilTest {
         Path repo = Files.createTempDirectory("kb-repo-root-");
         Path script = repo.resolve("moli-knowledge/kb/tools/sync_to_db.py");
         Files.createDirectories(script.getParent());
-        Files.writeString(script, "# stub");
+        Files.write(script, "# stub".getBytes(StandardCharsets.UTF_8));
 
         System.setProperty("user.dir", repo.toString());
         Path resolved = KbRepoPathUtil.resolveExisting("../kb/tools/sync_to_db.py", "同步脚本");
@@ -44,7 +45,7 @@ public class KbRepoPathUtilTest {
         Files.createDirectories(server);
         Path script = moduleRoot.resolve("kb/tools/sync_to_db.py");
         Files.createDirectories(script.getParent());
-        Files.writeString(script, "# stub");
+        Files.write(script, "# stub".getBytes(StandardCharsets.UTF_8));
 
         System.setProperty("user.dir", server.toString());
         Path resolved = KbRepoPathUtil.resolveExisting("../kb/tools/sync_to_db.py", "同步脚本");

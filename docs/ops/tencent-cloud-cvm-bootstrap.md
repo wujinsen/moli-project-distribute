@@ -2,7 +2,7 @@
 
 > **适用**：腾讯云 CVM · **Ubuntu 22.04 / 24.04 LTS**（验证：24.04 Noble）  
 > **完整上线**（JAR、Nginx 站点、Sync、冒烟）：[`deploy/腾讯云上线流程.md`](../../deploy/腾讯云上线流程.md)  
-> **AWS 勿用本文**：Amazon Linux 见 [`deploy/上线流程.md`](../../deploy/上线流程.md)  
+> **AWS 勿用本文**：Amazon Linux 见 [`aws-ec2-bootstrap.md`](aws-ec2-bootstrap.md) · 完整上线 [`deploy/上线流程.md`](../../deploy/上线流程.md)  
 > 更新：2026-07-13
 
 面向「新购腾讯云 Ubuntu 服务器，先装 **JDK 11 · MySQL 8 · Nginx · Redis · Nacos · Python**」，再进入应用部署。

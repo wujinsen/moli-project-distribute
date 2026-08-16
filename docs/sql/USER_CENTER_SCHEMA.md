@@ -23,7 +23,7 @@
 
 ---
 
-## 2. 表清单（26 张）
+## 2. 表清单（29 张）
 
 ### 2.1 RBAC 与组织（14）
 
@@ -50,7 +50,19 @@
 | `sys_login_log` | 登录成功/失败 |
 | `sys_operation_log` | 操作审计（模块、方法、参数、耗时） |
 
-### 2.3 运维资产（10）
+### 2.3 系统管理 · 参数与公告（3）
+
+| 表 | 说明 |
+|----|------|
+| `sys_config` | 系统参数**运行期覆盖值**；只有 `config_key` + `config_value`，参数定义在代码 `ConfigKey` 枚举，不落库 |
+| `sys_notice` | 通知公告；`status` 0草稿/1已发布/2已撤回，`notice_content` 存 Markdown 源文 |
+| `sys_notice_read_cursor` | 用户公告已读**水位**（一用户一行，主键 `user_id`），非「每用户每公告一行」 |
+
+> 迁移：[`38_sys_config.sql`](38_sys_config.sql)、[`39_sys_notice.sql`](39_sys_notice.sql)（**尚未**合并进 `moli.sql` 基线）。 
+> `sys_config` **无种子行** —— 空表即表示全部参数取 yaml 或代码默认值。 
+> 设计：[`../design/sys-config-notice.md`](../design/sys-config-notice.md) · API：[`../api/sys-config-notice-api.md`](../api/sys-config-notice-api.md)
+
+### 2.4 运维资产（10）
 
 | 表 | 说明 |
 |----|------|
@@ -81,7 +93,14 @@ sys_dept ◄── sys_user ──► sys_user_role ──► sys_role ──►
 operation_platform_info ──► operation_server_info ──► operation_server_project ──► operation_project_deploy_info
                                               └──► operation_server_component ──► operation_component_deploy_info
 operation_project_deploy_info ──► operation_project_component ──► operation_component_deploy_info
+
+sys_user ──► sys_notice_read_cursor  (水位，无 FK；publish_time > last_read_time 即未读)
+sys_config   (孤立表，无外键；config_key 对应代码 ConfigKey 枚举)
+sys_notice   (孤立表，notice_type 对应字典 sys_notice_type)
 ```
+
+> 参数与公告的完整 ER（含代码侧注册表与取值链）见 
+> [`../diagrams/moli-sys-config-notice-er.drawio`](../diagrams/moli-sys-config-notice-er.drawio)。
 
 可视化 RBAC 子集：[`../diagrams/moli-rbac-model.drawio`](../diagrams/moli-rbac-model.drawio) / [PNG](../diagrams/png/moli-rbac-model.png)。
 
@@ -146,6 +165,7 @@ operation_project_deploy_info ──► operation_project_component ──► op
 | **秒杀表** | 追加 `docs/sql/02_seckill_schema.sql` |
 | **知识库表** | 追加 `docs/sql/03_knowledge_schema.sql` |
 | **历史 patch** | 已合并进 `moli.sql`（含 21/22 部署中心 + 23 组件 `server_id` + **28 拓扑菜单 407** + **29 项目依赖表**）；老库按 [`sql-migration-order.md`](../ops/sql-migration-order.md) 追 17→29 |
+| **参数设置 / 通知公告** | 追加 [`38_sys_config.sql`](38_sys_config.sql) → [`39_sys_notice.sql`](39_sys_notice.sql)；**未**合并基线，新环境也需手动追。执行后角色 1/2 需重新登录才看到菜单 8/9 |
 
 ---
 
@@ -157,7 +177,9 @@ operation_project_deploy_info ──► operation_project_component ──► op
 | `sys_menu` | 32 | 含 RBAC + 运维（含拓扑图 407）+ 知识库菜单 |
 | `sys_role` | 10 | |
 | `sys_system` | 35 | 多系统门户演示 |
-| `sys_action` | 38 | 动作码目录 |
+| `sys_action` | 38 | 动作码目录（追 38/39 后 +5：config 2 + notice 3） |
+| `sys_config` | 0 | **故意为空**：有行即表示覆盖了默认值 |
+| `sys_notice` | 0 | 无种子公告 |
 
 完整快照见 [`README.md`](README.md) §表行数。
 

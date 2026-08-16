@@ -26,20 +26,13 @@
 - **ops/**：Runbook、部署、[[生产部署拓扑备忘]]
 - **test/**：[[测试文档索引]]、[[秒杀压测指南]]
 
-## 其它空间
-
-| 空间 | 目录 | 内容 |
-|------|------|------|
-| enterprise-kb | `kb/wiki/` | 通用 articles / concepts / interview |
-| jp-fe-ap-exam | `wiki-jp-exam/` | 日本語 FE/AP |
-
 ## 同步
 
 ```bash
 bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all
 ```
 
-详见 [[wiki同步指南]]。
+详见 [[wiki同步指南]]（`enterprise-kb` + `moli-ops-manual` 两空间）。
 
 ## 知识治理索引（自动生成）
 

@@ -210,7 +210,7 @@ def patch_enterprise_corpus(dry_run: bool) -> int:
 
 def patch_all_slug_renames(dry_run: bool) -> int:
     n = 0
-    for root in (WIKI, WIKI_MOLI, KB / "wiki-jp-exam"):
+    for root in (WIKI, WIKI_MOLI):
         if not root.is_dir():
             continue
         for md in root.rglob("*.md"):

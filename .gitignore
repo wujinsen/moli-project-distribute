@@ -44,7 +44,5 @@ Thumbs.db
 
 # Certify サーティファイ 考试语料（本地维护，不推送 GitHub）
 moli-knowledge/kb/raw/school/certify/
-moli-knowledge/kb/wiki-jp-exam/certify/
-
 # KB eval reports (local artifacts)
 moli-knowledge/kb/eval/reports/

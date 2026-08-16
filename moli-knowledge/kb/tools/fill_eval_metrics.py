@@ -36,7 +36,7 @@ TOOLS_DIR = Path(__file__).resolve().parent
 KB_DIR = TOOLS_DIR.parent
 REPO_ROOT = TOOLS_DIR.parents[2]  # tools -> kb -> moli-knowledge -> repo root
 REPORT_DIR = KB_DIR / "eval" / "reports"
-WIKI_DIRS = [KB_DIR / "wiki", KB_DIR / "wiki-moli", KB_DIR / "wiki-jp-exam"]
+WIKI_DIRS = [KB_DIR / "wiki", KB_DIR / "wiki-moli"]
 
 TARGET_INLINE = ["README.md", "README.en.md", "README.ja.md"]
 TARGET_TABLE = ["PORTFOLIO.md"]

@@ -24,9 +24,11 @@ import com.moli.user.center.server.config.util.ShiroUtils;
 import com.moli.user.center.server.mapper.SysLoginLogMapper;
 import com.moli.user.center.server.mapper.SysUserMapper;
 import com.moli.user.center.common.domain.vo.CapabilitiesVo;
+import com.moli.user.center.server.service.ConfigService;
 import com.moli.user.center.server.service.MenuService;
 import com.moli.user.center.server.service.PermissionService;
 import com.moli.user.center.server.service.SysSystemService;
+import com.moli.user.center.server.sysparam.ConfigKey;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +41,6 @@ import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FastByteArrayOutputStream;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -77,8 +78,8 @@ public class LoginController {
     @Autowired
     private RedisUtil redisUtil;
 
-    @Value("${captcha.enabled:false}")
-    private boolean captchaEnabled;
+    @Autowired
+    private ConfigService configService;
 
     /**
      * 登录方法
@@ -168,7 +169,8 @@ public class LoginController {
     @PostMapping("/captchaImage")
     @ApiOperation(value = "验证码")
     public MoliResult<CaptchaImageVo> captchaImage() {
-        if (!captchaEnabled) {
+        // 运行期读取：在「参数设置」里改开关后无需重启即生效
+        if (!configService.getBoolean(ConfigKey.CAPTCHA_ENABLED)) {
             return MoliResult.errorMsg(ResponseCodeEnums.SERVICE_ERROR_CODE.getCode(), "验证码功能暂时关闭");
         }
         CaptchaImageVo captchaImageVo = new CaptchaImageVo();

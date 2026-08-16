@@ -42,11 +42,11 @@ public class KbSyncServiceImplScheduleTest {
         Map<String, String> dirs = new LinkedHashMap<>();
         dirs.put("enterprise-kb", "wiki");
         dirs.put("moli-ops-manual", "wiki-moli");
-        dirs.put("jp-fe-ap-exam", "wiki-jp-exam");
         when(wikiProperties.getSpaceDirs()).thenReturn(dirs);
 
         List<String> codes = service.resolveScheduleSpaceCodes();
-        Assert.assertEquals(3, codes.size());
-        Assert.assertTrue(codes.contains("jp-fe-ap-exam"));
+        Assert.assertEquals(2, codes.size());
+        Assert.assertTrue(codes.contains("enterprise-kb"));
+        Assert.assertTrue(codes.contains("moli-ops-manual"));
     }
 }

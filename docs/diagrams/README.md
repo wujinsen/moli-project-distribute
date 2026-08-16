@@ -43,6 +43,7 @@
 | [`moli-operation-topology-graph.drawio`](moli-operation-topology-graph.drawio) | **服务器拓扑可视化 SVR-25**：全局 ECharts 拓扑图 + 聚合 API + P2 依赖表（设计见 `docs/design/server-topology-visualization.md`） |
 | [`moli-operation-relations-nav.drawio`](moli-operation-relations-nav.drawio) | **关联关系导航 SVR-28**：三实体 N:N 全景 + RelationDrawer + 七页接入（设计见 `docs/design/operation-relations-navigation.md`） |
 | [`moli-sso-menu-flow.drawio`](moli-sso-menu-flow.drawio) | **SSO 菜单按系统隔离**：login → enter/switch → getRouters 过滤（设计见 `docs/design/sso-menu-system-isolation.md`） |
+| [`moli-sys-config-notice-er.drawio`](moli-sys-config-notice-er.drawio) | **参数设置 / 通知公告 ER**（3 表）：`sys_config` 只存运行期覆盖值（定义在代码 `ConfigKey` 注册表）+ 四级取值链 · `sys_notice` 三态发布 + `sys_notice_read_cursor` 未读水位（设计见 `docs/design/sys-config-notice.md`） |
 
 **三空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
 
@@ -92,13 +93,21 @@ cursor --install-extension hediet.vscode-drawio
   "D:\work\moli_project\moli-project-distribute\docs\diagrams\moli-container-architecture.drawio"
 ```
 
-**方式 B — 无桌面版时**（本机已验证）：
+**方式 B — 无桌面版时**：
 
 ```powershell
 npx --yes draw.io-export docs/diagrams/moli-gateway-routes.drawio -o docs/diagrams/png/moli-gateway-routes.png
 ```
 
+> **已失效（2026-08-16 实测）**：该包（含最新 `0.3.0`）把渲染页写死在 `https://www.draw.io/export3.html`，而该域名已不可达（`ERR_CONNECTION_CLOSED`），`app.diagrams.net` 仍正常。包已停止维护，命令会退出码 0 但**不生成文件**——注意别把旧 PNG 当成新导出的。
+>
+> 替代：优先用 **方式 C（VS Code 扩展）**；需要命令行时，用缓存里的 puppeteer 跑一份把域名改成 `app.diagrams.net` 的脚本即可（逻辑同该包，仅 `page.goto` 一行不同）。
+
 对 `docs/diagrams/*.drawio` 逐个执行，或在 CI 中批量导出。
+
+### 4. VS Code 扩展导出（方式 C · 当前推荐）
+
+安装 `hediet.vscode-drawio` 后打开 `.drawio`，命令面板执行 **`Draw.io: Export to PNG`**（不依赖 `www.draw.io`）。
 
 ## 在文档中引用
 
@@ -125,6 +134,7 @@ docs/diagrams/png/moli-knowledge-sync.png
 docs/diagrams/png/moli-ai-capability-roadmap.png
 docs/diagrams/png/moli-kb-hybrid-retrieval.png
 docs/diagrams/png/moli-ai-chatbi-flow.png
+docs/diagrams/png/moli-sys-config-notice-er.png
 ```
 
 在 [`docs/zh-CN/ARCHITECTURE.md`](../zh-CN/ARCHITECTURE.md) 可替换 Mermaid 为 PNG（按需）。

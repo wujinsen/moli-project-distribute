@@ -12,8 +12,6 @@
 | **`raw/api/`** | API 外部稿（可选） | `wiki-moli/develop/`；契约 → **[docs/api/](../../../docs/api/)** |
 | **`raw/test/`** | 测试/QA 外部稿 | `wiki/guides/`；压测 → [load-test/](../../../load-test/) |
 | **`raw/ops/`** | 运维 SOP | **`wiki-moli/`** → [docs/ops/](../../../docs/ops/) |
-| **`raw/school/fe/`** | 日本語 FE 试题/答案 | **`wiki-jp-exam/`**（`jp-fe-ap-exam`） |
-| **`raw/school/ap/`** | 日本語 AP 试题/答案 | **`wiki-jp-exam/`**（`jp-fe-ap-exam`） |
 | `raw/docs/` | 项目文档副本 | ingest 后分散到 wiki 各类型 |
 | `raw/articles/` | 技术文章、笔记导出 | `wiki-moli/develop/articles/` |
 | `raw/interview/` | 面试题原始材料 | `wiki-moli/test/interview/` |

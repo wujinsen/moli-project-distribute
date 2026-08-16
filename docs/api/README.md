@@ -11,6 +11,7 @@
 | [frontend-routes-map.md](frontend-routes-map.md) | meiling-ui 菜单 ↔ 后端 API |
 | [gateway-design.md](../design/gateway-design.md) | 网关概要设计 |
 | [user-center-api-map.md](user-center-api-map.md) | 用户中心 ~70 HTTP |
+| **[sys-config-notice-api.md](sys-config-notice-api.md)** | **系统管理 · 参数设置 `/config` + 通知公告 `/notice`（含仅需登录的阅读侧 `/notice/feed*`）** |
 | **[operation-frontend.md](operation-frontend.md)** | **服务器运维 · 运营管理 · meiling-ui 对接（S0–S26）** |
 | **[operation-backend-handoff.md](operation-backend-handoff.md)** | **运营管理 · 后端联调通知（给前端 · Breaking/create id）** |
 | **[operation-frontend-handoff.md](operation-frontend-handoff.md)** | **运营管理 · 前端开工（`toVo` 计数 · S-VO · 走查）** |

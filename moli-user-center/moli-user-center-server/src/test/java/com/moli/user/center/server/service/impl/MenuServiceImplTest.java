@@ -17,15 +17,15 @@ import com.moli.user.center.server.mapper.RoleMenuMapper;
 import com.moli.user.center.server.mapper.SysSystemMapper;
 import com.moli.user.center.server.mapper.SysUserMapper;
 import com.moli.user.center.server.mapper.SysUserRoleMapper;
+import com.moli.user.center.server.service.ConfigService;
+import com.moli.user.center.server.sysparam.ConfigKey;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,13 +59,17 @@ public class MenuServiceImplTest {
     @Mock
     private SysSystemMapper sysSystemMapper;
 
-    @Before
-    public void setUp() {
-        ReflectionTestUtils.setField(menuService, "ssoEnabled", true);
+    @Mock
+    private ConfigService configService;
+
+    /** 门户开关改为运行期从 ConfigService 读取（原先是 @Value 注入的 ssoEnabled 字段） */
+    private void stubPortalSwitch(boolean enabled) {
+        when(configService.getBoolean(ConfigKey.SSO_ENABLED)).thenReturn(enabled);
     }
 
     @Test
     public void resolveRouters_portalEnabledWithoutCurrentSystem_returnsEmpty() {
+        stubPortalSwitch(true);
         SysUser user = user("operator", 2L);
         when(sysUserMapper.selectById(2L)).thenReturn(user);
         when(sysSystemMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(1);
@@ -79,7 +83,7 @@ public class MenuServiceImplTest {
 
     @Test
     public void resolveRouters_portalDisabled_returnsUnfilteredRoleTree() {
-        ReflectionTestUtils.setField(menuService, "ssoEnabled", false);
+        stubPortalSwitch(false);
         SysUser user = user("operator", 2L);
         when(sysUserMapper.selectById(2L)).thenReturn(user);
 
@@ -110,6 +114,7 @@ public class MenuServiceImplTest {
 
     @Test
     public void resolveRouters_filtersByCurrentSystemAndKeepsAncestors() {
+        stubPortalSwitch(true);
         SysUser user = user("operator", 2L);
         when(sysUserMapper.selectById(2L)).thenReturn(user);
         when(sysSystemMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(2);
@@ -149,6 +154,7 @@ public class MenuServiceImplTest {
 
     @Test
     public void resolveRouters_externalCurrentSystem_returnsEmpty() {
+        stubPortalSwitch(true);
         SysUser user = user("operator", 2L);
         when(sysUserMapper.selectById(2L)).thenReturn(user);
         when(sysSystemMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(2);

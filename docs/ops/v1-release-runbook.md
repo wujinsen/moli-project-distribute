@@ -78,7 +78,6 @@ bash tools/ci/run_sync.sh sync-all
 ```bash
 python tools/sync_to_db.py --wiki-dir wiki --space enterprise-kb
 python tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
-python tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam
 ```
 
 Web 端：知识库 → 同步触发 / 健康体检。

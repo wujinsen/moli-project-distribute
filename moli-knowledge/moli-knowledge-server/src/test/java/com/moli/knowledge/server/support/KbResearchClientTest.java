@@ -11,7 +11,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -71,10 +73,20 @@ public class KbResearchClientTest {
         assertTrue(options.getIntValue("maxSections") <= 10);
     }
 
+    private static String readUtf8(InputStream in) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buf = new byte[4096];
+        int n;
+        while ((n = in.read(buf)) != -1) {
+            baos.write(buf, 0, n);
+        }
+        return new String(baos.toByteArray(), StandardCharsets.UTF_8);
+    }
+
     private class CaptureHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            lastBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            lastBody.set(readUtf8(exchange.getRequestBody()));
             String response = "{\"runId\":\"run-1\",\"status\":\"SUCCEEDED\",\"topic\":\"t\",\"outline\":{\"sections\":[]},\"sectionEvidence\":[],\"citations\":[],\"progress\":[],\"latencyMs\":1}";
             byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");

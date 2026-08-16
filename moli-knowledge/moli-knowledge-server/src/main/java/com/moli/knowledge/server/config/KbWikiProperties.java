@@ -65,7 +65,6 @@ public class KbWikiProperties {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("enterprise-kb", "wiki");
         map.put("moli-ops-manual", "wiki-moli");
-        map.put("jp-fe-ap-exam", "wiki-jp-exam");
         return map;
     }
 }

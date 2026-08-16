@@ -18,16 +18,17 @@ import com.moli.user.center.server.mapper.SysSystemMapper;
 import com.moli.user.center.server.mapper.SysUserMapper;
 import com.moli.user.center.server.mapper.SysUserSystemMapper;
 import com.moli.user.center.common.domain.vo.CapabilitiesVo;
+import com.moli.user.center.server.service.ConfigService;
 import com.moli.user.center.server.service.MenuService;
 import com.moli.user.center.server.service.PermissionService;
 import com.moli.user.center.server.service.SsoService;
 import com.moli.user.center.server.service.SysSystemService;
+import com.moli.user.center.server.sysparam.ConfigKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,12 +63,15 @@ public class SysSystemServiceImpl implements SysSystemService {
     @Autowired
     private PermissionService permissionService;
 
-    @Value("${sso.enabled:true}")
-    private boolean ssoEnabled;
+    @Autowired
+    private ConfigService configService;
 
     @Override
     public boolean isPortalEnabled() {
-        if (!ssoEnabled) {
+        // 运行期读取门户开关；MenuServiceImpl 有一份同名判定，两者现在读同一个 ConfigKey，
+        // 不会再出现改了一处漏另一处。方法本身未合并：SysSystemServiceImpl 已依赖 MenuService，
+        // 反向依赖会形成 Bean 循环。
+        if (!configService.getBoolean(ConfigKey.SSO_ENABLED)) {
             return false;
         }
         try {

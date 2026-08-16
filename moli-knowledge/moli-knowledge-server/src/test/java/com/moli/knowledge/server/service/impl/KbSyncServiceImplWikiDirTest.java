@@ -45,7 +45,6 @@ public class KbSyncServiceImplWikiDirTest {
         Map<String, String> dirs = new LinkedHashMap<>();
         dirs.put("enterprise-kb", "wiki");
         dirs.put("moli-ops-manual", "wiki-moli");
-        dirs.put("jp-fe-ap-exam", "wiki-jp-exam");
         when(wikiProperties.getSpaceDirs()).thenReturn(dirs);
     }
 }

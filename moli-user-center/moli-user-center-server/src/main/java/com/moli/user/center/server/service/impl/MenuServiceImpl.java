@@ -20,14 +20,15 @@ import com.moli.user.center.server.mapper.RoleMenuMapper;
 import com.moli.user.center.server.mapper.SysSystemMapper;
 import com.moli.user.center.server.mapper.SysUserMapper;
 import com.moli.user.center.server.mapper.SysUserRoleMapper;
+import com.moli.user.center.server.service.ConfigService;
 import com.moli.user.center.server.service.MenuService;
+import com.moli.user.center.server.sysparam.ConfigKey;
 import com.moli.common.exception.BaseException;
 import com.moli.common.utils.I18nUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -65,8 +66,8 @@ public class MenuServiceImpl implements MenuService {
     @Autowired
     private SysSystemMapper sysSystemMapper;
 
-    @Value("${sso.enabled:true}")
-    private boolean ssoEnabled;
+    @Autowired
+    private ConfigService configService;
 
 
     @Override
@@ -232,7 +233,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private boolean isPortalEnabled() {
-        if (!ssoEnabled) {
+        if (!configService.getBoolean(ConfigKey.SSO_ENABLED)) {
             return false;
         }
         try {

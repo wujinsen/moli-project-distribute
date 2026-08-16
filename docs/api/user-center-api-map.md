@@ -128,6 +128,38 @@
 - `DELETE /post/{ids}`：批量删除；权限 `system:post:remove` + `system:post:list`
 - `GET /post/allPost`：全部岗位；权限 `system:post:list`
 
+### 参数设置 `ConfigController`（前缀 `config`，3个）
+
+契约详见 [`sys-config-notice-api.md`](sys-config-notice-api.md) §2。
+
+- `GET /config/list`：参数列表（**注册表驱动**，非表驱动；无分页）；权限 `system:config:list`；可选 `group=SECURITY|PORTAL|OPS`
+- `PUT /config`：设置覆盖值；权限 `system:config:edit` + `system:config:list`
+- `DELETE /config/{configKey}`：重置为默认（删覆盖行，**不是**删参数）；权限 `system:config:remove` + `system:config:list`
+
+**无 `POST`**：参数在代码 `ConfigKey` 枚举里声明，不能由 UI 创建，故也无 `system:config:add`。
+
+### 通知公告 `NoticeController`（前缀 `notice`，10个）
+
+契约详见 [`sys-config-notice-api.md`](sys-config-notice-api.md) §3–§4。
+
+后台管理（可见草稿/已撤回）：
+
+- `GET /notice/list`：分页列表，不含正文；权限 `system:notice:list`
+- `GET /notice/{id}`：详情，含正文；权限 `system:notice:list`
+- `POST /notice`：新增，**强制落草稿**；权限 `system:notice:add` + `system:notice:list`
+- `PUT /notice`：修改，不改状态；权限 `system:notice:edit` + `system:notice:list`
+- `PUT /notice/publish/{id}`：发布（仅草稿/已撤回可发布）；权限 `system:notice:edit` + `system:notice:list`
+- `PUT /notice/revoke/{id}`：撤回（仅已发布可撤回）；权限 `system:notice:edit` + `system:notice:list`
+- `DELETE /notice/{ids}`：批量物理删除，仅用于清理误建草稿；权限 `system:notice:remove` + `system:notice:list`
+
+阅读侧（**仅需登录，无 perms**；只可见已发布且未过期）：
+
+- `GET /notice/feed`：有效公告 + 未读数（一次请求拿列表与角标）
+- `GET /notice/feed/{id}`：详情，含正文
+- `PUT /notice/feed/read`：把已读**水位**推进到此刻
+
+前端渲染通知栏必须用 `/notice/feed*`，用后台接口会让普通用户吃 403。
+
 ### 字典管理 `DictController`（前缀 `dict`，10个）
 
 - 类型:

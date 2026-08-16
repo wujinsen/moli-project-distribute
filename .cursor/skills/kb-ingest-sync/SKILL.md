@@ -19,7 +19,7 @@ description: >-
 - `kb/raw` 投喂、wiki 增删改、Ingest 批次
 - `lint.py --strict`、`sync_to_db.py`、Web 同步前门禁
 - **检索演进**：chunk 切段、`eval_ask.py` 问答回归（见下文 §检索演进）
-- 空间边界：`wiki/` vs `wiki-moli/` vs `wiki-jp-exam/`
+- 空间边界：`wiki/` vs `wiki-moli/`
 - 用户说 `@kb-ingest-sync` 或「ingest 这批 raw」
 
 **本 skill 是速查 + 决策树**；细节以 `kb/AGENTS.md` 为准，勿重复编造规则。
@@ -30,7 +30,6 @@ description: >-
 |------|------|------|
 | **`wiki-moli/`** | 茉莉项目 PRD/运维/服务实体 | 通用八股整库、wujinsen 批量骨架 |
 | **`wiki/`** | 通用技术 articles/concepts/interview | 「茉莉触点」节、项目 wikilink |
-| **`wiki-jp-exam/`** | 日本語 FE/AP | 其它 |
 
 治理：`python kb/tools/kb_space_governance.py` · **禁止**再跑 `_gen_batches_287_1286.py`。
 
@@ -117,7 +116,7 @@ python kb/tools/eval_ask.py --only M05 --min-hit 0.75
 
 ```
 主题：{xxx}
-空间：wiki-moli / wiki / wiki-jp-exam
+空间：wiki-moli / wiki
 策略：A 原地 enrich（默认）
 
 enrich: [slug, ...]
