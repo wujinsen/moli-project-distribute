@@ -94,6 +94,23 @@ PowerShell 单文件（**含中文时必须这样，禁止 `Get-Content | mysql`
 k6 run -e LOGIN_PASSWORD=你的密码 -e VIA_GATEWAY=false load-test/k6/user-center-login-smoke.js
 ```
 
+## 上传到 EC2（生产）
+
+Git 仓库内 `scripts/moli.sql` 多为 **小体积基线**；本地 Navicat **全库导出**（常数十 MB 以上）**不会**随 `git pull` 到服务器。
+
+```powershell
+scp D:\work\moli_project\moli-project-distribute\scripts\moli.sql ec2-user@<EC2公网IP>:/opt/moli-project-distribute/scripts/
+```
+
+EC2 导入：
+
+```bash
+mysql -u root -p --default-character-set=utf8mb4 moli \
+  < /opt/moli-project-distribute/scripts/moli.sql
+```
+
+详见 [`deploy/上线流程.md` §6–§7](../deploy/上线流程.md)。
+
 ## 旧文件
 
 早期拆分基线 `docs/sql/00_schema.sql`、`01_baseline_data.sql` 已删除，统一以 `scripts/moli.sql` 为准。

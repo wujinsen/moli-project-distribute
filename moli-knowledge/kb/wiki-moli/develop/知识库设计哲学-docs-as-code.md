@@ -38,7 +38,7 @@ updated: 2026-07-01
 
 | 轨 | 路径 | 职责 |
 |----|------|------|
-| **生产轨** | `kb/wiki-moli/`、`kb/wiki/`、`kb/wiki-jp-exam/` | **唯一正文源**；Agent / Web Ingest / `PUT /kb/wiki-moli/page` 写这里 |
+| **生产轨** | `kb/wiki-moli/`、`kb/wiki/` | **唯一正文源**；Agent / Web Ingest / `PUT /kb/wiki-moli/page` 写这里 |
 | **服务轨** | `moli-knowledge-server` + MySQL `kb_*` | REST 浏览、ACL、问答、图谱；**正文只读** |
 
 **同步方向**（详见 [[wiki同步指南]]）：

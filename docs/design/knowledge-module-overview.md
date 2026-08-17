@@ -48,13 +48,12 @@ raw/ + Cursor Agent          Web Ingest / Wiki 编辑
 
 ---
 
-## 3. 三空间
+## 3. 两空间
 
 | wiki 目录 | space_code | 用途 |
 |-----------|------------|------|
 | `kb/wiki/` | `enterprise-kb` | 通用技术文库 |
 | `kb/wiki-moli/` | `moli-ops-manual` | 茉莉系统手册 |
-| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 日本语 FE/AP 考试 |
 
 路径解析：`KbRepoPathUtil`（8090 Java + Python 脚本统一根目录）。
 

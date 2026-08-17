@@ -21,18 +21,18 @@
 
 **现象**
 
-- workflow 已监听 `wiki-moli` / `wiki-jp-exam` 目录变更；
+- workflow 已监听 `wiki-moli` 目录变更；
 - 但 `dry-run` 与 `lint-strict` 仍只跑默认 `wiki` 空间。
 
 **影响**
 
-- PR 可以通过，但主分支 `sync-all` 阶段才暴露 wiki-moli / wiki-jp-exam 问题；
+- PR 可以通过，但主分支 `sync-all` 阶段才暴露 wiki-moli 问题；
 - 增加“合并后失败”的概率，降低门禁有效性。
 
 **建议**
 
 - dry-run 任务改为 `run_sync.sh dry-run-all`；
-- 新增 `run_sync.sh lint-all`（分别对 `wiki`、`wiki-moli`、`wiki-jp-exam` 执行 `lint.py --strict`）；
+- 新增 `run_sync.sh lint-all`（分别对 `wiki`、`wiki-moli` 执行 `lint.py --strict`）；
 - workflow 中将 lint 步骤切到 `lint-all`。
 
 ### P2（中）remote 手动同步仍是单空间

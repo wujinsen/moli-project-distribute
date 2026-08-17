@@ -85,7 +85,7 @@ KnowledgeLintView.vue
 | **O3** | 最近日志 | `GET /kb/sync/logs?spaceId=&pageSize=10` | 表格：batchNo、status、createTime、message 摘要 |
 | **O4** | 失败态 | 同上 | `status=fail` 行 **danger** 色 + 展开 message；Toast「Sync 失败，请查看日志」 |
 
-**三空间快捷（可选）**：平台 admin 展示 `enterprise-kb` / `moli-ops-manual` / `jp-fe-ap-exam` Tab 或下拉，避免只 sync 默认空间。
+**两空间快捷（可选）**：平台 admin 展示 `enterprise-kb` / `moli-ops-manual` Tab 或下拉，避免只 sync 默认空间。
 
 ### 3.3 TypeScript（建议 `src/types/knowledge/kbSync.ts`）
 
@@ -391,7 +391,7 @@ Dashboard 新增字段 `retrievalQuality.strategies[]`：`strategy` · `hit3` ·
 
 1. 启动 gateway + `moli-knowledge-server`  
 2. 部署机存在 `kb/tools/sync_to_db.py`、`lint.py`  
-3. 测试空间：`900000000000000001` enterprise-kb · `900000000000000003` moli-ops-manual · `900000000000000002` jp-fe-ap-exam  
+3. 测试空间：`900000000000000001` enterprise-kb · `900000000000000003` moli-ops-manual  
 4. LLM：先完成 T19d 或 yml 配 `kb.llm`  
 
 ---

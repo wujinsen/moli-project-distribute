@@ -20,7 +20,7 @@
 | 定时/手动 Sync 可并发 | 同一空间互相覆盖，难排查 |
 | 治理/LLM 后端齐、前端缺按钮 | 日常靠 Swagger，SOP 落不了地 |
 | 健康体检与 `lint.py` 检查项不一致 | 不知道以谁为准 |
-| 三空间仅部分自动 Sync | `wiki-moli` / `jp-fe-ap-exam` 易漏 sync |
+| 两空间仅部分自动 Sync | `wiki-moli` 易漏 sync |
 
 ### 1.2 产品定义
 
@@ -47,7 +47,7 @@
 | **空间 admin** | 改完 wiki 后要 Web 可见 | 一键 Sync + 看见成功/失败 |
 | **editor** | commit 后仍有断链 | 被引导到 Wiki 治理 → 修复 → 再 Sync |
 | **平台 admin** | 配置 Ask/Ingest/治理用 LLM | 系统管理里改 Key，无需重启 |
-| **运维** | 夜间定时同步三空间 | 失败告警、日志可查、不并发踩库 |
+| **运维** | 夜间定时同步两空间 | 失败告警、日志可查、不并发踩库 |
 | **CI** | PR 合并前门禁 | lint-strict + dry-run 拦截坏 wiki |
 
 ---
@@ -100,7 +100,7 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 | ID | 需求 | 用户价值 | 验收要点 |
 |----|------|----------|----------|
-| **KBOPS-4** | 定时 **sync-all 三空间** | 手册/Certify 不漏 sync | 配置化 `space-codes`；文档与 Scheduler 一致 |
+| **KBOPS-4** | 定时 **sync-all 两空间** | 手册不漏 sync | 配置化 `space-codes`；文档与 Scheduler 一致 |
 | **KBOPS-5** | Sync **失败告警** | 夜间失败有人知 | webhook 可开关 |
 | **KBOPS-6** | **Wiki 治理全链路 UI**（T16f） | 不用 Swagger 修 wiki | W1–W8 见 [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) |
 | **KBOPS-7** | **平台 LLM 设置页**（T19d） | 管 Key、测连通 | 见 [kb-llm-platform-frontend.md](../api/kb-llm-platform-frontend.md) |
@@ -120,7 +120,7 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 | ID | 需求 | 说明 |
 |----|------|------|
 | **KBOPS-A1** | CI **lint-strict 硬门禁** | PR 必须 lint-strict-all + dry-run-all |
-| **KBOPS-A2** | Sync **失败 Runbook** | 运维文档：怎么看、怎么重跑、三空间验 |
+| **KBOPS-A2** | Sync **失败 Runbook** | 运维文档：怎么看、怎么重跑、两空间验 |
 | **KBOPS-A3** | wiki↔DB **漂移检测** | 脚本或 Dashboard 前置 |
 
 ---
@@ -143,15 +143,14 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 ---
 
-## 6. 三空间 Sync
+## 6. 两空间 Sync
 
 | wiki 目录 | space_code | 典型内容 |
 |-----------|------------|----------|
 | `kb/wiki/` | `enterprise-kb` | 通用技术文库 |
 | `kb/wiki-moli/` | `moli-ops-manual` | 茉莉系统手册 |
-| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` | 日本语考试 / Certify |
 
-**产品要求**：运维动作（手动 trigger、定时任务、CI）应支持 **三空间** 或明确勾选；默认演示勿只 sync enterprise-kb。
+**产品要求**：运维动作（手动 trigger、定时任务、CI）应支持 **两空间** 或明确勾选；默认演示勿只 sync enterprise-kb。
 
 ---
 
@@ -187,7 +186,7 @@ Wiki 治理链路见 [moli-kb-wiki-govern.drawio](../diagrams/moli-kb-wiki-gover
 
 ### 8.3 回归场景
 
-- [ ] sync-all 后三空间 browse 抽样 3 slug（生产 cron 开启后）
+- [ ] sync-all 后两空间 browse 抽样各 1 slug（生产 cron 开启后）
 - [ ] 治理修复 → Sync → 体检 scan 工单减少（按需人工回归）
 - [x] LLM 关闭时治理页 AI 按钮 disabled + 文案 — **REG-llm-off** · `kb:prd` 17/17
 

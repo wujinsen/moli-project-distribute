@@ -98,7 +98,7 @@ Content-Type: application/json
   "spaceId": 900000000000000001,
   "batchNo": "batch-20260628-001",
   "topic": "FE 题库样例",
-  "rawPaths": ["fe/fe_kamoku_b_set_sample_qs.md"]
+  "rawPaths": ["moli-user-center/README.md"]
 }
 ```
 

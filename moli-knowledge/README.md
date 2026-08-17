@@ -97,7 +97,7 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 bash kb/tools/ci/run_sync.sh dry-run-all
 # 或仅 enterprise-kb：python kb/tools/sync_to_db.py --dry-run
 
-# 2. 写库（推荐三空间一次同步；需 pymysql）
+# 2. 写库（推荐两空间一次同步；需 pymysql）
 bash kb/tools/ci/run_sync.sh sync-all
 ```
 

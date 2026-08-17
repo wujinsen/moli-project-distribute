@@ -133,11 +133,11 @@ Phase 4（2 天）     代码重构 & 测试补齐
 ### 0.2 种子数据安全 ✅
 
 - `moli.sql` 中 `password='change-me'` 已改为 **`NULL`**
-- 已有库：`UPDATE operation_platform_info SET password = NULL WHERE password = 'change-me'`（见 [`deploy/上线流程.md`](../../deploy/上线流程.md) §7.5）
+- 已有库：`UPDATE operation_platform_info SET password = NULL WHERE password = 'change-me'`（见 [`deploy/上线流程.md`](../../deploy/上线流程.md) §14）
 
 ### 0.3 部署中心 Runbook 补全 ✅
 
-[`deploy/上线流程.md`](../../deploy/上线流程.md) **§7** — 三开关、SSH、权限、冒烟、order/ai 说明。
+[`deploy/上线流程.md`](../../deploy/上线流程.md) **§14** — 三开关、SSH、权限、冒烟、order/ai 说明。
 
 ---
 
@@ -342,7 +342,7 @@ operation/support/
 - [x] 删服务器：N:N 清空；running task 返回 **10107**
 - [x] 组件列表：每条有 `serverId` 或 orphan 标记
 - [ ] **腾讯云 Ubuntu**：`deploy_running` 与 SSH `status` 一致（联调验收）
-- [x] 部署中心：启停/上传/命令三开关 + Runbook（[`deploy/上线流程.md`](../../deploy/上线流程.md) §7）
+- [x] 部署中心：启停/上传/命令三开关 + Runbook（[`deploy/上线流程.md`](../../deploy/上线流程.md) §14）
 - [x] probe-all：HTTP 异步返回 taskId（100 台压测待联调）
 - [x] `serviceKey` 扩展 order/bi：YAML + presets；远程脚本待扩展
 - [x] 多服务器关联双轨同步（2026-07-13）：`PUT .../links` 对齐主 `server_id`；关系计数以 N:N 为准 — 见 [`operation-server-links.md`](operation-server-links.md) §2.3

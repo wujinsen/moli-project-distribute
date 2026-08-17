@@ -12,7 +12,7 @@
 
 - 统一网关 + 用户中心 RBAC + 多系统门户
 - 订单秒杀压测链路（Redis Lua + 异步落库）
-- 企业知识库（浏览 / 问答 / Ingest / Wiki 治理 / 三空间 Sync）
+- 企业知识库（浏览 / 问答 / Ingest / Wiki 治理 / 两空间 Sync）
 - BI 模块 **仅占位**（demo 接口，不纳入 v1 业务验收）
 
 **非目标（v1 明确不做）**
@@ -74,7 +74,7 @@
 | 能力 | v1 后端 | v1 前端 | 文档 |
 |------|---------|---------|------|
 | 浏览 / 问答 / 搜索 | ✅ | ✅ | [KNOWLEDGE_API.md](../api/KNOWLEDGE_API.md) |
-| 三空间 Sync | ✅ | ✅ | [wiki同步指南](../../moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md) |
+| 两空间 Sync | ✅ | ✅ | [wiki同步指南](../../moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md) |
 | Ingest 工作台 | ✅ | ✅ Tab1/2/3 T20f | [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) |
 | Wiki 单页编辑 + AI | ✅ | ✅ | KNOWLEDGE_API §8 |
 | Wiki 治理（lint/script/AI/auto） | ✅ | ✅ T16f | [wiki-govern-frontend.md](../api/wiki-govern-frontend.md) |

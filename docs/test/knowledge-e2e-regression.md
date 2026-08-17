@@ -22,7 +22,7 @@ mvn test
 | `IngestLlmGenerateModeUtilTest` + `KbIngestTemplateWriterTest` | 模板模式 |
 | `KbWikiFrontmatterFixUtilTest` + `KbWikiMergeHintUtilTest` | 治理脚本 |
 | `KbPlatformLlmConfigServiceImpl*` + `KbLlmConfigCipherTest` | T19 LLM 平台 |
-| `KbSyncServiceImplWikiDirTest` | 三空间 wiki 目录映射 |
+| `KbSyncServiceImplWikiDirTest` | 两空间 wiki 目录映射 |
 | `KbAttachment*Test` | 附件 |
 
 **wiki 文件门禁**（仓库根或 kb 目录）：
@@ -71,7 +71,7 @@ Web UI：T16f 部分能力未全 — 以 API 手测为准。矩阵：[knowledge-
 
 ---
 
-## 5. Sync 与三空间（P0）
+## 5. Sync 与两空间（P0）
 
 ```bash
 cd moli-knowledge/kb
@@ -83,7 +83,7 @@ bash tools/ci/run_sync.sh sync-all
 |------|-----------|------|
 | enterprise-kb | wiki/ | 浏览树有更新页 |
 | moli-ops-manual | wiki-moli/ | 本地启动指南可开 |
-| jp-fe-ap-exam | wiki-jp-exam/ | FE 分类下文档 |
+| moli-ops-manual | wiki-moli/ | develop 分类下文档 |
 
 ---
 

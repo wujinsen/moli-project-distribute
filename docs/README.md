@@ -54,7 +54,6 @@ moli-knowledge/kb/
   raw/{prd,design,api,test,ops,...}/  ← 新稿投喂（只读）
   wiki/                  ← 企业知识库成品
   wiki-moli/              ← 茉莉系统手册成品
-  wiki-jp-exam/          ← 考试空间
 
 load-test/               ← 压测脚本 + 操作说明（见 docs/test/）
 scripts/                 ← DB 初始化（见 docs/ops/）

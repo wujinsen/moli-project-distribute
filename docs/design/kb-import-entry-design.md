@@ -123,7 +123,7 @@ Sync 方向仍为 **wiki → DB 单向**；导入成功后必须 Sync（或默�
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `prefix` | 是 | 相对 raw 根的子路径，如 `test-walkthrough`、`school/fe` |
+| `prefix` | 是 | 相对 raw 根的子路径，如 `test-walkthrough`、`design/foo` |
 | `file` | 是 | 可重复字段名上传多文件 |
 | `onConflict` | 否 | `SKIP`（默认）/ `OVERWRITE` / `RENAME` |
 
@@ -180,7 +180,7 @@ kb:
 | `kbAclService.assertCanEdit(spaceId)` | 请求体带 `spaceId`（与 Ingest 批次一致；raw 全局目录但 ACL 按空间） |
 | Shiro `@RequiresPermissions("kb:ingest:rawUpload")` | 新动作，挂菜单 906 |
 
-> **说明**：raw 目录物理上三空间共享；ACL 仍绑定「当前 Ingest 工作台所选空间」的 editor，与 Tab2 一致。平台超管 bypass。
+> **说明**：raw 目录物理上两空间共享；ACL 仍绑定「当前 Ingest 工作台所选空间」的 editor，与 Tab2 一致。平台超管 bypass。
 
 ### 3.5 与 Ingest 的关系
 
@@ -261,7 +261,7 @@ kb:
 |------------|---------|---------------|----------|
 | `enterprise-kb` | `wiki` | `bigdata/hbase-入门` | `kb/wiki/bigdata/hbase-入门.md` |
 | `moli-ops-manual` | `wiki-moli` | `ops/运维手册` | `kb/wiki-moli/ops/运维手册.md` |
-| `jp-fe-ap-exam` | `wiki-jp-exam` | `fe/题目1` | `kb/wiki-jp-exam/fe/题目1.md` |
+| `moli-ops-manual` | `wiki-moli` | `develop/用户中心` | `kb/wiki-moli/develop/用户中心.md` |
 
 配置：`kb.wiki.root` + `kb.wiki.space-dirs`（生产 `KB_WIKI_ROOT=/opt/.../kb`）。
 

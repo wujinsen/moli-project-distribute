@@ -55,7 +55,7 @@
 | 键 | 说明 |
 |----|------|
 | `kb.llm.api-key` / 平台设置 | LLM 功能；空则降级 |
-| `kb.wiki.space-dirs` | 三空间目录映射 |
+| `kb.wiki.space-dirs` | 两空间目录映射 |
 | `kb.ingest.enabled` | 是否开放 Ingest |
 | MinIO endpoint | 附件存储 |
 

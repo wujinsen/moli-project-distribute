@@ -29,6 +29,8 @@ user-center · knowledge-server · gateway → 详见对应云平台 **`上线�
 
 **部署布局**：整仓 `git pull` 用 **方式 A**（JAR 在 `*/target/`）；rsync/scp 换包用 **方式 B**（JAR 在服务根目录）。二者勿混用。
 
+**EC2 首次踩坑速查**（Amazon Linux 2023）：见 [`上线流程.md` §0 / §3.4 / §6 / 附录 A](上线流程.md) · 基础环境复制命令 [`docs/ops/aws-ec2-bootstrap.md` §3.4](../docs/ops/aws-ec2-bootstrap.md)。
+
 **知识库插图（T22）**：Sync 只进 MySQL；B/D 档另传 **`kb/tools/raw-asset-bundle.tar.gz`**，见各平台上线流程 §插图包。
 
 ## 敏感文件

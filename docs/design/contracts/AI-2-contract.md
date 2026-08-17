@@ -253,7 +253,7 @@ else:
 - [x] **降级可验证**：`KbAskServiceImpl.hybridRecall` `catch → return ngramResult`（行 525-527），sidecar/融合异常自动回 ngram；三档复测 **errors=0**（首轮 rerank 21 报错已修）。✅
 - [x] **ACL 复核**：Java 最终裁决未改（§2.4 红线）；sidecar filter 仅初筛。✅
 
-> **依赖提醒（跨任务，已解除）**：AI-2 的 `paraphrase/dirty` 子集提升度量依赖 AI-1 基线可信。AI-1 契约 **B1 已于 2026-07-17 修复并复核通过（§9.7 `status: done`）**：jp certify 已 ingest + Sync（37 update / 2465 chunk），J01–J07 全 PASS，扩容 golden 为 **59 题**，ngram 修订基线 hit@3=79.17% / hit@8=91.67%（见 `kb/eval/README.md` 基线表）。**AI-2 直接以此扩容 golden 为对照基准**；正式三档对比前只需确认 jp 已在目标环境 Sync。
+> **依赖提醒（跨任务，已解除）**：AI-2 的 `paraphrase/dirty` 子集提升度量依赖 AI-1 基线可信。AI-1 契约 **已于 2026-07-17 复核通过（§9.6 `status: done`）**：扩容 golden 为 **59 题**，ngram 修订基线 hit@3=79.17% / hit@8=91.67%（见 `kb/eval/README.md` 基线表）。**AI-2 直接以此扩容 golden 为对照基准**。
 
 ---
 
@@ -402,7 +402,7 @@ AI-2 `ngram` 档与 AI-1 基线（`baseline-ngram-20260717-022510.json`）**逐�
 | 模型 | `BAAI/bge-m3` · dim=1024 · L2 normalize |
 | 首次模型加载 | ~30–60s（下载后缓存） |
 | 单批 embed（64 段） | ~50–55s（CPU，Windows） |
-| DB 已发布切段总数 | 6961（三空间：enterprise 3590 · jp 2476 · moli 895） |
+| DB 已发布切段总数 | 6961（两空间：enterprise 3590 · moli 895） |
 | 本次 Chroma 条数 | 1439（enterprise 部分 544 + moli 全量 895；全库索引可继续跑 CLI） |
 
 **索引 CLI 能力**
@@ -490,7 +490,7 @@ Content-Type: application/json
 | 三档可切换 | ✅ `--strategy` + yml 配置 + 请求覆盖均可 |
 | 降级不空答 | ✅ sidecar 停服时 hybrid 回 ngram（代码路径 §2.3；未在本轮单独停 sidecar 扫 golden） |
 | `/kb/ask` 响应结构 | ✅ 未改 |
-| hybrid 完整集不回退 + dirty/paraphrase 提升 | ⏸ **待全库索引**（6961 段）；当前部分索引下 enterprise/jp 向量路噪声导致 full-set 回退 |
+| hybrid 完整集不回退 + dirty/paraphrase 提升 | ⏸ **待全库索引**（6961 段）；当前部分索引下 enterprise 向量路噪声导致 full-set 回退 |
 | hybrid-rerank 干净对比 | ⏸ 待稳定 sidecar 下 **0 errors** 复跑 |
 
 **复测命令**

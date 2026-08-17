@@ -251,7 +251,7 @@ def write_wiki_stub(dry_run: bool) -> None:
 ## 本目录状态
 
 - `wiki/` 仅保留本说明；历史正文已迁入 `wiki-moli/`（2026-06-29 起）。
-- 日本語試験 → `wiki-jp-exam/` · 空间 `jp-fe-ap-exam`。
+- 茉莉系统手册 → `wiki-moli/` · 空间 `moli-ops-manual`。
 
 ## 同步
 
@@ -317,7 +317,7 @@ def main() -> int:
         run_batch(batches, args.dry_run)
     if args.rewrite_all or args.finalize:
         slug_pairs = global_slug_pairs()
-        scan_roots = [KB / "wiki-moli", KB / "wiki-jp-exam", KB / "wiki", KB / "raw", KB.parent.parent / "docs"]
+        scan_roots = [KB / "wiki-moli", KB / "wiki", KB / "raw", KB.parent.parent / "docs"]
         patched = 0
         for root in scan_roots:
             if not root.is_dir():

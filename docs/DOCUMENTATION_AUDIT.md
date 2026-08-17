@@ -50,7 +50,7 @@
 | `kb/tools/_*.txt`、`lint-*.json` | 删除临时工具产物 |
 | `docs/test/knowledge-t22-image-remediation.md` | 新增 T22 验收与自动化测试索引 |
 | `wiki-moli/guides/项目文档总览` | 修正 enterprise-kb ↔ `kb/wiki/` 映射 |
-| `docs/diagrams/README.md` | 同上 · 三空间 Sync 表 |
+| `docs/diagrams/README.md` | 同上 · 两空间 Sync 表 |
 
 ## 仍可选（非阻塞）
 

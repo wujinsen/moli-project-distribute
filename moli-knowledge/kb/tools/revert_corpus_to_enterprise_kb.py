@@ -138,7 +138,7 @@ def move_corpus(dry_run: bool) -> dict[str, int]:
 def fix_all_wikilinks(dry_run: bool) -> int:
     pairs = sorted(REVERSE_SLUG_PREFIXES, key=lambda x: len(x[0]), reverse=True)
     count = 0
-    for root in (KB / "wiki", KB / "wiki-moli", KB / "wiki-jp-exam"):
+    for root in (KB / "wiki", KB / "wiki-moli"):
         if not root.is_dir():
             continue
         for f in root.rglob("*.md"):
@@ -175,7 +175,7 @@ def write_wiki_index(dry_run: bool) -> None:
 | 空间 | 目录 | 定位 |
 |------|------|------|
 | **moli-ops-manual** | `wiki-moli/` | moli-project-distribute **项目手册** |
-| **jp-fe-ap-exam** | `wiki-jp-exam/` | 日本語 FE/AP 试题 |
+| **moli-ops-manual** | `wiki-moli/` | 茉莉系统手册 |
 
 ## 同步
 

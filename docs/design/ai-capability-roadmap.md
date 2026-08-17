@@ -85,7 +85,7 @@
 **AI-1 golden 扩容**
 
 - 来源：`kb_qa_log` 真实提问沉淀 + 已有 12 题换说法改写 + 口语化/含错别字/跨语种脏 query + 5~10 条「知识库无据应拒答」负样本。
-- 按空间分层（wiki-moli / enterprise-kb / jp-exam），标注 `expected_docs` 与难度标签（`easy/paraphrase/dirty/multi-hop/negative`）。
+- 按空间分层（wiki-moli / enterprise-kb），标注 `expected_docs` 与难度标签（`easy/paraphrase/dirty/multi-hop/negative`）。
 - 验收：≥50 题；跑出扩容后的**基线报告**（作为 AI-2 的对照组）。
 
 **AI-2 向量 + Hybrid + Rerank**

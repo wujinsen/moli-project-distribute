@@ -1327,7 +1327,7 @@
 ## [2026-06-25] maintenance | Phase0 治理：删 enterprise-kb 运维重复 20 页，清 padding 992 页，替换运维 [[链接]] 391 处，清理 edges 1121 条
 ## [2026-06-25] maintenance | Phase0 补刀：删 batch output 9 页，修 index/断链/GlobalExceptionHandler/redis-缓存 created
 ## [2026-06-25] maintenance | Phase0 lint pass：bare related 替换、断链修复、edges 清理 5 条
-## [2026-06-25] maintenance | wiki同步指南 三空间映射表；run_sync dry-run-all/sync-all；enterprise-kb 侧 ingest/审校/sync 文档对齐
+## [2026-06-25] maintenance | wiki同步指南 两空间映射表；run_sync dry-run-all/sync-all；enterprise-kb 侧 ingest/审校/sync 文档对齐
 ## [2026-06-24] feature | T14e：文档管理新建→Wiki编辑+首存AI治理；浏览 index 仅 source=kb；更新 Wiki在线编辑/AI自我进化/KNOWLEDGE_API
 ## [2026-06-24] feature | 全面移除 Web 直连写库：删 KbDocumentEditPanel、停用 POST/PUT publish/archive/DELETE /kb/document；文档管理仅 wiki 编辑
 ## [2026-06-24] maintenance | sync_to_db --purge-manual-web + purge_manual_web.ps1 清理 source=manual 遗留行

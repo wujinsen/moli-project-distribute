@@ -27,8 +27,8 @@ kb_relation / kb_sync_log）。方向严格单向：kb(markdown) -> DB；DB 侧�
         --host 127.0.0.1 --port 3306 --user root --password 12345678 \
         --db moli --space enterprise-kb
 
-    # 独立 wiki 目录 → 指定空间（如日本語試験）
-    python kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam --dry-run
+    # 独立 wiki 目录 → 指定空间（茉莉系统手册）
+    python kb/tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual --dry-run
 
     # CI 统一入口（GitHub Actions 同款）
     bash kb/tools/ci/run_sync.sh dry-run

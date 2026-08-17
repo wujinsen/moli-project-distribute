@@ -214,7 +214,7 @@ SVR-13~20 功能已上线，但 **Schema 漂移、组件缺 `server_id`、定时
 
 | Phase | 内容 | 状态 |
 |-------|------|------|
-| **R0** | 合并 `moli.sql` 与 21/22 迁移；Runbook 补部署中心三开关 | ✅ 种子密码 NULL · [`deploy/上线流程.md`](../deploy/上线流程.md) §7 |
+| **R0** | 合并 `moli.sql` 与 21/22 迁移；Runbook 补部署中心三开关 | ✅ 种子密码 NULL · [`deploy/上线流程.md`](../deploy/上线流程.md) §14 |
 | **R1** | 组件 `server_id`、N:N 唯一、删除级联 | ✅ |
 | **R2** | Request DTO + 部署中心入参校验 + 10101–10109 | ✅ |
 | **R3 P1** | `operation_task.project_id` + 部署 task 绑定校验 | ✅ |

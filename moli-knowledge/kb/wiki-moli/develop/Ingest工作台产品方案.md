@@ -103,18 +103,18 @@ LLM **只输出 JSON**。Web **T17c** 提供可视化表：分类下拉（`GET /
 | legacy | `type` + 裸 `slug` | `kb/{wikiDir}/{typeDir(type)}/{slug}.md` |
 | legacy | `slug` 含 `/` | `kb/{wikiDir}/{slug}.md`（不叠 typeDir） |
 
-**jp-fe-ap-exam 示例**：
+**moli-ops-manual 示例**：
 
 ```json
 {
   "batchNo": "726295221004025856",
-  "topic": "FE 科目B 样题",
+  "topic": "用户中心服务实体",
   "create": [
     {
-      "categoryId": "900000000000000010",
-      "slug": "fe_kamoku_b_set_sample_qs",
-      "title": "科目B 样题集",
-      "sources": ["raw/school/fe/fe_kamoku_b_set_sample_qs.md"]
+      "categoryId": "900000000000000020",
+      "slug": "用户中心",
+      "title": "用户中心",
+      "sources": ["moli-user-center/README.md"]
     }
   ],
   "enrich": [],
@@ -124,7 +124,7 @@ LLM **只输出 JSON**。Web **T17c** 提供可视化表：分类下拉（`GET /
 }
 ```
 
-→ `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`；Sync 后文档管理 `category_id` 对应 FE 分类。
+→ `wiki-moli/develop/用户中心.md`；Sync 后文档管理 `category_id` 对应 develop 分类。
 
 **enterprise-kb legacy 示例**：
 
@@ -146,7 +146,7 @@ LLM **只输出 JSON**。Web **T17c** 提供可视化表：分类下拉（`GET /
 }
 ```
 
-UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高亮；用户确认后锁定 plan 版本。骨架 Plan（LLM 未配置）从 raw 文件名预填 `slug`；`raw/school/fe/...` 可自动推断 `fe` 分类。
+UI：表格可编辑；**疑似重复**（index + 全文检索 top 相似）高亮；用户确认后锁定 plan 版本。骨架 Plan（LLM 未配置）从 raw 文件名预填 `slug`；模块 README 路径可自动推断 `develop` 分类。
 
 ### 3.2 多页 Diff（④）
 

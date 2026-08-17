@@ -43,7 +43,7 @@ INFO（参考，不影响退出码）
     python kb/tools/lint.py --strict
 
     # 指定独立 wiki 目录（与 sync_to_db.py 一致）
-    python kb/tools/lint.py --wiki-dir wiki-jp-exam
+    python kb/tools/lint.py --wiki-dir wiki-moli
 
 解析逻辑（frontmatter / 链接解析）复用 ``sync_to_db.py``，保证体检口径与实际入库一致。
 """

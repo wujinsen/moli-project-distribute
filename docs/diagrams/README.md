@@ -45,13 +45,12 @@
 | [`moli-sso-menu-flow.drawio`](moli-sso-menu-flow.drawio) | **SSO 菜单按系统隔离**：login → enter/switch → getRouters 过滤（设计见 `docs/design/sso-menu-system-isolation.md`） |
 | [`moli-sys-config-notice-er.drawio`](moli-sys-config-notice-er.drawio) | **参数设置 / 通知公告 ER**（3 表）：`sys_config` 只存运行期覆盖值（定义在代码 `ConfigKey` 注册表）+ 四级取值链 · `sys_notice` 三态发布 + `sys_notice_read_cursor` 未读水位（设计见 `docs/design/sys-config-notice.md`） |
 
-**三空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
+**两空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
 
 | wiki 目录 | space_code |
 |-----------|------------|
 | `kb/wiki/` | `enterprise-kb` |
 | `kb/wiki-moli/` | `moli-ops-manual` |
-| `kb/wiki-jp-exam/` | `jp-fe-ap-exam` |
 
 日常：`bash moli-knowledge/kb/tools/ci/run_sync.sh sync-all`
 

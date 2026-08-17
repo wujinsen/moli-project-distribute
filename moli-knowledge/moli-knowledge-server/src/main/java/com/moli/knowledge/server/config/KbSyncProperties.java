@@ -43,7 +43,7 @@ public class KbSyncProperties {
     private int lockExtraSeconds = 60;
 
     /**
-     * 定时同步的空间 code 列表；为空时使用 {@code kb.wiki.space-dirs} 的全部 key（三空间 sync-all）。
+     * 定时同步的空间 code 列表；为空时使用 {@code kb.wiki.space-dirs} 的全部 key（两空间 sync-all）。
      */
     private List<String> scheduleSpaceCodes = new ArrayList<>();
 

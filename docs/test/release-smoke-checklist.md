@@ -79,7 +79,7 @@ Ingest 深度验收：[knowledge-ingest-acceptance.md](knowledge-ingest-acceptan
 
 | # | 步骤 | 期望 | ✓ |
 |---|------|------|---|
-| Y1 | `run_sync.sh dry-run-all` | 三空间无 fatal | |
+| Y1 | `run_sync.sh dry-run-all` | 两空间无 fatal | |
 | Y2 | `run_sync.sh sync-all` 或 Web 触发 Sync | `kb_sync_log` 成功 | |
 | Y3 | Web 健康体检扫描 | 无新增 blocker | |
 | Y4 | `GET /kb/lint/issue-types` + 工单批量 API | KBOPS-8/10 字段齐全 | |

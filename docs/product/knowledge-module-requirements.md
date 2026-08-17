@@ -8,7 +8,7 @@
 
 ## 1. 产品目标
 
-为企业提供 **Web 知识库**：浏览、问答、Ingest 入库、Wiki 治理、三空间 Sync；知识正文以 **`kb/wiki*` markdown** 为唯一源。
+为企业提供 **Web 知识库**：浏览、问答、Ingest 入库、Wiki 治理、两空间 Sync；知识正文以 **`kb/wiki*` markdown** 为唯一源。
 
 **v1 不做**：Meilisearch/向量库、评论回写 wiki、多 Git 仓联邦。
 
@@ -73,13 +73,12 @@
 
 详见 [knowledge-ops-prd.md](knowledge-ops-prd.md)。
 
-### 2.7 三空间（P0）
+### 2.7 两空间（P0）
 
 | 空间 | 用途 |
 |------|------|
 | enterprise-kb | 技术文库 |
 | moli-ops-manual | 茉莉系统手册 |
-| jp-fe-ap-exam | 考试题库 |
 
 ---
 

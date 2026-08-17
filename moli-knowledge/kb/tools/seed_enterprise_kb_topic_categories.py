@@ -9,7 +9,7 @@
 Sync 完成后再物理删旧三类：
     python kb/tools/seed_enterprise_kb_topic_categories.py --execute --delete-old
 
-ID 段 900000000000000141–151，避免与 jp-fe-ap-exam(121–124)、outputs(116) 冲突。
+ID 段 900000000000000141–151，避免与 outputs(116) 等冲突。
 """
 
 from __future__ import annotations

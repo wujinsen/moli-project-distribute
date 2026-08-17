@@ -22,7 +22,7 @@
 | 文档 | 用途 |
 |------|------|
 | [knowledge-workbench-operations.md](knowledge-workbench-operations.md) | 入库 + Wiki 治理操作 |
-| **[kb-sync-failure-runbook.md](kb-sync-failure-runbook.md)** | **Sync 失败定位 / 重跑 / 三空间验收（KBOPS-A2）** |
+| **[kb-sync-failure-runbook.md](kb-sync-failure-runbook.md)** | **Sync 失败定位 / 重跑 / 两空间验收（KBOPS-A2）** |
 | **[knowledge-ops-prd.md](../product/knowledge-ops-prd.md)** | **KBOPS 产品 PRD（优先级与验收）** |
 | **[knowledge-ops-frontend.md](../api/knowledge-ops-frontend.md)** | **KB 运维 · 前端对接（给 meiling-ui）** |
 | **[kb-t20-design-docs-release.md](kb-t20-design-docs-release.md)** | **T20 后端 + 概要设计 Web 浏览 · 上线 Runbook（2026-07-06）** |

@@ -37,11 +37,10 @@
 | `05_knowledge_action_patch.sql` | 已有环境修正 sys_action 分组（空间 CRUD / 体检+同步） |
 | `06_remove_kb_admin.sql` | 移除废弃的 kb:admin 动作与菜单 906 |
 | `07_kb_space_ops_manual.sql` | **茉莉系统手册**独立空间 `moli-ops-manual` + 成员示例 |
-| `40_purge_jp_exam.sql` | **一次性**：删除已下线的 jp-fe-ap-exam 空间数据 |
 | `07_kb_space_ops_manual_fix_charset.sql` | 修复乱码或刷新 `moli-ops-manual` 空间名为「茉莉系统手册」 |
 | `08_kb_ingest_workbench.sql` | Ingest 工作台表（job/plan/draft 等） |
 | `09_kb_ingest_t15e.sql` | Ingest T15e 增量字段 |
-| `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug` + 三空间目录种子（已有库必跑） |
+| `10_kb_category_dir_slug.sql` | **分类=目录**：`kb_category` 加 `dir_slug` + 两空间目录种子（已有库必跑） |
 | `15_kb_category_drop_default_type.sql` | 删除已废弃列 `kb_category.default_type`（体裁仅 frontmatter `type:`） |
 | `11_kb_category_enterprise_trim.sql` | **enterprise-kb 精简为 3 类**（软删 guides/services/outputs） |
 | `13_kb_category_enterprise_topic.sql` | **enterprise-kb 方案 B**：新建 **11** 个主题分类（id 141–**151**，含 `bigdata`）；§2 软删旧类见下 |

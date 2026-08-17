@@ -58,7 +58,7 @@
 | `sys_notice` | 通知公告；`status` 0草稿/1已发布/2已撤回，`notice_content` 存 Markdown 源文 |
 | `sys_notice_read_cursor` | 用户公告已读**水位**（一用户一行，主键 `user_id`），非「每用户每公告一行」 |
 
-> 迁移：[`38_sys_config.sql`](38_sys_config.sql)、[`39_sys_notice.sql`](39_sys_notice.sql)（**尚未**合并进 `moli.sql` 基线）。 
+> 迁移：[`38_sys_config.sql`](38_sys_config.sql)、[`39_sys_notice.sql`](39_sys_notice.sql)（**已合并进** `scripts/moli.sql` 基线）。 
 > `sys_config` **无种子行** —— 空表即表示全部参数取 yaml 或代码默认值。 
 > 设计：[`../design/sys-config-notice.md`](../design/sys-config-notice.md) · API：[`../api/sys-config-notice-api.md`](../api/sys-config-notice-api.md)
 
@@ -165,7 +165,7 @@ sys_notice   (孤立表，notice_type 对应字典 sys_notice_type)
 | **秒杀表** | 追加 `docs/sql/02_seckill_schema.sql` |
 | **知识库表** | 追加 `docs/sql/03_knowledge_schema.sql` |
 | **历史 patch** | 已合并进 `moli.sql`（含 21/22 部署中心 + 23 组件 `server_id` + **28 拓扑菜单 407** + **29 项目依赖表**）；老库按 [`sql-migration-order.md`](../ops/sql-migration-order.md) 追 17→29 |
-| **参数设置 / 通知公告** | 追加 [`38_sys_config.sql`](38_sys_config.sql) → [`39_sys_notice.sql`](39_sys_notice.sql)；**未**合并基线，新环境也需手动追。执行后角色 1/2 需重新登录才看到菜单 8/9 |
+| **参数设置 / 通知公告** | 追加 [`38_sys_config.sql`](38_sys_config.sql) → [`39_sys_notice.sql`](39_sys_notice.sql)；**已合并进 `scripts/moli.sql` 基线** |
 
 ---
 

@@ -68,7 +68,7 @@ case "${MODE}" in
     done
     ;;
   lint-all)
-    # 多空间体检报告：三空间都跑完，始终 exit 0（PR / 渐进治理，不拦截 merge）
+    # 多空间体检报告：两空间都跑完，始终 exit 0（PR / 渐进治理，不拦截 merge）
     echo "[ci] lint report all wiki spaces (non-blocking) ..."
     had_issue=0
     for entry in "${KB_SPACES[@]}"; do

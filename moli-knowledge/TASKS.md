@@ -16,7 +16,7 @@
 | 同步 | ✅ sync API + CI 多空间门禁（T12） | — |
 | Java API | ✅ CRUD/Ask/Browse/Graph/Lint/ACL/附件/全文检索/Ingest/Wiki 治理 API | Meilisearch/向量（量级触发再上） |
 | 文档 | ✅ `docs/KNOWLEDGE_API.md` + 前端对接三件套 + ops 操作手册 | — |
-| kb 知识 | ✅ wiki + wiki-moli + wiki-jp-exam；`lint-strict` CI | 持续 ingest 语料 |
+| kb 知识 | ✅ wiki + wiki-moli；`lint-strict` CI | 持续 ingest 语料 |
 | 后端工作台 | ✅ T14…T19 · **T20a–e + T20c/d P1** | — |
 | 前端 meiling-ui | ✅ T6…T20f · **P3**（DC-4/KBOPS-2/KB-LINT）· `kb:prd` **17/17** | 图谱 UX · **共享库 `kb_llm_call_log`** · 生产 cron/告警/secret |
 
@@ -234,7 +234,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 子任务 | 范围 | 验收 |
 |--------|------|------|
-| **T14a ✅** | 后端 `GET/PUT /kb/wiki/page`（`kb.wiki.*` 三空间根映射 + 乐观锁 + 防穿越）；meiling-ui `KnowledgeWikiEditView` 编辑/预览/行级 diff + 浏览页「编辑 wiki」入口 | editor 可改 wiki 文件；保存后 Sync 可见 |
+| **T14a ✅** | 后端 `GET/PUT /kb/wiki/page`（`kb.wiki.*` 两空间根映射 + 乐观锁 + 防穿越）；meiling-ui `KnowledgeWikiEditView` 编辑/预览/行级 diff + 浏览页「编辑 wiki」入口 | editor 可改 wiki 文件；保存后 Sync 可见 |
 | **T14b ✅** | `POST /kb/wiki/ai-revise`（`KbLlmClient` + 场景 B prompt）；编辑页 AI 面板 + 应用建议 + diff | 配好 llm 后可 AI 改稿并保存 |
 | **T14c ✅** | 体检「修复」→ 编辑页（issue 上下文）；保存后可选标记已修复 | lint 列表 → 编辑 → 保存 → status=2 |
 | **T14d ✅** | 「保存并 Sync」；`POST /kb/wiki/page/lint-preview` 保存前摘要 | 少点 Tab；预检断链/frontmatter |
@@ -390,7 +390,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 | 角色 | 场景 |
 |------|------|
-| editor | 勾选 `raw/school/fe/fe_kamoku_b_set_sample_qs.md` → 规划页 **分类选「FE 题库/fe」**、**slug 默认 `fe_kamoku_b_set_sample_qs` 可改** → 生成草稿 → 批准 → Commit → 落盘 `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md` |
+| editor | 勾选 `moli-user-center/README.md` → 规划页 **分类选「develop」**、**slug 默认 `用户中心` 可改** → 生成草稿 → 批准 → Commit → 落盘 `wiki-moli/develop/用户中心.md` |
 | editor | 仅改分类不重生成：Plan 表改 `categoryId` → 保存 Plan → 重新生成或 Commit 前校验路径预览 |
 
 **Plan JSON 契约（v2，向后兼容 v1）**
@@ -400,7 +400,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `categoryId` | **create 推荐必填** | 目标空间 `kb_category.id`；落盘目录 = 该分类 `dir_slug` |
-| `slug` | 是 | **裸文件名**（无 `.md`、无 `/`），如 `fe_kamoku_b_set_sample_qs` |
+| `slug` | 是 | **裸文件名**（无 `.md`、无 `/`），如 `用户中心` |
 | `title` | 否 | 页标题；LLM 写 frontmatter |
 | `sources` | 是 | raw 路径数组 |
 | `type` | 否 | **legacy 兜底**：无 `categoryId` 时用 `typeDir(type)`；有 `categoryId` 时 frontmatter `type` 由 Plan 项 `type` 或 job `expectTypes` 指定 |
@@ -431,7 +431,7 @@ fullSlug = {dir_slug}/{slug}          // 写入 KbIngestDraft.slug、commit、DB
 | **T17a** | **后端路径解析** + Plan 校验 + 单元测试 | `resolveCreateRelPath` 支持 `categoryId`；非法 slug/跨空间分类拒绝；旧 Plan 仍可通过 |
 | **T17b** | **Planner / skeleton 预填** + PageWriter prompt | 骨架 Plan 从 raw 路径取 stem 填 `slug`；LLM Plan 注入空间分类列表（id/dir_slug/defaultType）；生成草稿后 `IngestDraftVo` 增 `categoryId/dirSlug/categoryName` |
 | **T17c** | **前端 Plan 可视化表**（分类下拉 + slug 输入） | 批次详情 ① 区：create 行级编辑；调 `GET /kb/category/tree`；保存 Plan 写回 JSON；JSON 高级模式保留 |
-| **T17d** | **落盘预览 + 文档** | Commit 前展示 `wiki-jp-exam/fe/xxx.md`；`docs/api/KNOWLEDGE_API.md` §9.3、`Ingest工作台产品方案` 更新；i18n zh/en/ja | ✅ |
+| **T17d** | **落盘预览 + 文档** | Commit 前展示 `wiki-moli/develop/xxx.md`；`docs/api/KNOWLEDGE_API.md` §9.3、`Ingest工作台产品方案` 更新；i18n zh/en/ja | ✅ |
 
 ---
 
@@ -469,7 +469,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 
 **测试**（`KbIngestServiceImplPlanPathTest`）
 
-1. `categoryId=fe分类` + `slug=fe_kamoku_b_set_sample_qs` → `fe/fe_kamoku_b_set_sample_qs`
+1. `categoryId=develop分类` + `slug=用户中心` → `develop/用户中心`
 2. 仅 `type=article` + `slug=foo` → `articles/foo`（兼容）
 3. `slug=articles/foo` 无 category → relPath `articles/foo`（不双前缀）
 4. 跨空间 `categoryId` → BaseException
@@ -481,7 +481,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 
 **skeletonPlan**（LLM 未配置时）
 
-- 每个 raw：`slug = Path(stem).md` 去后缀（`fe_kamoku_b_set_sample_qs`）
+- 每个 raw：`slug = Path(stem).md` 去后缀（`用户中心`）
 - `categoryId`：若空间仅一个分类则默认；否则 null + UI 必选
 - `type`：来自 `job.expectTypes` 或分类 `defaultType`
 
@@ -522,17 +522,17 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 
 **文档**
 
-- `docs/api/KNOWLEDGE_API.md` §9.3 Plan JSON 表 + 示例（jp-fe-ap-exam + `fe` 分类）
+- `docs/api/KNOWLEDGE_API.md` §9.3 Plan JSON 表 + 示例（moli-ops-manual + `develop` 分类）
 - `moli-knowledge/kb/wiki/guides/Ingest工作台产品方案.md` §Plan 形态增补 T17
 - 手测：[`docs/test/knowledge-ingest-acceptance.md`](../docs/test/knowledge-ingest-acceptance.md) §3
 
-**E2E 验收**（jp-fe-ap-exam）
+**E2E 验收**（moli-ops-manual）
 
-1. 文档管理新建分类：名称 FE 题库，`dir_slug=fe`，`default_type=interview`
-2. Ingest 勾选 `fe/fe_kamoku_b_set_sample_qs.md`，分类选 fe，slug 保持默认
+1. 文档管理确认分类 develop，`dir_slug=develop`
+2. Ingest 勾选 `moli-user-center/README.md`，分类选 develop，slug 保持默认
 3. 生成草稿 → 批准 → Lint → Commit 并 Sync
-4. 磁盘：`kb/wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`
-5. 文档管理：该文档 `category_id` 对应 fe，浏览/索引分组正确
+4. 磁盘：`kb/wiki-moli/develop/用户中心.md`
+5. 文档管理：该文档 `category_id` 对应 develop，浏览/索引分组正确
 
 **非目标（本迭代不做）**
 
@@ -566,11 +566,11 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | POST | `/kb/ingest/jobs/{id}/prepare?useLlmPlan=false` | 已有批次 prepare |
 | POST | `/kb/ingest/jobs/{id}/publish?sync=true&approveAll=true` | 全批准 + lint + commit + Sync |
 
-**验收（jp-fe-ap-exam）**：
+**验收（moli-ops-manual）**：
 
-1. 列表勾选 `raw/school/fe/fe_kamoku_b_set_sample_qs.md` →「一键预览」
-2. 详情 Express 模式：Plan create 行 `categoryId`→FE、`slug`→`fe_kamoku_b_set_sample_qs`
-3.「确认入库」→ `wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md` + Sync 成功
+1. 列表勾选 `moli-user-center/README.md` →「一键预览」
+2. 详情 Express 模式：Plan create 行 `categoryId`→develop、`slug`→`用户中心`
+3.「确认入库」→ `wiki-moli/develop/用户中心.md` + Sync 成功
 
 **非目标**：Express 不替代 Expert 逐步审阅；enrich 多页复杂批次仍建议 LLM Plan + 逐页 diff。
 
@@ -634,7 +634,7 @@ return typeDir(item.type) + "/" + sanitizeBareSlug(item.slug);
 | **KBOPS-O1** | Sync 轮询字段：`SyncStatusVo`/`SyncTriggerVo` 对齐 O1–O4 | P0 | ✅ |
 | **T19e** | LLM `encryptionReady` + `KB_LLM_CONFIG_SECRET` 环境变量回退 | P1 | ✅ |
 | **KBOPS-3** | 权限码对齐：enforce `kb:sync:trigger` / `kb:lint:scan` | P0 | ✅ |
-| **KBOPS-4** | 定时同步改 sync-all 三空间（或配置化多空间） | P1 | ✅ 后端 · cron 待开 |
+| **KBOPS-4** | 定时同步改 sync-all 两空间（或配置化多空间） | P1 | ✅ 后端 · cron 待开 |
 | **KBOPS-5** | Sync/定时失败告警 webhook（可开关） | P1 | ✅ 后端 · 配 URL |
 | **KBOPS-6** | 前端 T16f Wiki 治理全按钮（同 T16f） | P1 | ✅ meiling-ui |
 | **KBOPS-7** | 前端 T19d 平台 LLM 设置页（同 T19d） | P1 | ✅ meiling-ui |

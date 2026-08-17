@@ -27,7 +27,7 @@ updated: 2026-06-20
 | 4 | `04_knowledge_menu.sql` |
 | 5 | `07_kb_space_ops_manual.sql` |
 
-**init-db 后需手动追加**（v1 全功能）：`05`–`06` → `04_kb_space_jp_exam`（可选）→ `08`–`12`（Ingest/治理/LLM）
+**init-db 后需手动追加**（v1 全功能）：`05`–`06` → `08`–`12`（Ingest/治理/LLM）
 
 ## 已有库升级
 

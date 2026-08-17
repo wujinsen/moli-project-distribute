@@ -64,7 +64,7 @@ updated: 2026-06-27
 | space_code | wiki 子目录 |
 |------------|-------------|
 | `enterprise-kb` | `wiki` |
-| `jp-fe-ap-exam` | `wiki-jp-exam` |
+| `moli-ops-manual` | `wiki-moli` |
 | `moli-ops-manual` | `wiki-moli` |
 
 ---

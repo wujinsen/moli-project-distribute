@@ -78,7 +78,7 @@ bash kb/tools/ci/run_sync.sh sync-all
 ```
 
 - **Lint**：断链 / 孤儿 / 缺 sources（`lint.py --strict` 与 CI 同口径）
-- **sync**：`wiki/` → `enterprise-kb`；三空间映射见 [[项目文档总览]]；完整命令见 ops 空间 `guides/wiki同步指南`
+- **sync**：`wiki/` → `enterprise-kb`；两空间映射见 [[项目文档总览]]；完整命令见 ops 空间 `guides/wiki同步指南`
 
 ## 7. 与 Git 协作
 

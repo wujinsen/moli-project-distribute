@@ -387,7 +387,7 @@ export function wikiGovernMergeHintApi(data: { spaceId: number; issues: KbWikiLi
 
 ### 13.2 回归场景（手工）
 
-- [ ] `enterprise-kb` 或 `wiki-jp-exam` Lint → 勾选 → script → AI → auto 顺序  
+- [ ] `enterprise-kb` 或 `wiki-moli` Lint → 勾选 → script → AI → auto 顺序  
 - [ ] `missing_dates` 经 script-fix 补 frontmatter  
 - [ ] `dup_slug` 仅 merge-hint / 编辑，不进 ai-batch-fix  
 - [ ] `syncAfter=true` 后 DB 体检一致  

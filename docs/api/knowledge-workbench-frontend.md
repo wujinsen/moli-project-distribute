@@ -203,7 +203,7 @@ export interface KbWorkflowHintVo {
 1. 启动 `moli-knowledge-server` + 网关  
 2. 配置 `kb.llm`（AI 修复 / Ingest LLM 需要）  
 3. 部署机可执行 `kb/tools/lint.py`（治理 Lint 依赖）  
-4. 测试空间：`enterprise-kb` / `wiki-jp-exam` / `wiki-moli`
+4. 测试空间：`enterprise-kb` / `wiki-moli`
 
 ---
 
@@ -272,7 +272,7 @@ export interface KbWorkflowHintVo {
 | 失败时 | `publish` 若 lint 未过：`committed=false`，**无** `nextSteps`。commit 抛错（如 raw 门禁）：HTTP 业务错误，**无** body 内 nextSteps。 |
 | `key` | 固定：`wiki_govern_lint`、`kb_health_scan`（`KbWorkflowHints` 常量） |
 | `routePath` | 固定：`knowledge/wiki-govern/index`、`knowledge/lint/index` |
-| `routeQuery.spaceId` | 固定：**字符串**雪花 ID，`String.valueOf(spaceId)`，如 `"900000000000000002"` |
+| `routeQuery.spaceId` | 固定：**字符串**雪花 ID，`String.valueOf(spaceId)`，如 `"900000000000000003"`（moli-ops-manual） |
 
 前端：`router.push({ path: hint.routePath, query: hint.routeQuery })`，勿写死 spaceId。
 
@@ -315,10 +315,10 @@ export interface KbWorkflowHintVo {
 ```json
 {
   "code": 10012,
-  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/school/fe/foo.md → wiki [guides/说明]。请对已有页 enrich 或更换 raw 源。",
+  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/design/foo.md → wiki [develop/用户中心]。请对已有页 enrich 或更换 raw 源。",
   "data": {
     "errorKind": "INGEST_RAW_ALREADY_COVERED",
-    "spaceId": "900000000000000002",
+    "spaceId": "900000000000000003",
     "jobId": "900000000000000100",
     "hint": "请对已有页 enrich 或更换 raw 源。",
     "conflicts": [

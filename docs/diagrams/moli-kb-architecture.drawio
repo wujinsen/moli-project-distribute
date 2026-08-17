@@ -31,11 +31,8 @@
         <mxCell id="wiki_main" value="&lt;b&gt;kb/wiki/&lt;/b&gt;&lt;br&gt;space: enterprise-kb&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;guides · services · concepts&lt;br&gt;articles · interview · outputs&lt;br&gt;index.md · graph/edges.jsonl&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write_lane">
           <mxGeometry x="20" y="160" width="150" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="wiki_jp" value="&lt;b&gt;kb/wiki-jp-exam/&lt;/b&gt;&lt;br&gt;jp-fe-ap-exam&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;私有 · 日本語試験&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write_lane">
-          <mxGeometry x="190" y="160" width="140" height="80" as="geometry" />
-        </mxCell>
         <mxCell id="wiki_ops" value="&lt;b&gt;kb/wiki-moli/&lt;/b&gt;&lt;br&gt;moli-ops-manual&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;茉莉系统手册&lt;/font&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=14;" vertex="1" parent="write_lane">
-          <mxGeometry x="350" y="160" width="140" height="80" as="geometry" />
+          <mxGeometry x="190" y="160" width="140" height="80" as="geometry" />
         </mxCell>
         <mxCell id="agents_md" value="&lt;b&gt;AGENTS.md&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Schema 契约&lt;br&gt;Ingest / Query / Lint 规则&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;dashed=1;" vertex="1" parent="write_lane">
           <mxGeometry x="20" y="290" width="130" height="60" as="geometry" />
@@ -82,7 +79,7 @@
         <mxCell id="llm" value="&lt;b&gt;LLM Provider&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;DeepSeek / Qwen / GLM&lt;br&gt;POST /kb/ask 生成回答&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;dashed=1;" vertex="1" parent="read_lane">
           <mxGeometry x="190" y="300" width="180" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="legend" value="&lt;b&gt;三条知识空间&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;001 enterprise-kb (公开)&lt;br&gt;002 jp-fe-ap-exam (私有)&lt;br&gt;003 moli-ops-manual (内部)&lt;br&gt;隔离维度: space_id&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;" vertex="1" parent="1">
+        <mxCell id="legend" value="&lt;b&gt;两条知识空间&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;001 enterprise-kb (公开)&lt;br&gt;003 moli-ops-manual (内部)&lt;br&gt;隔离维度: space_id&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;" vertex="1" parent="1">
           <mxGeometry x="40" y="530" width="220" height="90" as="geometry" />
         </mxCell>
         <mxCell id="rule" value="&lt;b&gt;核心约束&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;① markdown → DB 单向，禁止 DB 回写 wiki&lt;br&gt;② raw/ 只读，Agent 绝不修改&lt;br&gt;③ 检索: MySQL ngram FULLTEXT（非向量）&lt;/font&gt;" style="shape=mxgraph.flowchart.off-page_reference;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;spacingLeft=8;" vertex="1" parent="1">

@@ -38,9 +38,8 @@
 
 分页统一用 MyBatis-Plus `Page<T>`：`data.records[]`、`data.total`、`data.current`、`data.size`。
 
-> 默认演示空间 `spaceId = 900000000000000001`（`space_code=enterprise-kb`，公开）。  
-> 日本語試験私有空间 `spaceId = 900000000000000002`（`space_code=jp-fe-ap-exam`），种子见 [`sql/04_kb_space_jp_exam.sql`](../sql/04_kb_space_jp_exam.sql)。  
-> **茉莉系统手册**独立空间 `spaceId = 900000000000000003`（`space_code=moli-ops-manual`，内部可见），wiki 源 `kb/wiki-moli/`，种子见 [`sql/07_kb_space_ops_manual.sql`](../sql/07_kb_space_ops_manual.sql)。  
+> 默认演示空间 `spaceId = 900000000000000001`（`space_code=enterprise-kb`，公开）。
+> **茉莉系统手册**独立空间 `spaceId = 900000000000000003`（`space_code=moli-ops-manual`，内部可见），wiki 源 `kb/wiki-moli/`，种子见 [`sql/07_kb_space_ops_manual.sql`](../sql/07_kb_space_ops_manual.sql)。
 > 多数浏览/检索接口 `spaceId` 省略表示**当前用户可读的全部空间**（非字面「全库」）。
 
 ### 1.4 空间级权限（ACL）
@@ -132,7 +131,6 @@
 ```bash
 mysql -u root -p moli < docs/sql/04_knowledge_menu.sql
 mysql -u root -p moli < docs/sql/05_knowledge_action_patch.sql   # 动作权限（空间管理/体检按钮）
-mysql -u root -p moli < docs/sql/04_kb_space_jp_exam.sql         # 可选：日本語試験私有空间
 mysql -u root -p moli < docs/sql/07_kb_space_ops_manual.sql    # 可选：茉莉系统手册空间
 ```
 
@@ -551,8 +549,8 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 
 ```json
 {
-  "question": "对比企业规范与日本语考试要点",
-  "spaceIds": [900000000000000001, 900000000000000002],
+  "question": "对比 enterprise-kb 与用户中心概要设计中的 RBAC 要点",
+  "spaceIds": [900000000000000001, 900000000000000003],
   "topK": 8
 }
 ```
@@ -1026,7 +1024,6 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 | `spaceCode` | `--wiki-dir` |
 |-------------|--------------|
 | `enterprise-kb` | `wiki` |
-| `jp-fe-ap-exam` | `wiki-jp-exam` |
 | `moli-ops-manual` | `wiki-moli` |
 
 **配置**（`application-dev.yml` → `kb.wiki.*`）：
@@ -1041,7 +1038,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 
 ```bash
 python moli-knowledge/kb/tools/lint.py --wiki-dir wiki --json /tmp/lint.json
-python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-jp-exam --strict
+python moli-knowledge/kb/tools/lint.py --wiki-dir wiki-moli --strict
 ```
 
 产品方案与链路图：[`kb/wiki-moli/develop/Wiki治理工作台产品方案.md`](../../moli-knowledge/kb/wiki-moli/develop/Wiki治理工作台产品方案.md) · [`wiki-govern-frontend.md`](wiki-govern-frontend.md) · [`docs/diagrams/moli-kb-wiki-govern.drawio`](../diagrams/moli-kb-wiki-govern.drawio)
@@ -1309,12 +1306,12 @@ GET {网关}/KnowledgeServer/kb/attachment/{attachmentId}
 
 ```json
 {
-  "id": 900000000000000002,
-  "spaceCode": "jp-fe-ap-exam",
-  "spaceName": "日本語試験（FE/AP）",
-  "description": "基本情報・応用情報备考",
-  "visibility": 0,
-  "canEdit": false,
+  "id": 900000000000000003,
+  "spaceCode": "moli-ops-manual",
+  "spaceName": "茉莉系统手册",
+  "description": "项目文档 · 运维 Runbook · 服务实体",
+  "visibility": 1,
+  "canEdit": true,
   "canAdmin": true
 }
 ```
@@ -1404,7 +1401,6 @@ CLI 多空间同步：
 
 ```bash
 python moli-knowledge/kb/tools/sync_to_db.py --dry-run
-python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-jp-exam --space jp-fe-ap-exam
 python moli-knowledge/kb/tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual
 ```
 
@@ -1679,13 +1675,12 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 
 **PUT 响应**：`{ "slug", "spaceId", "relativePath", "created", "contentHash", "savedAt" }`
 
-**配置（`kb.wiki.*`）**：`root` 指向部署机 `kb/` 目录（与 `sync_to_db.py` 同源）；`space-dirs` 为 space_code → wiki 子目录映射，与三空间一致：
+**配置（`kb.wiki.*`）**：`root` 指向部署机 `kb/` 目录（与 `sync_to_db.py` 同源）；`space-dirs` 为 space_code → wiki 子目录映射，与两空间一致：
 
 | space_code | wiki 子目录 |
 |------------|-------------|
 | `enterprise-kb` | `wiki` |
 | `moli-ops-manual` | `wiki-moli` |
-| `jp-fe-ap-exam` | `wiki-jp-exam` |
 
 slug 做合法性校验（禁止 `..` / 绝对路径 / 盘符）并强制解析结果落在对应 wiki 目录内（防目录穿越）。**保存只写文件，不进库**；需再走 §6 Sync 才更新 `kb_document`。
 
@@ -1974,7 +1969,7 @@ Controller：`KbWikiController`（与 §8.1 `/kb/wiki/page` 同基路径；文�
 | 400 | 非 `.md`、slug/`dir_slug` 非法、frontmatter 无法解析 |
 | 403 | 非空间 editor 或无 `kb:wiki:edit` / `kb:sync:trigger`（内嵌 Sync 时） |
 
-落盘路径与 §8.1 `space-dirs` 一致（`enterprise-kb`→`wiki`，`moli-ops-manual`→`wiki-moli`，`jp-fe-ap-exam`→`wiki-jp-exam`）。**不写 raw**；保存只写文件，默认 Sync 后进 `kb_document`。
+落盘路径与 §8.1 `space-dirs` 一致（`enterprise-kb`→`wiki`，`moli-ops-manual`→`wiki-moli`）。**不写 raw**；保存只写文件，默认 Sync 后进 `kb_document`。
 
 ---
 
@@ -2258,7 +2253,7 @@ curl -X DELETE "http://127.0.0.1:21000/KnowledgeServer/kb/ingest/jobs/9000000000
 | `categoryId` | **推荐** | 目标空间 `kb_category.id`；落盘一级目录 = 该分类 `dir_slug` |
 | `slug` | 是 | **裸文件名**（无 `.md`、无 `/`）；有 `categoryId` 时禁止含 `/` |
 | `title` | 否 | 页标题；PageWriter 写 frontmatter |
-| `sources` | 是 | raw 路径数组，如 `["raw/school/fe/fe_kamoku_b_set_sample_qs.md"]` |
+| `sources` | 是 | raw 路径数组，如 `["moli-user-center/README.md"]` |
 | `type` | 否 | **legacy 兜底**：无 `categoryId` 时用 `typeDir(type)` 映射目录；有 `categoryId` 时 frontmatter `type` 由 Plan 项 `type` 或 job `expectTypes` 指定 |
 | `reason` | 否 | 规划说明 |
 
@@ -2272,19 +2267,19 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 磁盘     = kb/{wikiDir}/{relPath}.md   # wikiDir 见 kb.wiki.space-dirs
 ```
 
-**jp-fe-ap-exam + FE 分类示例**：
+**moli-ops-manual + develop 分类示例**：
 
 ```json
 {
   "batchNo": "726295221004025856",
-  "topic": "FE 科目B 样题",
+  "topic": "用户中心服务实体",
   "create": [
     {
-      "categoryId": "900000000000000010",
-      "slug": "fe_kamoku_b_set_sample_qs",
-      "title": "科目B 样题集",
-      "sources": ["raw/school/fe/fe_kamoku_b_set_sample_qs.md"],
-      "reason": "新题入库 fe 分类"
+      "categoryId": "900000000000000020",
+      "slug": "用户中心",
+      "title": "用户中心",
+      "sources": ["moli-user-center/README.md"],
+      "reason": "微服务 README ingest 进 develop"
     }
   ],
   "enrich": [],
@@ -2294,7 +2289,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 }
 ```
 
-落盘：`moli-knowledge/kb/wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`；Sync 后 `kb_document.category_id` 回填为 `fe` 分类。
+落盘：`moli-knowledge/kb/wiki-moli/develop/用户中心.md`；Sync 后 `kb_document.category_id` 回填为 `develop` 分类。
 
 **legacy 示例（仅 type + slug）**：
 
@@ -2404,16 +2399,16 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
       {
         "id": 900000000000000101,
         "jobId": 900000000000000100,
-        "slug": "fe/fe_kamoku_b_set_sample_qs",
-        "displaySlug": "fe_kamoku_b_set_sample_qs",
-        "kbType": "interview",
+        "slug": "develop/用户中心",
+        "displaySlug": "用户中心",
+        "kbType": "service",
         "action": "create",
-        "categoryId": "900000000000000010",
-        "dirSlug": "fe",
-        "categoryName": "FE 题库",
+        "categoryId": "900000000000000020",
+        "dirSlug": "develop",
+        "categoryName": "技术 develop",
         "baseline": "",
         "patch": null,
-        "draft": "---\ntitle: 科目B 样题集\n...",
+        "draft": "---\ntitle: 用户中心\n...",
         "approval": "draft",
         "updateTime": "2026-06-27 18:00:00"
       }
@@ -2466,7 +2461,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 
 | 字段 | 说明 |
 |------|------|
-| `slug` | 相对 wiki 目录完整路径（如 `fe/fe_kamoku_b_set_sample_qs`） |
+| `slug` | 相对 wiki 目录完整路径（如 `develop/用户中心`） |
 | `displaySlug` | 展示用末段（`[[]]` 引用名） |
 | `kbType` | `guide` / `service` / `concept` / `article` 等 |
 | `categoryId` | Plan create 项指定的分类 ID（只读，T17） |
@@ -2502,7 +2497,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 |------|------|------|------|
 | `sync` | boolean | **`true`**（`kb.ingest.commit-auto-sync`） | `true` 时落盘后调用 `KbSyncService.trigger`；`false` 仅写 markdown |
 
-**落盘路径**：与 Plan `create` 解析一致（T17）；已批准页的 `KbIngestDraft.slug` 即 wiki 相对路径。前端在 commit 前展示 `kb/{wikiDir}/{slug}.md` 预览（`wikiDir`：`enterprise-kb`→`wiki`，`jp-fe-ap-exam`→`wiki-jp-exam`，见 `kb.wiki.space-dirs`）。
+**落盘路径**：与 Plan `create` 解析一致（T17）；已批准页的 `KbIngestDraft.slug` 即 wiki 相对路径。前端在 commit 前展示 `kb/{wikiDir}/{slug}.md` 预览（`wikiDir`：`enterprise-kb`→`wiki`，`moli-ops-manual`→`wiki-moli`，见 `kb.wiki.space-dirs`）。
 
 **commit 门禁（产品方案 §5 红线，后端强制）**：
 
@@ -2517,15 +2512,15 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 ```json
 {
   "code": 10012,
-  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/school/fe/foo.md → wiki [guides/说明]。请对已有页 enrich 或更换 raw 源。",
+  "msg": "raw 已被 wiki 引用，禁止重复 ingest：raw/design/foo.md → wiki [develop/用户中心]。请对已有页 enrich 或更换 raw 源。",
   "data": {
     "errorKind": "INGEST_RAW_ALREADY_COVERED",
-    "spaceId": 900000000000000002,
+    "spaceId": 900000000000000003,
     "jobId": 900000000000000100,
     "hint": "请对已有页 enrich 或更换 raw 源。",
     "conflicts": [
       {
-        "path": "fe/foo.md",
+        "path": "raw/design/foo.md",
         "coverage": "cluster",
         "matchKind": "dir_prefix",
         "wikiSlugs": ["guides/说明"]
@@ -2654,7 +2649,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
     "prepare": {
       "job": { "...": "..." },
       "generate": { "generated": 1, "skipped": 0, "failed": 0, "total": 1 },
-      "drafts": [{ "slug": "fe/fe_kamoku_b_set_sample_qs", "displaySlug": "fe_kamoku_b_set_sample_qs", "approval": "draft" }]
+      "drafts": [{ "slug": "develop/用户中心", "displaySlug": "用户中心", "approval": "draft" }]
     }
   }
 }
@@ -2693,7 +2688,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 ```
 
 - `committed=false` 时**不抛错**：返回 lint 报告（ERROR 阻塞或仍有未批准页）；前端提示修正后重试或改用逐步 `commit`。
-- Express Plan 的 create 行：`slug` = raw 文件名 stem；`categoryId` 由 `raw/school/fe/...`（兼容历史 `raw/fe/...`）→ 空间内 `dir_slug=fe` 分类推断（T17）。
+- Express Plan 的 create 行：`slug` = raw 文件名 stem；`categoryId` 由模块 README 路径（如 `moli-user-center/README.md`）→ 空间内 `dir_slug=develop` 分类推断（T17）。
 
 ### 9.7 数据表 / 权限 / 前端
 
@@ -2743,7 +2738,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 }
 ```
 
-**说明**：二级路径（如 `school/fe`）请用 `raw-tree?prefix=school` 或手输；下拉只列一级便于 Tab1 快速选择。
+**说明**：二级路径（如 `design/arch`）请用 `raw-tree?prefix=design` 或手输；下拉只列一级便于 Tab1 快速选择。
 
 #### `POST /kb/ingest/raw-upload`
 
@@ -2752,7 +2747,7 @@ fullSlug = relPath                     # 写入 KbIngestDraft.slug、commit、DB
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `spaceId` | 是 | ACL 按空间（raw 目录物理共享） |
-| `prefix` | 是 | 相对 `kb/raw/` 子路径，如 `test-walkthrough`、`school/fe` |
+| `prefix` | 是 | 相对 `kb/raw/` 子路径，如 `test-walkthrough`、`design` |
 | `file` | 是 | 可重复字段名；`.md` / `.markdown` / `.txt` |
 | `onConflict` | 否 | `SKIP`（默认）/ `OVERWRITE` / `RENAME` |
 

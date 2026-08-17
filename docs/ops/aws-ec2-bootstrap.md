@@ -4,7 +4,7 @@
 > **亦参考**：Amazon Linux 2（包管理为 `yum`，见 §2 注）  
 > **完整上线**（JAR、Nginx 站点、Sync、冒烟）：[`deploy/上线流程.md`](../../deploy/上线流程.md)  
 > **腾讯云勿用本文**：Ubuntu 见 [`tencent-cloud-cvm-bootstrap.md`](tencent-cloud-cvm-bootstrap.md)  
-> 更新：2026-08-16
+> 更新：2026-08-17
 
 面向「新购 EC2 · Amazon Linux，先装 **JDK 11 · MySQL 8 · Nginx · Redis · Nacos · Python**」，再进入应用部署。
 
@@ -162,24 +162,54 @@ curl -I http://127.0.0.1
 
 **443 端口**：留给 Nginx HTTPS；**勿**让 `sshd` 长期监听 443（与 nginx 冲突）。
 
-站点反代配置见 [`deploy/上线流程.md`](../../deploy/上线流程.md) 与 wiki [[nginx反向代理与前端部署指南]]；腾讯云 §8 的 `location` 块可复用，配置文件路径改为 `/etc/nginx/conf.d/moli.conf`。
+站点反代配置见 [`deploy/上线流程.md` §8](../../deploy/上线流程.md) 与 wiki [[nginx反向代理与前端部署指南]]。
 
 ### 3.4 Redis 6+
+
+Amazon Linux 2023 包名为 **`redis6`**，CLI 为 **`redis6-cli`**（**没有** `redis-cli` 命令）。安装后服务默认 **disabled**，须显式 `enable --now`。
 
 ```bash
 sudo dnf install -y redis6
 sudo systemctl enable --now redis6
-redis-cli ping
+systemctl is-active redis6
+# 期望：active
+
+redis6-cli ping
 # 期望：PONG
 ```
 
-生产建议在 `/etc/redis6/redis.conf`（或 `redis.conf`，以本机为准）设置 `requirepass`，与各服务 `SPRING_REDIS_PASSWORD` 一致后：
+**查配置文件路径**（AL2023 上 **`/etc/redis6/redis.conf` 通常不存在**，勿硬编码）：
 
 ```bash
-sudo systemctl restart redis6
+rpm -ql redis6 | grep '\.conf$'
+# 常见：/etc/redis/redis.conf 或 /etc/redis6.conf
+sudo find /etc -name '*redis*.conf' 2>/dev/null
 ```
 
-> AL2 若无 `redis6` 包：`sudo amazon-linux-extras install redis6 -y`，服务名可能是 `redis`。
+**生产设密码**（路径以 `rpm -ql` 为准；与各服务 `SPRING_REDIS_PASSWORD` **完全一致**）：
+
+```bash
+sudo grep -n requirepass /etc/redis/redis.conf
+sudo vi /etc/redis/redis.conf
+# 取消注释或新增：requirepass 你的强密码
+
+sudo systemctl restart redis6
+redis6-cli -a 你的强密码 ping
+# 期望：PONG
+```
+
+应用侧同步改 EC2 运行时 env（改完须 **restart** Java 服务）：
+
+- `moli-user-center/conf/moli-user-center.env` → `SPRING_REDIS_PASSWORD=...`
+- `moli-knowledge/conf/moli-knowledge.env` → 同上（**host/port/password/database 各服务必须一致**）
+
+可选：创建 `redis-cli` 软链便于脚本习惯：
+
+```bash
+sudo ln -sf /usr/bin/redis6-cli /usr/local/bin/redis-cli
+```
+
+> AL2 若无 `redis6` 包：`sudo amazon-linux-extras install redis6 -y`，服务名可能是 `redis`，配置文件路径仍用 `rpm -ql redis6` 或 `redis` 查询。
 
 ### 3.5 Nacos 2.x（单机）
 
@@ -219,7 +249,7 @@ python3 /tmp/get-pip.py --user
 python3 -m pip install --user -r /opt/moli-project-distribute/moli-knowledge/kb/tools/requirements-sync.txt
 ```
 
-Sync 前须 `source moli-knowledge/conf/moli-knowledge.env`，详见 [`deploy/上线流程.md` §4.2](../../deploy/上线流程.md)。
+Sync 前须 `source moli-knowledge/conf/moli-knowledge.env`，详见 [`deploy/上线流程.md` §9](../../deploy/上线流程.md)。
 
 ---
 
@@ -232,7 +262,7 @@ echo "=== OS ===" && cat /etc/os-release | grep PRETTY_NAME
 echo "=== JDK ===" && java -version 2>&1 | head -1
 echo "=== MySQL ===" && mysql --version
 echo "=== MySQL service ===" && systemctl is-active mysqld
-echo "=== Redis ===" && redis-cli ping
+echo "=== Redis ===" && redis6-cli ping
 echo "=== Redis service ===" && systemctl is-active redis6
 echo "=== Nginx ===" && nginx -v 2>&1
 echo "=== Nginx service ===" && systemctl is-active nginx
@@ -245,7 +275,7 @@ echo "=== DB moli ===" && mysql -u moli -p moli -e "SELECT COUNT(*) AS tables_cn
 |--------|------|
 | `java -version` | 11.x · **Corretto** |
 | `mysql --version` | **8.0** 开头（非 MariaDB） |
-| `redis-cli ping` | `PONG` |
+| `redis6-cli ping` | `PONG` |
 | `nginx -t` | syntax ok |
 | `systemctl is-active mysqld/redis6/nginx` | `active` |
 | `moli` 表数量 | 导入 `moli.sql` 后 > 0 |
@@ -267,6 +297,10 @@ echo "=== DB moli ===" && mysql -u moli -p moli -e "SELECT COUNT(*) AS tables_cn
 | Windows 上传脚本 `$'\r'` | `sed -i 's/\r$//' deploy/linux/*.sh moli-*/conf/moli-*.env` |
 | 安全组已开 80 仍无法访问 | 弹性 IP、Nginx、`curl -I http://127.0.0.1` |
 | 443 被占用 | `sudo ss -tlnp \| grep 443`；sshd 勿占 443 |
+| `redis6` **inactive (dead)** / **disabled** | `sudo systemctl enable --now redis6`；仅 `dnf install` 不会自启 |
+| `redis-cli: command not found` | AL2023 用 **`redis6-cli`**；或 `ln -sf /usr/bin/redis6-cli /usr/local/bin/redis-cli` |
+| `grep: /etc/redis6/redis.conf: No such file` | 配置不在该路径 → `rpm -ql redis6 \| grep '\.conf$'` 或 `find /etc -name '*redis*.conf'` |
+| Java 连 Redis 超时 / NOAUTH | Redis 未启动，或 `requirepass` 与 `SPRING_REDIS_PASSWORD` 不一致 |
 
 更多应用层排错：[`deploy/上线流程.md` 附录 A](../../deploy/上线流程.md)。
 
@@ -276,7 +310,7 @@ echo "=== DB moli ===" && mysql -u moli -p moli -e "SELECT COUNT(*) AS tables_cn
 
 | 阶段 | 文档 |
 |------|------|
-| 代码就位、env、启停三服务 | [`deploy/上线流程.md` §1–§6](../../deploy/上线流程.md) |
+| 代码就位、env、启停三服务 | [`deploy/上线流程.md` §5–§11](../../deploy/上线流程.md) |
 | SQL 增量 | [`sql-migration-order.md`](sql-migration-order.md) |
 | 发布后冒烟 | [`../test/release-smoke-checklist.md`](../test/release-smoke-checklist.md) |
 | Web 运维台 SSH 启停 | [`../api/operation-deploy-api.md`](../api/operation-deploy-api.md) + SQL `21`/`22` |

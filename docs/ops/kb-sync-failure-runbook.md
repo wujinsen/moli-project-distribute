@@ -20,7 +20,7 @@
 
 ---
 
-## 2. 三空间清单（勿搞错 `--wiki-dir` / `--space`）
+## 2. 两空间清单（勿搞错 `--wiki-dir` / `--space`）
 
 与 `kb/tools/ci/run_sync.sh` 中 `KB_SPACES` 一致：
 
@@ -119,9 +119,9 @@ curl -X POST "$BASE/kb/sync/trigger?spaceId=900000000000000001" \
   -H "Authorization: $TOKEN"
 ```
 
-对三空间各 trigger 一次，或使用定时任务配置的 `schedule-space-codes` 列表。
+对两空间各 trigger 一次，或使用定时任务配置的 `schedule-space-codes` 列表。
 
-### 5.2 CLI · 三空间（推荐运维）
+### 5.2 CLI · 两空间（推荐运维）
 
 ```bash
 cd moli-knowledge
@@ -174,10 +174,10 @@ kb:
 
 - [ ] `GET /kb/sync/status` → 最近批 `failCount=0`（或已知可接受的部分 fail 已处理）
 - [ ] `bash kb/tools/ci/run_sync.sh verify-all` 通过
-- [ ] Web 抽检：三空间各打开 1 个 slug，正文与磁盘一致
+- [ ] Web 抽检：两空间各打开 1 个 slug，正文与磁盘一致
 - [ ] （可选）健康体检 → 扫描并落库，工单无新增异常
 
-### 6.1 三空间 space_id 速查（种子默认）
+### 6.1 两空间 space_id 速查（种子默认）
 
 | space_code | 常见 space_id |
 |------------|---------------|
@@ -192,8 +192,8 @@ kb:
 
 **PR / push 触达 wiki 路径时**，workflow [`.github/workflows/kb-sync.yml`](../../.github/workflows/kb-sync.yml) 的 `dry-run` job 会执行：
 
-1. `dry-run-all` — 三空间解析 + 未分类校验（blocking）
-2. **`lint-strict-all`** — 三空间 `lint.py --strict`（**blocking**，有 ERROR 或 WARN 即失败）
+1. `dry-run-all` — 两空间解析 + 未分类校验（blocking）
+2. **`lint-strict-all`** — 两空间 `lint.py --strict`（**blocking**，有 ERROR 或 WARN 即失败）
 
 本地复现：
 
@@ -203,7 +203,7 @@ bash kb/tools/ci/run_sync.sh dry-run-all
 bash kb/tools/ci/run_sync.sh lint-strict-all
 ```
 
-修复 wiki 后重新 push。渐进治理期若仅改工具脚本、未改 wiki，仍会对**全库三空间**跑 strict（与 CI 一致）。
+修复 wiki 后重新 push。渐进治理期若仅改工具脚本、未改 wiki，仍会对**全库两空间**跑 strict（与 CI 一致）。
 
 非阻塞报告（可选、本地自查）：
 
@@ -329,4 +329,4 @@ npm run kb:prd
 | 2026-07-13 | §9.4：dev O4 样本已删 · Sync success `20260713181714` |
 | 2026-07-13 | §9.4：`kb:prd` 17/17 通过 |
 | 2026-07-12 | §9 P0-O4：故意造败 +「仅显示失败」UI 点验步骤 |
-| 2026-07-10 | 初稿 KBOPS-A2：失败定位、重跑、三空间 verify、CI lint-strict 门禁 |
+| 2026-07-10 | 初稿 KBOPS-A2：失败定位、重跑、两空间 verify、CI lint-strict 门禁 |

@@ -30,13 +30,12 @@
 |------|------|------|
 | 6 | `05_knowledge_action_patch.sql` | sys_action 分组修正 |
 | 7 | `06_remove_kb_admin.sql` | 移除废弃 kb:admin |
-| 8 | ~~`04_kb_space_jp_exam.sql`~~ | **已删除**；已有库用 `40_purge_jp_exam.sql` 清理 |
-| 9 | `08_kb_ingest_workbench.sql` | Ingest 批次表 |
-| 10 | `09_kb_ingest_t15e.sql` | Ingest enrich 列 |
-| 11 | `10_kb_category_dir_slug.sql` | 分类 dir_slug |
-| 12 | `11_kb_wiki_govern_menu.sql` | Wiki 治理菜单 |
-| 13 | `11_kb_platform_llm_config.sql` | LLM 配置表 |
-| 14 | `12_kb_platform_llm_menu.sql` | LLM 设置菜单 |
+| 8 | `08_kb_ingest_workbench.sql` | Ingest 批次表 |
+| 9 | `09_kb_ingest_t15e.sql` | Ingest enrich 列 |
+| 10 | `10_kb_category_dir_slug.sql` | 分类 dir_slug |
+| 11 | `11_kb_wiki_govern_menu.sql` | Wiki 治理菜单 |
+| 12 | `11_kb_platform_llm_config.sql` | LLM 配置表 |
+| 13 | `12_kb_platform_llm_menu.sql` | LLM 设置菜单 |
 | 15 | `17_operation_secret_view.sql`～`21_operation_ssh_deploy.sql` | 运维 SSH/远程部署 |
 | 16 | `22_operation_command_flex.sql` | 灵活路径、远程命令权限、`upload_allowed_roots` |
 | 17 | `23_operation_schema_hardening.sql` | 组件 `server_id`、N:N 唯一、查询索引（Phase R1） |
@@ -56,7 +55,8 @@
 | 31 | `35_kb_llm_call_log_ai8.sql` | AI-8 W14 · `kb_llm_call_log` 增 `cache_hit`/`failover`/成本估算列 |
 | 32 | `36_kb_research_run.sql` | AI-10 · DeepResearch trace `kb_research_run` |
 | 33 | `37_kb_research_menu.sql` | AI-10 · 主题调研菜单 911 + 角色绑定 |
-| — | `40_purge_jp_exam.sql` | **一次性**：删除 jp-fe-ap-exam 空间及 FE/AP 误入文档（上线瘦身） |
+| 34 | `38_sys_config.sql` | 系统管理 · 参数设置 `sys_config` + 动作权限 + 角色 1/2 菜单 8（**已合并进 `moli.sql` 基线**） |
+| 35 | `39_sys_notice.sql` | 系统管理 · 通知公告 `sys_notice` + `sys_notice_read_cursor` + 角色 1/2 菜单 9（**已合并进 `moli.sql` 基线**） |
 
 ---
 

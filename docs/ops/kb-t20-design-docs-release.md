@@ -2,7 +2,7 @@
 
 > **日期**：2026-07-06  
 > **分支**：`ci/kb-sync-multi-space-gate`（合并进发布分支后再拉取）  
-> **关联**：[`deploy/上线流程.md`](../../deploy/上线流程.md) §4 · [`knowledge-workbench-operations.md`](knowledge-workbench-operations.md)
+> **关联**：[`deploy/上线流程.md`](../../deploy/上线流程.md) §9 · [`knowledge-workbench-operations.md`](knowledge-workbench-operations.md)
 
 ---
 
@@ -33,7 +33,7 @@
 - [ ] 确认 EC2 路径：`/opt/moli-project-distribute`
 - [ ] 确认 `moli-knowledge/conf/moli-knowledge.env` 中 DB/Redis 正确
 - [ ] 确认 `KB_WIKI_ROOT=/opt/moli-project-distribute/moli-knowledge/kb`（或与 `application-pro.yml` 一致）
-- [ ] Python3 + pymysql 已装（见 [`deploy/上线流程.md`](../../deploy/上线流程.md) §4.1）
+- [ ] Python3 + pymysql 已装（见 [`deploy/上线流程.md`](../../deploy/上线流程.md) §3.6）
 
 ---
 
@@ -163,7 +163,7 @@ bash tools/ci/run_sync.sh dry-run-all
 
 ### 7.2 写库（二选一）
 
-**必须先加载 DB 账号**（与 [`deploy/上线流程.md`](../../deploy/上线流程.md) §4.2.1 相同），否则会 `1045 Access denied`：
+**必须先加载 DB 账号**（与 [`deploy/上线流程.md`](../../deploy/上线流程.md) §9 相同），否则会 `1045 Access denied`：
 
 ```bash
 cd /opt/moli-project-distribute/moli-knowledge/kb
@@ -193,7 +193,7 @@ python3 tools/sync_to_db.py \
   --db "${KB_SYNC_DB}"
 ```
 
-**三空间一起**：
+**两空间一起**：
 
 ```bash
 export KB_SYNC_PYTHON=python3

@@ -40,7 +40,7 @@
 | K-P2 | ~~Sync 无并发锁~~ | ✅ KBOPS-2 | Redis `kb:sync:lock:{spaceCode}` |
 | K-P2b | **Sync 轮询字段缺失**（前端 O1） | ✅ KBOPS-O1 | `SyncStatusVo.running/lastStatus/...` |
 | K-P3 | ~~Sync 无失败告警~~ | ✅ KBOPS-5 | `KbSyncAlertService` + `kb.sync.alert.*`（默认关，配 webhook 启用） |
-| K-P4 | **定时同步默认关闭**：`schedule-enabled=false`；开启后 `resolveScheduleSpaceCodes()` 已支持三空间 / 配置列表 | 🟡 低 | `KbSyncScheduler` · 生产按需开 cron |
+| K-P4 | **定时同步默认关闭**：`schedule-enabled=false`；开启后 `resolveScheduleSpaceCodes()` 已支持两空间 / 配置列表 | 🟡 低 | `KbSyncScheduler` · 生产按需开 cron |
 | K-P5 | ~~权限码未 enforce~~ | ✅ KBOPS-3 | `KbAclService.assertCanSyncTrigger` / `assertCanLintScan` |
 | K-P6 | ~~DB 体检 issue_type 不全、工单无 assignee/批量~~ | ✅ KBOPS-8 | 后端 + 前端 **KBOPS-8f（O5–O8）** |
 | K-P7 | ~~前端缺口：T16f / T19d / O5–O8~~ | ✅ | meiling-ui 2026-07-12 联调验收 |
@@ -51,7 +51,7 @@
 ## 4. 目标
 
 1. Sync **失败可见、并发安全、失败可告警**。
-2. 定时同步覆盖**三空间**（或明确可配多空间）。
+2. 定时同步覆盖**两空间**（或明确可配多空间）。
 3. 权限模型与动作码**对齐**。
 4. 体检工单**闭环**（状态流转、批量、可选定时扫描）。
 5. 补齐**运维操作界面**（治理 + LLM 设置），让 SOP 可点、不用 Swagger。
@@ -73,7 +73,7 @@
 
 | 任务 | 内容 |
 |------|------|
-| **KBOPS-4** | 定时同步 **sync-all 三空间**（或 `kb.sync.schedule-space-codes`）；`KbSyncScheduler` 按列表循环 | ✅ 后端 · 生产 cron 待开 |
+| **KBOPS-4** | 定时同步 **sync-all 两空间**（或 `kb.sync.schedule-space-codes`）；`KbSyncScheduler` 按列表循环 | ✅ 后端 · 生产 cron 待开 |
 | **KBOPS-5** | **失败告警**：Sync/定时失败 webhook（飞书/企微/generic JSON），`kb.sync.alert.enabled` | ✅ 后端 · 运维配 URL |
 | **KBOPS-6** | **前端 T16f**：Wiki 治理全按钮（script-fix / auto-fix / merge-hint / Sync 勾选 / 复检摘要）—— 见 `docs/api/wiki-govern-frontend.md` | ✅ meiling-ui |
 | **KBOPS-7** | **前端 T19d**：平台 LLM 设置页 —— 见 `docs/api/kb-llm-platform-frontend.md` | ✅ meiling-ui |

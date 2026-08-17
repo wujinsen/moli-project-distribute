@@ -30,8 +30,6 @@ updated: 2026-07-01
 | `wiki/` | `enterprise-kb` | `900000000000000001` | **仅占位 index**（茉莉正文勿写此目录） | `docs/sql/03_knowledge_schema.sql` |
 | `wiki-moli/` | `moli-ops-manual` | `900000000000000003` | **茉莉系统手册** | `docs/sql/07_kb_space_ops_manual.sql` |
 
-> 日本語試験空间（`jp-fe-ap-exam`）已下线；已有库执行 `docs/sql/40_purge_jp_exam.sql` 清理。
-
 **规则**：
 
 - 每篇 guide **只活在一个 wiki 目录 / 一个空间**（运维类只在 `wiki-moli/`，见 wiki-moli（茉莉系统手册） [[项目文档总览]] 跳转说明）。
@@ -184,4 +182,4 @@ Agent 完成 **Ingest**（见 [[知识库三操作]]）后：
 
 - 本地 Viewer 的 Query/体检：`python kb/tools/serve.py` → [[查询与体检指南]]
 - Java 侧 CRUD/搜索：[[知识库使用指南]]
-- wiki-moli（茉莉系统手册）跳转说明：`kb/wiki-moli/guides/项目文档总览.md`（含三空间映射摘要）
+- wiki-moli（茉莉系统手册）跳转说明：`kb/wiki-moli/guides/项目文档总览.md`（含两空间映射摘要）

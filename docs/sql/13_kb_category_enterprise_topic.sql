@@ -10,7 +10,7 @@
 --   3) 本脚本 §2 或 13_kb_category_enterprise_topic_retire_old.sql — 物理删旧三类
 --
 -- 可重复执行（ON DUPLICATE KEY UPDATE / 条件 UPDATE）。
--- 勿在 jp-fe-ap-exam / moli-ops-manual 空间执行 §2。
+-- 勿在 moli-ops-manual 空间执行 §2。
 -- =============================================================
 
 SET NAMES utf8mb4;
@@ -18,7 +18,7 @@ SET NAMES utf8mb4;
 -- ------------------------------------------------------------- §1 新分类（主题域）
 INSERT INTO `kb_category`
   (`id`,`create_id`,`create_time`,`update_id`,`update_time`,`space_id`,`parent_id`,`category_name`,`icon`,`dir_slug`,`sort`,`is_delete`)
--- ID 141–151：避开 116(outputs)、121–124(jp-fe-ap-exam)
+-- ID 141–151：避开 116(outputs) 等已有分类 ID
 VALUES
   (900000000000000141, 1, NOW(), 1, NOW(), 900000000000000001, 0, '数据库',       NULL, 'database',   1, 0),
   (900000000000000142, 1, NOW(), 1, NOW(), 900000000000000001, 0, '缓存与 Redis', NULL, 'cache',      2, 0),

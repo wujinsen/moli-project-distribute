@@ -66,16 +66,16 @@ Body: { spaceId, batchNo, topic, rawPaths: ["prd/foo.md"] }
 **一键预览**
 
 1. 打开 **知识库 → Ingest 工作台**
-2. 选择空间 `wiki-jp-exam`（或含 `fe` 分类的空间）
-3. 勾选 `raw/school/fe/fe_kamoku_b_set_sample_qs.md`
+2. 选择空间 `moli-ops-manual`（或含 `develop` 分类的空间）
+3. 勾选 `moli-user-center/README.md`（或 `raw/design/` 下任一 markdown）
 4. 填写主题，点击 **一键预览**
-5. 期望：批次详情 `?express=1`；Plan create 含 `categoryId`（FE）、`slug=fe_kamoku_b_set_sample_qs`；至少 1 页草稿
+5. 期望：批次详情 `?express=1`；Plan create 含 `categoryId`（develop）、`slug=用户中心`（或 raw 文件名 stem）；至少 1 页草稿
 
 **确认入库**
 
 1. Express 横幅 **确认入库**，确认路径列表
-2. 期望：`committed=true`；磁盘 `kb/wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`；批次 `committed`
-3. 文档管理可浏览，`category_id` 对应 FE
+2. 期望：`committed=true`；磁盘 `kb/wiki-moli/develop/用户中心.md`（或对应 slug）；批次 `committed`
+3. 文档管理可浏览，`category_id` 对应 develop
 
 **Lint 阻塞（负例）**
 
@@ -96,13 +96,13 @@ curl -X POST "http://127.0.0.1:8888/login" \
 curl -X POST "http://127.0.0.1:8090/kb/ingest/jobs/express?useLlmPlan=false" \
   -H "Content-Type: application/json" \
   -H "Authorization: <token>" \
-  -d '{"spaceId":"900000000000000002","topic":"FE 样题","rawPaths":["fe/fe_kamoku_b_set_sample_qs.md"]}'
+  -d '{"spaceId":"900000000000000003","topic":"用户中心服务实体","rawPaths":["moli-user-center/README.md"]}'
 
 curl -X POST "http://127.0.0.1:8090/kb/ingest/jobs/<JOB_ID>/publish?sync=true&approveAll=true" \
   -H "Authorization: <token>"
 ```
 
-> **分类推断**：空间需存在 `dir_slug=fe` 的分类，Plan 才带 `categoryId` 并落盘 `wiki-jp-exam/fe/...`；否则 legacy `type=article` → `articles/`。
+> **分类推断**：空间需存在 `dir_slug=develop` 的分类，Plan 才带 `categoryId` 并落盘 `wiki-moli/develop/...`；否则 legacy `type=article` → `articles/`。
 
 契约：KNOWLEDGE_API §9.6.6。
 
@@ -116,30 +116,30 @@ curl -X POST "http://127.0.0.1:8090/kb/ingest/jobs/<JOB_ID>/publish?sync=true&ap
 
 | 项 | 值 |
 |----|-----|
-| 空间 | `jp-fe-ap-exam`（`space_id=900000000000000002`） |
-| wiki 目录 | `moli-knowledge/kb/wiki-jp-exam/` |
-| 分类 | **FE 题库**，`dir_slug=fe` |
-| raw 源 | `raw/school/fe/fe_kamoku_b_set_sample_qs.md` |
+| 空间 | `moli-ops-manual`（`space_id=900000000000000003`） |
+| wiki 目录 | `moli-knowledge/kb/wiki-moli/` |
+| 分类 | **develop**，`dir_slug=develop` |
+| raw 源 | `moli-user-center/README.md` |
 | 权限 | 空间 editor + LLM 可用（或 skeleton Plan） |
 
 ### 3.2 用例
 
 **用例 1 · 分类 + 默认 slug（主路径）**
 
-1. 文档管理确认 `fe` 分类与 `wiki-jp-exam/fe/`
+1. 文档管理确认 `develop` 分类与 `wiki-moli/develop/`
 2. Ingest 新建批次，勾选 raw
-3. Plan：分类选 FE，`slug=fe_kamoku_b_set_sample_qs` → 保存
-4. 预览列：`wiki-jp-exam/fe/fe_kamoku_b_set_sample_qs.md`
+3. Plan：分类选 develop，`slug=用户中心` → 保存
+4. 预览列：`wiki-moli/develop/用户中心.md`
 5. 生成草稿 → 批准 → Lint 通过 → 落盘并 Sync
-6. 验收：磁盘路径、`type=interview`、文档管理 `category_id`、Sync 后浏览树在 fe 下
+6. 验收：磁盘路径、`type=service`、文档管理 `category_id`、Sync 后浏览树在 develop 下
 
 **用例 2 · 改 slug**
 
-Plan 改 `slug` → 保存 → 全量重新生成 → Commit 路径为 `fe/{新slug}.md`。
+Plan 改 `slug` → 保存 → 全量重新生成 → Commit 路径为 `develop/{新slug}.md`。
 
 **用例 3 · legacy（无 categoryId）**
 
-Plan `create[]` 仅 `{ type, slug, sources }` → 落盘 `articles/foo.md`。
+Plan `create[]` 仅 `{ type, slug, sources }` → 落盘 `articles/foo.md`（enterprise-kb 空间示例）。
 
 **用例 4 · 非法 Plan**
 

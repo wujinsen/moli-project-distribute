@@ -367,7 +367,7 @@ docs/diagrams/moli-sys-config-notice-er.drawio       [新] 本文 ER 图
 docs/diagrams/README.md                              [改] 图清单加一行
 ```
 
-**尚未做**：`scripts/moli.sql` 基线合并（38/39 仍是独立增量，新环境需手动追）；前端 `meiling-ui`（不在当前工作区）。
+**尚未做**：前端 `meiling-ui`（不在当前工作区）。基线合并与 captcha 热生效 E2E 已完成（见 S7/S8）。
 
 **放弃未落地的三处草案机件**（理由见 §3.2、§3.4、§3.5）：`Validators`、`hotReload` 标记、`GET /config/effective/{configKey}`。共同理由是首批 4 个布尔开关不构成它们的使用场景，而它们各自都会带来「看起来支持了某能力」的错误暗示。
 
@@ -387,10 +387,9 @@ docs/diagrams/README.md                              [改] 图清单加一行
 | **S4** | 公告后台：CRUD + 发布/撤回状态机 | ✅ 状态只由 publish/revoke 改；新增/编辑强制忽略 `status` |
 | **S5** | 公告阅读侧：`/notice/feed*` + 水位 | ✅ 17 例覆盖无水位/部分已读/全部已读 |
 | **S6** | 文档：API 契约 + SCHEMA + 索引 | ✅ 新增 `docs/api/sys-config-notice-api.md` |
-| **S7** | 合并 `scripts/moli.sql` 基线 | ⬜ 待做（走 [`@sql-migration-baseline`](../../.cursor/skills/sql-migration-baseline/SKILL.md)） |
-| **S8** | 前端 `meiling-ui`：参数表格（按 `group` 分区、按 `valueType` 渲染控件、重置按钮）+ 公告管理页 + 通知栏角标 | ⬜ 该仓不在当前工作区 |
-
-**S3 的验证点是整个设计成立与否的判据**：如果关掉验证码仍需重启，那这个模块就只是个漂亮的表格。代码层面已满足（`captchaImage()` 每次请求走 `configService.getBoolean`），但**尚未在真实环境端到端验证过**——需执行 SQL、起服务、改开关、观察不重启是否生效。
+| **S7** | 合并 `scripts/moli.sql` 基线 | ✅ 已合并（`scripts/merge_sys_config_notice_baseline.py`） |
+| **S8** | 端到端验证 captcha 热生效 | ✅ `scripts/e2e-config-captcha-hotreload.ps1` 通过（不重启） |
+| **S9** | 前端 `meiling-ui` | ⬜ 该仓不在当前工作区 |
 
 全量单测：`moli-user-center-server` 403 例通过（新增 56 例）。
 
