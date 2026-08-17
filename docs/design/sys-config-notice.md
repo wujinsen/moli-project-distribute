@@ -367,7 +367,7 @@ docs/diagrams/moli-sys-config-notice-er.drawio       [新] 本文 ER 图
 docs/diagrams/README.md                              [改] 图清单加一行
 ```
 
-**尚未做**：前端 `meiling-ui`（不在当前工作区）。基线合并与 captcha 热生效 E2E 已完成（见 S7/S8）。
+**尚未做**：Q2–Q4 产品未决见 §8。ops 两键热门禁已接 `ConfigService`；前端已合入；基线无 `sys_config` 种子行。
 
 **放弃未落地的三处草案机件**（理由见 §3.2、§3.4、§3.5）：`Validators`、`hotReload` 标记、`GET /config/effective/{configKey}`。共同理由是首批 4 个布尔开关不构成它们的使用场景，而它们各自都会带来「看起来支持了某能力」的错误暗示。
 
@@ -383,13 +383,13 @@ docs/diagrams/README.md                              [改] 图清单加一行
 |------|------|------|
 | **S1** | SQL 迁移 `38`/`39` | ✅ 已写；**未**在库上执行、**未**合并基线 |
 | **S2** | `ConfigKey` 注册表 + `ConfigService` 取值链 | ✅ 19 例单测覆盖四级回落、哨兵缓存、非法值拒绝 |
-| **S3** | `ConfigController` + 存量 `@Value` 迁移（§3.4） | ✅ 三处 `@Value` 已摘除（`LoginController`、`SysSystemServiceImpl`、`MenuServiceImpl`） |
+| **S3** | `ConfigController` + 存量 `@Value` / Properties 门禁迁移（§3.4） | ✅ captcha/SSO 三处 `@Value` 已摘；**ops 两键**改为 `ConfigService`（`OperationCommandServiceImpl` / 上传 custom 后置 / `OperationHealthProbeScheduler`），Properties 仅保留 yaml 回落与 cron 等冷配置 |
 | **S4** | 公告后台：CRUD + 发布/撤回状态机 | ✅ 状态只由 publish/revoke 改；新增/编辑强制忽略 `status` |
 | **S5** | 公告阅读侧：`/notice/feed*` + 水位 | ✅ 17 例覆盖无水位/部分已读/全部已读 |
 | **S6** | 文档：API 契约 + SCHEMA + 索引 | ✅ 新增 `docs/api/sys-config-notice-api.md` |
-| **S7** | 合并 `scripts/moli.sql` 基线 | ✅ 已合并（`scripts/merge_sys_config_notice_baseline.py`） |
+| **S7** | 合并 `scripts/moli.sql` 基线 | ✅ 已合并；**修正**：去掉误入的 `sys_config` 种子行（与「空表」约定一致） |
 | **S8** | 端到端验证 captcha 热生效 | ✅ `scripts/e2e-config-captcha-hotreload.ps1` 通过（不重启） |
-| **S9** | 前端 `meiling-ui` | ⬜ 该仓不在当前工作区 |
+| **S9** | 前端 `meiling-ui` | ✅ 已合入（`ConfigManageView` / `NoticeManageView` / `NoticeFeedPanel`） |
 
 全量单测：`moli-user-center-server` 403 例通过（新增 56 例）。
 
@@ -412,6 +412,7 @@ SQL 迁移走 [`@sql-migration-baseline`](../../.cursor/skills/sql-migration-bas
 
 | 日期 | 变更 |
 |------|------|
+| 2026-08-17 | ops 真热开关闭环：`OPS_COMMAND_ENABLED` / `OPS_HEALTH_PROBE_ENABLED` 调用点改读 `ConfigService`；基线去掉 `sys_config` 误入种子行；补 `OperationCommandServiceImplTest` / `OperationHealthProbeSchedulerTest` |
 | 2026-08-16 | **后端落地完成**（S1–S6），本文回写为实况。实施中相对草案的三处收窄：① 未落地 `Validators`（首批全布尔，无校验对象）；② 未落地 `hotReload` 标记（Q3 因此仍未决）；③ 未落地 `GET /config/effective/{configKey}`（无消费方，且会对全体登录用户暴露内部参数）。另修正两点：`isPortalEnabled()` 方法未去重（会形成 Bean 循环依赖，只统一了参数来源）；公告保存校验从「过期时间 vs 入参发布时间」改为「过期时间不得为过去」——原校验比较的 `publishTime` 随后就被丢弃，实为空转。参数注册表包名由 `config/param` 调整为 `sysparam`（`config` 包是 Spring 基础设施配置，混入业务注册表易误解） |
 | 2026-08-16 | **重写**。初版沿用通用后台模板的 `sys_config`（9 业务列，自由录入键值）与 `sys_notice`，未结合本项目实际。核查发现 Nacos 配置中心处于 `enabled: false`、运行期开关全为 `@Value` 静态注入且 `sso.enabled` 重复注入两处，据此改为**注册表驱动**：表塌缩为 key→value 两列、删除即重置、UI 不可新增参数、去分页、四级取值链兼容 yaml/Nacos，并新增存量 `@Value` 迁移方案。公告侧补齐阅读面（`/notice/feed*` 独立前缀、撤回态、水位未读表），替代原「已读表延后」的搁置结论 |
 | 2026-08-16 | 初稿（已废弃）：定案不加 `system_id`、正文存 Markdown |

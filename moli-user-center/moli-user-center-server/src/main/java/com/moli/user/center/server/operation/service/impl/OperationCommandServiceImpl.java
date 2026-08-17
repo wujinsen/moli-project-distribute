@@ -11,6 +11,8 @@ import com.moli.user.center.server.operation.service.OperationTaskService;
 import com.moli.user.center.server.operation.ssh.OperationSshClient;
 import com.moli.user.center.server.operation.ssh.OperationSshCommandResult;
 import com.moli.user.center.server.operation.ssh.OperationSshSession;
+import com.moli.user.center.server.service.ConfigService;
+import com.moli.user.center.server.sysparam.ConfigKey;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ public class OperationCommandServiceImpl implements OperationCommandService {
     @Resource
     private OperationCommandProperties commandProperties;
     @Resource
+    private ConfigService configService;
+    @Resource
     private OperationServerService operationServerService;
     @Resource
     private OperationTaskService operationTaskService;
@@ -30,8 +34,9 @@ public class OperationCommandServiceImpl implements OperationCommandService {
 
     @Override
     public Long createCommandTask(Long serverId, String command, String workDir) {
-        if (!commandProperties.isEnabled()) {
-            throw new BaseException("远程命令执行未启用，请配置 ops.command.enabled=true");
+        // 运行期开关：走 ConfigService，事故时可在「参数设置」立即关停，无需重启
+        if (!configService.getBoolean(ConfigKey.OPS_COMMAND_ENABLED)) {
+            throw new BaseException("远程命令执行未启用，请在参数设置中打开 ops.command.enabled");
         }
         if (serverId == null) {
             throw new BaseException("serverId 不能为空");

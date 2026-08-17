@@ -1,7 +1,8 @@
 package com.moli.user.center.server.operation.schedule;
 
-import com.moli.user.center.server.operation.config.OperationHealthProperties;
 import com.moli.user.center.server.operation.service.OperationHealthProbeService;
+import com.moli.user.center.server.service.ConfigService;
+import com.moli.user.center.server.sysparam.ConfigKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,13 +14,14 @@ import javax.annotation.Resource;
 public class OperationHealthProbeScheduler {
 
     @Resource
-    private OperationHealthProperties healthProperties;
+    private ConfigService configService;
     @Resource
     private OperationHealthProbeService operationHealthProbeService;
 
     @Scheduled(cron = "${ops.health.probe-cron:0 0/15 * * * ?}")
     public void scheduledProbe() {
-        if (!healthProperties.isProbeEnabled()) {
+        // 运行期开关：走 ConfigService（cron 仍用 yaml，属调度节奏冷配置）
+        if (!configService.getBoolean(ConfigKey.OPS_HEALTH_PROBE_ENABLED)) {
             return;
         }
         try {

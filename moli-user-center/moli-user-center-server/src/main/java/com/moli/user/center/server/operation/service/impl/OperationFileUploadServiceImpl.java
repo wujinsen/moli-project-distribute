@@ -20,6 +20,8 @@ import com.moli.user.center.server.operation.ssh.OperationSshCommandResult;
 import com.moli.user.center.server.operation.ssh.OperationSshSession;
 import com.moli.user.center.server.operation.support.OperationBizException;
 import com.moli.user.center.server.operation.task.OperationTaskContext;
+import com.moli.user.center.server.service.ConfigService;
+import com.moli.user.center.server.sysparam.ConfigKey;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,8 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
     private OperationDeployProperties deployProperties;
     @Resource
     private OperationCommandProperties commandProperties;
+    @Resource
+    private ConfigService configService;
     @Resource
     private OperationServerService operationServerService;
     @Resource
@@ -171,8 +175,8 @@ public class OperationFileUploadServiceImpl implements OperationFileUploadServic
             if (!SecurityUtils.getSubject().isPermitted(PermissionConstants.OPERATION_COMMAND_EXEC)) {
                 throw new BaseException("自定义后置命令需 operation:command:exec 权限");
             }
-            if (!commandProperties.isEnabled()) {
-                throw new BaseException("自定义命令需 ops.command.enabled=true 及 operation:command:exec 权限");
+            if (!configService.getBoolean(ConfigKey.OPS_COMMAND_ENABLED)) {
+                throw new BaseException("自定义命令需在参数设置中打开 ops.command.enabled，并具备 operation:command:exec 权限");
             }
             if (StringUtils.isBlank(postCommand)) {
                 throw new BaseException("postAction=custom 时 postCommand 不能为空");

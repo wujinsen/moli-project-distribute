@@ -4,13 +4,19 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+/**
+ * 运维健康探活参数。
+ *
+ * <p>{@code probeEnabled} 的运行期门禁走 {@code ConfigService}（{@code ConfigKey.OPS_HEALTH_PROBE_ENABLED}）；
+ * cron / 并行度等调度节奏仍读本类 yaml 绑定值。
+ */
 @Data
 @Component
 @ConfigurationProperties(prefix = "ops.health")
 public class OperationHealthProperties {
 
     /**
-     * 是否启用定时探活与部署状态同步。
+     * yaml / Environment 默认值。定时任务是否执行请读 ConfigService，勿直接用本字段做门禁。
      */
     private boolean probeEnabled = true;
 
