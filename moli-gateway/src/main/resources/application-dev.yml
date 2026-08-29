@@ -35,5 +35,12 @@ spring:
         - Path=/KnowledgeServer/**
         filters:
         - StripPrefix=1
+      # spring cloud route config -- AIOps (FastAPI, 演示期可改为固定 URI)
+      - id: aiops-route
+        uri: http://127.0.0.1:8099
+        predicates:
+        - Path=/AiOpsServer/**
+        filters:
+        - StripPrefix=1
 
 

@@ -4,12 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.user.center.common.domain.entity.OperationComponentDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationProjectDeployInfo;
 import com.moli.user.center.common.domain.entity.OperationServerInfo;
+import com.moli.user.center.server.operation.health.OperationHealthStatus;
 import com.moli.user.center.server.operation.mapper.OperationServerMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -41,7 +45,9 @@ public class OperationServerBindingSupportTest {
     @Test
     public void bindProject_resolves_serverId_from_ip() {
         OperationServerInfo server = server(204L, "52.62.xxx.xxx", "172.31.30.10");
-        when(operationServerMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(server);
+        when(operationServerMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Collections.singletonList(server))
+                .thenReturn(Collections.emptyList());
 
         OperationProjectDeployInfo row = new OperationProjectDeployInfo();
         row.setServerIp("52.62.xxx.xxx");
@@ -50,6 +56,22 @@ public class OperationServerBindingSupportTest {
         assertEquals(Long.valueOf(204L), row.getServerId());
         assertEquals("52.62.xxx.xxx", row.getServerIp());
         assertEquals("172.31.30.10", row.getInnerIp());
+    }
+
+    @Test
+    public void bindProject_picks_up_server_when_duplicate_ip() {
+        OperationServerInfo down = server(731873612079824896L, "152.136.254.78", "127.0.0.2");
+        down.setStatus(OperationHealthStatus.DOWN);
+        OperationServerInfo up = server(201L, "152.136.254.78", "127.0.0.2");
+        up.setStatus(OperationHealthStatus.UP);
+        when(operationServerMapper.selectList(any(LambdaQueryWrapper.class)))
+                .thenReturn(Arrays.asList(down, up));
+
+        OperationProjectDeployInfo row = new OperationProjectDeployInfo();
+        row.setServerIp("152.136.254.78");
+        bindingSupport.bindProject(row);
+
+        assertEquals(Long.valueOf(201L), row.getServerId());
     }
 
     @Test
@@ -78,7 +100,7 @@ public class OperationServerBindingSupportTest {
 
     @Test
     public void bindComponent_leaves_unmatched_ip_without_serverId() {
-        when(operationServerMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(null);
+        when(operationServerMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(Collections.emptyList());
 
         OperationComponentDeployInfo row = new OperationComponentDeployInfo();
         row.setServerIp("192.168.1.99");

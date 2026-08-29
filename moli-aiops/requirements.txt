@@ -1,0 +1,22 @@
+# moli-aiops · AIOps 故障诊断多智能体平台
+# 安装：python -m venv .venv && .venv\Scripts\pip install -r requirements.txt
+
+# --- 编排层 ---
+langgraph>=1.0,<2
+langgraph-checkpoint-sqlite>=2.0
+fastapi>=0.115
+uvicorn[standard]>=0.30
+sse-starlette>=2.1
+pydantic>=2.9
+httpx>=0.27
+
+# --- 工具层 ---
+paramiko>=3.4        # SSH 取证与处置执行（对应 Java 侧的 JSch）
+PyYAML>=6.0          # 本地 inventory
+
+# --- MCP ---
+mcp>=1.2
+
+# --- 测试 ---
+pytest>=8.0
+pytest-asyncio>=0.24

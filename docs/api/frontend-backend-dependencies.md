@@ -14,6 +14,7 @@
 |------|------|--------------|------------------|
 | **运营管理** | `8888` | **否** | **W1–W10 + P3 ✅**；`origin` 已 push（`b4ac176a`/`755abd43`）；**共享环境待部署 jar** |
 | **知识库** | `8090` | **否** | ✅ **点验 + P3 前端接线**（`kb:prd` **17/17**）；共享库待补 `kb_llm_call_log` |
+| **AIOps 故障诊断** | `8099` | **否** | ✅ meiling-ui 已整合；见 [aiops-frontend-handoff.md](aiops-frontend-handoff.md) |
 | **SSO** | user-center | **否** | **SSO-MENU-1 已交付**（走查 ✅ [sso-menu-frontend-walkthrough.md](../test/sso-menu-frontend-walkthrough.md)） |
 
 ### 1.1 已与前端对齐（勿再 Breaking）

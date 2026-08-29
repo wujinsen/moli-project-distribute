@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>moli-aiops · 故障诊断多智能体平台</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --panel-2: #1c2430; --border: #2a3441;
+    --text: #e6edf3; --muted: #8b98a5; --accent: #4493f8;
+    --ok: #3fb950; --warn: #d29922; --danger: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text); font-size: 14px;
+    font-family: "Segoe UI", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px; padding: 14px 22px;
+    border-bottom: 1px solid var(--border); background: var(--panel);
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  .health { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    font-size: 11px; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--muted);
+  }
+  .chip.on { color: var(--ok); border-color: #1f4d2c; }
+  .chip.off { color: var(--warn); border-color: #4d3f16; }
+  main { display: grid; grid-template-columns: 340px 1fr; gap: 16px; padding: 16px 22px; align-items: start; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 13px; margin: 0 0 12px; color: var(--muted); font-weight: 600;
+             text-transform: uppercase; letter-spacing: .5px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  input, textarea, select {
+    width: 100%; background: var(--bg); color: var(--text); font-size: 13px;
+    border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+    font-family: inherit;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  button {
+    background: var(--accent); color: #fff; border: 0; border-radius: 6px;
+    padding: 9px 16px; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  button:hover { filter: brightness(1.1); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  button.danger { background: var(--danger); }
+  .timeline { max-height: 340px; overflow-y: auto; }
+  .event { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid #1e2530; }
+  .event:last-child { border-bottom: 0; }
+  .event .t { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 56px; }
+  .event .n { color: var(--accent); font-size: 11px; min-width: 96px; }
+  .bar { height: 4px; background: var(--panel-2); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .35s; }
+  .step { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: var(--panel-2); }
+  .step .head { display: flex; align-items: center; gap: 10px; }
+  .step .intent { font-weight: 600; flex: 1; }
+  .risk { font-size: 11px; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+  .risk.read_only { background: #12331d; color: var(--ok); }
+  .risk.mutating { background: #3d3115; color: var(--warn); }
+  .risk.destructive { background: #40191a; color: var(--danger); }
+  .step code {
+    display: block; background: var(--bg); padding: 8px 10px; border-radius: 5px;
+    margin: 8px 0; font-size: 12px; color: #9ecbff; overflow-x: auto; white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .step .meta { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .step .meta b { color: var(--text); font-weight: 500; }
+  .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #1e2530; }
+  th { color: var(--muted); font-weight: 500; }
+  pre.report {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; font-size: 12px; line-height: 1.7; white-space: pre-wrap;
+    max-height: 460px; overflow-y: auto; color: #c9d1d9;
+  }
+  .runs li { list-style: none; padding: 8px 0; border-bottom: 1px solid #1e2530; cursor: pointer; font-size: 12px; }
+  .runs li:hover { color: var(--accent); }
+  .runs ul { margin: 0; padding: 0; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .status { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--panel-2); color: var(--muted); }
+  .status.awaiting_approval { color: var(--warn); }
+  .status.succeeded { color: var(--ok); }
+  .status.rejected, .status.failed { color: var(--danger); }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>moli-aiops</h1>
+    <div class="sub">故障诊断多智能体平台 · 取证 → 根因 → 证伪 → 预案 → 人工确认 → 执行 → 复核 → 复盘</div>
+  </div>
+  <div class="health" id="health"></div>
+</header>
+
+<main>
+  <div>
+    <div class="card">
+      <h2>发起诊断</h2>
+      <label>告警标题</label>
+      <input id="title" placeholder="moli-gateway 不可用，健康检查连续失败" />
+      <label>目标主机</label>
+      <select id="target"></select>
+      <label>受影响服务</label>
+      <input id="service" placeholder="moli-gateway" />
+      <label>现象描述</label>
+      <textarea id="description" rows="3" placeholder="网关端口无响应，上游返回 502"></textarea>
+      <div style="margin-top:14px"><button id="go">开始诊断</button></div>
+    </div>
+
+    <div class="card runs">
+      <h2>历史诊断</h2>
+      <ul id="runs"></ul>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <h2 style="margin:0">诊断进度</h2>
+        <span class="status" id="runStatus">空闲</span>
+        <span class="sub" id="runId" style="color:var(--muted);font-size:11px"></span>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="timeline" id="timeline"><div class="empty">尚未开始。发起一次诊断后，各节点的进展会实时出现在这里。</div></div>
+    </div>
+
+    <div class="card" id="approvalCard" style="display:none">
+      <h2>处置预案 · 待人工确认</h2>
+      <div id="planSummary" class="meta" style="color:var(--muted);margin-bottom:12px"></div>
+      <div id="steps"></div>
+      <div style="margin-top:14px" class="row">
+        <input id="approver" placeholder="确认人姓名" style="max-width:180px" />
+        <button id="approve">确认执行勾选步骤</button>
+        <button id="reject" class="ghost">否决</button>
+      </div>
+      <div class="empty">只读步骤无需令牌；变更步骤会为每一步单独签发绑定到「主机 + 命令原文」的一次性令牌。</div>
+    </div>
+
+    <div class="card" id="reportCard" style="display:none">
+      <h2>复盘报告</h2>
+      <pre class="report" id="report"></pre>
+    </div>
+
+    <div class="card" id="traceCard" style="display:none">
+      <h2>链路 Trace</h2>
+      <table id="trace"></table>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let currentRun = null, source = null, pendingSteps = [];
+
+async function loadHealth() {
+  const h = await (await fetch('/health')).json();
+  $('health').innerHTML = [
+    `<span class="chip ${h.llm_configured ? 'on' : 'off'}">模型 ${h.llm_configured ? h.llm_providers.join('/') : '未配置 · 规则兜底'}</span>`,
+    `<span class="chip">CMDB ${h.cmdb_source}</span>`,
+    `<span class="chip ${h.exec_enabled ? 'on' : 'off'}">执行开关 ${h.exec_enabled ? '开' : '关'}</span>`,
+    h.force_dry_run ? `<span class="chip off">强制干跑</span>` : '',
+  ].join('');
+  $('target').innerHTML = (h.inventory_targets || []).map(t => `<option>${t}</option>`).join('')
+    || '<option value="">inventory 为空</option>';
+}
+
+async function loadRuns() {
+  const d = await (await fetch('/runs')).json();
+  $('runs').innerHTML = d.runs.length
+    ? d.runs.map(r => `<li onclick="openRun('${r.run_id}')">
+        <span class="status ${r.status}">${r.status}</span> ${r.title || r.run_id}
+        <div style="color:var(--muted);font-size:11px">${r.created_at}</div></li>`).join('')
+    : '<div class="empty">暂无记录</div>';
+}
+
+function addEvent(node, message, time) {
+  const box = $('timeline');
+  if (box.querySelector('.empty')) box.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'event';
+  el.innerHTML = `<span class="t">${time || ''}</span><span class="n">${node || ''}</span><span>${message}</span>`;
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+}
+
+function setStatus(status) {
+  $('runStatus').textContent = status;
+  $('runStatus').className = 'status ' + status;
+}
+
+function renderPlan(payload) {
+  pendingSteps = payload.steps || [];
+  $('planSummary').innerHTML =
+    `<b style="color:var(--text)">根因</b>：${payload.root_cause || '未确认'}<br/>` +
+    `<b style="color:var(--text)">预案</b>：${payload.summary || ''}` +
+    (payload.out_of_scope?.length ? `<br/><b style="color:var(--text)">明确不做</b>：${payload.out_of_scope.join('、')}` : '');
+  $('steps').innerHTML = pendingSteps.map(s => `
+    <div class="step">
+      <div class="head">
+        <input type="checkbox" class="pick" value="${s.id}" checked style="width:auto" />
+        <span class="intent">${s.order}. ${s.intent}</span>
+        <span class="risk ${s.risk}">${s.risk}${s.requires_approval ? ' · 需确认' : ''}</span>
+      </div>
+      <code>${s.command || `${s.action} ${s.service}`}</code>
+      <div class="meta">
+        <b>风险判定</b>：${s.risk_reason || '—'}<br/>
+        <b>影响面</b>：${s.blast_radius || '—'}<br/>
+        <b>回滚</b>：${s.rollback || '—'}<br/>
+        <b>验证</b>：${s.verification || '—'}
+      </div>
+    </div>`).join('');
+  $('approvalCard').style.display = 'block';
+}
+
+function listen(runId) {
+  if (source) source.close();
+  source = new EventSource(`/runs/${runId}/stream`);
+  source.onmessage = (e) => {
+    const ev = JSON.parse(e.data);
+    if (ev.type === 'node') {
+      addEvent(ev.node, ev.message, ev.ts);
+      if (ev.pct) $('bar').style.width = ev.pct + '%';
+    } else if (ev.type === 'approval_required') {
+      setStatus('awaiting_approval');
+      addEvent('await_approval', '预案已生成，等待人工确认', ev.ts);
+      renderPlan(ev.payload);
+    } else if (ev.type === 'phase_done') {
+      setStatus(ev.status);
+      if (ev.status !== 'awaiting_approval') { $('approvalCard').style.display = 'none'; openRun(runId, true); }
+    } else if (ev.type === 'error') {
+      addEvent('error', ev.message, ev.ts);
+      setStatus('failed');
+    } else {
+      addEvent('', ev.message || ev.type, ev.ts);
+    }
+  };
+  source.addEventListener('done', () => { source.close(); loadRuns(); });
+}
+
+async function openRun(runId, keepTimeline) {
+  currentRun = runId;
+  $('runId').textContent = runId;
+  if (!keepTimeline) { $('timeline').innerHTML = ''; $('approvalCard').style.display = 'none'; }
+  const d = await (await fetch(`/runs/${runId}`)).json();
+  setStatus(d.run.status);
+
+  const report = d.values?.report?.markdown;
+  $('reportCard').style.display = report ? 'block' : 'none';
+  if (report) $('report').textContent = report;
+
+  if (d.trace?.length) {
+    $('traceCard').style.display = 'block';
+    const s = d.trace_summary || {};
+    $('trace').innerHTML =
+      '<tr><th>节点</th><th>耗时</th><th>状态</th><th>模型</th><th>token</th><th>兜底</th><th>工具调用</th></tr>' +
+      d.trace.map(t => `<tr>
+        <td>${t.node}</td><td>${t.duration_ms} ms</td><td>${t.status}</td>
+        <td>${t.provider ? t.provider + '/' + t.model : '规则'}</td>
+        <td>${(t.prompt_tokens || 0) + (t.completion_tokens || 0)}</td>
+        <td>${t.fallback_used ? '是' : '—'}</td>
+        <td>${(t.tool_calls || []).length}</td></tr>`).join('') +
+      `<tr><th>合计</th><th>${s.total_duration_ms || 0} ms</th><th colspan="2"></th>
+        <th>${(s.prompt_tokens || 0) + (s.completion_tokens || 0)}</th>
+        <th>${s.fallback_calls || 0}</th><th></th></tr>`;
+  }
+  if (d.interrupts?.length) renderPlan(d.interrupts[0].value);
+}
+
+$('go').onclick = async () => {
+  const body = {
+    title: $('title').value.trim() || '未命名告警',
+    target: $('target').value,
+    service: $('service').value.trim(),
+    description: $('description').value.trim(),
+  };
+  if (!body.target) { alert('inventory 为空，请先配置 inventory.yaml'); return; }
+  $('timeline').innerHTML = '';
+  $('bar').style.width = '0';
+  $('approvalCard').style.display = 'none';
+  $('reportCard').style.display = 'none';
+  const d = await (await fetch('/diagnose', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  })).json();
+  currentRun = d.run_id;
+  $('runId').textContent = d.run_id;
+  setStatus('running');
+  listen(d.run_id);
+};
+
+$('approve').onclick = async () => {
+  const approver = $('approver').value.trim();
+  if (!approver) { alert('请填写确认人姓名，审批记录需要留痕'); return; }
+  const picked = [...document.querySelectorAll('.pick:checked')].map(c => c.value);
+  if (!picked.length) { alert('至少勾选一步'); return; }
+  $('approvalCard').style.display = 'none';
+  setStatus('executing');
+  await fetch(`/runs/${currentRun}/approve`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ approver, approved_step_ids: picked }),
+  });
+};
+
+$('reject').onclick = async () => {
+  const approver = $('approver').value.trim() || '未署名';
+  $('approvalCard').style.display = 'none';
+  await fetch(`/runs/${currentRun}/reject`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ approver, comment: '人工否决' }),
+  });
+};
+
+loadHealth();
+loadRuns();
+</script>
+</body>
+</html>

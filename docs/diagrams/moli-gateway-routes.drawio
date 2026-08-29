@@ -23,10 +23,13 @@
           <mxGeometry x="770" y="580" width="200" height="60" as="geometry" />
         </mxCell>
         <mxCell id="kb" value="knowledge-server&#xa;:8090&#xa;lb://knowledge-server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="770" y="330" width="200" height="60" as="geometry" />
+          <mxGeometry x="770" y="300" width="200" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="tbl" value="路由表（application-dev.yml）&#xa;─────────────────────────&#xa;/UserCenter/**      → user-center-server&#xa;/OrderServer/**     → order-server&#xa;/AiServer/**        → ai-server&#xa;/KnowledgeServer/** → knowledge-server&#xa;&#xa;过滤器：StripPrefix=1（去掉第一段路径）&#xa;例：/OrderServer/seckill/order → order-server /seckill/order" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
-          <mxGeometry x="50" y="440" width="380" height="160" as="geometry" />
+        <mxCell id="aiops" value="moli-aiops (FastAPI)&#xa;:8099&#xa;固定 URI / 演示" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="770" y="390" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl" value="路由表（application-dev.yml）&#xa;─────────────────────────&#xa;/UserCenter/**      → user-center-server&#xa;/OrderServer/**     → order-server&#xa;/AiServer/**        → ai-server&#xa;/KnowledgeServer/** → knowledge-server&#xa;/AiOpsServer/**     → moli-aiops :8099&#xa;&#xa;过滤器：StripPrefix=1（去掉第一段路径）&#xa;例：/OrderServer/seckill/order → order-server /seckill/order" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="50" y="440" width="380" height="175" as="geometry" />
         </mxCell>
         <mxCell id="nacos" value="Nacos :8848&#xa;服务发现" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;dashed=1;" parent="1" vertex="1">
           <mxGeometry x="810" y="250" width="120" height="50" as="geometry" />
@@ -51,6 +54,9 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e6" value="lb://" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#b85450;" parent="1" source="gw" target="nacos" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="/AiOpsServer/**" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9673a6;strokeWidth=2;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="gw" target="aiops" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>

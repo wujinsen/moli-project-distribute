@@ -1,0 +1,82 @@
+#!/bin/bash
+# systemd 垫片。
+#
+# 沙箱容器里没有 systemd，但诊断平台生成的处置命令是 `systemctl restart xxx`。
+# 与其为演练环境在平台侧开一条分支，不如让沙箱把这个接口实现出来——
+# 这样沙箱验证过的命令，打到生产真机上是同一条。
+#
+# 用 PID 文件管理 /opt/moli/services/ 下的可执行脚本。
+
+set -u
+
+ACTION="${1:-}"
+UNIT="${2:-}"
+RUN_DIR=/var/run/moli
+LOG_DIR=/var/log/moli
+SERVICE_BIN="/opt/moli/services/${UNIT}"
+PID_FILE="${RUN_DIR}/${UNIT}.pid"
+
+mkdir -p "$RUN_DIR" "$LOG_DIR"
+
+die() { echo "$1" >&2; exit 1; }
+
+is_running() {
+    [ -f "$PID_FILE" ] || return 1
+    local pid
+    pid="$(cat "$PID_FILE" 2>/dev/null)"
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null
+}
+
+do_start() {
+    [ -x "$SERVICE_BIN" ] || die "Unit ${UNIT}.service not found."
+    if is_running; then
+        echo "${UNIT} already running (pid $(cat "$PID_FILE"))."
+        return 0
+    fi
+    nohup "$SERVICE_BIN" >>"${LOG_DIR}/${UNIT}.log" 2>&1 &
+    echo $! > "$PID_FILE"
+    sleep 0.4
+    is_running && echo "Started ${UNIT}.service (pid $(cat "$PID_FILE"))." \
+        || die "Failed to start ${UNIT}.service"
+}
+
+do_stop() {
+    if ! is_running; then
+        echo "${UNIT} is not running."
+        rm -f "$PID_FILE"
+        return 0
+    fi
+    local pid
+    pid="$(cat "$PID_FILE")"
+    kill "$pid" 2>/dev/null
+    for _ in $(seq 1 20); do
+        is_running || break
+        sleep 0.1
+    done
+    is_running && kill -9 "$pid" 2>/dev/null
+    rm -f "$PID_FILE"
+    echo "Stopped ${UNIT}.service."
+}
+
+case "$ACTION" in
+    start)   [ -n "$UNIT" ] || die "Unit name required"; do_start ;;
+    stop)    [ -n "$UNIT" ] || die "Unit name required"; do_stop ;;
+    restart) [ -n "$UNIT" ] || die "Unit name required"; do_stop; do_start ;;
+    status)
+        [ -n "$UNIT" ] || die "Unit name required"
+        if is_running; then
+            echo "● ${UNIT}.service - moli sandbox unit"
+            echo "     Active: active (running)"
+            echo "   Main PID: $(cat "$PID_FILE")"
+            exit 0
+        fi
+        echo "● ${UNIT}.service - moli sandbox unit"
+        echo "     Active: inactive (dead)"
+        exit 3
+        ;;
+    is-active)
+        is_running && { echo active; exit 0; }
+        echo inactive; exit 3
+        ;;
+    *) die "Unsupported action: ${ACTION}" ;;
+esac

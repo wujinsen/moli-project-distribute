@@ -10,6 +10,7 @@
 #maven ignore
 target/
 build/
+.flattened-pom.xml
 
 #eclipse ignore
 .settings/

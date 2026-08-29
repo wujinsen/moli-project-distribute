@@ -1,0 +1,197 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-aiops-architecture" name="moli-aiops 架构">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="moli-aiops · 故障诊断多智能体平台" style="text;html=1;fontSize=22;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="20" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="取证 → 根因假设 → 证伪 → 预案 → 人工确认 → 执行 → 复核 → 复盘" style="text;html=1;fontSize=13;fontColor=#666666;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="56" width="900" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ============ L0 告警源 ============ -->
+        <mxCell id="l0" value="L0 · 告警源" style="swimlane;html=1;startSize=28;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="2240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="src-probe" value="健康巡检&#xa;operation_server_info.status=2" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="l0">
+          <mxGeometry x="40" y="45" width="260" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="src-webhook" value="Webhook 接入&#xa;POST /diagnose" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="l0">
+          <mxGeometry x="330" y="45" width="240" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="src-manual" value="人工发起&#xa;单页 UI 描述现象" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="l0">
+          <mxGeometry x="600" y="45" width="240" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="src-drill" value="故障演练注入&#xa;drills/scenarios.py（真故障）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="l0">
+          <mxGeometry x="870" y="45" width="270" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="l0-note" value="演练场绕过安全层直连 SSH：它代表运维人员主动搞破坏，不是 Agent 动作" style="text;html=1;fontSize=11;fontColor=#b85450;align=left;verticalAlign=middle;" vertex="1" parent="l0">
+          <mxGeometry x="1170" y="45" width="600" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ============ L1 编排层 ============ -->
+        <mxCell id="l1" value="L1 · 编排层 aiops_agent（LangGraph StateGraph + SqliteSaver checkpoint）" style="swimlane;html=1;startSize=28;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="250" width="2240" height="420" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n-triage" value="triage&#xa;分诊定级&#xa;圈定影响面" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="50" y="70" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n-invest" value="investigator&#xa;五路并行取证" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="290" y="70" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n-diag" value="diagnostician&#xa;竞争性根因假设" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="530" y="70" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n-critic" value="critic&#xa;逐条证伪&#xa;判定是否回补" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="770" y="70" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n-planner" value="planner&#xa;分步预案&#xa;标注影响面与回滚" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="1010" y="70" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="n-approve" value="⏸ await_approval&#xa;interrupt() 挂起等人&#xa;状态存 checkpoint" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;" vertex="1" parent="l1">
+          <mxGeometry x="1010" y="240" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="n-exec" value="executor&#xa;逐步执行&#xa;失败即停" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="770" y="245" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n-verify" value="verifier&#xa;重新取证&#xa;服务存活为硬条件" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="530" y="245" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n-report" value="reporter&#xa;复盘报告&#xa;带 kb frontmatter" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l1">
+          <mxGeometry x="290" y="245" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="l1" source="n-triage" target="n-invest"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="l1" source="n-invest" target="n-diag"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="l1" source="n-diag" target="n-critic"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" value="定稿" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="l1" source="n-critic" target="n-planner"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" value="证据不足 · 有界回补（≤2 轮）" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;endArrow=block;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=10;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="l1" source="n-critic" target="n-invest">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="860" y="40" /><mxPoint x="380" y="40" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;strokeWidth=2;" edge="1" parent="l1" source="n-planner" target="n-approve"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" value="已批准步骤 + 绑定令牌" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;strokeWidth=2;" edge="1" parent="l1" source="n-approve" target="n-exec"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="l1" source="n-exec" target="n-verify"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="l1" source="n-verify" target="n-report"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" value="否决 → 跳过执行，仍出复盘" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;endArrow=block;dashed=1;strokeColor=#999999;fontSize=10;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="l1" source="n-approve" target="n-report">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="980" y="360" /><mxPoint x="500" y="360" /></Array></mxGeometry>
+        </mxCell>
+
+        <mxCell id="llm-router" value="LLM 路由（按节点分档）&#xa;─────────────&#xa;reasoning：诊断 / 证伪 / 规划&#xa;fast：分诊 / 取证 / 复盘&#xa;三层降级：重试 → 换厂商 → 规则兜底&#xa;零 API key 也能跑完整条链路" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="l1">
+          <mxGeometry x="1270" y="70" width="300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="trace-box" value="全链路 trace（sqlite）&#xa;─────────────&#xa;每节点：耗时 · 实际模型与厂商&#xa;token · 是否跨厂商兜底 · 重试次数&#xa;工具调用清单 · 失败原因&#xa;checkpoint 支持回放与单步重跑" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="l1">
+          <mxGeometry x="1270" y="215" width="300" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="http-box" value="HTTP 层 · FastAPI :8099&#xa;─────────────&#xa;POST /diagnose 发起诊断&#xa;GET  /runs/{id}/stream SSE 进度&#xa;POST /runs/{id}/approve 签发令牌&#xa;POST /runs/{id}/reject&#xa;POST /runs/{id}/rerun 单步重跑&#xa;GET  / 单页 UI&#xa;&#xa;⚠ 审批令牌只在这一层签发" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;" vertex="1" parent="l1">
+          <mxGeometry x="1640" y="70" width="330" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- ============ L2 工具层 ============ -->
+        <mxCell id="l2" value="L2 · 工具层 ops_mcp（普通 Python 函数 + MCP stdio 双出口）" style="swimlane;html=1;startSize=28;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="700" width="2240" height="440" as="geometry" />
+        </mxCell>
+
+        <mxCell id="g-evidence" value="证据源（只读 · readOnlyHint=true · 无需审批）" style="swimlane;html=1;startSize=26;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="l2">
+          <mxGeometry x="40" y="50" width="1080" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="t-topo" value="ops_topology&#xa;服务器 · 项目 · 组件&#xa;deploys / depends_on 边" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="30" y="45" width="245" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t-service" value="ops_service_status&#xa;声明端口 + systemd unit&#xa;对照实际状态 → up / down&#xa;「服务在不在」的决定性证据" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" vertex="1" parent="g-evidence">
+          <mxGeometry x="295" y="45" width="245" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t-facts" value="ops_host_facts&#xa;CPU 两次采样求差 · 内存&#xa;磁盘与 inode · 进程 · 端口清单&#xa;一次 SSH 往返取全" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="560" y="45" width="245" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t-logs" value="ops_log_search&#xa;受约束的远程 grep&#xa;路径白名单&#xa;模式 shell 转义" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="825" y="45" width="225" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t-changes" value="ops_recent_changes&#xa;operation_task 变更流水&#xa;「故障前刚改过什么」" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="30" y="145" width="245" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t-kb" value="ops_kb_search&#xa;历史事故&#xa;运维 Runbook" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="295" y="145" width="245" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t-assess" value="ops_assess_command&#xa;只判不执行&#xa;预案的风险标签来自这里" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="560" y="145" width="245" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t-audit-tool" value="ops_audit_trail&#xa;按事故查全部工具调用&#xa;含被拦下的尝试" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="825" y="145" width="225" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cmdb-note" value="CMDB 可插拔&#xa;─────────────&#xa;auto：先探 user-center REST，不可达则回退本地 inventory&#xa;演示时 Java 栈没起也能跑" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="g-evidence">
+          <mxGeometry x="30" y="245" width="490" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="inject-note" value="取证命令由代码固定拼装，不接受任何外部字符串 —— 天然免注入&#xa;&#xa;资源指标回答「机器累不累」，回答不了「服务在不在」：CPU 2% 的机器上服务照样可能停着" style="text;html=1;fontSize=11;fontColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="g-evidence">
+          <mxGeometry x="540" y="245" width="510" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="g-safety" value="安全层与处置（会改变生产状态）" style="swimlane;html=1;startSize=26;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="l2">
+          <mxGeometry x="1160" y="50" width="1040" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="s-classifier" value="危险分级器&#xa;─────────────&#xa;read_only  自动执行&#xa;mutating   需人工审批&#xa;destructive 默认直接拒绝&#xa;&#xa;整条规则 → 引号感知拆段 → 谓词判定&#xa;失败关闭：不认识的一律按变更处理" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="g-safety">
+          <mxGeometry x="30" y="45" width="310" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="s-approval" value="审批令牌&#xa;─────────────&#xa;HMAC 签名，绑定 SHA256(主机 + 命令原文)&#xa;换一个字符即失配&#xa;一次性（nonce 防重放）&#xa;10 分钟过期&#xa;&#xa;⚠ 工具层不提供签发函数&#xa;Agent 无法自我批准" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;" vertex="1" parent="g-safety">
+          <mxGeometry x="370" y="45" width="330" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="s-killswitch" value="熔断开关&#xa;─────────────&#xa;OPS_EXEC_ENABLED&#xa;对应 user-center 的&#xa;ops.command.enabled&#xa;&#xa;只卡变更类命令&#xa;只读取证始终可用" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="g-safety">
+          <mxGeometry x="730" y="45" width="280" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="s-exec" value="ops_exec_command / ops_service_action&#xa;destructiveHint=true&#xa;服务动作由声明推导，不接受自由拼接" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="g-safety">
+          <mxGeometry x="30" y="235" width="480" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="s-audit" value="执行审计（sqlite ops_audit）&#xa;成功 / 失败 / 被拦 / 干跑 全留痕&#xa;被拦下的尝试是复盘最该看的部分" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="g-safety">
+          <mxGeometry x="540" y="235" width="470" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- ============ L3 数据源与目标 ============ -->
+        <mxCell id="l3" value="L3 · 数据源与目标主机" style="swimlane;html=1;startSize=28;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1170" width="2240" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="d-uc" value="moli-user-center&#xa;GET /operation/topology&#xa;GET /operation/task/list&#xa;Authorization = Shiro SessionId" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="l3">
+          <mxGeometry x="40" y="45" width="290" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="d-inv" value="inventory.yaml&#xa;SSH 凭据（恒定本地）&#xa;日志路径白名单&#xa;服务声明 systemd / container" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="l3">
+          <mxGeometry x="370" y="45" width="290" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="d-hosts" value="SSH 目标主机&#xa;沙箱容器 :2201 / :2202（演练）&#xa;AWS EC2 真机 :22（生产）&#xa;同一套代码，不分 transport" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="l3">
+          <mxGeometry x="700" y="45" width="310" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="d-kb" value="moli-knowledge&#xa;POST /kb/ask&#xa;诊断时读知识库&#xa;复盘后回写 wiki-moli/ops/" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="l3">
+          <mxGeometry x="1050" y="45" width="290" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="d-sqlite" value="sqlite&#xa;aiops.db：trace + 执行审计&#xa;checkpoints.db：LangGraph 快照&#xa;按 incident_id 串成完整时间线" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="l3">
+          <mxGeometry x="1380" y="45" width="310" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="d-mcp" value="MCP stdio 出口&#xa;10 个工具挂给&#xa;Cursor / Claude Desktop&#xa;等任意 MCP 客户端" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l3">
+          <mxGeometry x="1730" y="45" width="270" height="95" as="geometry" />
+        </mxCell>
+
+        <!-- 跨层连线 -->
+        <mxCell id="x1" value="工具调用" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" parent="1" source="l1" target="l2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="620" y="670" as="sourcePoint" />
+            <mxPoint x="620" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="x2" value="SSH / REST" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;strokeWidth=2;strokeColor=#82b366;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="620" y="1140" as="sourcePoint" />
+            <mxPoint x="620" y="1170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="legend" value="人机协同边界：预案生成后图被 interrupt() 真正挂起（状态落 checkpoint，进程可重启）；人在 UI 勾选步骤并署名后，HTTP 层为每个变更步骤签发绑定令牌，图凭令牌恢复执行。&#xa;审批令牌绑定的是「主机 + 命令原文」的哈希，所以「批准重启网关」这张令牌无法被挪用于「停掉数据库」—— 这是人机协同链路上最容易被忽略的攻击面。&#xa;&#xa;症状不等于根因：服务存活假设的置信度刻意压在 OOM / 磁盘写满 / fd 耗尽之下。「端口未监听」是症状，日志里有 OutOfMemoryError 时根因才是 OOM；让症状顶成结论，预案就会从「重启释放内存」退化成「启动服务」。" style="text;html=1;fontSize=12;align=left;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;spacingLeft=12;spacingTop=10;spacingRight=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1380" width="2240" height="120" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

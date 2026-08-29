@@ -7,13 +7,12 @@
     <parent>
         <groupId>com.moli</groupId>
         <artifactId>moli-distribute-parent</artifactId>
-        <version>1.0-RELEASE</version>
+        <version>${revision}</version>
         <relativePath>../moli-distribute-parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>moli-knowledge</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
 
     <modules>
         <module>moli-knowledge-server</module>

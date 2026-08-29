@@ -31,7 +31,7 @@
 | [`moli-kb-agentic-rag.drawio`](moli-kb-agentic-rag.drawio) | **Agentic RAG AI-7**：S0–S5 编排状态机 · 自检/回补 · `kb_agentic_trace`（`docs/design/kb-hybrid-retrieval.md` §8） |
 | [`moli-kb-deep-research.drawio`](moli-kb-deep-research.drawio) | **DeepResearch AI-10**：Planner→Retriever→Writer→Reviewer · Ingest 回写 outputs/ · SSE（`docs/design/contracts/AI-10-contract.md`） |
 | [`moli-ai-chatbi-flow.drawio`](moli-ai-chatbi-flow.drawio) | **ChatBI / NL2SQL 调用链 AI-4**：Java 壳 AST 白名单+只读执行，Python sidecar 生成解读（设计见 `docs/design/bi-chatbi-nl2sql.md`） |
-| [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：四路由 + StripPrefix + 端口 |
+| [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：五路由（含 AiOpsServer）+ StripPrefix + 端口 |
 | [`moli-rbac-model.drawio`](moli-rbac-model.drawio) | **RBAC 模型**：用户→角色→菜单/动作 + Shiro 运行时 |
 | [`moli-rbac-menu-query.drawio`](moli-rbac-menu-query.drawio) | **RBAC 菜单授权查询**：sys_user_role → MenuVo 树 · admin bypass |
 | [`moli-user-center-position.drawio`](moli-user-center-position.drawio) | **用户中心定位**：网关 HTTP + Dubbo + 共享 Redis |
@@ -43,6 +43,7 @@
 | [`moli-operation-topology-graph.drawio`](moli-operation-topology-graph.drawio) | **服务器拓扑可视化 SVR-25**：全局 ECharts 拓扑图 + 聚合 API + P2 依赖表（设计见 `docs/design/server-topology-visualization.md`） |
 | [`moli-operation-relations-nav.drawio`](moli-operation-relations-nav.drawio) | **关联关系导航 SVR-28**：三实体 N:N 全景 + RelationDrawer + 七页接入（设计见 `docs/design/operation-relations-navigation.md`） |
 | [`moli-sso-menu-flow.drawio`](moli-sso-menu-flow.drawio) | **SSO 菜单按系统隔离**：login → enter/switch → getRouters 过滤（设计见 `docs/design/sso-menu-system-isolation.md`） |
+| [`moli-aiops-architecture.drawio`](moli-aiops-architecture.drawio) | **AIOps 故障诊断多智能体平台**：L0 告警源 → L1 LangGraph 九节点（含 `interrupt()` 人工确认闸门）→ L2 `ops_mcp` 证据源/安全层 → L3 CMDB·SSH·KB·sqlite（模块 README `moli-aiops/README.md`） |
 | [`moli-sys-config-notice-er.drawio`](moli-sys-config-notice-er.drawio) | **参数设置 / 通知公告 ER**（3 表）：`sys_config` 只存运行期覆盖值（定义在代码 `ConfigKey` 注册表）+ 四级取值链 · `sys_notice` 三态发布 + `sys_notice_read_cursor` 未读水位（设计见 `docs/design/sys-config-notice.md`） |
 
 **两空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
@@ -100,7 +101,21 @@ npx --yes draw.io-export docs/diagrams/moli-gateway-routes.drawio -o docs/diagra
 
 > **已失效（2026-08-16 实测）**：该包（含最新 `0.3.0`）把渲染页写死在 `https://www.draw.io/export3.html`，而该域名已不可达（`ERR_CONNECTION_CLOSED`），`app.diagrams.net` 仍正常。包已停止维护，命令会退出码 0 但**不生成文件**——注意别把旧 PNG 当成新导出的。
 >
-> 替代：优先用 **方式 C（VS Code 扩展）**；需要命令行时，用缓存里的 puppeteer 跑一份把域名改成 `app.diagrams.net` 的脚本即可（逻辑同该包，仅 `page.goto` 一行不同）。
+> 替代：本目录已提供 [`export-drawio-png.mjs`](export-drawio-png.mjs)（方式 B2），逻辑同该包但直连 `app.diagrams.net`；也可用 **方式 C（VS Code 扩展）**。
+
+**方式 B2 — 仓库自带脚本**（2026-08-18 实测可用，scale 2 + border 10）：
+
+```powershell
+node docs/diagrams/export-drawio-png.mjs moli-aiops-architecture   # 单张
+node docs/diagrams/export-drawio-png.mjs --all                     # 全量
+```
+
+需要 `puppeteer`。本机未安装时可复用 npx 缓存：
+
+```powershell
+$env:NODE_PATH = "$env:LOCALAPPDATA\npm-cache\_npx\<hash>\node_modules"
+node docs/diagrams/export-drawio-png.mjs --all
+```
 
 对 `docs/diagrams/*.drawio` 逐个执行，或在 CI 中批量导出。
 
@@ -134,6 +149,7 @@ docs/diagrams/png/moli-ai-capability-roadmap.png
 docs/diagrams/png/moli-kb-hybrid-retrieval.png
 docs/diagrams/png/moli-ai-chatbi-flow.png
 docs/diagrams/png/moli-sys-config-notice-er.png
+docs/diagrams/png/moli-aiops-architecture.png
 ```
 
 在 [`docs/zh-CN/ARCHITECTURE.md`](../zh-CN/ARCHITECTURE.md) 可替换 Mermaid 为 PNG（按需）。

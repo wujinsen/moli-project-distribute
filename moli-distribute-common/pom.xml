@@ -6,13 +6,12 @@
     <parent>
         <artifactId>moli-distribute-parent</artifactId>
         <groupId>com.moli</groupId>
-        <version>1.0-RELEASE</version>
+        <version>${revision}</version>
         <relativePath>../moli-distribute-parent/pom.xml</relativePath>
     </parent>
 
     <groupId>com.moli</groupId>
     <artifactId>moli-distribute-common</artifactId>
-    <version>1.0.0-RELEASE</version>
     <modelVersion>4.0.0</modelVersion>
 
     <dependencies>

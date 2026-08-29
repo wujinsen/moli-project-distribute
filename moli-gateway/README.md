@@ -18,6 +18,7 @@
 | `/OrderServer/**` | `order-server` | StripPrefix=1 |
 | `/AiServer/**` | `ai-server` | StripPrefix=1 |
 | `/KnowledgeServer/**` | `knowledge-server` | StripPrefix=1 |
+| `/AiOpsServer/**` | `http://127.0.0.1:8099` | StripPrefix=1 |
 
 完整说明：[docs/api/gateway-routes.md](../docs/api/gateway-routes.md)
 

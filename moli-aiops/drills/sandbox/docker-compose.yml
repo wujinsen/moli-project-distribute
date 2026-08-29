@@ -1,0 +1,40 @@
+# 故障演练沙箱。
+#
+#   docker compose -f drills/sandbox/docker-compose.yml up -d --build
+#
+# SSH 端口与 inventory.yaml 里的 sandbox-app / sandbox-db 对应。
+# 磁盘故障场景需要一个小容量挂载点，这里用 32MB 的 tmpfs 挂到 /data，
+# 真把它写满，而不是伪造 df 输出。
+
+services:
+  sandbox-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moli-sandbox-app
+    hostname: sandbox-app
+    environment:
+      SANDBOX_UNITS: "moli-gateway"
+    ports:
+      - "2201:22"
+      - "18080:8080"
+    tmpfs:
+      - /data:size=32m
+    # 演练要真实地打满 CPU、吃掉内存，所以给一个明确的小配额
+    cpus: 1.0
+    mem_limit: 512m
+
+  sandbox-db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moli-sandbox-db
+    hostname: sandbox-db
+    environment:
+      SANDBOX_UNITS: ""
+    ports:
+      - "2202:22"
+    tmpfs:
+      - /data:size=32m
+    cpus: 0.5
+    mem_limit: 256m

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# SSH 凭据在里面，只提交 inventory.example.yaml
+inventory.yaml
+.env
+
+# trace / 审计 / checkpoint
+data/

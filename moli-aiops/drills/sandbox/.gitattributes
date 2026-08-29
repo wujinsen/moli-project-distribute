@@ -1,0 +1,5 @@
+# 容器里要执行的脚本必须是 LF。带 CRLF 时内核会把 \r 当成解释器路径的一部分，
+# 报出很有误导性的 "no such file or directory"。
+entrypoint.sh   text eol=lf
+systemctl       text eol=lf
+services/*      text eol=lf

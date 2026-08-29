@@ -164,4 +164,5 @@ API 文档在 **`docs/api/`**，供开发联调，一般不整篇 ingest 进浏�
 - **全仓库 Agent 规则**：[`AGENTS.md`](../AGENTS.md)（§3 draw.io）
 - 知识库契约：[`moli-knowledge/kb/AGENTS.md`](../moli-knowledge/kb/AGENTS.md)（§1.1 五类落点 · **§1.2 微服务归属**）
 - 模块总览：[`moli-knowledge/README.md`](../moli-knowledge/README.md)
+- AIOps 故障诊断平台：[`moli-aiops/README.md`](../moli-aiops/README.md)（架构图 `docs/diagrams/moli-aiops-architecture.drawio`）
 - 项目入口：[`README.md`](../README.md)（默认中文）· [`README.zh-CN.md`](../README.zh-CN.md)（同内容别名）

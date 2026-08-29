@@ -18,6 +18,7 @@
 | `order-route` | `/OrderServer/**` | order-server | `order-server` | **1** |
 | `ai-route` | `/AiServer/**` | ai-server | `ai-server` | **1** |
 | `knowledge-route` | `/KnowledgeServer/**` | knowledge-server | `knowledge-server` | **1** |
+| `aiops-route` | `/AiOpsServer/**` | moli-aiops FastAPI | 固定 URI `:8099`（演示） | **1** |
 
 **StripPrefix=1**：去掉第一段路径再转发。
 

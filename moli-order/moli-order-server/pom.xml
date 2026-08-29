@@ -5,7 +5,7 @@
     <parent>
         <artifactId>moli-order</artifactId>
         <groupId>com.moli</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -210,13 +210,13 @@
         <dependency>
             <groupId>com.moli</groupId>
             <artifactId>moli-distribute-common</artifactId>
-            <version>1.0.0-RELEASE</version>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>com.moli</groupId>
             <artifactId>moli-user-center-shiro-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${revision}</version>
         </dependency>
 
 

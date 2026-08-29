@@ -1,0 +1,68 @@
+# moli-aiops 目标清单
+#
+# 复制为 inventory.yaml 后按实际环境填写。
+#
+# SSH 凭据**只在这里**声明，不从 user-center 拉取：私钥在那边是 AES-GCM 加密存储且
+# 不对外暴露，诊断平台通过 HTTP 去捞私钥是更糟的设计。走 REST 模式时，
+# user-center 只提供拓扑元数据，凭据仍然读本地。
+#
+# log_paths 同时是日志检索的白名单：Agent 只能检索这里声明过的路径，
+# 传其他路径会被工具层拒绝。
+
+targets:
+  # --- 本地 Docker 演练沙箱 ---
+  - id: sandbox-app
+    server_id: "1"
+    name: 沙箱应用节点
+    host: 127.0.0.1
+    ssh_port: 2201
+    user: root
+    password: aiops
+    role: app
+    tags: [sandbox, drill]
+    log_paths:
+      - /var/log/moli/app.log
+    services:
+      - name: moli-gateway
+        port: 8080
+        systemd_unit: moli-gateway
+        health_url: http://127.0.0.1:8080/actuator/health
+        log_paths:
+          - /var/log/moli/gateway.log
+        depends_on: [moli-mysql]
+
+  - id: sandbox-db
+    server_id: "2"
+    name: 沙箱数据节点
+    host: 127.0.0.1
+    ssh_port: 2202
+    user: root
+    password: aiops
+    role: db
+    tags: [sandbox, drill]
+    services:
+      - name: moli-mysql
+        port: 3306
+        container: moli-mysql
+        log_paths:
+          - /var/log/mysql/error.log
+
+  # --- AWS EC2 真机（按需启用）---
+  # - id: ec2-prod-1
+  #   server_id: "11"
+  #   name: 生产应用节点
+  #   host: 1.2.3.4
+  #   ssh_port: 22
+  #   user: ec2-user
+  #   private_key_path: ~/.ssh/moli-ec2.pem
+  #   role: app
+  #   tags: [prod, aws]
+  #   log_paths:
+  #     - /opt/moli-project-distribute/logs/gateway.log
+  #   services:
+  #     - name: moli-gateway
+  #       port: 21000
+  #       systemd_unit: moli-gateway
+  #     - name: moli-user-center
+  #       port: 8080
+  #       systemd_unit: moli-user-center
