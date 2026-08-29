@@ -19,7 +19,7 @@ def _flag(name: str, default: bool = False) -> bool:
 # auto: 先试 REST，不可用时回退 inventory 文件；rest / file 可强制指定
 CMDB_MODE = os.environ.get("OPS_CMDB_MODE", "auto").strip().lower()
 USER_CENTER_BASE_URL = os.environ.get(
-    "OPS_USER_CENTER_BASE_URL", "http://127.0.0.1:21000/UserCenterServer"
+    "OPS_USER_CENTER_BASE_URL", "http://127.0.0.1:28100/UserCenterServer"
 ).rstrip("/")
 # user-center 登录后的 Shiro sessionId，同 moli-knowledge/mcp 的 MCP_KB_TOKEN 约定
 OPS_AUTH_TOKEN = os.environ.get("OPS_AUTH_TOKEN", "")
@@ -42,7 +42,7 @@ APPROVAL_SECRET = os.environ.get("OPS_APPROVAL_SECRET", "")
 APPROVAL_TTL_S = int(os.environ.get("OPS_APPROVAL_TTL_S", "600"))
 
 # --- 知识库检索（复用 moli-knowledge）------------------------------------
-KB_BASE_URL = os.environ.get("KB_BASE_URL", "http://127.0.0.1:8090").rstrip("/")
+KB_BASE_URL = os.environ.get("KB_BASE_URL", "http://127.0.0.1:28104").rstrip("/")
 KB_AUTH_TOKEN = os.environ.get("KB_AUTH_TOKEN", "")
 KB_TIMEOUT_S = float(os.environ.get("OPS_KB_TIMEOUT_S", "20"))
 

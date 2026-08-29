@@ -7,7 +7,7 @@
 | 项 | 值 |
 |----|----|
 | Nacos 服务名 | `moli-gateway` |
-| HTTP 端口 | **21000** |
+| HTTP 端口 | **28100** |
 | Profile | `dev`（日常）、`loadtest`（压测） |
 
 ## 路由表
@@ -18,7 +18,7 @@
 | `/OrderServer/**` | `order-server` | StripPrefix=1 |
 | `/AiServer/**` | `ai-server` | StripPrefix=1 |
 | `/KnowledgeServer/**` | `knowledge-server` | StripPrefix=1 |
-| `/AiOpsServer/**` | `http://127.0.0.1:8099` | StripPrefix=1 |
+| `/AiOpsServer/**` | `http://127.0.0.1:28105` | StripPrefix=1 |
 
 完整说明：[docs/api/gateway-routes.md](../docs/api/gateway-routes.md)
 
@@ -51,7 +51,7 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 
 | 文件 | 内容 |
 |------|------|
-| `application.yml` | 端口 21000 |
+| `application.yml` | 端口 28100 |
 | `application-dev.yml` | 四路由定义 |
 | `bootstrap.yml` | Nacos |
 
@@ -69,8 +69,8 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 ## 探测
 
 ```bash
-curl http://127.0.0.1:21000/OrderServer/seckill/ping
-curl -X POST http://127.0.0.1:21000/UserCenter/login \
+curl http://127.0.0.1:28100/OrderServer/seckill/ping
+curl -X POST http://127.0.0.1:28100/UserCenter/login \
   -H "Content-Type: application/json" \
   -d '{"userName":"admin","password":"123456"}'
 ```

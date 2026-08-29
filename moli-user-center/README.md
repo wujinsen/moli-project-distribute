@@ -16,10 +16,10 @@
 | 项 | 值 |
 |----|----|
 | Nacos 服务名 | `user-center-server` |
-| HTTP 端口 | **8888** |
+| HTTP 端口 | **28101** |
 | Dubbo 端口 | **20881**（`version=1.0.0`, `group=moli`） |
 | 网关路由 | `/UserCenter/**` → StripPrefix=1 |
-| Swagger | `http://localhost:8888/swagger-ui.html`（经网关：`/UserCenter/swagger-ui.html`） |
+| Swagger | `http://localhost:28101/swagger-ui.html`（经网关：`/UserCenter/swagger-ui.html`） |
 
 ## 功能域
 

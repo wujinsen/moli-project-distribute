@@ -1,7 +1,7 @@
 # meiling-ui · 前端路由与后端对照
 
 > **v1 联调索引** · 菜单来源：`GET /UserCenter/menu/getRouters`  
-> 网关基址：`VITE_API_BASE_URL`（如 `http://host:21000`）  
+> 网关基址：`VITE_API_BASE_URL`（如 `http://host:28100`）  
 > 种子 SQL：`docs/sql/04_knowledge_menu.sql`、`08_kb_ingest_workbench.sql`、`11_kb_wiki_govern_menu.sql`、`37_kb_research_menu.sql`
 
 ---

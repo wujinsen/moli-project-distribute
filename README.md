@@ -73,11 +73,14 @@ moli-project-distribute/
 
 | 模块 | 服务名 | 默认端口 | 说明 |
 |------|--------|----------|------|
-| moli-gateway | `moli-gateway` | 21000 | 统一 API 网关 |
-| moli-user-center-server | `user-center-server` | **8888** | 用户、角色、菜单、字典等基础能力 |
-| moli-order-server | `order-server` | 8087 | 订单业务（含秒杀），通过 Dubbo 调用用户中心 |
-| moli-ai-server | `ai-server` | 1128 | ChatBI / NL2SQL（AI-4）· 网关 `/AiServer/**` |
-| moli-knowledge-server | `knowledge-server` | 见模块 README | 企业知识库 / Ingest / 问答 |
+| moli-gateway | `moli-gateway` | **28100** | 统一 API 网关 |
+| moli-user-center-server | `user-center-server` | **28101** | 用户、角色、菜单、字典等基础能力 |
+| moli-order-server | `order-server` | **28102** | 订单业务（含秒杀），通过 Dubbo 调用用户中心 |
+| moli-ai-server | `ai-server` | **28103** | ChatBI / NL2SQL（AI-4）· 网关 `/AiServer/**` |
+| moli-knowledge-server | `knowledge-server` | **28104** | 企业知识库 / Ingest / 问答 |
+| Nacos | — | **28548** | 注册发现（gRPC **29548**） |
+
+> 完整端口表：[docs/ops/local-dev-ports.md](docs/ops/local-dev-ports.md)
 
 ### 网关路由
 
@@ -155,7 +158,7 @@ cd moli-project-distribute
 
 ### 2. 启动基础设施
 
-1. 启动 **Nacos**（默认 `http://127.0.0.1:8848`）
+1. 启动 **Nacos**（默认 `http://127.0.0.1:28548`；见 [`docs/ops/nacos-local-dev.md`](docs/ops/nacos-local-dev.md)）
 2. 启动 **MySQL**，创建数据库（如 `moli`）并导入初始化脚本（如有）
 3. 启动 **Redis**
 
@@ -169,20 +172,23 @@ cd moli-project-distribute
 
 ### 4. 编译项目
 
-在项目根目录执行（需先安装父 POM 与各模块）：
+全仓版本由根 `pom.xml` 的 **`${revision}`** 控制（默认 `1.0.0-SNAPSHOT`）。  
+**开发 / 生产打包命令**：[`docs/ops/maven-build-packaging.md`](docs/ops/maven-build-packaging.md)
+
+```powershell
+# 开发（默认 SNAPSHOT）
+cd D:\work\moli_project\moli-project-distribute
+mvn clean package -DskipTests
+
+# 生产（RELEASE）— PowerShell 须给 -Drevision 加引号
+mvn clean "-Drevision=1.0.0-RELEASE" -pl moli-user-center/moli-user-center-server,moli-gateway,moli-knowledge/moli-knowledge-server -am package -DskipTests
+```
+
+按需单独安装父 POM / common（首次 clone 或依赖解析失败时）：
 
 ```bash
-# 安装父 POM
-cd moli-distribute-parent
-mvn clean install -DskipTests
-
-# 安装公共模块
-cd ../moli-distribute-common
-mvn clean install -DskipTests
-
-# 按需编译各业务模块
-cd ../moli-user-center
-mvn clean package -DskipTests
+cd moli-distribute-parent && mvn clean install -DskipTests
+cd ../moli-distribute-common && mvn clean install -DskipTests
 ```
 
 ### 5. 启动服务
@@ -198,10 +204,10 @@ mvn clean package -DskipTests
 启动后可通过网关访问，例如：
 
 ```
-http://localhost:21000/UserCenter/...
-http://localhost:21000/OrderServer/...
-http://localhost:21000/AiServer/...
-http://localhost:21000/KnowledgeServer/...
+http://localhost:28100/UserCenter/...
+http://localhost:28100/OrderServer/...
+http://localhost:28100/AiServer/...
+http://localhost:28100/KnowledgeServer/...
 ```
 
 ---
@@ -210,7 +216,7 @@ http://localhost:21000/KnowledgeServer/...
 
 - **环境切换**：各服务 `application.yml` 中 `spring.profiles.active` 控制环境（`dev` / `test` / `pre` 等）
 - **Nacos 命名空间**：不同环境使用不同 namespace，见各模块 `bootstrap.yml`
-- **Dubbo 端口**：用户中心 `20881`，订单服务 `20882`
+- **Dubbo 端口**：用户中心 `28881`，订单 `28882`，AI `28883`，知识库 `28884`
 
 ---
 

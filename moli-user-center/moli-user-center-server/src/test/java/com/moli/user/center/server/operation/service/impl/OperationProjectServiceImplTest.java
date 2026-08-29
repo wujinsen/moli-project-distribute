@@ -78,15 +78,15 @@ public class OperationProjectServiceImplTest {
         row.setId(401L);
         row.setProjectName("moli-server");
         row.setServerId(201L);
-        row.setPort("8888");
+        row.setPort("28101");
 
         when(crudSupport.requireRow(operationProjectDeployInfoMapper, 401L, "项目")).thenReturn(row);
         when(relationQuerySupport.resolveServerIdsForProject(401L, 201L))
                 .thenReturn(Arrays.asList(201L, 202L));
         when(relationQuerySupport.resolveComponentIdsForProject(401L))
                 .thenReturn(Arrays.asList(301L, 302L, 303L));
-        when(portMatrixProvider.check("moli-server", "8888"))
-                .thenReturn(new OperationPortMatrixPortCheck(1, "8888", "user-center", "ok"));
+        when(portMatrixProvider.check("moli-server", "28101"))
+                .thenReturn(new OperationPortMatrixPortCheck(1, "28101", "user-center", "ok"));
 
         OperationProjectVo vo = projectService.getById(401L);
 

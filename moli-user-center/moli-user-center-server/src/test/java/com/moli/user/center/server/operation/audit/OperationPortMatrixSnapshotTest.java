@@ -18,7 +18,7 @@ public class OperationPortMatrixSnapshotTest {
     public void moli_server_alias_mismatch() {
         OperationPortMatrixPortCheck check = snapshot.check("moli-server", "9080");
         Assert.assertEquals(OperationPortMatchStatus.MISMATCH, check.status);
-        Assert.assertEquals("8888", check.expectedPort);
+        Assert.assertEquals("28101", check.expectedPort);
     }
 
     @Test

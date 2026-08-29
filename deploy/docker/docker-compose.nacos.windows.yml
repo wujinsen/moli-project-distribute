@@ -1,0 +1,14 @@
+# 已合并至 docker-compose.nacos.yml（统一 28548/29548，兼容 Windows Hyper-V 保留端口段）
+# 保留本文件仅为兼容旧命令；内容与 nacos.yml 相同。
+
+services:
+  nacos:
+    image: nacos/nacos-server:v2.5.2
+    container_name: nacos
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "false"
+    ports:
+      - "28548:8848"
+      - "29548:9848"
+    restart: unless-stopped

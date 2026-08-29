@@ -44,7 +44,7 @@ public class OperationPortMatrixServiceImplTest {
 
         OperationPortMatrixSaveRequest request = new OperationPortMatrixSaveRequest();
         request.setMatrixKey("user-center");
-        request.setExpectedPort("8888");
+        request.setExpectedPort("28101");
 
         try {
             portMatrixService.create(request);
@@ -97,7 +97,7 @@ public class OperationPortMatrixServiceImplTest {
         OperationPortMatrixSaveRequest request = new OperationPortMatrixSaveRequest();
         request.setId(501L);
         request.setMatrixKey("moli-gateway");
-        request.setExpectedPort("21000");
+        request.setExpectedPort("28100");
 
         try {
             portMatrixService.update(request);

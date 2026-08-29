@@ -6,7 +6,7 @@ spring:
       username: nacos
       password: nacos
       discovery:
-        server-addr: http://127.0.0.1:8848
+        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
         namespace: dev
 
 dubbo:
@@ -16,7 +16,7 @@ dubbo:
     subscribed-services: user-center-server
   protocols:
     dubbo:
-      port: 20884
+      port: 28884
   consumer:
     check: false
 
@@ -29,7 +29,7 @@ spring:
       username: nacos
       password: nacos
       discovery:
-        server-addr: http://127.0.0.1:8848
+        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
         namespace: 8cf9fb08-7e7c-4084-9ba5-b87ac9da2f78
 
 ---
@@ -41,11 +41,11 @@ spring:
       username: ${NACOS_USERNAME:nacos}
       password: ${NACOS_PASSWORD:nacos}
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:8848}
+        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
         namespace: ${NACOS_NAMESPACE:prod}
 
 dubbo:
   registry:
-    address: spring-cloud://${NACOS_SERVER_ADDR:127.0.0.1:8848}
+    address: spring-cloud://${NACOS_SERVER_ADDR:127.0.0.1:28548}
   cloud:
     subscribed-services: user-center-server

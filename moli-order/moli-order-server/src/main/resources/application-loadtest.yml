@@ -3,7 +3,7 @@
 # 或 IDE 中 active profile = loadtest
 
 server:
-  port: 8087
+  port: 28102
   tomcat:
     threads:
       max: 800

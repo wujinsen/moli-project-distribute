@@ -1,7 +1,7 @@
 # v1.0 上线冒烟清单
 
 > **范围**：[moli-v1-release-scope.md](../product/moli-v1-release-scope.md)  
-> **环境**：dev / 预发；网关 `21000`  
+> **环境**：dev / 预发；网关 `28100`  
 > **执行人**：测试 / 运维 · 更新：2026-06-28
 
 勾选全部 **P0** 后方可标记 v1 可发布。
@@ -14,7 +14,7 @@
 - [ ] 秒杀表：[`02_seckill_schema.sql`](../sql/02_seckill_schema.sql)
 - [ ] 知识库表与菜单：`03`–`12` 增量（或 `init-db.ps1` 未 Skip）
 - [ ] Redis `6379` db=1 可连
-- [ ] Nacos `8848` namespace `dev`
+- [ ] Nacos `28548` namespace `dev`
 - [ ] 服务启动顺序：user-center → order / bi / knowledge → **gateway 最后**
 
 ---

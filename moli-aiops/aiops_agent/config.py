@@ -16,14 +16,14 @@ def _flag(name: str, default: bool = False) -> bool:
 
 
 SERVER_HOST = os.environ.get("AIOPS_HOST", "127.0.0.1")
-SERVER_PORT = int(os.environ.get("AIOPS_PORT", "8099"))
+SERVER_PORT = int(os.environ.get("AIOPS_PORT", "28105"))
 
 # --- 入站鉴权（meiling-ui 整合）-------------------------------------------
 # 默认开启；独立演示页可设 AIOPS_AUTH_DISABLED=true
 AUTH_ENABLED = not _flag("AIOPS_AUTH_DISABLED", False)
 # user-center GET /auth/capabilities；dev 直连 :8888，生产可走网关 UserCenter
 AUTH_VALIDATE_URL = os.environ.get(
-    "AIOPS_AUTH_VALIDATE_URL", "http://127.0.0.1:8888/auth/capabilities"
+    "AIOPS_AUTH_VALIDATE_URL", "http://127.0.0.1:28101/auth/capabilities"
 )
 AUTH_TIMEOUT_S = float(os.environ.get("AIOPS_AUTH_TIMEOUT_S", "8"))
 CORS_ORIGINS = [

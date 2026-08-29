@@ -31,11 +31,11 @@
 
 | 服务 | Nacos 名 | 端口 | 网关前缀 | v1 交付 | 说明 |
 |------|----------|------|----------|---------|------|
-| **gateway** | `moli-gateway` | 21000 | — | ✅ | 四路由转发 + StripPrefix |
-| **user-center** | `user-center-server` | 8888 | `/UserCenter/**` | ✅ | 登录/RBAC/门户/Dubbo |
-| **order** | `order-server` | 8087 | `/OrderServer/**` | ✅ | **秒杀压测域**（非完整订单中心） |
-| **knowledge** | `knowledge-server` | 8090 | `/KnowledgeServer/**` | ✅ | 知识库 REST + Ingest + 治理 API |
-| **ai** | `ai-server` | 1128 | `/AiServer/**` | 🟡 占位 | 仅 `/demo/test`，不验收 |
+| **gateway** | `moli-gateway` | 28100 | — | ✅ | 四路由转发 + StripPrefix |
+| **user-center** | `user-center-server` | 28101 | `/UserCenter/**` | ✅ | 登录/RBAC/门户/Dubbo |
+| **order** | `order-server` | 28102 | `/OrderServer/**` | ✅ | **秒杀压测域**（非完整订单中心） |
+| **knowledge** | `knowledge-server` | 28104 | `/KnowledgeServer/**` | ✅ | 知识库 REST + Ingest + 治理 API |
+| **ai** | `ai-server` | 28103 | `/AiServer/**` | 🟡 占位 | 仅 `/demo/test`，不验收 |
 
 ---
 

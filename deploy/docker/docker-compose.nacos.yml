@@ -1,0 +1,18 @@
+# 本地 Nacos（与 bootstrap 默认 28548 对齐）
+# 用法见 docs/ops/nacos-local-dev.md
+#
+#   cd deploy/docker
+#   docker compose -f docker-compose.nacos.yml up -d
+# 或仓库根： .\scripts\nacos-docker.ps1
+
+services:
+  nacos:
+    image: nacos/nacos-server:v2.5.2
+    container_name: nacos
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "false"
+    ports:
+      - "28548:8848"   # HTTP 控制台 + 注册发现（宿主机 28548）
+      - "29548:9848"   # Nacos 2.x gRPC（宿主机 29548）
+    restart: unless-stopped

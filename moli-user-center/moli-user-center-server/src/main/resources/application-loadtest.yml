@@ -2,7 +2,7 @@
 # 启动: mvn spring-boot:run -Dspring-boot.run.profiles=loadtest
 
 server:
-  port: 8888
+  port: 28101
   shutdown: graceful
   tomcat:
     threads:

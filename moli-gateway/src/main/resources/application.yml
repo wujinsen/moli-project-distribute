@@ -1,6 +1,6 @@
 ### 配置端口号
 server:
-  port: 21000
+  port: 28100
   shutdown: graceful #优雅停机配置, springboot 2.3.0开始提供
 
 ### 选择环境

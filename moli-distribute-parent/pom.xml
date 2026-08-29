@@ -15,10 +15,13 @@
     <packaging>pom</packaging>
 
     <properties>
+        <!-- 与根 pom / .mvn/maven.config 一致；供 IDEA 解析 ${revision} 父 POM 时使用 -->
+        <revision>1.0.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.boot.version>2.3.12.RELEASE</spring.boot.version>
         <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
         <spring-cloud-alibaba.version>2.2.7.RELEASE</spring-cloud-alibaba.version>
+        <dubbo.version>2.7.13</dubbo.version>
         <shiro.version>1.4.0</shiro.version>
         <jackson.version>2.9.7</jackson.version>
         <commons-lang3.version>3.6</commons-lang3.version>
@@ -76,6 +79,27 @@
                 <version>${spring-cloud-alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- 显式锁定 Dubbo（避免 IDEA 将 ${revision} 误解析为 dubbo 版本） -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-autoconfigure-compatible</artifactId>
+                <version>${dubbo.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -138,11 +162,11 @@
                 <artifactId>java-jwt</artifactId>
                 <version>3.8.2</version>
             </dependency>
-            <!-- javax -->
+            <!-- Servlet 4.x（与 Spring Boot 2.3 一致；勿用 2.3，缺 setCharacterEncoding 等 API） -->
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.3</version>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>4.0.1</version>
             </dependency>
             <!-- 包含了jsr 303的很多注解 -->
             <dependency>

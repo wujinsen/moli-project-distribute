@@ -100,7 +100,7 @@ public class OperationPortMatrixControllersApiTest extends AbstractApiTest {
         vo.setId(502L);
         vo.setMatrixKey("user-center");
         vo.setDisplayName("用户中心");
-        vo.setExpectedPort("8888");
+        vo.setExpectedPort("28101");
         vo.setAliases(Arrays.asList("moli-user-center", "moli-server"));
         vo.setSortOrder(20);
         vo.setEnabled(true);

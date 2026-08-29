@@ -15,6 +15,9 @@
 | [sql-migration-order.md](sql-migration-order.md) | **SQL 增量执行顺序** |
 | [monitoring-and-logs.md](monitoring-and-logs.md) | 日志与基础监控（v1） |
 | [rollback-guide.md](rollback-guide.md) | 发布回滚 |
+| **[maven-build-packaging.md](maven-build-packaging.md)** | **开发 / 生产 Maven 打包命令（`${revision}`）** |
+| **[local-dev-ports.md](local-dev-ports.md)** | **本地开发端口表（281xx / 28548 Nacos）** |
+| **[nacos-local-dev.md](nacos-local-dev.md)** | **本地 Nacos Docker · 28548** |
 | [../test/release-smoke-checklist.md](../test/release-smoke-checklist.md) | 发布后冒烟 |
 
 ## 知识库工作台

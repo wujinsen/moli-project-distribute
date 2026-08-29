@@ -2,7 +2,7 @@
 # 启动: mvn spring-boot:run -Dspring-boot.run.profiles=loadtest
 
 server:
-  port: 21000
+  port: 28100
   shutdown: graceful
   netty:
     connection-timeout: 3s
@@ -57,7 +57,7 @@ logging:
 
 management:
   server:
-    port: 21000
+    port: 28100
   endpoints:
     web:
       exposure:

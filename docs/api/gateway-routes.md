@@ -1,6 +1,6 @@
 # API 网关 · 路由与联调说明
 
-> 模块：`moli-gateway` · 端口：**21000**  
+> 模块：`moli-gateway` · 端口：**28100**  
 > 配置：`moli-gateway/src/main/resources/application-dev.yml`  
 > 架构：[ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md)
 
@@ -18,7 +18,7 @@
 | `order-route` | `/OrderServer/**` | order-server | `order-server` | **1** |
 | `ai-route` | `/AiServer/**` | ai-server | `ai-server` | **1** |
 | `knowledge-route` | `/KnowledgeServer/**` | knowledge-server | `knowledge-server` | **1** |
-| `aiops-route` | `/AiOpsServer/**` | moli-aiops FastAPI | 固定 URI `:8099`（演示） | **1** |
+| `aiops-route` | `/AiOpsServer/**` | moli-aiops FastAPI | 固定 URI `:28105`（演示） | **1** |
 
 **StripPrefix=1**：去掉第一段路径再转发。
 
@@ -31,7 +31,7 @@
 meiling-ui 通常配置：
 
 ```
-VITE_API_BASE_URL = http://{host}:21000
+VITE_API_BASE_URL = http://{host}:28100
 ```
 
 | 业务 | 请求前缀 |
@@ -57,10 +57,10 @@ VITE_API_BASE_URL = http://{host}:21000
 
 | 服务 | Swagger UI（经网关） |
 |------|----------------------|
-| user-center | `http://localhost:21000/UserCenter/swagger-ui.html` |
-| order | `http://localhost:21000/OrderServer/swagger-ui.html` |
-| bi | `http://localhost:21000/AiServer/swagger-ui.html` |
-| knowledge | `http://localhost:21000/KnowledgeServer/swagger-ui.html` |
+| user-center | `http://localhost:28100/UserCenter/swagger-ui.html` |
+| order | `http://localhost:28100/OrderServer/swagger-ui.html` |
+| bi | `http://localhost:28100/AiServer/swagger-ui.html` |
+| knowledge | `http://localhost:28100/KnowledgeServer/swagger-ui.html` |
 
 调试时在 Swagger **Authorize** 填入登录拿到的 token。
 
@@ -70,11 +70,11 @@ VITE_API_BASE_URL = http://{host}:21000
 
 | 服务 | 直连端口 | Dubbo |
 |------|----------|-------|
-| gateway | 21000 | — |
-| user-center-server | 8888 | 20881 |
-| order-server | 8087 | 20882 |
-| ai-server | 1128 | 20883 |
-| knowledge-server | 8090 | — |
+| gateway | 28100 | — |
+| user-center-server | 28101 | 28881 |
+| order-server | 28102 | 28882 |
+| ai-server | 28103 | 28883 |
+| knowledge-server | 28104 | 28884 |
 
 ---
 
@@ -82,13 +82,13 @@ VITE_API_BASE_URL = http://{host}:21000
 
 ```bash
 # 网关存活（若配置了 actuator）
-curl -I http://127.0.0.1:21000/
+curl -I http://127.0.0.1:28100/
 
 # 经网关探测 order
-curl http://127.0.0.1:21000/OrderServer/seckill/ping
+curl http://127.0.0.1:28100/OrderServer/seckill/ping
 
 # 经网关登录
-curl -X POST http://127.0.0.1:21000/UserCenter/login \
+curl -X POST http://127.0.0.1:28100/UserCenter/login \
   -H "Content-Type: application/json" \
   -d '{"userName":"admin","password":"123456"}'
 ```
