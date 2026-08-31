@@ -68,4 +68,12 @@ moli:
       enabled: false
 ```
 
+## Actuator / Prometheus（监控）
+
+Starter 将 `/actuator/**` 配为 Shiro `anon`，供 Prometheus 抓取 `/actuator/prometheus`。
+
+**禁止**将 `AuthenticationFilter` 暴露为 Spring `@Bean`：Boot 2.x 会把它注册为全局 Servlet Filter（`/*`），绕过 Shiro 链，导致 `/actuator/*` 仍返回 `10006 请登录`。正确做法与 `moli-user-center-server` 的 `ShiroConfig` 一致——在 `shiroFilterFactory` 内 `new AuthenticationFilter()`。
+
+排障详见 `docs/ops/monitoring-and-logs.md` §4.3、wiki [[茉莉-shiro-跨服务]]。
+
 详见 `docs/zh-CN/ARCHITECTURE.md`。

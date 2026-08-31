@@ -113,3 +113,39 @@ Grafana Loki：`{service="user-center-server"}`，时间选 **Last 15 minutes**�
 ```
 
 或 `{service="user-center-server"} | level="DEBUG"`。控制台仍可见 SQL，且会同步落盘供 Loki 采集。
+
+## 6. Prometheus / Actuator（Shiro 服务）
+
+### 6.1 快速验证
+
+| 服务 | 端口 | 命令 |
+|------|------|------|
+| knowledge | 28104 | `curl.exe -s http://127.0.0.1:28104/actuator/prometheus` |
+| order | 28102 | `curl.exe -s http://127.0.0.1:28102/actuator/health` |
+| ai | 28103 | 同上 |
+| user-center（对照） | 28101 | 应始终正常 |
+
+正常：Prometheus 文本 `# HELP jvm_...`；health 为 `{"status":"UP"}`。  
+异常：`{"code":10006,"msg":"请登录"}` → 见下节。
+
+### 6.2 返回 10006 时（已踩坑记录）
+
+**根因**：`moli-user-center-shiro-starter` 曾把 `AuthenticationFilter` 注册为 Spring `@Bean`，Boot 自动将其挂为**全局 Servlet Filter（`/*`）**，在 Shiro 链之外拦截 `/actuator/**`。Rebuild JAR、改 YAML `anon-paths`、检查 `.m2` 时间戳均**不能**单独解决。
+
+**修复**：starter 改为在 `shiroFilterFactory` 内 `new AuthenticationFilter()`（与 user-center `ShiroConfig` 一致）。操作：
+
+1. `mvn -pl moli-user-center/moli-user-center-shiro-starter,<服务模块> -am install -DskipTests`
+2. IDEA **Stop → Rebuild → Run (dev)**
+3. 再测 `/actuator/prometheus`
+
+完整现象表、Prometheus Targets 排障、代码位置见 [`monitoring-and-logs.md`](monitoring-and-logs.md) §4.3。Wiki：[[茉莉-shiro-跨服务]]、[[故障排查指南]]。
+
+### 6.3 Prometheus 栈
+
+改 `deploy/observability/prometheus/prometheus.yml` 后：
+
+```powershell
+docker compose -f deploy/observability/docker-compose.observability.yml restart prometheus
+```
+
+Targets UI：http://127.0.0.1:29090/targets 。order/ai/knowledge 须对应端口进程已启动。

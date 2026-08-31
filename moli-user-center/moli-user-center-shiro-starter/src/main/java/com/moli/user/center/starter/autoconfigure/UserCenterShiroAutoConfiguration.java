@@ -78,9 +78,8 @@ public class UserCenterShiroAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "shiroFilter")
+    @ConditionalOnMissingBean(name = "shiroFilterFactory")
     public ShiroFilterFactoryBean shiroFilterFactory(SecurityManager securityManager,
-                                                     AuthenticationFilter authenticationFilter,
                                                      UserCenterShiroProperties properties) {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager);
@@ -101,17 +100,14 @@ public class UserCenterShiroAutoConfiguration {
             }
         }
         filterChainDefinitionMap.put("/**", "authc");
+        // 与 user-center ShiroConfig 一致：勿将 AuthenticationFilter 暴露为 @Bean。
+        // 否则 Spring Boot 会把它注册为独立 Servlet Filter（作用于 /*），
+        // 绕过 Shiro 链上的 /actuator/** anon，导致 Prometheus 仍返回 10006。
+        AuthenticationFilter authenticationFilter = new AuthenticationFilter();
+        authenticationFilter.setUserCenterServer(userCenterServer);
         shiroFilterFactoryBean.getFilters().put("authc", authenticationFilter);
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public AuthenticationFilter authenticationFilter() {
-        AuthenticationFilter filter = new AuthenticationFilter();
-        filter.setUserCenterServer(userCenterServer);
-        return filter;
     }
 
     @Bean

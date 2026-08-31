@@ -112,13 +112,81 @@ MyBatis SQL：
 
 ### 4.2 Actuator
 
-五个 Java 服务统一暴露：
+五个 Java 服务统一暴露 `/actuator/health`、`/actuator/info`、`/actuator/prometheus`（与业务 **同端口**）。
 
-- `/actuator/health`
-- `/actuator/info`
-- `/actuator/prometheus`
+带 Shiro 的服务（order / ai / knowledge）在 `moli-user-center-shiro-starter` 中将 `/actuator/**` 配为 anon，且 **`AuthenticationFilter` 不得注册为 Spring `@Bean`**（否则 Boot 会把它挂到 `/*`，绕过 Shiro 链）。Rebuild **`moli-user-center-shiro-starter`** + 对应服务后重启。
+
+本地验证：`http://127.0.0.1:28104/actuator/prometheus` 应返回 `# HELP jvm_...` 文本，**不是** JSON `10006`。
 
 `health` 不返回内部细节。生产必须用安全组/防火墙限制为管理网访问，**不得经公网或 Gateway 暴露**。
+
+### 4.3 Prometheus / Actuator 排障（Shiro 服务）
+
+**现象**
+
+| 信号 | 说明 |
+|------|------|
+| 浏览器 / `curl` 访问 `/actuator/health` 或 `/actuator/prometheus` | 返回 `{"code":10006,"msg":"请登录"}` |
+| Prometheus **Targets** 页 | order / ai / knowledge 为 **DOWN**；错误含 *invalid format* 或 *connection refused* |
+| user-center（28101）同路径 | 正常 `{"status":"UP"}` 或 Prometheus 文本 |
+
+**易误判（本次踩坑）**
+
+1. **不是 JAR 没更新**：`.m2` 里 `moli-user-center-shiro-starter` 已含 `/actuator/**`，`javap` 也能看到，但问题仍在。
+2. **不是 YAML `anon-paths` 没合并**：链上已有 anon，仍被拦截。
+3. **management 独立端口不是根因**：拆端口只是绕过，未解决 Filter 重复注册。
+
+**根因**
+
+`moli-user-center-shiro-starter` 曾将 `AuthenticationFilter` 声明为 `@Bean`。Spring Boot 2.x 会把所有 `Filter` 类型 Bean **自动注册为 Servlet Filter（`/*`）**，与 Shiro `ShiroFilterFactoryBean` 内的链并行存在：
+
+```
+请求 /actuator/prometheus
+  → Spring Boot 注册的全局 AuthenticationFilter（无 anon 概念）→ 10006
+  → 即使 Shiro 链上已配 /actuator/** = anon 也无效
+```
+
+**user-center 为何正常**：`ShiroConfig` 使用 `new AuthenticationFilter()` 放入 Shiro 链，**未**暴露为 Spring `@Bean`。
+
+**修复（已合入 starter）**
+
+- 删除 `@Bean authenticationFilter()`；
+- 在 `shiroFilterFactory(...)` 内 `new AuthenticationFilter()` 并 `setUserCenterServer`；
+- `@ConditionalOnMissingBean(name = "shiroFilterFactory")` 便于服务自定义整链。
+
+**操作步骤**
+
+```powershell
+# 1. 重装 starter + 业务模块
+cd D:\work\moli_project\moli-project-distribute
+mvn -pl moli-user-center/moli-user-center-shiro-starter,moli-knowledge/moli-knowledge-server -am install -DskipTests
+
+# 2. IDEA：Stop → Rebuild Project → 重新 Run Knowledge (dev)
+
+# 3. 验证（PowerShell 用 curl.exe）
+curl.exe -s http://127.0.0.1:28104/actuator/health
+curl.exe -s http://127.0.0.1:28104/actuator/prometheus | Select-Object -First 3
+curl.exe -s http://127.0.0.1:28101/actuator/health   # 对照：user-center 应 UP
+```
+
+期望 knowledge：`{"status":"UP"}` 与 `# HELP jvm_...`。**不是** `10006`。
+
+**Prometheus 仍 DOWN 时**
+
+| 原因 | 处理 |
+|------|------|
+| 服务未启动（28102/28103/28104） | IDEA 启动 `Order (dev)` / `Ai (dev)` / `Knowledge (dev)` |
+| 刚改 `prometheus.yml` | `docker compose -f deploy/observability/docker-compose.observability.yml restart prometheus` |
+| Target 仍 scrape 旧端口 | 对照 `deploy/observability/prometheus/prometheus.yml` 与 `docs/ops/local-dev-ports.md` |
+
+**代码位置**
+
+| 文件 | 说明 |
+|------|------|
+| `moli-user-center-shiro-starter/.../UserCenterShiroAutoConfiguration.java` | Filter 链 + 禁止 `@Bean` AuthenticationFilter |
+| `moli-user-center-server/.../ShiroConfig.java` | user-center 参考实现（`new AuthenticationFilter()`） |
+
+Wiki 详述：[[茉莉-shiro-跨服务]] · [[故障排查指南]] § Prometheus。
 
 ---
 
