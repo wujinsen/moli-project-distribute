@@ -13,7 +13,7 @@
 | 项 | 说明 |
 |----|------|
 | DB | `02_seckill_schema.sql` 已执行，活动 id=1 存在 |
-| Redis | localhost:6379，password 与 order `application-dev.yml` 一致，**database=1** |
+| Redis | localhost:16379，password 与 order `application-dev.yml` 一致，**database=1** |
 | 服务 | order-server :8087；可选 gateway :21000 |
 | Profile | 日常 `dev`；初始化活动用 `loadtest` |
 

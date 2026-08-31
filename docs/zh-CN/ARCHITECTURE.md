@@ -278,7 +278,7 @@ flowchart TB
 
 > 可编辑源文件：[moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio) · 操作细节见 [`kb/wiki-moli/guides/本地启动指南`](../../moli-knowledge/kb/wiki-moli/guides/本地启动指南.md)
 
-1. **基础设施**：Nacos（`:8848`）、MySQL（`:3306`）、Redis（`:6379`，db=2）
+1. **基础设施**：Nacos（`:8848`）、MySQL（`:3306`）、Redis（`:16379` 本地 Windows dev；Linux 生产 `:6379`，db 各服务见 `application-dev.yml`）
 2. **user-center-server**（`:8888`，Dubbo `20881`）—— 权限中枢，须先于业务服务
 3. **order-server**（`:8087`，Dubbo `20882`）、**ai-server**（`:1128`，Dubbo `20883`）、**knowledge-server**（`:8090`，可选）
 4. **moli-gateway**（`:21000`）—— 统一入口，建议最后启动

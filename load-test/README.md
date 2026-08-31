@@ -37,7 +37,7 @@ cd D:\work\moli_project\moli-project-distribute
 ### 1.2 启动依赖
 
 - Nacos `8848`
-- Redis `6379`（database `1`，与 order 配置一致）
+- Redis **`16379`**（database `1`，与 order 配置一致；Windows 本地见 `wiki-moli/guides/本地启动指南`）
 - MySQL
 
 ### 1.3 启动服务（压测 profile）

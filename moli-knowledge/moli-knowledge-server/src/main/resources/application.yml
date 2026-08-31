@@ -17,3 +17,30 @@ id:
   snowflake:
     worker_id: 4
     data_center_id: 1
+
+moli:
+  user-center:
+    shiro:
+      anon-paths:
+        - /actuator/health
+        - /actuator/info
+        - /actuator/prometheus
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      env: ${spring.profiles.active:default}

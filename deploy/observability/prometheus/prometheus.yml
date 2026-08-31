@@ -1,0 +1,48 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: moli-gateway
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [host.docker.internal:28100]
+        labels:
+          service: moli-gateway
+          env: local
+
+  - job_name: moli-user-center
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [host.docker.internal:28101]
+        labels:
+          service: user-center-server
+          env: local
+
+  - job_name: moli-order
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [host.docker.internal:28102]
+        labels:
+          service: order-server
+          env: local
+
+  - job_name: moli-ai
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [host.docker.internal:28103]
+        labels:
+          service: ai-server
+          env: local
+
+  - job_name: moli-knowledge
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [host.docker.internal:28104]
+        labels:
+          service: knowledge-server
+          env: local
+
+  - job_name: prometheus
+    static_configs:
+      - targets: [localhost:9090]

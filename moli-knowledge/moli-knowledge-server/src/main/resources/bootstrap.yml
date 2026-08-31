@@ -5,8 +5,12 @@ spring:
     nacos:
       username: nacos
       password: nacos
+      config:
+        enabled: false
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
+        namespace: dev
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: dev
 
 dubbo:
@@ -28,8 +32,12 @@ spring:
     nacos:
       username: nacos
       password: nacos
+      config:
+        enabled: false
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
+        namespace: 8cf9fb08-7e7c-4084-9ba5-b87ac9da2f78
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: 8cf9fb08-7e7c-4084-9ba5-b87ac9da2f78
 
 ---
@@ -40,8 +48,12 @@ spring:
     nacos:
       username: ${NACOS_USERNAME:nacos}
       password: ${NACOS_PASSWORD:nacos}
+      config:
+        enabled: false
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
+        namespace: ${NACOS_NAMESPACE:prod}
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: ${NACOS_NAMESPACE:prod}
 
 dubbo:

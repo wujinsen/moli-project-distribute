@@ -28,7 +28,7 @@ spring:
   # Redis数据源
   redis:
     host: localhost
-    port: 6379
+    port: 16379
     password: 123456
     timeout: 86400000
     database: 1
@@ -41,16 +41,16 @@ spring:
 
 
 mybatis-plus:
-  # 配置映射文件位置，classpath指resources
-  mapper-locations: classpath*:mapper/*.xml # mapper.xml文件所在位置
-  # 打印sql到控制台
+  mapper-locations: classpath*:mapper/*.xml
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 # 日志相关配置
 logging:
-  # 指定自定义命名的配置文件
   config: classpath:logback-spring.xml
+  file:
+    path: ${MOLI_LOG_DIR:moli-order/moli-order-server/logs}
+    name: order-server.log
 
 # pageHelper配置（官网推荐配置）
 pagehelper:

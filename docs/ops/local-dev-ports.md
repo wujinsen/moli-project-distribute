@@ -27,4 +27,6 @@ http://127.0.0.1:28100/KnowledgeServer/...
 
 启动 Nacos：`.\scripts\nacos-docker.ps1`
 
+**IDEA 启动（推荐，配置在 Git）：** [idea-local-dev.md](idea-local-dev.md)
+
 相关：[nacos-local-dev.md](nacos-local-dev.md) · [gateway-routes.md](../api/gateway-routes.md)

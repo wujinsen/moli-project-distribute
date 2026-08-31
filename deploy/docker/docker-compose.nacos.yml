@@ -12,7 +12,10 @@ services:
     environment:
       MODE: standalone
       NACOS_AUTH_ENABLE: "false"
+      PREFER_HOST_MODE: ip
+      NACOS_SERVER_IP: 127.0.0.1
     ports:
       - "28548:8848"   # HTTP 控制台 + 注册发现（宿主机 28548）
-      - "29548:9848"   # Nacos 2.x gRPC（宿主机 29548）
+      - "29548:9848"   # Nacos 2.x 客户端 gRPC（宿主机 = 28548 + 1000）
+      - "29549:9849"   # Nacos 2.x 服务端 gRPC（宿主机 = 28548 + 1001）
     restart: unless-stopped

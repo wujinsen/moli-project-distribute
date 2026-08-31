@@ -134,10 +134,10 @@ load_env() {
   SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-pro}"
   SPRING_ARGS="${SPRING_ARGS:-}"
   STOP_TIMEOUT="${STOP_TIMEOUT:-30}"
-  # 路径固定随 APP_HOME，避免 env 里残留 /opt/moli/* 旧目录
+  # 路径固定随 APP_HOME；LOG_FILE 默认与 dev / logback 的 logging.file.name 一致（APP_NAME.log）
   PID_FILE="${APP_HOME}/run/${PID_BASENAME}.pid"
-  LOG_DIR="${APP_HOME}/logs"
-  LOG_FILE="${LOG_DIR}/${PID_BASENAME}.log"
+  LOG_DIR="${LOG_DIR:-${APP_HOME}/logs}"
+  LOG_FILE="${LOG_FILE:-${LOG_DIR}/${APP_NAME}.log}"
 
   if [[ -n "${JAVA_HOME:-}" && -x "${JAVA_HOME}/bin/java" ]]; then
     JAVA_CMD="${JAVA_HOME}/bin/java"
@@ -332,9 +332,36 @@ preflight_checks() {
   return 0
 }
 
+configure_skywalking() {
+  if [[ "${SKYWALKING_ENABLED:-false}" != "true" ]]; then
+    return 0
+  fi
+
+  local agent_path="${SKYWALKING_AGENT_PATH:-/opt/skywalking-agent/skywalking-agent.jar}"
+  local backend_service="${SKYWALKING_BACKEND_SERVICE:-127.0.0.1:11800}"
+  local service_name="${SKYWALKING_SERVICE_NAME:-$APP_NAME}"
+
+  if [[ ! -f "$agent_path" ]]; then
+    echo "[ERROR] SKYWALKING_ENABLED=true but agent not found: $agent_path"
+    return 1
+  fi
+
+  JAVA_OPTS="${JAVA_OPTS} -javaagent:${agent_path}"
+  JAVA_OPTS="${JAVA_OPTS} -Dskywalking.agent.service_name=${service_name}"
+  JAVA_OPTS="${JAVA_OPTS} -Dskywalking.collector.backend_service=${backend_service}"
+
+  if [[ -n "${SKYWALKING_SAMPLE_N_PER_3_SECS:-}" ]]; then
+    JAVA_OPTS="${JAVA_OPTS} -Dskywalking.agent.sample_n_per_3_secs=${SKYWALKING_SAMPLE_N_PER_3_SECS}"
+  fi
+
+  echo "[INFO] SkyWalking enabled: service=${service_name}, backend=${backend_service}"
+  return 0
+}
+
 start_server() {
   check_java || return 1
   preflight_checks || return 1
+  configure_skywalking || return 1
   resolve_jar || return 1
   ensure_dirs
 
@@ -358,9 +385,10 @@ start_server() {
   cd "$APP_HOME" || return 1
 
   # shellcheck disable=SC2086
+  # shell 捕获非 logback 输出（pro 下 logback 仅写 FILE，主日志在 ${APP_NAME}.log）
   nohup "$JAVA_CMD" $JAVA_OPTS -jar "$JAR_FILE" \
     --spring.profiles.active="$SPRING_PROFILES_ACTIVE" \
-    $SPRING_ARGS >>"$LOG_FILE" 2>&1 &
+    $SPRING_ARGS >>"${LOG_DIR}/startup.log" 2>&1 &
 
   local new_pid=$!
   echo "$new_pid" >"$PID_FILE"
@@ -371,7 +399,7 @@ start_server() {
     return 0
   fi
 
-  echo "[ERROR] failed to start ${SERVICE_KEY}, see log: $LOG_FILE"
+  echo "[ERROR] failed to start ${SERVICE_KEY}, see ${LOG_DIR}/startup.log and ${LOG_FILE}"
   rm -f "$PID_FILE"
   return 1
 }

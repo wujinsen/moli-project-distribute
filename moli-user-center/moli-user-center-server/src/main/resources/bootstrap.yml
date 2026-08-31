@@ -8,7 +8,7 @@ spring:
       password: nacos
       config:
         enabled: false
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: dev
         extension-configs:
           - data-id: aaa-dev.yaml
@@ -16,7 +16,7 @@ spring:
           - data-id: bbb-dev.yaml
             refresh: true
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: dev
 
 dubbo:
@@ -45,11 +45,11 @@ spring:
       password: nacos
 #        config:
 #          prefix: application
-#            server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+#            server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
 #              namespace: 52300aa3-03a1-4e26-87a1-52591d381ef7
 #              file-extension: yml
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: d2f630f6-de08-49fb-8ec7-47afe7ee51c5
 
 ---
@@ -63,7 +63,7 @@ spring:
       config:
         enabled: false
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: ${NACOS_NAMESPACE:prod}
 
 dubbo:

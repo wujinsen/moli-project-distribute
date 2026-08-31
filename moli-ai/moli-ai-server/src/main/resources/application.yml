@@ -12,3 +12,30 @@ spring:
   profiles:
     active: dev
 
+moli:
+  user-center:
+    shiro:
+      anon-paths:
+        - /actuator/health
+        - /actuator/info
+        - /actuator/prometheus
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      env: ${spring.profiles.active:default}
+

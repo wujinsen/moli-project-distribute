@@ -1,0 +1,13 @@
+# 生产 profile：MyBatis SQL 经 logback 落盘，供 Alloy/Loki 采集
+# 完整 datasource 等可在部署机 APP_HOME/application-pro.yml 覆盖
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+logging:
+  config: classpath:logback-spring.xml
+  file:
+    path: ./logs
+    name: ai-server.log

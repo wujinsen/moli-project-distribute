@@ -24,7 +24,7 @@ spring:
     time-zone: GMT+8
   redis:
     host: localhost
-    port: 6379
+    port: 16379
     password: 123456
     timeout: 86400000
     database: 1
@@ -38,10 +38,13 @@ spring:
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 logging:
   config: classpath:logback-spring.xml
+  file:
+    path: ${MOLI_LOG_DIR:moli-knowledge/moli-knowledge-server/logs}
+    name: knowledge-server.log
 
 pagehelper:
   helperDialect: mysql

@@ -43,7 +43,7 @@ updated: 2026-07-19
 | 1 | 安装 JDK 8、Maven 3.6+ | [[本地启动指南]] §1 |
 | 2 | 启动 Nacos `8848`，命名空间 `dev` | [[本地启动指南]] §2 |
 | 3 | 建库 `moli`，执行 `scripts/init-db.ps1` 或手动导入 | [[数据库初始化指南]] |
-| 4 | 启动 Redis `6379` | [[本地启动指南]] §2 |
+| 4 | 启动 Redis `16379` | [[本地启动指南]] §2 |
 | 5 | 父 POM + common `mvn install` | [[本地启动指南]] §4 |
 
 **秒杀/压测**不需要时可跳过 `02_seckill_schema`；**知识库 Web** 需要 `03_knowledge_schema.sql`（init 脚本已含）。

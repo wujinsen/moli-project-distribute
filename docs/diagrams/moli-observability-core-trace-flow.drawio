@@ -1,0 +1,141 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-observability-core-trace-flow" name="核心服务调用链">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2300" pageHeight="1500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Gateway / User Center / Order / Knowledge · 核心调用链与 Span" style="text;html=1;fontSize=22;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="20" width="1200" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="同一 trace_id 贯穿 HTTP → Redis Session → Dubbo 鉴权 → JDBC/业务存储；每次操作具有独立 span_id" style="text;html=1;fontSize=13;fontColor=#666666;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="64" width="1500" height="28" as="geometry" />
+        </mxCell>
+
+        <mxCell id="client" value="浏览器 / meiling-ui&#xa;Authorization: Shiro SessionId&#xa;W3C traceparent（如已有）" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="70" y="190" width="280" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="gateway" value="moli-gateway :28100&#xa;Spring Cloud Gateway / WebFlux&#xa;S1 inbound · S2 outbound" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="450" y="190" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="nacos" value="Nacos :28548&#xa;服务发现 / 实例选择" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="480" y="380" width="270" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc" value="user-center-server :28101&#xa;HTTP API + Dubbo Provider&#xa;UserServerProvider" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="950" y="100" width="350" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="order" value="order-server :28102&#xa;HTTP 业务 + Shiro Starter&#xa;S3 inbound" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="950" y="280" width="350" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="knowledge" value="knowledge-server :28104&#xa;知识库 API + Shiro Starter&#xa;S3 inbound" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="950" y="460" width="350" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="starter" value="moli-user-center-shiro-starter&#xa;S4 Redis Session&#xa;S5 Dubbo Consumer&#xa;getUserById / getPermissionsByUserId" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="290" width="390" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="redis" value="共享 Redis&#xa;Shiro Session / Cache&#xa;业务缓存" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1990" y="260" width="250" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql-uc" value="User Center MySQL&#xa;用户 / 角色 / 权限&#xa;S7 JDBC" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="90" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="biz-store" value="业务存储&#xa;Order / Knowledge MySQL&#xa;Redis / MinIO · S8" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1990" y="480" width="250" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-client" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=11;" edge="1" parent="1" source="client" target="gateway">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-nacos" value="Discovery" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;dashed=1;fontSize=10;" edge="1" parent="1" source="gateway" target="nacos">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-gw-uc" value="/UserCenter/** · HTTP lb://" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="1" source="gateway" target="uc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-gw-order" value="/OrderServer/** · HTTP lb://" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="1" source="gateway" target="order">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-gw-kb" value="/KnowledgeServer/** · HTTP lb://" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="1" source="gateway" target="knowledge">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-order-starter" value="请求鉴权" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;strokeColor=#82b366;" edge="1" parent="1" source="order" target="starter">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-kb-starter" value="请求鉴权" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;strokeColor=#82b366;" edge="1" parent="1" source="knowledge" target="starter">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-starter-redis" value="Session / Cache" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="1" source="starter" target="redis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-starter-uc" value="Dubbo UserCenterServer · S5/S6" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" parent="1" source="starter" target="uc">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1645" y="230" />
+              <mxPoint x="1125" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-uc-db" value="JDBC" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="1" source="uc" target="mysql-uc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-order-store" value="业务读写" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="1" source="order" target="biz-store">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="335" />
+              <mxPoint x="1350" y="650" />
+              <mxPoint x="2115" y="650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-kb-store" value="业务读写" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;fontSize=10;" edge="1" parent="1" source="knowledge" target="biz-store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="no-edge" value="当前无直接调用证据&#xa;order ⇄ knowledge&#xa;两者是 Gateway 后的并列服务" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="690" width="300" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="trace-lane" value="一次典型鉴权业务请求的 Trace 树" style="swimlane;html=1;startSize=30;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="870" width="2170" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="S1&#xa;Gateway inbound" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="trace-lane">
+          <mxGeometry x="35" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="S2&#xa;Gateway outbound" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="trace-lane">
+          <mxGeometry x="290" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="S3&#xa;Service inbound" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="trace-lane">
+          <mxGeometry x="545" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="S4&#xa;Redis Session" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="trace-lane">
+          <mxGeometry x="800" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="S5&#xa;Dubbo Consumer" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="trace-lane">
+          <mxGeometry x="1055" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="S6&#xa;Dubbo Provider" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="trace-lane">
+          <mxGeometry x="1310" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s7" value="S7&#xa;User JDBC" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="trace-lane">
+          <mxGeometry x="1565" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s8" value="S8&#xa;Business Store" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="trace-lane">
+          <mxGeometry x="1820" y="70" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="se1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="trace-lane" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="se2" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="trace-lane" source="s2" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="se3" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="trace-lane" source="s3" target="s4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="se4" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="trace-lane" source="s4" target="s5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="se5" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="trace-lane" source="s5" target="s6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="se6" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="trace-lane" source="s6" target="s7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="se7" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="trace-lane" source="s7" target="s8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="trace-note" value="trace_id = T（S1～S8 相同）  ·  span_id = S1/S2/...（每个 Span 不同）  ·  parent_span_id 建立父子关系  ·  匿名/缓存命中时部分 Span 可缺省" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="trace-lane">
+          <mxGeometry x="250" y="190" width="1670" height="65" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

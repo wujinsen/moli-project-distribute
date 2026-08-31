@@ -1,13 +1,15 @@
 # 监控与日志 · v1 运维要点
 
-> v1 **最低可运维**指南；完整 APM 见 [TECH_STACK.md](../zh-CN/TECH_STACK.md)（ELK / SkyWalking / Prometheus 为规划项）。  
+> v1 **最低可运维**指南；完整建设方案见 [可观测性平台规划](../design/observability-platform-plan.md)（Prometheus + Grafana + Loki/Alloy + SkyWalking）。
 > 发布：[production-checklist.md](production-checklist.md) · 排障：[wiki-moli/故障排查指南](../../moli-knowledge/kb/wiki-moli/ops/故障排查指南.md)
 
 ---
 
 ## 1. 日志位置
 
-各服务 `logback-spring.xml` 默认 **控制台 + 文件**（具体路径见各模块 `src/main/resources/`）。
+各服务 `logback-spring.xml` 默认 **控制台（dev）+ 文件**；生产 **仅文件**（`deploy/*/application-pro.yml` + `moli-service.sh`）。
+
+MyBatis SQL：**dev / pro 均使用 `Slf4jImpl`**，经 logback 写入 `{service}.log`，Alloy/Loki 可采集（LogQL：`{service="..."} |= "Preparing"` 或 `| level="DEBUG"`）。勿使用 `StdOutImpl`（仅 IDEA 控制台）或 `NoLoggingImpl`。
 
 | 服务 | 建议关注 |
 |------|----------|
@@ -33,20 +35,27 @@
 
 见 [release-smoke-checklist.md](../test/release-smoke-checklist.md)。
 
-### 2.2 Actuator（若启用）
+### 2.2 Actuator
 
-部分 profile 暴露 `/actuator/health`；**生产默认不对外网开放**。
+五个 Java 服务统一暴露：
+
+- `/actuator/health`
+- `/actuator/info`
+- `/actuator/prometheus`
+
+`health` 不返回内部细节。生产必须用安全组/防火墙限制为管理网访问，**不得经公网或 Gateway 暴露**。
 
 ---
 
-## 3. 压测指标（loadtest）
+## 3. 指标
 
 | 服务 | 指标 |
 |------|------|
 | order | `GET /seckill/metrics` Redis 计数 |
-| gateway | Prometheus（loadtest profile 可选） |
+| 五个 Java 服务 | `/actuator/prometheus` JVM、HTTP、线程、连接池等 |
+| user-center | Druid 连接池自定义指标 |
 
-见 [load-test/README.md](../../load-test/README.md)。
+压测栈见 [load-test/README.md](../../load-test/README.md)；统一本地观测栈见 [`deploy/observability/README.md`](../../deploy/observability/README.md)。
 
 ---
 
@@ -70,7 +79,7 @@
 | Nacos | 实例心跳、服务列表 |
 | 磁盘 | wiki 目录、日志分区 |
 
-v2 可接 Prometheus + Grafana 或云厂商监控。
+应用侧指标、Loki/Alloy 和 SkyWalking 接入骨架已经落地。当前 Compose 是单机 PoC；生产存储、TLS、认证和高可用仍按 [可观测性平台规划](../design/observability-platform-plan.md) 分阶段实施。
 
 ---
 
@@ -84,5 +93,6 @@ v2 可接 Prometheus + Grafana 或云厂商监控。
 
 ## 7. 相关
 
+- [`deploy/observability/README.md`](../../deploy/observability/README.md)
 - [rollback-guide.md](rollback-guide.md)
 - [v1-release-runbook.md](v1-release-runbook.md)

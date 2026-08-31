@@ -55,7 +55,7 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
 | Dubbo 端口 | `20884`（仅 Consumer，订阅 `user-center-server`） | bootstrap.yml |
 | 网关路由 | `/KnowledgeServer/**` → StripPrefix=1 | moli-gateway |
 | 数据源 | MySQL `moli`（Druid 连接池） | application-dev.yml |
-| Redis | `localhost:6379` db=2 pwd=123456 | application-dev.yml |
+| Redis | `localhost:16379` db=2 pwd=123456 | application-dev.yml |
 | MinIO | `http://localhost:9000`（minioadmin/minioadmin） | application-dev.yml |
 | Shiro | `moli.user-center.shiro.enabled=true`，会话 86400s | application-dev.yml |
 

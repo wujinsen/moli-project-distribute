@@ -43,4 +43,9 @@ spring:
         filters:
         - StripPrefix=1
 
+logging:
+  config: classpath:logback-spring.xml
+  file:
+    path: ${MOLI_LOG_DIR:moli-gateway/logs}
+    name: moli-gateway.log
 

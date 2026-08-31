@@ -19,6 +19,7 @@
 | [`上线流程.md`](上线流程.md) | **AWS EC2** 上线检查表 + 上传 + systemd + Wiki Sync |
 | [`docs/ops/aws-ec2-bootstrap.md`](../docs/ops/aws-ec2-bootstrap.md) | **AWS EC2** 仅基础环境（JDK/MySQL/Redis/Nginx/Nacos） |
 | [`linux/`](linux/) | `moli-*.service` · `moli-*.env.example` · `moli-service.sh` |
+| [`observability/`](observability/README.md) | Prometheus + Grafana + Loki + Alloy + SkyWalking 本地/预发 PoC |
 | [`user-center/`](user-center/) | `application-pro.yml` 模板 · `conf/moli-user-center.env`（**不提交 Git**） |
 | [`gateway/`](gateway/) | 网关配置模板 |
 | [`knowledge/`](knowledge/) | 知识库配置模板 |

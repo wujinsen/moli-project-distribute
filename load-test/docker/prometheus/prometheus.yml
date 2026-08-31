@@ -10,7 +10,7 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
-          - host.docker.internal:21000
+          - host.docker.internal:28100
         labels:
           service: moli-gateway
           env: loadtest
@@ -19,7 +19,7 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
-          - host.docker.internal:8087
+          - host.docker.internal:28102
         labels:
           service: moli-order-server
           env: loadtest
@@ -28,9 +28,27 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
-          - host.docker.internal:8888
+          - host.docker.internal:28101
         labels:
           service: user-center-server
+          env: loadtest
+
+  - job_name: moli-ai
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:28103
+        labels:
+          service: ai-server
+          env: loadtest
+
+  - job_name: moli-knowledge
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:28104
+        labels:
+          service: knowledge-server
           env: loadtest
 
   # Optional: scrape Prometheus itself

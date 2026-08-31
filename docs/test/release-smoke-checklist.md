@@ -13,7 +13,7 @@
 - [ ] MySQL `moli` 已导入 [`scripts/moli.sql`](../../scripts/moli.sql)
 - [ ] 秒杀表：[`02_seckill_schema.sql`](../sql/02_seckill_schema.sql)
 - [ ] 知识库表与菜单：`03`–`12` 增量（或 `init-db.ps1` 未 Skip）
-- [ ] Redis `6379` db=1 可连
+- [ ] Redis `16379` db=1 可连（本地 Windows dev；生产环境为 `6379`）
 - [ ] Nacos `28548` namespace `dev`
 - [ ] 服务启动顺序：user-center → order / bi / knowledge → **gateway 最后**
 

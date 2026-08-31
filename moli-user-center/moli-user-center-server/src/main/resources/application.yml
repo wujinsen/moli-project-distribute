@@ -79,3 +79,22 @@ ops:
     enabled: ${OPS_COMMAND_ENABLED:false}
     max-chars: ${OPS_COMMAND_MAX_CHARS:8192}
     default-work-dir: ${OPS_COMMAND_DEFAULT_WORK_DIR:/opt/moli-project-distribute}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      env: ${spring.profiles.active:default}

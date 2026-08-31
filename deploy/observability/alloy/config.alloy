@@ -1,0 +1,75 @@
+logging {
+  level = "info"
+}
+
+local.file_match "moli_logs" {
+  path_targets = [
+    {
+      "__path__" = "/workspace/logs/*.log",
+      "service"  = "unknown-root",
+      "env"      = "local",
+      "log_type" = "logback",
+    },
+    {
+      "__path__" = "/workspace/moli-gateway/logs/*.log",
+      "service"  = "moli-gateway",
+      "env"      = "local",
+      "log_type" = "logback",
+    },
+    {
+      "__path__" = "/workspace/moli-user-center/moli-user-center-server/logs/*.log",
+      "service"  = "user-center-server",
+      "env"      = "local",
+      "log_type" = "logback",
+    },
+    {
+      "__path__" = "/workspace/moli-order/moli-order-server/logs/*.log",
+      "service"  = "order-server",
+      "env"      = "local",
+      "log_type" = "logback",
+    },
+    {
+      "__path__" = "/workspace/moli-ai/moli-ai-server/logs/*.log",
+      "service"  = "ai-server",
+      "env"      = "local",
+      "log_type" = "logback",
+    },
+    {
+      "__path__" = "/workspace/moli-knowledge/moli-knowledge-server/logs/*.log",
+      "service"  = "knowledge-server",
+      "env"      = "local",
+      "log_type" = "logback",
+    },
+  ]
+}
+
+loki.source.file "moli_logs" {
+  targets       = local.file_match.moli_logs.targets
+  forward_to    = [loki.process.moli_logs.receiver]
+  tail_from_end = false
+}
+
+loki.process "moli_logs" {
+  stage.multiline {
+    firstline     = "^\\d{4}-\\d{2}-\\d{2}[ T]"
+    max_wait_time = "3s"
+  }
+
+  stage.regex {
+    expression = "^(?P<timestamp>\\d{4}-\\d{2}-\\d{2}[ T][^ ]+)\\s+(?:\\[[^]]+\\]\\s+)?(?P<level>TRACE|DEBUG|INFO|WARN|ERROR)\\s+"
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+    }
+  }
+
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

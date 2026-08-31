@@ -30,6 +30,8 @@ build/
 *.diff
 *.patch
 *.tmp
+logging.path_IS_UNDEFINED/
+**/logging.path_IS_UNDEFINED/
 
 # system ignore
 .DS_Store
@@ -42,8 +44,20 @@ Thumbs.db
 **/conf/moli-*.env
 !deploy/application-pro/*.yml.example
 !deploy/linux/*.env.example
+# 仓库内 pro 模板（无密钥；部署机覆盖副本仍被上方 **/application-pro.yml 忽略）
+!deploy/user-center/application-pro.yml
+!deploy/gateway/application-pro.yml
+!deploy/knowledge/application-pro.yml
+!moli-order/moli-order-server/src/main/resources/application-pro.yml
+!moli-ai/moli-ai-server/src/main/resources/application-pro.yml
 
 # Certify サーティファイ 考试语料（本地维护，不推送 GitHub）
 moli-knowledge/kb/raw/school/certify/
 # KB eval reports (local artifacts)
 moli-knowledge/kb/eval/reports/
+
+# SkyWalking Java Agent（本地解压，勿提交；见 deploy/observability/README.md）
+deploy/observability/skywalking-agent/
+
+__pycache__/
+*.py[cod]

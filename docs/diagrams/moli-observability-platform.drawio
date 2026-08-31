@@ -1,0 +1,119 @@
+<mxfile host="app.diagrams.net" agent="moli-docs" version="22.1.0" type="device">
+  <diagram id="moli-observability-platform" name="可观测性平台">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="茉莉可观测性平台 · Metrics / Logs / Traces" style="text;html=1;fontSize=22;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="20" width="900" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="trace_id 贯穿端到端调用 · span_id 精确定位当前操作 · 指标/日志/链路职责分离" style="text;html=1;fontSize=13;fontColor=#666666;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="1100" height="28" as="geometry" />
+        </mxCell>
+
+        <mxCell id="apps" value="L1 · 业务服务（281xx）" style="swimlane;html=1;startSize=30;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="2080" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="gateway" value="moli-gateway&#xa;WebFlux :28100&#xa;Trace 入口/继续" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="apps">
+          <mxGeometry x="45" y="60" width="240" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="uc" value="user-center-server&#xa;MVC + Dubbo :28101&#xa;Logback / Micrometer / Agent" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="apps">
+          <mxGeometry x="345" y="60" width="270" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="order" value="order-server&#xa;MVC + Dubbo :28102&#xa;Logback / Micrometer / Agent" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="apps">
+          <mxGeometry x="675" y="60" width="270" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ai" value="ai-server :28103&#xa;Java + Python Sidecar&#xa;业务 ai_trace_id ≠ trace_id" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="apps">
+          <mxGeometry x="1005" y="60" width="270" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="kb" value="knowledge-server :28104&#xa;Java + Python Sidecar&#xa;Logback / Micrometer / Agent" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="apps">
+          <mxGeometry x="1335" y="60" width="270" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="aiops" value="moli-aiops :28105&#xa;FastAPI&#xa;后续 OTel/SW Python 探针" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="apps">
+          <mxGeometry x="1665" y="60" width="270" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="collect" value="L2 · 采集与传播" style="swimlane;html=1;startSize=30;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="360" width="2080" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="prom-scrape" value="Prometheus Scrape&#xa;/actuator/prometheus&#xa;内网拉取" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="collect">
+          <mxGeometry x="170" y="65" width="330" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="alloy" value="Grafana Alloy&#xa;采集 Logback / systemd&#xa;补 service · env · host" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="collect">
+          <mxGeometry x="730" y="65" width="330" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="sw-agent" value="SkyWalking Agent / Toolkit&#xa;HTTP · Dubbo · JDBC · Redis&#xa;传播 trace_id / span_id / parent" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="collect">
+          <mxGeometry x="1290" y="65" width="400" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ctx-note" value="HTTP：W3C traceparent（跨系统标准）&#xa;Dubbo/框架内部：由 Agent 官方插件传播&#xa;禁止业务代码自造 span_id" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="collect">
+          <mxGeometry x="1735" y="55" width="300" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="storage" value="L3 · 存储与查询" style="swimlane;html=1;startSize=30;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="610" width="2080" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="prom" value="Prometheus&#xa;时序指标&#xa;低基数标签" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="storage">
+          <mxGeometry x="170" y="65" width="330" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="loki" value="Loki&#xa;日志正文含 trace_id / span_id&#xa;二者不作为标签" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="storage">
+          <mxGeometry x="730" y="65" width="330" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="oap" value="SkyWalking OAP + Storage&#xa;Trace → Segment → Span&#xa;错误/慢调用/服务拓扑" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="storage">
+          <mxGeometry x="1325" y="65" width="365" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="view" value="L4 · 展示、告警与诊断" style="swimlane;html=1;startSize=30;fontSize=13;fontStyle=1;fillColor=#f5f5f5;strokeColor=#999999;horizontal=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="860" width="2080" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="grafana" value="Grafana&#xa;指标 Dashboard + 告警&#xa;Loki 日志检索" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="view">
+          <mxGeometry x="330" y="70" width="360" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="sw-ui" value="SkyWalking UI&#xa;链路树 + Span 详情&#xa;拓扑与性能分析" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="view">
+          <mxGeometry x="880" y="70" width="360" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="diagnosis" value="moli-aiops / 运维人员&#xa;告警 → 指标窗口 → trace_id&#xa;→ Span → 同链路日志" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;" vertex="1" parent="view">
+          <mxGeometry x="1430" y="60" width="400" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-metrics" value="metrics" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;strokeColor=#82b366;fontSize=10;" edge="1" parent="1" source="apps" target="prom-scrape">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-logs" value="logs" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;strokeColor=#82b366;fontSize=10;" edge="1" parent="1" source="apps" target="alloy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-traces" value="traces" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;strokeColor=#82b366;fontSize=10;" edge="1" parent="1" source="apps" target="sw-agent">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-p1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="1" source="prom-scrape" target="prom">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-l1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="1" source="alloy" target="loki">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="1" source="sw-agent" target="oap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-pg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="1" source="prom" target="grafana">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-lg" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="1" source="loki" target="grafana">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-su" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;" edge="1" parent="1" source="oap" target="sw-ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-gd" value="告警 / 日志证据" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;dashed=1;fontSize=10;" edge="1" parent="1" source="grafana" target="diagnosis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sd" value="Trace / Span 证据" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;dashed=1;fontSize=10;" edge="1" parent="1" source="sw-ui" target="diagnosis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="关联键：trace_id（整条链路） + span_id（当前操作）&#xa;标签：service / env / host / level；trace_id、span_id 只放正文，不做 Loki/Prometheus 标签" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1140" width="1550" height="85" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

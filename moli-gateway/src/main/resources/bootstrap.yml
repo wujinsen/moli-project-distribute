@@ -8,11 +8,11 @@ spring:
       password: nacos
 #      config:
 #        prefix: user-center-server
-#        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+#        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
 #        namespace: dev
 #        file-extension: yml
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: dev
 
 ---
@@ -24,5 +24,5 @@ spring:
       username: ${NACOS_USERNAME:nacos}
       password: ${NACOS_PASSWORD:nacos}
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:http://127.0.0.1:28548}
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:28548}
         namespace: ${NACOS_NAMESPACE:prod}

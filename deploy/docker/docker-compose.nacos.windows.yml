@@ -8,7 +8,10 @@ services:
     environment:
       MODE: standalone
       NACOS_AUTH_ENABLE: "false"
+      PREFER_HOST_MODE: ip
+      NACOS_SERVER_IP: 127.0.0.1
     ports:
       - "28548:8848"
       - "29548:9848"
+      - "29549:9849"
     restart: unless-stopped

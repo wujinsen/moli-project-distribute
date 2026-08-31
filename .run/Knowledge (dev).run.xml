@@ -1,8 +1,13 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Knowledge (dev)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <option name="ACTIVE_PROFILES" value="dev" />
+    <envs>
+      <env name="NACOS_SERVER_ADDR" value="127.0.0.1:28548" />
+    </envs>
     <module name="moli-knowledge-server" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.moli.knowledge.server.KnowledgeApplication" />
+    <option name="VM_PARAMETERS" value="-javaagent:$PROJECT_DIR$/deploy/observability/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=knowledge-server -Dskywalking.collector.backend_service=127.0.0.1:28121" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
