@@ -46,7 +46,7 @@ public class KbDriftServiceImpl implements KbDriftService {
         if (spaceId == null) {
             throw new BaseException("spaceId 不能为空");
         }
-        kbAclService.assertCanSyncView(spaceId);
+        kbAclService.assertCanOpsDashboard(spaceId);
         KbSpace space = kbSpaceMapper.selectById(spaceId);
         if (space == null) {
             throw new BaseException("空间不存在");
