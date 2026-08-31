@@ -45,6 +45,8 @@
 | [`moli-sso-menu-flow.drawio`](moli-sso-menu-flow.drawio) | **SSO 菜单按系统隔离**：login → enter/switch → getRouters 过滤（设计见 `docs/design/sso-menu-system-isolation.md`） |
 | [`moli-aiops-architecture.drawio`](moli-aiops-architecture.drawio) | **AIOps 故障诊断多智能体平台**：L0 告警源 → L1 LangGraph 九节点（含 `interrupt()` 人工确认闸门）→ L2 `ops_mcp` 证据源/安全层 → L3 CMDB·SSH·KB·sqlite（模块 README `moli-aiops/README.md`） |
 | [`moli-observability-platform.drawio`](moli-observability-platform.drawio) | **可观测性平台**：Prometheus/Grafana 指标、Loki/Alloy 日志、SkyWalking Trace/Span 与 AIOps 证据关联 |
+| [`moli-observability-prod-topology.drawio`](moli-observability-prod-topology.drawio) | **生产可观测性部署拓扑**：业务机 Alloy + 监控机 Loki/Prometheus/Grafana + 对象存储 |
+| [`moli-observability-log-resilience.drawio`](moli-observability-log-resilience.drawio) | **日志可靠性分层**：L1 落盘 → L2 Alloy → L3 Loki/S3 → L4 冷归档；故障影响矩阵 |
 | [`moli-observability-core-trace-flow.drawio`](moli-observability-core-trace-flow.drawio) | **核心服务调用链**：Gateway → user-center/order/knowledge HTTP 路由，Shiro Starter → user-center Dubbo 鉴权，以及 trace_id/span_id 父子关系 |
 | [`moli-sys-config-notice-er.drawio`](moli-sys-config-notice-er.drawio) | **参数设置 / 通知公告 ER**（3 表）：`sys_config` 只存运行期覆盖值（定义在代码 `ConfigKey` 注册表）+ 四级取值链 · `sys_notice` 三态发布 + `sys_notice_read_cursor` 未读水位（设计见 `docs/design/sys-config-notice.md`） |
 

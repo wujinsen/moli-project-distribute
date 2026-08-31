@@ -16,9 +16,7 @@ moli:
   user-center:
     shiro:
       anon-paths:
-        - /actuator/health
-        - /actuator/info
-        - /actuator/prometheus
+        - /actuator/**
 
 management:
   endpoints:

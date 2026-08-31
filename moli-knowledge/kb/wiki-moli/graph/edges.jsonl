@@ -524,3 +524,6 @@
 {"from": "develop/可观测性平台", "to": "ops/监控与日志", "type": "relates_to", "evidence": "PoC 日常 Runbook", "date": "2026-08-31"}
 {"from": "develop/可观测性平台", "to": "develop/技术栈与版本", "type": "relates_to", "evidence": "可观测组件选型", "date": "2026-08-31"}
 {"from": "outputs/茉莉可观测性与运维体系汇总", "to": "develop/可观测性平台", "type": "derived_from", "evidence": "crystallize 更新 PoC 矩阵", "date": "2026-08-31"}
+{"from": "ops/可观测性生产部署", "to": "develop/可观测性平台", "type": "relates_to", "evidence": "PoC vs 生产差异", "date": "2026-08-31"}
+{"from": "ops/可观测性生产部署", "to": "ops/监控与日志", "type": "relates_to", "evidence": "生产 Runbook 扩展", "date": "2026-08-31"}
+{"from": "ops/可观测性生产部署", "to": "ops/生产环境检查清单", "type": "relates_to", "evidence": "发布检查 §6", "date": "2026-08-31"}

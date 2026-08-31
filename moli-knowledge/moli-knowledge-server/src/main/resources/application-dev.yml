@@ -67,6 +67,8 @@ moli:
       # 必须为 true，否则无法从 Redis 读取登录 Session，空间 ACL / superadmin 均失效（/kb/space/mine 只剩公开空间）
       enabled: true
       session-expire-seconds: 86400
+      anon-paths:
+        - /actuator/**
 
 # 知识库 Query(/kb/ask) LLM：后端 kb.llm.* 配 provider/key；是否调用由前端请求 useLlm 控制（默认 false）
 # Nacos 托管见 docs/nacos/knowledge-server-kb-llm-dev.yaml（暂未启用 kb.llm.nacos.enabled）

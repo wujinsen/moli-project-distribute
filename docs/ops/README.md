@@ -14,6 +14,7 @@
 | **[../../deploy/README.md](../../deploy/README.md)** · [`deploy/上线流程.md`](../../deploy/上线流程.md) | **AWS EC2** 完整上线（JAR · Sync · 冒烟） |
 | [sql-migration-order.md](sql-migration-order.md) | **SQL 增量执行顺序** |
 | **[monitoring-and-logs.md](monitoring-and-logs.md)** · [`deploy/observability/`](../../deploy/observability/README.md) | **Prometheus/Grafana、Loki/Alloy、SkyWalking 接入与本地 PoC** |
+| **[observability-production.md](observability-production.md)** | **生产部署 · 日志可靠性 · Alloy systemd · Loki 对象存储** |
 | [rollback-guide.md](rollback-guide.md) | 发布回滚 |
 | **[maven-build-packaging.md](maven-build-packaging.md)** | **开发 / 生产 Maven 打包命令（`${revision}`）** |
 | **[idea-local-dev.md](idea-local-dev.md)** | **IDEA 本地启动（`.run` 配置在 Git，重装 IDE 免手配）** |

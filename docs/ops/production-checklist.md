@@ -111,7 +111,7 @@
 | SkyWalking | Agent 可选；`SKYWALKING_ENABLED` 与 OAP 地址 | |
 | Actuator 暴露 | **不得**经公网/Gateway 暴露 health/prometheus | |
 
-PoC 与 LogQL 示例：[monitoring-and-logs.md](monitoring-and-logs.md) · 规划：[observability-platform-plan.md](../design/observability-platform-plan.md)
+PoC 与 LogQL 示例：[monitoring-and-logs.md](monitoring-and-logs.md) · **生产可靠性**：[observability-production.md](observability-production.md) · 规划：[observability-platform-plan.md](../design/observability-platform-plan.md)
 
 ---
 

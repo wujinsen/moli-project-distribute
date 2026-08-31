@@ -68,6 +68,8 @@ moli:
     shiro:
       enabled: true
       session-expire-seconds: 86400
+      anon-paths:
+        - /actuator/**
 
 kb:
   llm:

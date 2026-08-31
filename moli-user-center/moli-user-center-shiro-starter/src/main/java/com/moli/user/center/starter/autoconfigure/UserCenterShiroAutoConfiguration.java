@@ -91,6 +91,8 @@ public class UserCenterShiroAutoConfiguration {
         filterChainDefinitionMap.put("/swagger-resources/**", "anon");
         filterChainDefinitionMap.put("/", "anon");
         filterChainDefinitionMap.put("/static/**", "anon");
+        // Prometheus/Micrometer：与 user-center ShiroConfig 一致，不依赖 YAML anon-paths 是否合并成功
+        filterChainDefinitionMap.put("/actuator/**", "anon");
         if (properties.getAnonPaths() != null) {
             for (String path : properties.getAnonPaths()) {
                 if (path != null && !path.trim().isEmpty()) {

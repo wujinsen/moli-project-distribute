@@ -141,7 +141,7 @@ MyBatis SQL：
 3. `application-pro.yml` 中 `log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl`
 4. `SKYWALKING_ENABLED=true` 见 `deploy/linux/moli-*.env.example`
 
-PoC Compose 单机适用开发/预发验证；生产 TLS、认证、高可用见 [可观测性平台规划](../design/observability-platform-plan.md)。
+PoC Compose 单机适用开发/预发验证；**生产部署、日志可靠性、对象存储**见 [observability-production.md](observability-production.md)。
 
 ---
 

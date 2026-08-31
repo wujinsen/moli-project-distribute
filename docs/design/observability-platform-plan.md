@@ -288,6 +288,12 @@
 
 ## 7. 部署与回滚
 
+> **生产部署细节**（业务机/监控机分离、日志四层可靠性、Alloy systemd、Loki 对象存储、故障矩阵）：[observability-production.md](../ops/observability-production.md)
+
+![生产可观测性部署拓扑](../diagrams/png/moli-observability-prod-topology.png)
+
+> 可编辑源文件：[moli-observability-prod-topology.drawio](../diagrams/moli-observability-prod-topology.drawio) · 日志分层：[moli-observability-log-resilience.drawio](../diagrams/moli-observability-log-resilience.drawio)
+
 部署建议：
 
 1. 独立监控主机运行 Prometheus、Grafana、Loki、SkyWalking OAP/UI。
@@ -318,7 +324,8 @@
 | OBS-09 | 待办 | AIOps 告警接入与证据关联 | `moli-aiops/` |
 | OBS-10 | 部分完成 | 运维 Runbook、容量压测与故障演练 | `docs/ops/`、`load-test/` |
 | OBS-11 | 已完成 | MyBatis `Slf4jImpl` + mapper DEBUG 落盘（dev/pro），Loki 可采 SQL | 各模块 `application-*.yml`、`logback-spring.xml` |
-| OBS-12 | 待办 | 生产主机 Alloy 安装与日志路径验收 | `deploy/linux/`、`deploy/observability/` |
+| OBS-12 | 待办 | 生产主机 Alloy systemd 安装与日志路径验收 | `docs/ops/observability-production.md`、`deploy/observability/` |
+| OBS-13 | 已完成 | 生产日志可靠性 Runbook + 部署/分层架构图 | `docs/ops/observability-production.md`、`docs/diagrams/moli-observability-prod-*.drawio` |
 
 ---
 
@@ -335,6 +342,7 @@
 ## 10. 相关
 
 - [监控与日志 · v1 运维要点](../ops/monitoring-and-logs.md)
+- [可观测性 · 生产部署与日志可靠性](../ops/observability-production.md)
 - [生产检查清单](../ops/production-checklist.md)
 - [本地开发端口](../ops/local-dev-ports.md)
 - [技术栈](../zh-CN/TECH_STACK.md)
