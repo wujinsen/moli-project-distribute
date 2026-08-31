@@ -140,6 +140,7 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         int timeoutSeconds = normalizeTimeout(request.getTimeoutSeconds());
 
         row.setEnabled(Boolean.TRUE.equals(request.getEnabled()) ? 1 : 0);
+        row.setCallLogEnabled(Boolean.TRUE.equals(request.getCallLogEnabled()) ? 1 : 0);
         row.setProvider(request.getProvider().trim());
         row.setBaseUrl(request.getBaseUrl().trim());
         row.setModel(request.getModel().trim());
@@ -238,6 +239,7 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         KbPlatformLlmConfigVo vo = new KbPlatformLlmConfigVo();
         if (row != null) {
             vo.setEnabled(intTrue(row.getEnabled()));
+            vo.setCallLogEnabled(resolveCallLogEnabled(row));
             vo.setProvider(row.getProvider());
             vo.setBaseUrl(row.getBaseUrl());
             vo.setModel(row.getModel());
@@ -254,6 +256,7 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
             }
         } else {
             vo.setEnabled(effective.isEnabled());
+            vo.setCallLogEnabled(yamlLlm.isCallLogEnabled());
             vo.setProvider(effective.getProvider());
             vo.setBaseUrl(effective.getBaseUrl());
             vo.setModel(effective.getModel());
@@ -268,6 +271,15 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         vo.setSource(effective.getSource().name().toLowerCase());
         vo.setEncryptionReady(yamlLlm.configSecretConfigured());
         return vo;
+    }
+
+    @Override
+    public boolean isCallLogEnabled() {
+        KbPlatformLlmConfig row = getSingletonRow();
+        if (row != null && row.getCallLogEnabled() != null) {
+            return intTrue(row.getCallLogEnabled());
+        }
+        return yamlLlm.isCallLogEnabled();
     }
 
     private void assertConfigSecretPresent() {
@@ -334,6 +346,7 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
     private KbPlatformLlmConfig newRowFromYaml(boolean copyYamlApiKey) {
         KbPlatformLlmConfig row = new KbPlatformLlmConfig();
         row.setEnabled(yamlLlm.isEnabled() ? 1 : 0);
+        row.setCallLogEnabled(yamlLlm.isCallLogEnabled() ? 1 : 0);
         row.setProvider(StringUtils.defaultIfBlank(yamlLlm.getProvider(), "deepseek"));
         row.setBaseUrl(StringUtils.defaultIfBlank(yamlLlm.getBaseUrl(), "https://api.deepseek.com/v1"));
         row.setModel(StringUtils.defaultIfBlank(yamlLlm.getModel(), "deepseek-chat"));
@@ -371,6 +384,13 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
 
     private static boolean intTrue(Integer v) {
         return v != null && v == 1;
+    }
+
+    private boolean resolveCallLogEnabled(KbPlatformLlmConfig row) {
+        if (row != null && row.getCallLogEnabled() != null) {
+            return intTrue(row.getCallLogEnabled());
+        }
+        return yamlLlm.isCallLogEnabled();
     }
 
     private static String defaultString(String primary, String fallback) {

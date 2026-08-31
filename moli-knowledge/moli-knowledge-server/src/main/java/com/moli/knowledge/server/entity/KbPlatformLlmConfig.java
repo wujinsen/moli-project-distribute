@@ -23,6 +23,9 @@ public class KbPlatformLlmConfig extends BaseEntity {
     @ApiModelProperty("1启用 0停用")
     private Integer enabled;
 
+    @ApiModelProperty("1记录 LLM 调用日志 0关闭")
+    private Integer callLogEnabled;
+
     @ApiModelProperty("deepseek/qwen/glm/custom")
     private String provider;
 

@@ -33,6 +33,7 @@ public class KbPlatformLlmConfigServiceImplTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(yamlLlm.getConfigSecret()).thenReturn(SECRET);
+        when(yamlLlm.resolveConfigSecret()).thenReturn(SECRET);
         when(yamlLlm.isEnabled()).thenReturn(true);
         when(yamlLlm.getProvider()).thenReturn("glm");
         when(yamlLlm.getBaseUrl()).thenReturn("https://example.com/v1");
@@ -79,5 +80,23 @@ public class KbPlatformLlmConfigServiceImplTest {
         Assert.assertEquals(KbLlmConfigSource.YAML_FALLBACK, cfg.getSource());
         Assert.assertEquals("yaml-key", cfg.getApiKey());
         Assert.assertTrue(cfg.usable());
+    }
+
+    @Test
+    public void isCallLogEnabled_prefersDatabaseOverYaml() {
+        KbPlatformLlmConfig row = new KbPlatformLlmConfig();
+        row.setCallLogEnabled(0);
+        when(platformLlmConfigMapper.selectById(KbPlatformLlmConfig.SINGLETON_ID)).thenReturn(row);
+        when(yamlLlm.isCallLogEnabled()).thenReturn(true);
+
+        Assert.assertFalse(service.isCallLogEnabled());
+    }
+
+    @Test
+    public void isCallLogEnabled_fallsBackToYamlWhenNull() {
+        when(platformLlmConfigMapper.selectById(KbPlatformLlmConfig.SINGLETON_ID)).thenReturn(null);
+        when(yamlLlm.isCallLogEnabled()).thenReturn(false);
+
+        Assert.assertFalse(service.isCallLogEnabled());
     }
 }

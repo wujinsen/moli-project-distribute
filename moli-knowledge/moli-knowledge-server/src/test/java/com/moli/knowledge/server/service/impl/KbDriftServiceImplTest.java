@@ -141,5 +141,28 @@ public class KbDriftServiceImplTest {
         KbOpsDriftSummaryVo summary = service.driftSummary(SPACE_ID, 5);
         Assert.assertFalse(summary.isDrifted());
         Assert.assertEquals(1, summary.getInSyncTotal());
+        Assert.assertEquals(1, summary.getWikiPageTotal());
+        Assert.assertEquals(1, summary.getDbKbPageTotal());
+        Assert.assertFalse(summary.isScanEmpty());
+    }
+
+    @Test
+    public void driftSummary_marksScanEmptyWhenBothSidesZero() {
+        KbSpace space = new KbSpace();
+        space.setId(SPACE_ID);
+        space.setSpaceCode("enterprise-kb");
+
+        when(kbAclService.accessibleSpaceIds()).thenReturn(Collections.singletonList(SPACE_ID));
+        when(kbSpaceMapper.selectList(any())).thenReturn(Collections.singletonList(space));
+        when(wikiDriftScanner.resolveWikiDirForSpace("enterprise-kb")).thenReturn("wiki");
+        when(wikiDriftScanner.scanWikiDir("wiki")).thenReturn(Collections.emptyMap());
+        when(kbDocumentMapper.selectList(any())).thenReturn(Collections.emptyList());
+
+        KbOpsDriftSummaryVo summary = service.driftSummary(null, 5);
+        Assert.assertFalse(summary.isDrifted());
+        Assert.assertTrue(summary.isScanEmpty());
+        Assert.assertEquals(1, summary.getSpacesScanned());
+        Assert.assertEquals(0, summary.getWikiPageTotal());
+        Assert.assertEquals(0, summary.getDbKbPageTotal());
     }
 }

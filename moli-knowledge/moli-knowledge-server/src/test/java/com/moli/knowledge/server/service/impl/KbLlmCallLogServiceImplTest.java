@@ -1,10 +1,10 @@
 package com.moli.knowledge.server.service.impl;
 
 import com.moli.common.core.IdGenerator;
-import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.entity.KbLlmCallLog;
 import com.moli.knowledge.server.mapper.KbLlmCallLogMapper;
 import com.moli.knowledge.server.service.KbLlmCallLogService;
+import com.moli.knowledge.server.service.KbPlatformLlmConfigService;
 import com.moli.knowledge.server.util.ShiroUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,13 +36,13 @@ public class KbLlmCallLogServiceImplTest {
     @Mock
     private KbLlmCallLogMapper kbLlmCallLogMapper;
     @Mock
-    private KbLlmProperties kbLlmProperties;
+    private KbPlatformLlmConfigService kbPlatformLlmConfigService;
     @Mock
     private com.moli.knowledge.server.config.KbLlmRouterProperties routerProperties;
 
     @Before
     public void setUp() {
-        when(kbLlmProperties.isCallLogEnabled()).thenReturn(true);
+        when(kbPlatformLlmConfigService.isCallLogEnabled()).thenReturn(true);
         com.moli.knowledge.server.config.KbLlmRouterProperties.Pricing pricing =
                 new com.moli.knowledge.server.config.KbLlmRouterProperties.Pricing();
         when(routerProperties.getPricing()).thenReturn(pricing);
@@ -50,7 +50,7 @@ public class KbLlmCallLogServiceImplTest {
 
     @Test
     public void recordSuccess_skipsWhenDisabled() {
-        when(kbLlmProperties.isCallLogEnabled()).thenReturn(false);
+        when(kbPlatformLlmConfigService.isCallLogEnabled()).thenReturn(false);
         service.recordSuccess("ask", 1L, "glm", "glm-4-flash", 120);
         verify(kbLlmCallLogMapper, never()).insert(any());
     }

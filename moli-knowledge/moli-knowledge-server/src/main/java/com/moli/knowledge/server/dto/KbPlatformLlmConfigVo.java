@@ -13,6 +13,9 @@ public class KbPlatformLlmConfigVo {
     @ApiModelProperty("总开关")
     private Boolean enabled;
 
+    @ApiModelProperty("是否记录 LLM 调用日志（运维看板成本统计）")
+    private Boolean callLogEnabled;
+
     @ApiModelProperty("deepseek/qwen/glm/custom")
     private String provider;
 

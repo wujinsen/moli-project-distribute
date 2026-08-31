@@ -29,4 +29,7 @@ public interface KbPlatformLlmConfigService {
 
     /** 测试 LLM 连通性（可用未保存的表单值）。 */
     KbPlatformLlmConfigTestResultVo testConnection(KbPlatformLlmConfigTestRequest request);
+
+    /** DB 优先、yaml 兜底的调用日志开关（运维看板 D6 / kb_llm_call_log 写入）。 */
+    boolean isCallLogEnabled();
 }

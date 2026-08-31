@@ -60,6 +60,7 @@ public class KbPlatformLlmConfigServiceImplSaveTest {
 
         KbPlatformLlmConfigUpdateRequest req = new KbPlatformLlmConfigUpdateRequest();
         req.setEnabled(true);
+        req.setCallLogEnabled(true);
         req.setProvider("glm");
         req.setBaseUrl("https://open.bigmodel.cn/api/paas/v4");
         req.setModel("glm-4-flash");
@@ -101,6 +102,7 @@ public class KbPlatformLlmConfigServiceImplSaveTest {
 
         KbPlatformLlmConfigUpdateRequest req = new KbPlatformLlmConfigUpdateRequest();
         req.setEnabled(true);
+        req.setCallLogEnabled(true);
         req.setProvider("glm");
         req.setBaseUrl("https://open.bigmodel.cn/api/paas/v4");
         req.setModel("glm-4-flash");

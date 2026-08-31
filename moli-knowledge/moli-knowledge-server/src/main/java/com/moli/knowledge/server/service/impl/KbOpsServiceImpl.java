@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.moli.common.constant.CommonConstant;
 import com.moli.knowledge.server.config.KbEvalBaselinesProvider;
-import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.dto.KbLlmConfigVo;
 import com.moli.knowledge.server.dto.KbOpsDashboardVo;
 import com.moli.knowledge.server.dto.KbOpsEvalRunVo;
@@ -29,6 +28,7 @@ import com.moli.knowledge.server.service.KbDriftService;
 import com.moli.knowledge.server.service.KbLlmCallLogService;
 import com.moli.knowledge.server.service.KbLlmConfigService;
 import com.moli.knowledge.server.service.KbOpsService;
+import com.moli.knowledge.server.service.KbPlatformLlmConfigService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -70,7 +70,7 @@ public class KbOpsServiceImpl implements KbOpsService {
     @Resource
     private KbLlmCallLogService kbLlmCallLogService;
     @Resource
-    private KbLlmProperties kbLlmProperties;
+    private KbPlatformLlmConfigService kbPlatformLlmConfigService;
     @Resource
     private KbLlmRuntime kbLlmRuntime;
     @Resource
@@ -263,7 +263,7 @@ public class KbOpsServiceImpl implements KbOpsService {
 
     private KbOpsLlmSummaryVo buildLlmSummary(List<Long> scope, Long filterSpaceId, int trendDays) {
         KbOpsLlmSummaryVo llm = new KbOpsLlmSummaryVo();
-        llm.setCallLogEnabled(kbLlmProperties.isCallLogEnabled());
+        llm.setCallLogEnabled(kbPlatformLlmConfigService.isCallLogEnabled());
         llm.setTrendDays(trendDays);
         try {
             KbLlmConfigVo cfg = kbLlmConfigService.getConfig();
@@ -281,7 +281,7 @@ public class KbOpsServiceImpl implements KbOpsService {
             llm.setAvailable(false);
         }
 
-        if (!kbLlmProperties.isCallLogEnabled()) {
+        if (!kbPlatformLlmConfigService.isCallLogEnabled()) {
             return llm;
         }
         boolean includeGlobal = filterSpaceId == null;

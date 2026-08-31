@@ -71,6 +71,8 @@ public class KbDriftServiceImpl implements KbDriftService {
                 summary.setWikiOnlyTotal(summary.getWikiOnlyTotal() + report.getWikiOnlyCount());
                 summary.setDbOnlyTotal(summary.getDbOnlyTotal() + report.getDbOnlyCount());
                 summary.setHashMismatchTotal(summary.getHashMismatchTotal() + report.getHashMismatchCount());
+                summary.setWikiPageTotal(summary.getWikiPageTotal() + report.getWikiPageCount());
+                summary.setDbKbPageTotal(summary.getDbKbPageTotal() + report.getDbKbPageCount());
                 if (report.isDrifted()) {
                     summary.setSpacesWithDrift(summary.getSpacesWithDrift() + 1);
                 }
@@ -85,10 +87,15 @@ public class KbDriftServiceImpl implements KbDriftService {
                 failed.getWikiOnly().add(item);
                 summary.getSpaces().add(failed);
                 summary.setSpacesWithDrift(summary.getSpacesWithDrift() + 1);
+                summary.setScanFailedCount(summary.getScanFailedCount() + 1);
             }
         }
         summary.setDrifted(summary.getSpacesWithDrift() > 0
                 || summary.getWikiOnlyTotal() + summary.getDbOnlyTotal() + summary.getHashMismatchTotal() > 0);
+        summary.setScanEmpty(summary.getSpacesScanned() > 0
+                && summary.getScanFailedCount() == 0
+                && summary.getWikiPageTotal() == 0
+                && summary.getDbKbPageTotal() == 0);
         return summary;
     }
 

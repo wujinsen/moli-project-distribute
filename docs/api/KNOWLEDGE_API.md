@@ -456,7 +456,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 
 > **前端对接**（T19d）：[`kb-llm-platform-frontend.md`](kb-llm-platform-frontend.md)  
 > **权限**：平台超管或 `kb:platform:llm`。API Key **加密存库**，响应永不回明文。  
-> **前置**：执行 [`../sql/11_kb_platform_llm_config.sql`](../sql/11_kb_platform_llm_config.sql)、[`../sql/12_kb_platform_llm_menu.sql`](../sql/12_kb_platform_llm_menu.sql)；保存 api-key 到 DB 须配置 `kb.llm.config-secret` 或环境变量 **`KB_LLM_CONFIG_SECRET`**（见设计文档 §5.4）。GET 返回 **`encryptionReady`** 供前端预检。
+> **前置**：执行 [`../sql/11_kb_platform_llm_config.sql`](../sql/11_kb_platform_llm_config.sql)、[`../sql/12_kb_platform_llm_menu.sql`](../sql/12_kb_platform_llm_menu.sql)、[`../sql/41_kb_platform_llm_call_log_enabled.sql`](../sql/41_kb_platform_llm_call_log_enabled.sql)；保存 api-key 到 DB 须配置 `kb.llm.config-secret` 或环境变量 **`KB_LLM_CONFIG_SECRET`**（见设计文档 §5.4）。GET 返回 **`encryptionReady`** 供前端预检。
 
 **网关路径**（meiling-ui）：`/KnowledgeServer/kb/platform/llm-config`
 
@@ -467,6 +467,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 ```json
 {
   "enabled": true,
+  "callLogEnabled": true,
   "provider": "glm",
   "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
   "apiKeyConfigured": true,
@@ -496,6 +497,7 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `enabled` | 是 | 总开关 |
+| `callLogEnabled` | 是 | 是否记录 LLM 调用到 `kb_llm_call_log`（运维看板 D6 成本统计）；DB 优先，未迁移列时回退 `kb.llm.call-log-enabled` |
 | `provider` | 是 | `deepseek` / `qwen` / `glm` / `custom` |
 | `baseUrl` | 是 | OpenAI 兼容根 URL；禁止 localhost/127.0.0.1/169.254.x/metadata |
 | `apiKey` | 否 | **空字符串或不传 = 不修改**；非空 = 替换并加密入库 |

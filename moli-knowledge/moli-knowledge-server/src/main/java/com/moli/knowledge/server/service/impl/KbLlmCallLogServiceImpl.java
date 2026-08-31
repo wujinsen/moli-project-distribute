@@ -2,13 +2,13 @@ package com.moli.knowledge.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.moli.common.core.IdGenerator;
-import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.config.KbLlmRouterProperties;
 import com.moli.knowledge.server.dto.KbOpsLlmCallTrendPointVo;
 import com.moli.knowledge.server.dto.KbOpsLlmCostTrendPointVo;
 import com.moli.knowledge.server.entity.KbLlmCallLog;
 import com.moli.knowledge.server.mapper.KbLlmCallLogMapper;
 import com.moli.knowledge.server.service.KbLlmCallLogService;
+import com.moli.knowledge.server.service.KbPlatformLlmConfigService;
 import com.moli.knowledge.server.util.ShiroUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +36,7 @@ public class KbLlmCallLogServiceImpl implements KbLlmCallLogService {
     @Resource
     private KbLlmCallLogMapper kbLlmCallLogMapper;
     @Resource
-    private KbLlmProperties kbLlmProperties;
+    private KbPlatformLlmConfigService kbPlatformLlmConfigService;
     @Resource
     private KbLlmRouterProperties routerProperties;
 
@@ -185,7 +185,7 @@ public class KbLlmCallLogServiceImpl implements KbLlmCallLogService {
                         long latencyMs, String errorMessage,
                         boolean failover, boolean cacheHit,
                         Integer promptTokensEst, Integer completionTokensEst, BigDecimal estimatedCostUsd) {
-        if (!kbLlmProperties.isCallLogEnabled()) {
+        if (!kbPlatformLlmConfigService.isCallLogEnabled()) {
             return;
         }
         try {

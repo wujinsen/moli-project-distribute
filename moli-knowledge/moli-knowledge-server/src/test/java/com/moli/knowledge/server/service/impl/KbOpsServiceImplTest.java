@@ -1,7 +1,6 @@
 package com.moli.knowledge.server.service.impl;
 
 import com.moli.knowledge.server.config.KbEvalBaselinesProvider;
-import com.moli.knowledge.server.config.KbLlmProperties;
 import com.moli.knowledge.server.dto.KbLlmConfigVo;
 import com.moli.knowledge.server.dto.KbOpsDriftSummaryVo;
 import com.moli.knowledge.server.dto.KbOpsDashboardVo;
@@ -19,6 +18,7 @@ import com.moli.knowledge.server.service.KbAclService;
 import com.moli.knowledge.server.service.KbDriftService;
 import com.moli.knowledge.server.service.KbLlmConfigService;
 import com.moli.knowledge.server.service.KbLlmCallLogService;
+import com.moli.knowledge.server.service.KbPlatformLlmConfigService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class KbOpsServiceImplTest {
     @Mock
     private KbLlmCallLogService kbLlmCallLogService;
     @Mock
-    private KbLlmProperties kbLlmProperties;
+    private KbPlatformLlmConfigService kbPlatformLlmConfigService;
     @Mock
     private KbLlmRuntime kbLlmRuntime;
     @Mock
@@ -81,7 +81,7 @@ public class KbOpsServiceImplTest {
         llm.setModel("glm-4-flash");
         when(kbLlmConfigService.getConfig()).thenReturn(llm);
         when(kbLlmRuntime.getSource()).thenReturn(KbLlmConfigSource.DATABASE);
-        when(kbLlmProperties.isCallLogEnabled()).thenReturn(true);
+        when(kbPlatformLlmConfigService.isCallLogEnabled()).thenReturn(true);
 
         KbLlmCallLogService.LlmCallStats stats = new KbLlmCallLogService.LlmCallStats();
         stats.setTotalCalls(10);

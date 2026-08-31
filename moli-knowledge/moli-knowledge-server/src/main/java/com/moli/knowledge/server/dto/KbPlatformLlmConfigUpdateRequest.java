@@ -16,6 +16,10 @@ public class KbPlatformLlmConfigUpdateRequest {
     @ApiModelProperty(value = "总开关", required = true)
     private Boolean enabled;
 
+    @NotNull
+    @ApiModelProperty(value = "是否记录 LLM 调用日志", required = true)
+    private Boolean callLogEnabled;
+
     @NotBlank
     @ApiModelProperty(value = "提供方", required = true)
     private String provider;
