@@ -14,6 +14,19 @@
 | **knowledge** | **28104** | Dubbo **28884** |
 | **aiops (FastAPI)** | **28105** | 网关 `/AiOpsServer/**` |
 
+**可观测性（本地 Docker PoC）：**
+
+| 组件 | 端口 |
+|------|------|
+| Grafana | **28300** |
+| Loki API | **28110** |
+| Alloy UI | **28111** |
+| Prometheus | **29090** |
+| SkyWalking UI | **28120** |
+| SkyWalking OAP gRPC | **28121** |
+
+详见 [`deploy/observability/README.md`](../../deploy/observability/README.md) · [`monitoring-and-logs.md`](monitoring-and-logs.md)
+
 **网关示例：**
 
 ```text

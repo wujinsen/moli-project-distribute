@@ -1,6 +1,6 @@
 # 茉莉微服务 · v1.0 发布范围说明
 
-> **状态**：首版上线基线 + **v1 后增量索引** · 更新：2026-07-13  
+> **状态**：首版上线基线 + **v1 后增量索引** · 更新：2026-08-31  
 > **读者**：产品、研发、测试、运维  
 > **冲突时**：以本文「交付边界」为准；各模块细节见下表链接。
 
@@ -23,7 +23,8 @@
 - 知识库 Meilisearch/向量检索（MySQL ngram 已够用）
 - Wiki 治理前端 **T16f 全链路**（后端已就绪，UI 可部分交付，见 §3）
 
-**v1 后增量（2026-07 · 已交付，见 §9）**：运营管理 W1–W10、拓扑/关系、SSO 菜单隔离、KBOPS/T16f/T19d/T20f/P3。
+**v1 后增量（2026-07 · 已交付，见 §9）**：运营管理 W1–W10、拓扑/关系、SSO 菜单隔离、KBOPS/T16f/T19d/T20f/P3。  
+**2026-08 增量**：可观测性 PoC（Prometheus/Grafana/Loki/Alloy/SkyWalking）、统一 logback 落盘、MyBatis SQL 经 Slf4jImpl 进 Loki。
 
 ---
 
@@ -140,7 +141,7 @@
 | 类型 | 路径 |
 |------|------|
 | PRD | 本文 · [user-center-requirements.md](user-center-requirements.md) · [operation-server-ops-prd.md](operation-server-ops-prd.md) · [sso-menu-isolation-prd.md](sso-menu-isolation-prd.md) · [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) · [knowledge-ops-prd.md](knowledge-ops-prd.md) |
-| 设计 | [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md) · [server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) · [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) · [knowledge-module-overview.md](../design/knowledge-module-overview.md) |
+| 设计 | [ARCHITECTURE.md](../zh-CN/ARCHITECTURE.md) · [observability-platform-plan.md](../design/observability-platform-plan.md) · [server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md) · [sso-menu-system-isolation.md](../design/sso-menu-system-isolation.md) · [knowledge-module-overview.md](../design/knowledge-module-overview.md) |
 | API | [api/README.md](../api/README.md) |
 | 测试 | [test/README.md](../test/README.md) · [knowledge-e2e-regression.md](../test/knowledge-e2e-regression.md) |
 | 运维 | [v1-release-runbook.md](../ops/v1-release-runbook.md) · [sql-migration-order.md](../ops/sql-migration-order.md) |
@@ -158,6 +159,7 @@
 | **知识库 KBOPS** | Sync 失败可观测 · 并发锁 · 工单 O5–O8 · Dashboard | [knowledge-ops-prd.md](knowledge-ops-prd.md) |
 | **知识库工作台** | T16f · T19d · T20f · `kb:prd` 17/17 | [knowledge-workbench-requirements.md](knowledge-workbench-requirements.md) |
 | **知识库 Ask** | chunk 切段召回 + eval  harness | [knowledge-module-overview.md](../design/knowledge-module-overview.md) §4.6 |
+| **可观测性 PoC** | 本地 Docker 栈；统一 `{service}.log`；MyBatis → Loki；SkyWalking Agent 可选 | [observability-platform-plan.md](../design/observability-platform-plan.md) · [monitoring-and-logs.md](../ops/monitoring-and-logs.md) · [deploy/observability/README.md](../../deploy/observability/README.md) |
 
 **运维**：共享环境 jar 部署 · `18_kb_llm_call_log.sql` · 见 [frontend-backend-dependencies.md](../api/frontend-backend-dependencies.md) §6。
 
@@ -167,5 +169,6 @@
 
 | 日期 | 说明 |
 |------|------|
+| 2026-08-31 | §9 可观测性 PoC（Loki/Alloy/Grafana/SkyWalking）；MyBatis Slf4jImpl 落盘 |
 | 2026-07-13 | §9 v1 后增量；§3.4/§4 知识库与运营前端状态对齐 |
 | 2026-06-28 | 首版发布范围初稿 |

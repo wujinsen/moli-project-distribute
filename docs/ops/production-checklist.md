@@ -99,14 +99,19 @@
 
 ---
 
-## 6. 可观测性（建议）
+## 6. 可观测性
 
-| 项 | v1 最低要求 |
-|----|-------------|
-| 应用日志 | 各服务 logback 落盘或采集 |
-| 健康检查 | Spring Boot actuator（若启用） |
-| 网关 5xx 告警 | 可选 |
-| APM（SkyWalking） | P2，见 TECH_STACK |
+| 项 | 检查 | ✓ |
+|----|------|---|
+| 日志落盘 | 各服务 `logs/{service}.log` 存在且滚动正常 | |
+| MyBatis | `log-impl: Slf4jImpl`（`deploy/*/application-pro.yml`） | |
+| Alloy | 生产主机 tail 业务 `logs/*.log` → Loki | |
+| Prometheus | 抓取 `/actuator/prometheus`（内网） | |
+| Grafana | 大盘 + Loki 数据源可用 | |
+| SkyWalking | Agent 可选；`SKYWALKING_ENABLED` 与 OAP 地址 | |
+| Actuator 暴露 | **不得**经公网/Gateway 暴露 health/prometheus | |
+
+PoC 与 LogQL 示例：[monitoring-and-logs.md](monitoring-and-logs.md) · 规划：[observability-platform-plan.md](../design/observability-platform-plan.md)
 
 ---
 

@@ -91,11 +91,14 @@
 
 | 能力 | 技术 | 说明 |
 |------|------|------|
-| 日志分析 | **ELK**（Elasticsearch + Logstash + Kibana） | 集中日志采集与分析 |
-| 链路追踪 | **Apache SkyWalking** | 分布式调用链追踪 |
-| 服务监控 | **Prometheus + Grafana** | 指标采集与可视化大盘 |
+| 指标 | **Prometheus + Grafana** | 五 Java 服务 `/actuator/prometheus`；本地 PoC：`deploy/observability/` |
+| 日志 | **Loki + Grafana Alloy** | Alloy tail 各服务 `logs/{service}.log`；**不用**已 EOL 的 Promtail |
+| 链路 | **SkyWalking Agent + OAP + UI** | Trace/拓扑；**不负责**日志推送 Loki |
+| 日志规范 | **Logback** | 单文件 `{logging.file.name}`；MyBatis **`Slf4jImpl`**（dev/pro）经 logback 落盘 |
 
-各服务均配置 `logback-spring.xml`，日志输出规范需与 ELK 采集策略对齐。
+各服务 `logback-spring.xml` 输出带 `trace_id`/`sw_ctx`（SkyWalking Toolkit）；SQL 与业务日志同一文件，Explore 用 `|=` 按内容检索。
+
+规划与 PoC 状态：[`docs/design/observability-platform-plan.md`](design/observability-platform-plan.md) · 运维要点：[`docs/ops/monitoring-and-logs.md`](ops/monitoring-and-logs.md)
 
 ---
 

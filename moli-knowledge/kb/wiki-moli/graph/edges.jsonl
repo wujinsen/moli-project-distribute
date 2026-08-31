@@ -521,3 +521,6 @@
 {"from": "articles/shiro-starter与跨服务校验", "to": "concepts/spring-aop与代理", "type": "relates_to", "evidence": "Springfox+Shiro AOP Advisor 触发 securityManager 循环依赖", "date": "2026-06-23"}
 {"from": "outputs/茉莉登录与鉴权故障根因汇总", "to": "articles/shiro-starter与跨服务校验", "type": "relates_to", "evidence": "启动期 securityManager 循环依赖根因与解法", "date": "2026-06-23"}
 {"from": "guides/AI自我进化与MD审校流程", "to": "concepts/知识库三操作", "type": "part_of", "evidence": "AI 自我进化隶属三操作闭环", "date": "2026-06-24"}
+{"from": "develop/可观测性平台", "to": "ops/监控与日志", "type": "relates_to", "evidence": "PoC 日常 Runbook", "date": "2026-08-31"}
+{"from": "develop/可观测性平台", "to": "develop/技术栈与版本", "type": "relates_to", "evidence": "可观测组件选型", "date": "2026-08-31"}
+{"from": "outputs/茉莉可观测性与运维体系汇总", "to": "develop/可观测性平台", "type": "derived_from", "evidence": "crystallize 更新 PoC 矩阵", "date": "2026-08-31"}

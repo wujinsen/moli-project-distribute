@@ -57,4 +57,5 @@
 
 ## [2026-07-20] maintenance | AI-5 A+B+C �� enrich ops/�������־+�����Ų�ָ�ϣ�M28 �������� �㷨 protectBaseTopK/hubPenalty
 
-## [2026-07-20] ingest | M4 doc wrap-up -> create guides/AI??????, guides/DeepResearch????; enrich index, ???????; root README M4
+
+## [2026-08-31] ingest | 可观测性 PoC 文档对齐 → create develop/可观测性平台; enrich 监控与日志, 本地启动指南, 故障排查指南, 技术栈与版本, 技术方案与架构索引, 项目文档总览, 生产环境检查清单, outputs/茉莉可观测性与运维体系汇总; docs product/ops/design 同步

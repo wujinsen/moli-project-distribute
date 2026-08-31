@@ -1,9 +1,9 @@
 # 可观测性平台规划 · Metrics / Logs / Traces
 
-> 状态：规划稿  
+> 状态：**PoC 已落地**（`deploy/observability/`）；生产高可用/TLS/告警待办  
 > 范围：`moli-gateway`、user-center、order、ai、knowledge、moli-aiops 及基础设施  
 > 目标：统一指标、日志与分布式链路，支持从告警定位到具体日志和调用跨度。  
-> 端口权威表：`docs/ops/local-dev-ports.md`
+> 端口权威表：`docs/ops/local-dev-ports.md` · 操作手册：`docs/ops/monitoring-and-logs.md` · wiki [[监控与日志]]
 
 ---
 
@@ -317,6 +317,8 @@
 | OBS-08 | 部分完成 | Grafana 基础 Dashboard；告警待办 | `deploy/observability/grafana/` |
 | OBS-09 | 待办 | AIOps 告警接入与证据关联 | `moli-aiops/` |
 | OBS-10 | 部分完成 | 运维 Runbook、容量压测与故障演练 | `docs/ops/`、`load-test/` |
+| OBS-11 | 已完成 | MyBatis `Slf4jImpl` + mapper DEBUG 落盘（dev/pro），Loki 可采 SQL | 各模块 `application-*.yml`、`logback-spring.xml` |
+| OBS-12 | 待办 | 生产主机 Alloy 安装与日志路径验收 | `deploy/linux/`、`deploy/observability/` |
 
 ---
 
