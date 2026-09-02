@@ -87,11 +87,12 @@ services:
     image: apache/skywalking-oap-server:10.4.0
     container_name: moli-skywalking-oap
     environment:
+      TZ: Asia/Shanghai
       SW_STORAGE: banyandb
       SW_STORAGE_BANYANDB_TARGETS: skywalking-banyandb:17912
       SW_HEALTH_CHECKER: default
       SW_TELEMETRY: prometheus
-      JAVA_OPTS: "-Xms512m -Xmx512m"
+      JAVA_OPTS: "-Xms512m -Xmx512m -Duser.timezone=Asia/Shanghai"
     ports:
       - "28121:11800"
       - "28122:12800"
@@ -100,15 +101,41 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # UI 10.4 Trace 列表默认走 queryBasicTraces（V2 探测不会在列表页触发）；
+  # BanyanDB 已禁用该 API。Python 把 v1 改写成 queryTraces。
+  # UI 的 Armeria 客户端用 HTTP/2 明文（h2c），所以前面再加一层 Caddy。
+  skywalking-graphql-rewrite:
+    image: python:3.12-alpine
+    container_name: moli-skywalking-graphql-rewrite
+    command: ["python", "/app/graphql_banyandb_compat.py"]
+    environment:
+      OAP_URL: http://skywalking-oap:12800
+      LISTEN_PORT: "12800"
+    volumes:
+      - ./skywalking-ui/graphql_banyandb_compat.py:/app/graphql_banyandb_compat.py:ro
+    depends_on:
+      - skywalking-oap
+    restart: unless-stopped
+
+  skywalking-graphql-compat:
+    image: caddy:2-alpine
+    container_name: moli-skywalking-graphql-compat
+    volumes:
+      - ./skywalking-ui/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - skywalking-graphql-rewrite
+    restart: unless-stopped
+
   skywalking-ui:
     image: apache/skywalking-ui:10.4.0
     container_name: moli-skywalking-ui
     environment:
-      SW_OAP_ADDRESS: http://skywalking-oap:12800
+      TZ: Asia/Shanghai
+      SW_OAP_ADDRESS: http://skywalking-graphql-compat:12800
     ports:
       - "28120:8080"
     depends_on:
-      - skywalking-oap
+      - skywalking-graphql-compat
     restart: unless-stopped
 
 volumes:

@@ -96,11 +96,158 @@ MyBatis SQL：
 
 见 [`deploy/observability/README.md`](../../deploy/observability/README.md)「Grafana 查不到日志 / 查询转圈」。
 
+### 3.4 Trace ID 在日志里的格式
+
+各服务 Logback 已通过 SkyWalking Toolkit 输出（见各模块 `logback-spring.xml`）：
+
+```text
+trace_id=TID:13eef851b9434faa8dfcadbeeaa924a7.128.17882712296580005 sw_ctx=SW_CTX:[knowledge-server,...]
+```
+
+| 来源 | 格式 | Loki 查询用法 |
+|------|------|---------------|
+| SkyWalking UI「追踪 ID」 | `13eef851...128.17882712296580005`（含 segment 后缀） | **只搜前 32 位 hex**（第一个 `.` 之前） |
+| 日志行 `trace_id=` | `TID:13eef851...128...`（每个 Span 后缀不同） | 同样只搜根 ID `13eef851b9434faa8dfcadbeeaa924a7` |
+
+**禁止**把 UI 里的完整 Trace ID（含 `.128.xxx`）当作 LogQL 关键字；**禁止**在按 Trace 查日志时固定 `level="INFO"`（MyBatis SQL、Dubbo 等为 **DEBUG**）。
+
 ---
 
-## 4. 健康检查
+## 4. Trace ↔ Log 全链路排障
 
-### 4.1 业务探测（推荐）
+> 完整契约与阶段计划：[可观测性平台规划](../design/observability-platform-plan.md) §2 Trace Context、§3 Phase 3 验收。  
+> **Grafana Dashboard**：`Dashboards / Moli / Moli Trace Logs`（`deploy/observability/grafana/dashboards/moli-trace-logs.json`）。
+
+### 4.1 Trace 与 Log 为何看起来「两套」
+
+| 组件 | 存什么 | UI |
+|------|--------|-----|
+| **SkyWalking** | 调用树、Span 耗时、拓扑、错误 Span | http://127.0.0.1:28120 |
+| **Loki + Grafana** | 各服务 logback 文件内容 | Explore / Dashboard |
+
+二者**不合并存储**；关联靠同一次请求共享的 **`trace_id`**（规划 §2.1）。PoC 已在日志正文写入 `trace_id=%tid`，数据可关联，缺的是标准操作路径。
+
+### 4.2 生产痛点：A 报错，根因在 B/C
+
+典型现象：
+
+```text
+服务 A（如 knowledge-server）ERROR: Dubbo invoke failed / Remote service error
+  → 只看 A 的日志，看不到真正 SQLException / NPE
+  → 根因在 B（user-center-server）或更下游
+```
+
+**正确思路**：不以「服务名」为边界，而以 **`trace_id` 为脊柱**——一次请求从 Gateway 到所有 Dubbo/HTTP 下游共用同一根 Trace ID。
+
+### 4.3 标准排障流程（推荐顺序）
+
+```
+① 发现异常（告警 / 用户报障 / SkyWalking 错误 Trace）
+      ↓
+② SkyWalking → Trace 列表/详情
+   · 看哪一段 Span 标红或 P99 变慢（定位「根因服务」）
+   · 复制 Trace ID 前 32 位
+      ↓
+③ Grafana → Moli Trace Logs（或 Explore LogQL）
+   · 输入 trace_id，时间范围 = Trace 时刻 ±5 分钟
+   · 一次拉出 Gateway + A + B + C 全部相关日志
+      ↓
+④ 在「全链路异常」面板看 ERROR/Exception；需要 SQL 时看 MyBatis 面板
+```
+
+**不要**在步骤 ③ 只查「报错服务 A」的 `service` 标签；**要**用 `$moli_services` 正则一次查五个 Java 服务 + Gateway。
+
+### 4.4 LogQL 模板（Explore Code 模式）
+
+**全链路（所有级别）**——复制 Trace ID 根段替换 `<trace_id>`：
+
+```logql
+{service=~"moli-gateway|user-center-server|order-server|ai-server|knowledge-server"} |= "<trace_id>"
+```
+
+**全链路仅异常**：
+
+```logql
+{service=~"moli-gateway|user-center-server|order-server|ai-server|knowledge-server"} |= "<trace_id>" |~ "(?i)(ERROR|Exception|Caused by)"
+```
+
+**单服务 + Trace**（已知根因在 user-center 时）：
+
+```logql
+{service="user-center-server"} |= "<trace_id>"
+```
+
+**全链路 SQL**：
+
+```logql
+{service=~"moli-gateway|user-center-server|order-server|ai-server|knowledge-server"} |= "<trace_id>" |= "Preparing"
+```
+
+生产环境可在 selector 增加 `env="prod"`（Alloy 已打 `env` 标签时）：
+
+```logql
+{service=~"moli-gateway|user-center-server|order-server|ai-server|knowledge-server", env="prod"} |= "<trace_id>"
+```
+
+> **`trace_id` 不得作为 Loki 标签**（高基数）；只放在日志正文里用 `|=` 过滤（规划 §3.2）。
+
+### 4.5 Grafana Dashboard「Moli Trace Logs」
+
+1. 打开 http://127.0.0.1:28300 → **Dashboards → Moli → Moli Trace Logs**
+2. 顶部 **Trace ID** 变量：粘贴 SkyWalking 复制值的前 32 位
+3. 右上角时间：对齐 SkyWalking Trace 的 Start Time（±5 分钟）
+4. 三个日志面板：
+   - **全链路日志**：所有级别，按时间升序
+   - **全链路异常**：ERROR / Exception 行
+   - **全链路 SQL**：MyBatis `Preparing`
+
+Trace ID 为空时面板无结果，属正常。
+
+### 4.6 SkyWalking ↔ Grafana 互跳（待配置）
+
+Phase 3 验收项：Trace 详情一键打开 Grafana 全链路日志。可在 SkyWalking OAP 配置 **External Link**（生产替换域名）：
+
+```text
+http://<grafana-host>/d/moli-trace-logs?var-trace_id=<前32位TraceID>&from=<epochMs-5m>&to=<epochMs+5m>
+```
+
+告警通知模板建议附带：
+
+- SkyWalking Trace 链接（按 UI 路由）
+- Grafana `moli-trace-logs` 链接（预填 `trace_id`）
+
+实现深链接后更新本节 URL 示例。
+
+### 4.7 本地 grep（无 Grafana 时）
+
+```powershell
+$tid = "13eef851b9434faa8dfcadbeeaa924a7"
+Select-String -Path "D:\work\moli_project\moli-project-distribute\moli-knowledge\moli-knowledge-server\logs\knowledge-server.log" -Pattern $tid
+Select-String -Path "D:\work\moli_project\moli-project-distribute\moli-user-center\moli-user-center-server\logs\user-center-server.log" -Pattern $tid
+```
+
+### 4.8 常见踩坑
+
+| 现象 | 原因 | 处理 |
+|------|------|------|
+| Loki 无结果 | 用了 `level="INFO"` | 去掉 level 过滤 |
+| Loki 无结果 | 搜了 UI 完整 Trace ID（含 `.128.xxx`） | 只搜前 32 位 hex |
+| Loki 无结果 | `service` 只选了 A，根因在 B | 用 §4.4 全服务正则 |
+| Loki 无结果 | Grafana 时间范围未覆盖 Trace 时刻 | 手动调到 Trace ±5 分钟 |
+| SkyWalking Trace 页 **No Data**，OAP 日志含 `please use queryTraces` | UI 10.4 走了 BanyanDB 已禁用的 `queryBasicTraces` | 确认 `moli-skywalking-graphql-compat`（h2c）和 `moli-skywalking-graphql-rewrite` 都在跑；浏览器硬刷新 |
+| SkyWalking「最近一小时」对不上 logback 时间 | OAP 容器默认 UTC，UI 若改成 UTC+0，列表时间会变成 02:xx，无法对北京时间日志 | 右上角保持 **UTC+8**；Compose 里 OAP/UI 已设 `TZ=Asia/Shanghai`。改 compose 后需 `up -d skywalking-oap skywalking-ui` 并硬刷新 |
+| 同一 Trace 在 Loki 看似重复 | 多线程 / 多 Span 各打一行 | Grafana Deduplication → exact（可选） |
+
+### 4.9 后续（Phase 4 / moli-aiops）
+
+- 告警自动解析 ERROR 日志中的 `trace_id`，推送全链路 Grafana 链接
+- 诊断报告同时附带 SkyWalking Span 摘要 + Loki 全服务 ERROR 摘录
+
+---
+
+## 5. 健康检查
+
+### 5.1 业务探测（推荐）
 
 | 探测 | 命令/URL |
 |------|----------|
@@ -110,7 +257,7 @@ MyBatis SQL：
 
 见 [release-smoke-checklist.md](../test/release-smoke-checklist.md)。
 
-### 4.2 Actuator
+### 5.2 Actuator
 
 五个 Java 服务统一暴露 `/actuator/health`、`/actuator/info`、`/actuator/prometheus`（与业务 **同端口**）。
 
@@ -120,7 +267,7 @@ MyBatis SQL：
 
 `health` 不返回内部细节。生产必须用安全组/防火墙限制为管理网访问，**不得经公网或 Gateway 暴露**。
 
-### 4.3 Prometheus / Actuator 排障（Shiro 服务）
+### 5.3 Prometheus / Actuator 排障（Shiro 服务）
 
 **现象**
 
@@ -190,7 +337,7 @@ Wiki 详述：[[茉莉-shiro-跨服务]] · [[故障排查指南]] § Prometheus
 
 ---
 
-## 5. 指标
+## 6. 指标
 
 | 服务 | 指标 |
 |------|------|
@@ -202,7 +349,7 @@ Wiki 详述：[[茉莉-shiro-跨服务]] · [[故障排查指南]] § Prometheus
 
 ---
 
-## 6. 生产部署要点
+## 7. 生产部署要点
 
 1. 业务主机安装 **Alloy**，采集 `/opt/moli-project-distribute/moli-*/logs/*.log`（勿复用本地 Docker 挂载路径）
 2. 独立监控机运行 Prometheus、Grafana、Loki、SkyWalking OAP/UI
@@ -213,7 +360,7 @@ PoC Compose 单机适用开发/预发验证；**生产部署、日志可靠性�
 
 ---
 
-## 7. 知识库专项
+## 8. 知识库专项
 
 | 场景 | 查看 |
 |------|------|
@@ -224,7 +371,7 @@ PoC Compose 单机适用开发/预发验证；**生产部署、日志可靠性�
 
 ---
 
-## 8. 告警（v1 可选）
+## 9. 告警（v1 可选）
 
 - 网关 5xx 率 > 阈值
 - MySQL/Redis 不可达
@@ -232,7 +379,7 @@ PoC Compose 单机适用开发/预发验证；**生产部署、日志可靠性�
 
 ---
 
-## 9. 相关
+## 10. 相关
 
 - [`deploy/observability/README.md`](../../deploy/observability/README.md)
 - [rollback-guide.md](rollback-guide.md)

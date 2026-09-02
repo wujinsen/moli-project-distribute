@@ -49,8 +49,12 @@ docker compose -f deploy/observability/docker-compose.observability.yml down -v
 1. 服务指标：`http://127.0.0.1:28101/actuator/prometheus`
 2. Prometheus → **Status / Targets**：已启动服务应为 `UP`
 3. Grafana → **Dashboards / Moli / Moli Observability Overview**（http://127.0.0.1:28300，admin/admin）
-4. Grafana → **Explore / Loki**：查询 `{service="user-center-server"}`（时间范围选 **Last 7 days** 或更长；若只选 Last 1 hour 而服务近期未写日志文件，会显示 No logs found）
-5. SkyWalking UI：http://127.0.0.1:28120 ，启用 Java Agent 后应出现对应服务和 Trace
+4. Grafana → **Dashboards / Moli / Moli Trace Logs**：SkyWalking 复制 Trace ID 前 32 位 → 一次查全服务日志（操作见 `docs/ops/monitoring-and-logs.md` §4）
+5. Grafana → **Explore / Loki**：查询 `{service="user-center-server"}`（时间范围选 **Last 7 days** 或更长；若只选 Last 1 hour 而服务近期未写日志文件，会显示 No logs found）
+6. SkyWalking UI：http://127.0.0.1:28120 ，启用 Java Agent 后应出现对应服务和 Trace  
+   - 服务名用 `knowledge-server`（不要选幽灵名 `moli-knowledge`）  
+   - 右上角保持 **UTC+8**（OAP 已设 `Asia/Shanghai`）。「最近一小时」按北京时间查，才能对上 logback 日志时间。不要改成 UTC+0。  
+   - Trace 列表经 `skywalking-graphql-compat`（Caddy h2c + Python 改写）把 UI 10.4 的 `queryBasicTraces` 转成 BanyanDB 的 `queryTraces`；**改 compose 后需 `up -d` 并硬刷新浏览器**
 
 **SkyWalking Agent ≠ Loki 日志**：`-javaagent` 只把 **Trace/拓扑** 上报到 OAP（28121），**不会**把日志推到 Loki。Grafana 里的日志来自 Alloy 采集各模块目录下的 `*.log` 文件（见 §4）。
 
@@ -104,23 +108,49 @@ logging:
 
 ## 5. SkyWalking Agent
 
-Compose 启动的是 OAP/UI，不会自动修改业务 JVM。业务 JVM 通过外部 Agent 接入：
+Compose 启动的是 OAP/UI，不会自动修改业务 JVM。业务 JVM 通过外部 Agent 接入。
+
+**目录结构（必须）**：`-javaagent` 指向的 JAR 同级要有 `plugins/`、`config/`，否则只有 JVM 心跳、**无 HTTP/Dubbo Trace**（UI 里服务在列表但 Trace 永远 0 条）。
 
 ```text
--javaagent:/opt/skywalking-agent/skywalking-agent.jar
+deploy/observability/skywalking-agent/
+  skywalking-agent.jar
+  plugins/          ← Spring MVC、Tomcat、Dubbo 等插件
+  config/agent.config
+```
+
+解压示例（Windows，在 `deploy/observability/skywalking-agent/` 下已有 `apache-skywalking-java-agent-9.7.0.tgz` 时）：
+
+```powershell
+cd deploy/observability/skywalking-agent
+tar -xzf apache-skywalking-java-agent-9.7.0.tgz
+robocopy apache-skywalking-java-agent-9.7.0\skywalking-agent . /E
+# macOS 解压会带入 ._ 元数据文件，Windows 上必须删除，否则插件全部加载失败、Trace 永远为空：
+Get-ChildItem . -Recurse -Filter "._*" -File | Remove-Item -Force
+```
+
+**Gateway（WebFlux）** 还需把 optional 插件拷入 `plugins/`（茉莉 Spring Cloud Hoxton 用 `apm-spring-cloud-gateway-2.1.x` + `apm-spring-webflux-5.x`）。
+
+VM 参数（与 `.run/* (dev).run.xml` 一致）：
+
+```text
+-javaagent:$PROJECT_DIR$/deploy/observability/skywalking-agent/skywalking-agent.jar
 -Dskywalking.agent.service_name=user-center-server
 -Dskywalking.collector.backend_service=127.0.0.1:28121
 ```
 
-Linux `moli-service.sh` 已支持 `SKYWALKING_ENABLED` 等环境变量；见 `deploy/linux/moli-*.env.example`。
+**日志 ≠ Trace**：Loki/Alloy 采集 `logs/*.log`；SkyWalking 只采集 Agent 上报的 Span，读 log 文件不会出现 Trace。
 
-本地 Agent 建议使用支持 Java 8 字节码/JDK 11 运行时的 SkyWalking Java Agent 9.x，并在所有服务使用同一版本。Agent 与 OAP 版本需先在预发验证。
+Linux `moli-service.sh` 已支持 `SKYWALKING_ENABLED` 等环境变量；见 `deploy/linux/moli-*.env.example`（生产 Agent 同样需完整目录，如 `/opt/skywalking-agent/`）。
+
+本地 Agent 建议使用支持 Java 8 字节码的 SkyWalking Java Agent **9.x**；Agent 与 OAP 版本需在预发验证（当前 Compose OAP **10.4**）。
 
 ## 6. 版本说明
 
 - Prometheus `2.51.2`、Grafana `10.4.2`：沿用现有压测栈，降低首次迁移风险。
 - Loki `3.7.7`、Alloy `1.19.2`：固定版本；Promtail 已 EOL。
-- SkyWalking OAP/UI `10.4.0` + BanyanDB `0.10.3`：SkyWalking 10.2+ 已移除 H2，OAP 10.4 需要 BanyanDB API 0.10。
+- SkyWalking OAP/UI `10.4.0` + BanyanDB `0.10.3`：SkyWalking 10.2+ 已移除 H2，OAP 10.4 需要 BanyanDB API 0.10。  
+  UI 10.4 Trace 页仍可能走 `queryBasicTraces`（BanyanDB 已禁用），Compose 中用 `skywalking-graphql-compat` 转成 `queryTraces`。
 
 ## 7. 生产限制
 

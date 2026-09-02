@@ -1,0 +1,22 @@
+{
+	auto_https off
+	admin off
+	servers :12800 {
+		protocols h1 h2c
+	}
+}
+
+:12800 {
+	@health path /healthcheck
+	handle @health {
+		respond 200
+	}
+
+	handle {
+		reverse_proxy skywalking-graphql-rewrite:12800 {
+			transport http {
+				versions 1.1
+			}
+		}
+	}
+}

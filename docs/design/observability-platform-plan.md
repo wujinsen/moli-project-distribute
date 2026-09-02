@@ -172,7 +172,7 @@
 - 仍需在运行环境完成 Gateway → HTTP → Dubbo → JDBC 全链路 PoC，并核对异步线程上下文传播。
 - Actuator 已按最小端点暴露，但生产安全组/防火墙白名单尚需部署侧实施。
 - 单机 Loki filesystem 与 SkyWalking H2 仅供 PoC，生产存储、高可用、备份策略未落地。
-- Grafana 日志到 SkyWalking Trace 的可点击链接需根据最终 UI 路由验证后配置。
+- Grafana 日志 Dashboard 和 `trace_id` 检索入口（**Moli Trace Logs** Dashboard + `docs/ops/monitoring-and-logs.md` §4）。
 - 暂无 Alertmanager 或等价告警通知链路。
 
 ---
@@ -238,7 +238,7 @@
 
 - 一次网关请求能看到完整跨服务 Trace。
 - HTTP 与 Dubbo Span 父子关系正确。
-- 错误 Span 能跳转到同一 `trace_id` 的 Loki 日志。
+- 错误 Span 能跳转到同一 `trace_id` 的 Loki 日志（Grafana **Moli Trace Logs** Dashboard；SkyWalking → Grafana 深链接待配置）。
 - 关闭 Agent 后业务仍能正常启动，作为回滚路径。
 
 ### Phase 4 · Python 与 AIOps
@@ -320,7 +320,7 @@
 | OBS-05 | 基础完成 | 统一 Logback Trace/Span 上下文；脱敏规则待办 | 各服务 `logback-spring.xml` |
 | OBS-06 | PoC 已完成 | SkyWalking OAP/UI + Agent 模板 | `deploy/observability/`、`deploy/linux/*.env.example` |
 | OBS-07 | 待运行验收 | Trace/Span 传播 PoC | gateway、Dubbo、异步线程、knowledge |
-| OBS-08 | 部分完成 | Grafana 基础 Dashboard；告警待办 | `deploy/observability/grafana/` |
+| OBS-08 | 部分完成 | Grafana 基础 Dashboard + **Moli Trace Logs** 全链路日志；告警与 SkyWalking 深链接待办 | `deploy/observability/grafana/`、`docs/ops/monitoring-and-logs.md` §4 |
 | OBS-09 | 待办 | AIOps 告警接入与证据关联 | `moli-aiops/` |
 | OBS-10 | 部分完成 | 运维 Runbook、容量压测与故障演练 | `docs/ops/`、`load-test/` |
 | OBS-11 | 已完成 | MyBatis `Slf4jImpl` + mapper DEBUG 落盘（dev/pro），Loki 可采 SQL | 各模块 `application-*.yml`、`logback-spring.xml` |

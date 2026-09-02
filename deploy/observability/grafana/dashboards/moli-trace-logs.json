@@ -1,0 +1,196 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "按 SkyWalking Trace ID 一次查询五个 Java 服务 + Gateway 的全链路日志。Trace ID 填前 32 位 hex（第一个点之前）。详见 docs/ops/monitoring-and-logs.md §4。",
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "icon": "external link",
+      "tags": [],
+      "targetBlank": true,
+      "title": "SkyWalking UI",
+      "type": "link",
+      "url": "http://127.0.0.1:28120"
+    }
+  ],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "**用法**：SkyWalking Trace 详情复制 Trace ID → 粘贴到上方变量（只保留前 32 位，如 `13eef851b9434faa8dfcadbeeaa924a7`）→ 时间范围对齐 Trace 发生时刻 ±5 分钟。\n\n**排障顺序**：先在 SkyWalking 看哪一段 Span 报错/变慢，再用本页拉全服务日志。不要固定 `level=INFO`（SQL 等为 DEBUG）。",
+        "mode": "markdown"
+      },
+      "title": "说明",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "{service=~\"$moli_services\"} |= \"$trace_id\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "全链路日志（所有级别）",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 3,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "{service=~\"$moli_services\"} |= \"$trace_id\" |~ \"(?i)(ERROR|Exception|Caused by)\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "全链路异常（ERROR / Exception）",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 4,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "{service=~\"$moli_services\"} |= \"$trace_id\" |= \"Preparing\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "全链路 SQL（MyBatis Preparing）",
+      "type": "logs"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": ["moli", "observability", "trace", "logs"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "description": "SkyWalking Trace ID 前 32 位 hex（不含 .128.xxx 后缀）",
+        "hide": 0,
+        "label": "Trace ID",
+        "name": "trace_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "moli-gateway|user-center-server|order-server|ai-server|knowledge-server",
+          "value": "moli-gateway|user-center-server|order-server|ai-server|knowledge-server"
+        },
+        "hide": 2,
+        "label": "Services",
+        "name": "moli_services",
+        "options": [
+          {
+            "selected": true,
+            "text": "moli-gateway|user-center-server|order-server|ai-server|knowledge-server",
+            "value": "moli-gateway|user-center-server|order-server|ai-server|knowledge-server"
+          }
+        ],
+        "query": "moli-gateway|user-center-server|order-server|ai-server|knowledge-server",
+        "skipUrlSync": false,
+        "type": "constant"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Moli Trace Logs",
+  "uid": "moli-trace-logs",
+  "version": 1
+}
