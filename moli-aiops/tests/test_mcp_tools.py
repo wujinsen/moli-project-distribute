@@ -15,6 +15,9 @@ EXPECTED_READ_ONLY = {
     "ops_log_search",
     "ops_recent_changes",
     "ops_kb_search",
+    "ops_trace_get",
+    "ops_logs_by_trace",
+    "ops_metrics_query",
     "ops_assess_command",
     "ops_audit_trail",
 }
@@ -65,3 +68,13 @@ def test_exec_tool_exposes_dry_run_and_approval_params(tools) -> None:
     schema = tools["ops_exec_command"].input_schema or {}
     properties = set((schema.get("properties") or {}).keys())
     assert {"target", "command", "approval_token", "dry_run"} <= properties
+
+
+def test_metrics_tool_exposes_preset(tools) -> None:
+    props = set(((tools["ops_metrics_query"].input_schema or {}).get("properties") or {}).keys())
+    assert {"service", "preset", "query"} <= props
+
+
+def test_trace_tools_expose_trace_id(tools) -> None:
+    assert "trace_id" in ((tools["ops_trace_get"].input_schema or {}).get("properties") or {})
+    assert "trace_id" in ((tools["ops_logs_by_trace"].input_schema or {}).get("properties") or {})

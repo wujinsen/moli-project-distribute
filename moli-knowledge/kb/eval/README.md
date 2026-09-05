@@ -48,7 +48,7 @@
 ## 运行
 
 ```bash
-# 前置：user-center(8888) + knowledge-server(8090 或网关 21000) 已启动，wiki 已 Sync 进库
+# 前置：UserCenter (dev) :28101 + Knowledge (dev) :28104（或网关 :28100）已启动，wiki 已 Sync 进库
 python kb/tools/eval_ask.py                       # 检索式（默认，不耗 LLM）
 python kb/tools/eval_ask.py --use-llm             # 生成式（同时检查 expect_keywords）
 python kb/tools/fill_eval_metrics.py --run --use-llm   # 跑评测 + 自动回填 README/PORTFOLIO
@@ -70,8 +70,8 @@ python kb/tools/eval_ask.py --use-llm --compare-guardrails \
   --guardrails-off-report eval/reports/ai9-guardrails-off-YYYYMMDD-HHMMSS.json
 ```
 
-登录默认 `admin/123456`，走 **user-center 直连** `http://127.0.0.1:8888/login`。
-KnowledgeServer 自动尝试 `21000/KnowledgeServer` → `8090` 直连。
+登录默认 `admin/123456`，走 **user-center 直连** `http://127.0.0.1:28101/login`。
+KnowledgeServer 自动尝试 `28100/KnowledgeServer` → `28104` 直连（旧端口 21000/8090 仍作回退）。
 可用 `--login-base` / `--kb-base` 或环境变量 `MOLI_LOGIN_BASE` / `MOLI_KB_BASE` 覆盖。
 
 ## 指标

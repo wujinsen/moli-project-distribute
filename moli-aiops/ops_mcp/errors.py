@@ -21,6 +21,8 @@ OPS_APPROVAL_REQUIRED = "OPS_APPROVAL_REQUIRED"
 # 全局熔断开关关闭（对应 user-center 的 ops.command.enabled）
 OPS_EXEC_DISABLED = "OPS_EXEC_DISABLED"
 OPS_UNKNOWN_TOOL = "OPS_UNKNOWN_TOOL"
+# SkyWalking OAP / Loki 不可达或返回非 2xx
+OPS_OBSERVABILITY_UNAVAILABLE = "OPS_OBSERVABILITY_UNAVAILABLE"
 
 # 换参数重试不会有不同结果，编排层不应重试
 NON_RETRYABLE = frozenset(

@@ -16,6 +16,15 @@ from ..errors import OPS_INVALID_INPUT, OPS_TARGET_NOT_FOUND, OpsToolError
 from ..evidence.ssh import SshTarget
 from ..schemas import ChangeRecord, TopologyGraph
 
+# Prometheus / SkyWalking 服务名 → inventory 里可能写的名字
+SERVICE_ALIASES: dict[str, tuple[str, ...]] = {
+    "moli-gateway": ("moli-gateway", "gateway"),
+    "user-center-server": ("user-center-server", "moli-user-center", "user-center"),
+    "order-server": ("order-server", "moli-order", "order"),
+    "ai-server": ("ai-server", "moli-ai", "ai"),
+    "knowledge-server": ("knowledge-server", "moli-knowledge", "knowledge"),
+}
+
 
 class ServiceSpec:
     """inventory 里声明的一个服务，用于日志白名单与处置动作。"""
@@ -105,6 +114,16 @@ class Inventory:
             f"inventory 中找不到目标 {text}（SSH 凭据必须在本地 inventory 声明）",
             detail={"known": sorted(self._by_id)},
         )
+
+    def find_by_service(self, service_name: str) -> InventoryEntry | None:
+        """按服务名反查主机。对不上 Prometheus / SkyWalking 的别名时再试一次。"""
+        wanted = {service_name, *SERVICE_ALIASES.get(service_name, ())}
+        wanted = {s for s in wanted if s}
+        for entry in self.entries:
+            names = {svc.name for svc in entry.services}
+            if names & wanted:
+                return entry
+        return None
 
     def find_service(self, entry: InventoryEntry, service_name: str) -> ServiceSpec:
         for svc in entry.services:

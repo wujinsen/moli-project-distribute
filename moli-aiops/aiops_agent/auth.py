@@ -11,12 +11,12 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
-from . import config
+from . import alert_webhook, config
 
 log = logging.getLogger("aiops.auth")
 
 MOLI_SUCCESS_CODES = {0, 200}
-_SKIP_PATHS = {"/"}
+_SKIP_PATHS = {"/", "/health"}
 
 
 @dataclass(frozen=True)
@@ -26,8 +26,8 @@ class AuthContext:
 
 
 def required_perm(method: str, path: str) -> str | None:
-    if path == "/health":
-        return "operation:aiops:list"
+    if path in {"/", "/health"}:
+        return None
     if method == "POST" and path == "/diagnose":
         return "operation:aiops:diagnose"
     if method == "GET" and path == "/runs":
@@ -82,6 +82,15 @@ class ShiroAuthMiddleware(BaseHTTPMiddleware):
 
         path = request.url.path
         if path in _SKIP_PATHS:
+            return await call_next(request)
+        if path == "/hooks/alertmanager":
+            secret = config.ALERT_WEBHOOK_SECRET
+            if not secret:
+                return JSONResponse({"detail": "未配置 AIOPS_ALERT_WEBHOOK_SECRET，已拒绝 webhook"}, status_code=503)
+            if request.method != "POST":
+                return JSONResponse({"detail": "只接受 POST"}, status_code=405)
+            if not alert_webhook.webhook_token_ok(request.headers.get("Authorization", ""), secret):
+                return JSONResponse({"detail": "webhook token 无效"}, status_code=401)
             return await call_next(request)
 
         perm = required_perm(request.method, path)

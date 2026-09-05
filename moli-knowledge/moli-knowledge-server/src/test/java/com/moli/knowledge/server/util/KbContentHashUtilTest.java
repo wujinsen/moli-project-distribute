@@ -24,4 +24,12 @@ public class KbContentHashUtilTest {
     public void sha256_nullTreatedAsEmpty() {
         Assert.assertEquals(KbContentHashUtil.sha256(null), KbContentHashUtil.sha256(""));
     }
+
+    @Test
+    public void sha256WikiMarkdown_normalizesCrlfLikePythonReadText() {
+        String crlf = "---\r\ntitle: A\r\n---\r\nbody";
+        String lf = "---\ntitle: A\n---\nbody";
+        Assert.assertEquals(KbContentHashUtil.sha256WikiMarkdown(crlf), KbContentHashUtil.sha256(lf));
+        Assert.assertNotEquals(KbContentHashUtil.sha256(crlf), KbContentHashUtil.sha256(lf));
+    }
 }

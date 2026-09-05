@@ -83,7 +83,7 @@ public class KbOpsServiceImpl implements KbOpsService {
     private static final int DRIFT_DASHBOARD_SAMPLE = 5;
 
     @Override
-    public KbOpsDashboardVo dashboard(Long spaceId, Integer trendDays) {
+    public KbOpsDashboardVo dashboard(Long spaceId, Integer trendDays, boolean includeDrift) {
         kbAclService.assertCanOpsDashboard(spaceId);
         List<Long> scope = resolveScope(spaceId);
         int days = normalizeTrendDays(trendDays);
@@ -94,8 +94,12 @@ public class KbOpsServiceImpl implements KbOpsService {
         vo.setLintSummary(buildLintSummary(scope));
         vo.setUnresolvedRelationCount(countUnresolvedRelations(scope));
         vo.setLlm(buildLlmSummary(scope, spaceId, days));
-        vo.setDriftSummary(kbDriftService.driftSummary(spaceId, DRIFT_DASHBOARD_SAMPLE));
         vo.setRetrievalQuality(buildRetrievalQuality());
+        if (includeDrift) {
+            vo.setDriftSummary(kbDriftService.driftSummary(spaceId, DRIFT_DASHBOARD_SAMPLE));
+        } else {
+            vo.setDriftSummary(null);
+        }
         return vo;
     }
 
@@ -348,11 +352,15 @@ public class KbOpsServiceImpl implements KbOpsService {
                 item.setMrr(latest.getMrr());
                 item.setP95Ms(latest.getP95Ms());
                 item.setErrors(latest.getErrors());
+                item.setHasLatestRun(true);
                 if (latest.getHit3() != null && baselineHit3 != null) {
                     item.setDeltaHit3(latest.getHit3().subtract(baselineHit3));
                 }
                 if (latest.getGatePass() != null) {
                     item.setGatePass(latest.getGatePass() == 1);
+                } else {
+                    item.setGatePass(kbEvalBaselinesProvider.evaluateGate(
+                            key, latest.getHit3(), latest.getErrors(), latest.getByDifficultyJson()));
                 }
             }
             strategies.add(item);
@@ -412,6 +420,9 @@ public class KbOpsServiceImpl implements KbOpsService {
         vo.setGitSha(row.getGitSha());
         if (row.getGatePass() != null) {
             vo.setGatePass(row.getGatePass() == 1);
+        } else {
+            vo.setGatePass(kbEvalBaselinesProvider.evaluateGate(
+                    row.getStrategy(), row.getHit3(), row.getErrors(), row.getByDifficultyJson()));
         }
         vo.setCreateTime(row.getCreateTime());
         return vo;

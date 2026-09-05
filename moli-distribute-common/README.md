@@ -6,7 +6,7 @@
 
 | 包 | 内容 |
 |----|------|
-| `com.moli.common.core` | `MoliResult`、`BaseEntity`、`BasePage`、雪花 ID |
+| `com.moli.common.core` | `MoliResult`（含可选 `traceId`）、`TraceIds`、`BaseEntity`、`BasePage`、雪花 ID |
 | `com.moli.common.constant` | Redis/Shiro/权限/系统分组等常量 |
 | `com.moli.common.enums` | 业务类型、HTTP 方法、操作者类型、响应码 |
 | `com.moli.common.exception` | `BaseException`、`GlobalExceptionHandler` |
@@ -39,7 +39,7 @@ moli-distribute-common  ◀── moli-gateway
 
 ## 使用约定
 
-- **统一响应**：对外 HTTP 优先 `MoliResult<T>`（与网关/前端约定一致）。
+- **统一响应**：对外 HTTP 优先 `MoliResult<T>`（与网关/前端约定一致）。错误信封与管理接口在有 SkyWalking 上下文时回 `traceId`（32 位根 ID，无 `spanId`）。
 - **异常**：业务抛 `BaseException`，由 `GlobalExceptionHandler` 转 JSON。
 - **常量**：跨服务 Redis key、权限前缀放 `constant/`，避免各模块硬编码分叉。
 - **版本**：随 monorepo 父 POM 发布，**不**单独 semver。

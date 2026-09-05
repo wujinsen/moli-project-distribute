@@ -19,6 +19,8 @@ from .cmdb.base import CmdbSource, InventoryEntry
 from .errors import OpsToolError, success_payload
 from .evidence import facts as facts_mod
 from .evidence import logs as logs_mod
+from .evidence import metrics as metrics_mod
+from .evidence import observability as obs_mod
 from .evidence import service as service_mod
 from .evidence.kb import KbClient
 from .evidence.ssh import SshPool
@@ -169,6 +171,61 @@ def ops_recent_changes(ctx: ToolContext, server_id: str | None = None, limit: in
 def ops_kb_search(ctx: ToolContext, question: str, *, top_k: int = 6) -> dict[str, Any]:
     answer = ctx.kb.ask(question, top_k=top_k)
     return success_payload({"kb": answer.model_dump(exclude_none=True)})
+
+
+@_guard
+def ops_trace_get(
+    ctx: ToolContext,
+    trace_id: str,
+    *,
+    lookback_hours: int = 24,
+) -> dict[str, Any]:
+    """按 trace_id 查 SkyWalking OAP queryTraces（v2）。不走 v1 queryTrace。"""
+    dump = obs_mod.fetch_trace(trace_id, lookback_hours=lookback_hours)
+    audit.record(
+        tool="ops_trace_get",
+        outcome="success",
+        detail={"trace_id": dump.get("trace_id"), "spans": dump.get("span_count")},
+    )
+    return success_payload({"trace": dump})
+
+
+@_guard
+def ops_logs_by_trace(
+    ctx: ToolContext,
+    trace_id: str,
+    *,
+    lookback_hours: int = 24,
+    limit: int | None = None,
+) -> dict[str, Any]:
+    """按 32 位根 Trace ID 在 Loki 正文里搜全服务日志，不加 level 过滤。"""
+    dump = obs_mod.fetch_logs_by_trace(
+        trace_id, lookback_hours=lookback_hours, limit=limit
+    )
+    audit.record(
+        tool="ops_logs_by_trace",
+        outcome="success",
+        detail={"trace_id": dump.get("trace_id"), "hits": dump.get("hit_count")},
+    )
+    return success_payload({"logs": dump})
+
+
+@_guard
+def ops_metrics_query(
+    ctx: ToolContext,
+    *,
+    service: str = "",
+    preset: str = "up",
+    query: str = "",
+) -> dict[str, Any]:
+    """只读查 Prometheus 即时值。preset=up / http_5xx_ratio / heap_ratio / cpu。"""
+    dump = metrics_mod.instant_query(service=service, preset=preset, query=query)
+    audit.record(
+        tool="ops_metrics_query",
+        outcome="success",
+        detail={"preset": dump.get("preset"), "samples": dump.get("sample_count")},
+    )
+    return success_payload({"metrics": dump})
 
 
 # --- 安全评估（只判不执行）-------------------------------------------------

@@ -55,7 +55,7 @@ public class KbWikiDriftScanner {
                             String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
                             WikiPageSnapshot snap = new WikiPageSnapshot();
                             snap.setSlug(slug);
-                            snap.setContentHash(KbContentHashUtil.sha256(content));
+                            snap.setContentHash(KbContentHashUtil.sha256WikiMarkdown(content));
                             snap.setRelativePath(wikiDirRelative + "/" + slug + ".md");
                             out.put(slug, snap);
                         } catch (IOException e) {

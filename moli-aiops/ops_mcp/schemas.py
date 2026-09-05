@@ -246,6 +246,47 @@ class KbAnswer(BaseModel):
     model: str = ""
 
 
+# --- 全链路 Trace / Loki ------------------------------------------------
+
+
+class TraceSpanDump(BaseModel):
+    service: str = ""
+    endpoint: str = ""
+    type: str = ""
+    peer: str = ""
+    is_error: bool = False
+    duration_ms: int = 0
+
+
+class TraceDump(BaseModel):
+    trace_id: str
+    queried_id: str = ""
+    oap_trace_id: str = ""
+    span_count: int = 0
+    error_spans: int = 0
+    services: list[str] = Field(default_factory=list)
+    duration_ms: int = 0
+    spans: list[TraceSpanDump] = Field(default_factory=list)
+    note: str = ""
+
+
+class LokiLogHit(BaseModel):
+    service: str = ""
+    level: str = ""
+    ts: str = ""
+    line: str = ""
+
+
+class LokiLogDump(BaseModel):
+    trace_id: str
+    queried_id: str = ""
+    query: str = ""
+    hit_count: int = 0
+    truncated: bool = False
+    hits: list[LokiLogHit] = Field(default_factory=list)
+    note: str = ""
+
+
 def model_dump_compact(model: BaseModel) -> dict[str, Any]:
     """去掉 None 字段再交给 LLM，省 token 且避免模型被空值干扰。"""
     return model.model_dump(exclude_none=True)

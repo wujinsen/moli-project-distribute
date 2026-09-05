@@ -41,6 +41,8 @@ class Alert(BaseModel):
     source: str = "manual"  # manual | health_probe | webhook | drill
     fired_at: str = ""
     labels: dict[str, str] = Field(default_factory=dict)
+    # SkyWalking 根 Trace ID（32 hex）。错误信封 / 告警标签里带上后，investigator 会走全链路取证
+    trace_id: str = ""
 
 
 class Triage(BaseModel):

@@ -22,7 +22,8 @@ CMDB 直接读 `moli-user-center` 的运维台账，知识检索直接调 `moli-
 | 工具层 | `ops_mcp/` | CMDB、SSH 取证、日志检索、危险分级、审批校验、执行审计 |
 
 工具层是一组普通 Python 函数，同时通过 `ops_mcp/mcp_server.py` 以 MCP stdio 暴露出去。
-所以这 10 个工具既服务于自家编排层，也能直接挂到 Cursor / Claude Desktop 上手工排障。
+所以这 13 个工具既服务于自家编排层，也能直接挂到 Cursor / Claude Desktop 上手工排障。
+其中 `ops_trace_get` / `ops_logs_by_trace` 是 W1 只读全链路工具；`ops_metrics_query` 读 Prometheus 即时值。Alertmanager 经 `POST /hooks/alertmanager`（独立 Bearer）进诊断。
 
 ---
 
@@ -31,7 +32,7 @@ CMDB 直接读 `moli-user-center` 的运维台账，知识检索直接调 `moli-
 | 节点 | 输入 | 产出 | 降级行为 |
 |------|------|------|----------|
 | `triage` | 告警文本 | 等级、影响面、排查方向 | 关键词规则定级 |
-| `investigator` | 排查方向 | 服务存活 / 主机指标 / 日志 / 近期变更 / 知识库 | 单路取证失败只丢这一路证据，不中断 |
+| `investigator` | 排查方向 | 服务存活 / 主机指标 / 日志 / 近期变更 / 知识库；告警带 `trace_id` 时再加 SkyWalking + Loki | 单路取证失败只丢这一路证据，不中断 |
 | `diagnostician` | 证据集 | 2–4 条**竞争性**根因假设 + 置信度 | 指标阈值 + 日志模式规则出假设 |
 | `critic` | 假设 + 证据 | 逐条 confirm / refute / insufficient | 证据不足时回补取证，最多 2 轮 |
 | `planner` | 定稿根因 | 分步预案，每步带影响面与回滚 | 按根因类型套预置预案 |
@@ -45,7 +46,7 @@ CMDB 直接读 `moli-user-center` 的运维台账，知识检索直接调 `moli-
 
 ### 症状不等于根因
 
-`investigator` 的五路证据里，**服务存活**（`ops_service_status`）是单独一路而不是并进主机指标：
+`investigator` 的默认五路证据里，**服务存活**（`ops_service_status`）是单独一路而不是并进主机指标：
 一台 CPU 2%、内存 20% 的机器上服务照样可能是停着的，资源指标全绿不代表服务活着。
 
 但服务存活假设的置信度刻意压在 OOM、磁盘写满、fd 耗尽这些之下。
@@ -188,13 +189,14 @@ docker compose -f drills/sandbox/docker-compose.yml up -d --build
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/diagnose` | 发起诊断，返回 `run_id` |
+| POST | `/hooks/alertmanager` | Alertmanager webhook（`Authorization: Bearer`，不走 Shiro） |
 | GET | `/runs/{id}/stream` | SSE 实时进度 |
 | GET | `/runs` · `/runs/{id}` | 列表 / 详情（含 interrupt 待审内容） |
 | POST | `/runs/{id}/approve` | 勾选步骤 + 署名，**为每个变更步骤签发绑定令牌** |
 | POST | `/runs/{id}/reject` | 否决，跳过执行但仍出复盘 |
 | GET | `/runs/{id}/history` | checkpoint 历史 |
 | POST | `/runs/{id}/rerun` | 从指定节点单步重跑 |
-| GET | `/health` | 依赖自检：LLM 是否配置、CMDB 模式、执行开关状态 |
+| GET | `/health` | 依赖自检（无需登录）：LLM、CMDB、执行开关、本地 inventory 目标列表 |
 
 ---
 
@@ -210,6 +212,10 @@ docker compose -f drills/sandbox/docker-compose.yml up -d --build
 | `AIOPS_FORCE_DRY_RUN` | `false` | 人已审批也仍走干跑。首次接生产建议先开着 |
 | `OPS_CMDB_MODE` | `auto` | `auto` 先探 REST，不可达回退 inventory |
 | `AIOPS_PROVIDERS` | 空 | 厂商链，顺序即优先级；留空则全程规则兜底 |
+| `OPS_SW_OAP_GRAPHQL_URL` | `http://127.0.0.1:28122/graphql` | SkyWalking OAP GraphQL（只走 `queryTraces` v2） |
+| `OPS_LOKI_URL` | `http://127.0.0.1:28110` | Loki，按 32 位根 `trace_id` 正文检索 |
+| `OPS_PROMETHEUS_URL` | `http://127.0.0.1:29090` | Prometheus，供 `ops_metrics_query` |
+| `AIOPS_ALERT_WEBHOOK_SECRET` | 空（拒绝） | Alertmanager Bearer；本地 compose 用 `moli-local-alert-webhook` |
 
 只读取证不受 `OPS_EXEC_ENABLED` 影响——关停开关时仍然能查，只是不能改。
 
@@ -233,13 +239,15 @@ docker compose -f drills/sandbox/docker-compose.yml up -d --build
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-143 个用例，重点在能被绕过的地方：
+pytest 覆盖安全闸门、MCP 注册与全链路取证：
 
 | 文件 | 覆盖 |
 |------|------|
 | `test_classifier.py` | 管道、`&&`、命令替换、`rm -rf` 变形、重定向误判、未知命令失败关闭 |
 | `test_safety_gate.py` | 令牌篡改 / 过期 / 重放 / 换命令复用、熔断开关、被拦尝试是否进审计 |
-| `test_mcp_tools.py` | 10 个工具的 schema 与 `ToolAnnotations` 是否如实反映危险等级 |
+| `test_mcp_tools.py` | 13 个工具的 schema 与 `ToolAnnotations` 是否如实反映危险等级 |
+| `test_alert_webhook.py` | AM 载荷解析、Bearer、同指纹去重 |
+| `test_observability.py` | Trace ID 归一化、`queryTraces` v2、Loki `|=` 正文检索（HTTP 全 mock） |
 | `test_service_health.py` | 信号缺失 vs 信号为负、无 systemd 的容器服务、unit 名含 shell 元字符 |
 | `test_diagnosis_flow.py` | 端到端：规则兜底、interrupt 挂起与恢复、风险标签来源、症状不得盖过根因 |
 

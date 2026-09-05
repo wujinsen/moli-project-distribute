@@ -25,12 +25,12 @@
 
 | 接口 | 权限 |
 |------|------|
-| `GET /health` | `operation:aiops:list` |
+| `GET /`、`GET /health` | 无需登录（演示页拉目标清单） |
 | `GET /runs*` | `operation:aiops:list` |
 | `POST /diagnose` | `operation:aiops:diagnose` |
 | `POST /runs/{id}/approve|reject` | `operation:aiops:approve` |
 
-独立演示页 `static/index.html` 可设 `AIOPS_AUTH_DISABLED=true` 跳过入站鉴权。
+独立演示页 `static/index.html` 读 `GET /health` 填目标主机；发起诊断仍需登录。全站跳过入站鉴权可设 `AIOPS_AUTH_DISABLED=true`。
 
 ## 前端页面
 
@@ -48,7 +48,8 @@
 | Method | Path | 说明 |
 |--------|------|------|
 | GET | `/health` | 配置 chips |
-| POST | `/diagnose` | 启动诊断 |
+| POST | `/diagnose` | 启动诊断。可选 `trace_id` / `labels.trace_id`，有则 investigator 拉全链路 |
+| POST | `/hooks/alertmanager` | Alertmanager webhook；`Authorization: Bearer <AIOPS_ALERT_WEBHOOK_SECRET>`，**不是** Shiro Session |
 | GET | `/runs/{id}/stream` | SSE（fetch + ReadableStream） |
 | GET | `/runs` | 历史列表 |
 | GET | `/runs/{id}` | 详情 + 复盘 + trace |

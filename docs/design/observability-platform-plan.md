@@ -173,7 +173,7 @@
 - Actuator 已按最小端点暴露，但生产安全组/防火墙白名单尚需部署侧实施。
 - 单机 Loki filesystem 与 SkyWalking H2 仅供 PoC，生产存储、高可用、备份策略未落地。
 - Grafana 日志 Dashboard 和 `trace_id` 检索入口（**Moli Trace Logs** Dashboard + `docs/ops/monitoring-and-logs.md` §4）。
-- 暂无 Alertmanager 或等价告警通知链路。
+- **W3 已落地**：Prometheus 规则 + Alertmanager webhook → `POST /hooks/alertmanager` → `/diagnose`。钉钉/企微等通知通道仍待办。
 
 ---
 
@@ -245,9 +245,9 @@
 
 交付：
 
-- moli-aiops、knowledge Python sidecar 使用 OpenTelemetry/SkyWalking Python 探针或标准 Trace Context。
-- Prometheus 告警进入 moli-aiops 诊断入口。
-- 诊断报告保存告警、指标窗口、`trace_id` 和日志查询条件。
+- **W1 已落地**：`ops_trace_get`（OAP `queryTraces` v2）+ `ops_logs_by_trace`（Loki 正文 `|=`）已挂 MCP 与 investigator；告警 / `POST /diagnose` 带 `trace_id` 时诊断报告含 Span 摘要与同 trace 日志。Servlet 服务错误信封 `MoliResult.traceId` 回 32 位根 ID。
+- moli-aiops、knowledge Python sidecar 使用 OpenTelemetry/SkyWalking Python 探针或标准 Trace Context（待办）。
+- **W3 已落地**：Alertmanager → `POST /hooks/alertmanager`（Bearer）→ 诊断；investigator 用 `ops_metrics_query` 读 Prom 窗口。钉钉/企微通知仍待办。
 
 ---
 
@@ -321,7 +321,7 @@
 | OBS-06 | PoC 已完成 | SkyWalking OAP/UI + Agent 模板 | `deploy/observability/`、`deploy/linux/*.env.example` |
 | OBS-07 | 待运行验收 | Trace/Span 传播 PoC | gateway、Dubbo、异步线程、knowledge |
 | OBS-08 | 部分完成 | Grafana 基础 Dashboard + **Moli Trace Logs** 全链路日志；告警与 SkyWalking 深链接待办 | `deploy/observability/grafana/`、`docs/ops/monitoring-and-logs.md` §4 |
-| OBS-09 | 待办 | AIOps 告警接入与证据关联 | `moli-aiops/` |
+| OBS-09 | W1+W3 | AIOps 按 `trace_id` 关联 SW/Loki；AM webhook 进诊断；钉钉/企微待办 | `moli-aiops/`、`deploy/observability/` |
 | OBS-10 | 部分完成 | 运维 Runbook、容量压测与故障演练 | `docs/ops/`、`load-test/` |
 | OBS-11 | 已完成 | MyBatis `Slf4jImpl` + mapper DEBUG 落盘（dev/pro），Loki 可采 SQL | 各模块 `application-*.yml`、`logback-spring.xml` |
 | OBS-12 | 待办 | 生产主机 Alloy systemd 安装与日志路径验收 | `docs/ops/observability-production.md`、`deploy/observability/` |

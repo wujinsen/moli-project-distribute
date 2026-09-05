@@ -112,6 +112,59 @@ def ops_recent_changes(server_id: str | None = None, limit: int = 20) -> str:
 
 
 @server.tool(
+    name="ops_trace_get",
+    description=(
+        "按 trace_id 查询 SkyWalking OAP 的 queryTraces（v2）。"
+        "必须用 v2：BanyanDB 拒收 queryBasicTraces / queryTrace。"
+        "传入 UI 复制的完整串或 TID: 前缀均可，工具会先归一成 32 位根 ID。"
+        "时间窗默认最近 24 小时（OAP 时区 Asia/Shanghai）。只读。"
+    ),
+    annotations=_READ_ONLY,
+)
+def ops_trace_get(trace_id: str, lookback_hours: int = 24) -> str:
+    return _out(toolbelt.ops_trace_get(CTX, trace_id, lookback_hours=lookback_hours))
+
+
+@server.tool(
+    name="ops_logs_by_trace",
+    description=(
+        "按同一 32 位根 Trace ID 在 Loki 检索全服务日志。"
+        "LogQL 形态：{service=~\"moli-gateway|user-center-server|...\"} |= \"<32-hex>\"。"
+        "不要把 trace_id 当 Loki 标签，也不要加 level=INFO（SQL/Dubbo 是 DEBUG）。"
+        "时间窗默认 24 小时。只读。"
+    ),
+    annotations=_READ_ONLY,
+)
+def ops_logs_by_trace(
+    trace_id: str,
+    lookback_hours: int = 24,
+    limit: int = 80,
+) -> str:
+    return _out(
+        toolbelt.ops_logs_by_trace(
+            CTX, trace_id, lookback_hours=lookback_hours, limit=limit
+        )
+    )
+
+
+@server.tool(
+    name="ops_metrics_query",
+    description=(
+        "只读查询 Prometheus 即时指标。"
+        "preset=up|http_5xx_ratio|heap_ratio|cpu，并传 service（与 scrape 标签一致，如 knowledge-server）；"
+        "或直接传 query= 一条 PromQL。不写、不删规则。"
+    ),
+    annotations=_READ_ONLY,
+)
+def ops_metrics_query(
+    service: str = "",
+    preset: str = "up",
+    query: str = "",
+) -> str:
+    return _out(toolbelt.ops_metrics_query(CTX, service=service, preset=preset, query=query))
+
+
+@server.tool(
     name="ops_kb_search",
     description=(
         "检索企业知识库中的历史事故记录与运维 Runbook，返回带出处的片段。"

@@ -8,6 +8,7 @@
 | 组件 | 本机地址 |
 |------|----------|
 | Prometheus | http://127.0.0.1:29090 |
+| Alertmanager | http://127.0.0.1:29093 |
 | Grafana | http://127.0.0.1:28300 |
 | Loki API | http://127.0.0.1:28110 |
 | Alloy UI | http://127.0.0.1:28111 |
@@ -47,7 +48,8 @@ docker compose -f deploy/observability/docker-compose.observability.yml down -v
 ## 3. 首次验证
 
 1. 服务指标：`http://127.0.0.1:28101/actuator/prometheus`
-2. Prometheus → **Status / Targets**：已启动服务应为 `UP`
+2. Prometheus → **Status / Targets**：已启动服务应为 `UP`；**Alerts** 应加载 `moli-core`（`MoliServiceDown` / `MoliHttp5xx` / `MoliHeapHigh`）
+2b. Alertmanager http://127.0.0.1:29093 ：firing 后 webhook 到本机 `moli-aiops :28105/hooks/alertmanager`（Bearer `moli-local-alert-webhook`，需先起 AIOps 并设置相同 secret）
 3. Grafana → **Dashboards / Moli / Moli Observability Overview**（http://127.0.0.1:28300，admin/admin）
 4. Grafana → **Dashboards / Moli / Moli Trace Logs**：SkyWalking 复制 Trace ID 前 32 位 → 一次查全服务日志（操作见 `docs/ops/monitoring-and-logs.md` §4）
 5. Grafana → **Explore / Loki**：查询 `{service="user-center-server"}`（时间范围选 **Last 7 days** 或更长；若只选 Last 1 hour 而服务近期未写日志文件，会显示 No logs found）
@@ -158,6 +160,6 @@ Linux `moli-service.sh` 已支持 `SKYWALKING_ENABLED` 等环境变量；见 `de
 
 - SkyWalking 使用 BanyanDB standalone；容器重建后 Trace 不保证长期保留。
 - Loki 使用单机 filesystem。
-- 未配置 TLS、统一认证、Alertmanager 和高可用。
+- 未配置 TLS、统一认证和高可用。Alertmanager 已接入本地 webhook（PoC secret，生产必须更换）。
 
 生产上线前必须改为独立监控主机、正式存储、内网 ACL、备份与容量告警。

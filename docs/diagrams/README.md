@@ -30,6 +30,7 @@
 | [`moli-kb-hybrid-retrieval.drawio`](moli-kb-hybrid-retrieval.drawio) | **混合检索 + GraphRAG AI-2/5**：ngram + 向量 RRF → 可选 Graph 扩跳（kb_relation）→ 可选 Rerank + 评测（`docs/design/kb-hybrid-retrieval.md`） |
 | [`moli-kb-agentic-rag.drawio`](moli-kb-agentic-rag.drawio) | **Agentic RAG AI-7**：S0–S5 编排状态机 · 自检/回补 · `kb_agentic_trace`（`docs/design/kb-hybrid-retrieval.md` §8） |
 | [`moli-kb-deep-research.drawio`](moli-kb-deep-research.drawio) | **DeepResearch AI-10**：Planner→Retriever→Writer→Reviewer · Ingest 回写 outputs/ · SSE（`docs/design/contracts/AI-10-contract.md`） |
+| [`moli-kb-agent-memory.drawio`](moli-kb-agent-memory.drawio) | **会话/上下文/记忆 AI-11（规划）**：chatSession ≠ Shiro · 打包预算 · 用户记忆独立 collection（`docs/design/kb-agent-session-memory.md`） |
 | [`moli-ai-chatbi-flow.drawio`](moli-ai-chatbi-flow.drawio) | **ChatBI / NL2SQL 调用链 AI-4**：Java 壳 AST 白名单+只读执行，Python sidecar 生成解读（设计见 `docs/design/bi-chatbi-nl2sql.md`） |
 | [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：五路由（含 AiOpsServer）+ StripPrefix + 端口 |
 | [`moli-rbac-model.drawio`](moli-rbac-model.drawio) | **RBAC 模型**：用户→角色→菜单/动作 + Shiro 运行时 |
@@ -43,8 +44,8 @@
 | [`moli-operation-topology-graph.drawio`](moli-operation-topology-graph.drawio) | **服务器拓扑可视化 SVR-25**：全局 ECharts 拓扑图 + 聚合 API + P2 依赖表（设计见 `docs/design/server-topology-visualization.md`） |
 | [`moli-operation-relations-nav.drawio`](moli-operation-relations-nav.drawio) | **关联关系导航 SVR-28**：三实体 N:N 全景 + RelationDrawer + 七页接入（设计见 `docs/design/operation-relations-navigation.md`） |
 | [`moli-sso-menu-flow.drawio`](moli-sso-menu-flow.drawio) | **SSO 菜单按系统隔离**：login → enter/switch → getRouters 过滤（设计见 `docs/design/sso-menu-system-isolation.md`） |
-| [`moli-aiops-architecture.drawio`](moli-aiops-architecture.drawio) | **AIOps 故障诊断多智能体平台**：L0 告警源 → L1 LangGraph 九节点（含 `interrupt()` 人工确认闸门）→ L2 `ops_mcp` 证据源/安全层 → L3 CMDB·SSH·KB·sqlite（模块 README `moli-aiops/README.md`） |
-| [`moli-observability-platform.drawio`](moli-observability-platform.drawio) | **可观测性平台**：Prometheus/Grafana 指标、Loki/Alloy 日志、SkyWalking Trace/Span 与 AIOps 证据关联 |
+| [`moli-aiops-architecture.drawio`](moli-aiops-architecture.drawio) | **AIOps 故障诊断多智能体平台**：L0 告警源 → L1 LangGraph 九节点（含 `interrupt()` 人工确认闸门）→ L2 `ops_mcp` 12 个工具（含 W1 `ops_trace_get` / `ops_logs_by_trace`）→ L3 CMDB·SSH·KB·OAP/Loki·sqlite（模块 README `moli-aiops/README.md`） |
+| [`moli-observability-platform.drawio`](moli-observability-platform.drawio) | **可观测性平台**：Prometheus/Grafana/Alertmanager、Loki/Alloy、SkyWalking，以及 AM webhook → AIOps 诊断 |
 | [`moli-observability-prod-topology.drawio`](moli-observability-prod-topology.drawio) | **生产可观测性部署拓扑**：业务机 Alloy + 监控机 Loki/Prometheus/Grafana + 对象存储 |
 | [`moli-observability-log-resilience.drawio`](moli-observability-log-resilience.drawio) | **日志可靠性分层**：L1 落盘 → L2 Alloy → L3 Loki/S3 → L4 冷归档；故障影响矩阵 |
 | [`moli-observability-core-trace-flow.drawio`](moli-observability-core-trace-flow.drawio) | **核心服务调用链**：Gateway → user-center/order/knowledge HTTP 路由，Shiro Starter → user-center Dubbo 鉴权，以及 trace_id/span_id 父子关系 |

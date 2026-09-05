@@ -79,7 +79,7 @@ Agent 路径也用仓库宏（换盘符不用改）：
 -javaagent:$PROJECT_DIR$/deploy/observability/skywalking-agent/skywalking-agent.jar
 ```
 
-首次使用需解压 Agent 到上述目录（见 `deploy/observability/README.md` §5）。
+首次使用需解压 Java Agent 9.x 到 `deploy/observability/skywalking-agent/`，**必须**保证与 `skywalking-agent.jar` 同级存在 `plugins/`、`config/` 目录（仅单独一个 JAR 只会注册服务名，**不会有 Trace**）。可从 `apache-skywalking-java-agent-9.7.0.tgz` 解压后复制 `skywalking-agent/*` 到该目录。详见 `deploy/observability/README.md` §5。
 
 ## 4. 不用 IDEA 时：Maven 启动（可选）
 
@@ -149,3 +149,49 @@ docker compose -f deploy/observability/docker-compose.observability.yml restart 
 ```
 
 Targets UI：http://127.0.0.1:29090/targets 。order/ai/knowledge 须对应端口进程已启动。
+
+## 7. 知识库 wiki 根目录与 D7 漂移自检
+
+本地 wiki 磁盘根目录（**两空间共用**）：
+
+```text
+D:\work\moli_project\moli-project-distribute\moli-knowledge\kb
+  wiki/       → enterprise-kb
+  wiki-moli/  → moli-ops-manual
+```
+
+`Knowledge (dev)` 已在 `.run/Knowledge (dev).run.xml` 注入 `KB_WIKI_ROOT=$PROJECT_DIR$/moli-knowledge/kb`；`application-dev.yml` 为 `kb.wiki.root: ${KB_WIKI_ROOT:moli-knowledge/kb}`。  
+**改路径后须 Stop → Rebuild → Run**，否则 D7 仍可能 `scanEmpty` 或全 0。
+
+### 7.1 命令行漂移（免登录，与后端口径一致）
+
+在 `moli-knowledge/kb` 下：
+
+```powershell
+cd D:\work\moli_project\moli-project-distribute\moli-knowledge\kb
+
+python tools/detect_wiki_db_drift.py --space enterprise-kb --password 12345678
+python tools/detect_wiki_db_drift.py --wiki-dir wiki-moli --space moli-ops-manual --password 12345678
+```
+
+期望：`wikiPageTotal` / `in_sync` **大于 0**（enterprise-kb 约 474；moli-ops-manual 约 175+）。  
+若 `wiki_only` / `hash_mismatch` > 0，在 Web「Wiki 同步」或 `python tools/sync_to_db.py --wiki-dir wiki-moli --space moli-ops-manual` 后再跑一遍。
+
+### 7.2 运维看板 D7（需登录）
+
+1. 启动 `UserCenter (dev)` + `Gateway (dev)` + `Knowledge (dev)`（Knowledge 须含最新 `ci/kb-sync-multi-space-gate` 分支，`GET /kb/sync/drift` 需 `kb:ops:dashboard`）。
+2. meiling-ui 本地 dev（`:5141`）→ **知识库 → 运维看板**。
+3. D7 应显示各空间 **Wiki 页数 / DB 页数**，而非「未检测」或全 0 +「已对齐」。
+
+直连 API（带登录 Cookie / Token）：
+
+```powershell
+curl.exe -s "http://127.0.0.1:28104/kb/sync/drift?spaceId=900000000000000003&sampleLimit=5"
+curl.exe -s "http://127.0.0.1:28104/kb/ops/dashboard?trendDays=7&spaceId=900000000000000003"
+```
+
+空间 ID：`enterprise-kb` = `900000000000000001`，`moli-ops-manual` = `900000000000000003`。
+
+### 7.3 LLM 调用日志开关（可选）
+
+本地库已执行 `docs/sql/41_kb_platform_llm_call_log_enabled.sql` 后，**系统管理 → 知识库 LLM** 可切换「记录 LLM 调用」；看板 D6 成本趋势在开启且有调用后才有数据。

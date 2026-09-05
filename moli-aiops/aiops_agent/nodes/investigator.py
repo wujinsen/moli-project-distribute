@@ -1,11 +1,12 @@
-"""取证：按分诊圈定的方向并行拉五路证据。
+"""取证：按分诊圈定的方向拉证据。
 
-五路证据分别回答不同问题：
+默认五路，外加可选的全链路一路（告警带了 trace_id 才走）：
   服务存活 → 服务进程还在不在、声明端口还听不听
   主机指标 → 是不是资源打满了
-  日志     → 进程自己报了什么错
+  日志     → 进程自己报了什么错（SSH grep）
   近期变更 → 故障前刚动过什么
   知识库   → 这个现象以前出过吗，有没有既定处置流程
+  全链路   → SkyWalking Span + Loki 同 trace 日志（报障 / Agent 共用）
 
 服务存活单独成一路而不是并进主机指标：一台 CPU 2%、内存 20% 的机器上服务照样
 可能是停着的，资源指标全绿不代表服务活着。缺这一路时，「服务被停掉」这类最常见
@@ -18,6 +19,8 @@
 from __future__ import annotations
 
 import uuid
+
+from ops_mcp.evidence.observability import extract_trace_id
 
 from ..models import EvidenceItem
 from .base import node_span, now, progress, try_llm_json
@@ -76,6 +79,96 @@ def make_node(router, toolbelt_ctx, toolbelt):
             patterns = _patterns(router, node_trace, triage.get("investigation_focus") or [], backfill)
 
             collected: list[EvidenceItem] = []
+
+            svc = str(
+                alert.get("service")
+                or (alert.get("labels") or {}).get("service")
+                or ""
+            )
+            if svc or alert.get("source") == "webhook":
+                for preset in ("up", "http_5xx_ratio", "heap_ratio"):
+                    metrics = toolbelt.ops_metrics_query(
+                        toolbelt_ctx, service=svc, preset=preset
+                    )
+                    node_trace.tool_calls.append(f"ops_metrics_query:{preset}")
+                    if metrics.get("ok"):
+                        dump = metrics.get("metrics") or {}
+                        collected.append(
+                            _evidence(
+                                "metrics",
+                                svc,
+                                "ops_metrics_query",
+                                f"Prometheus {preset} 样本 {dump.get('sample_count') or 0} 条",
+                                dump,
+                            )
+                        )
+                    else:
+                        collected.append(
+                            _evidence(
+                                "metrics",
+                                svc,
+                                "ops_metrics_query",
+                                f"Prometheus {preset} 查询失败",
+                                {},
+                                metrics.get("message", "未知错误"),
+                            )
+                        )
+
+            trace_id = extract_trace_id(alert)
+            if trace_id:
+                sw = toolbelt.ops_trace_get(toolbelt_ctx, trace_id)
+                node_trace.tool_calls.append("ops_trace_get")
+                if sw.get("ok"):
+                    dump = sw.get("trace") or {}
+                    collected.append(
+                        _evidence(
+                            "trace",
+                            "",
+                            "ops_trace_get",
+                            (
+                                f"SkyWalking {dump.get('span_count') or 0} span，"
+                                f"{dump.get('error_spans') or 0} 个错误，"
+                                f"服务 {', '.join(dump.get('services') or []) or '无'}"
+                            ),
+                            dump,
+                        )
+                    )
+                else:
+                    collected.append(
+                        _evidence(
+                            "trace",
+                            "",
+                            "ops_trace_get",
+                            "SkyWalking 按 trace 查询失败",
+                            {},
+                            sw.get("message", "未知错误"),
+                        )
+                    )
+
+                loki = toolbelt.ops_logs_by_trace(toolbelt_ctx, trace_id)
+                node_trace.tool_calls.append("ops_logs_by_trace")
+                if loki.get("ok"):
+                    logs = loki.get("logs") or {}
+                    collected.append(
+                        _evidence(
+                            "trace_logs",
+                            "",
+                            "ops_logs_by_trace",
+                            f"Loki 命中 {logs.get('hit_count') or 0} 条（trace {trace_id}）",
+                            logs,
+                        )
+                    )
+                else:
+                    collected.append(
+                        _evidence(
+                            "trace_logs",
+                            "",
+                            "ops_logs_by_trace",
+                            "Loki 按 trace 检索失败",
+                            {},
+                            loki.get("message", "未知错误"),
+                        )
+                    )
 
             for target in targets[:5]:
                 svc = toolbelt.ops_service_status(toolbelt_ctx, target)

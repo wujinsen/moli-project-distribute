@@ -13,7 +13,7 @@ related:
   - 服务调用与架构
   - 技术方案与架构索引
 created: 2026-07-06
-updated: 2026-07-09
+updated: 2026-09-02
 ---
 
 > **浏览镜像**：工程契约权威仍在 `docs/design/gateway-design.md`；改设计请先改契约再重新运行本脚本或 Tab3 导入。
@@ -26,7 +26,7 @@ updated: 2026-07-09
 
 ## 1. 定位
 
-`moli-gateway` 是茉莉 v1 的 **唯一对外 HTTP 入口**（meiling-ui / curl / k6 均经此访问业务服务）。
+`moli-gateway` 是茉莉 v1 的 **唯一对外 HTTP 入口**（meiling-ui / curl / k6 均经此访问业务服务）。**网关路由和限流这块架构**：路径路由 / `lb://` 负载见 §3，限流规划见 §6（v1 网关未硬编码规则，预留 Sentinel）。详细路由表见 [[茉莉-网关路由规范]]。
 
 | 做 | 不做 |
 |----|------|

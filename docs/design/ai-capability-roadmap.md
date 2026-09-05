@@ -54,6 +54,7 @@
 | G5 | ai-server 空壳 | 平台缺「AI 接真实业务数据」场景 | AI-4 |
 | G6 | LLM 网关单 provider 直连，无路由/缓存/成本看板 | 成本与可用性不可控 | AI-8 |
 | G7 | 答案无 grounding 校验、输入无注入/PII 防护 | 企业级可信欠缺 | AI-9 |
+| G8 | `/kb/ask` 无多轮会话、无用户级长短期记忆 | 指代接不上、跨天无记忆；对照岗位 Agent 底座缺口 | AI-11 |
 
 ---
 
@@ -71,6 +72,7 @@
 | **AI-8** | LLM 网关升级（多 provider 路由 + 语义缓存 + 成本看板） | 基建 | ★★★ | — | ✅ done（2026-07-20 Opus 签核 · [AI-8 契约](contracts/AI-8-contract.md)）：failover 路由 + Redis 语义缓存 + Ops 成本/命中率） |
 | **AI-9** | Guardrails（grounding 校验 + 注入检测 + PII 脱敏） | 可信 | ★★★ | AI-7 | ✅ done（2026-07-20 Opus 签核 · [AI-9 契约](contracts/AI-9-contract.md)）：注入金样 20/20 · PII · grounding VO · 默认关零回归） |
 | **AI-10** | Multi-Agent DeepResearch（主题 → 大纲 → 检索 → 撰写 → 审校 → 带引用报告，可回写 kb） | 应用 | ★★★★ | AI-2/5 | ✅ done（2026-07-20 Opus 签核 · [AI-10 契约](contracts/AI-10-contract.md)）：四 Agent + `/kb/research` SSE + Ingest 回写 outputs/ · M4 收官） |
+| **AI-11** | 对话会话 + 上下文打包 + 用户长短期记忆 | 应用 | ★★★ | AI-8/9 | 🔜 规划（[kb-agent-session-memory.md](kb-agent-session-memory.md)）：`/kb/chat` 不改 `/kb/ask`；记忆与 wiki 向量隔离 |
 
 > 状态图例：🔜 即将开工 · 🔵 排队 · ⚪ 远期 · ✅ 完成。完成后在本表回填并链接方案文档。
 

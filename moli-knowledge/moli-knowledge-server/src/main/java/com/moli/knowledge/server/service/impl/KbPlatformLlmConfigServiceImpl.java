@@ -111,13 +111,30 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
                             ? KbLlmConfigSource.YAML_FALLBACK : KbLlmConfigSource.DATABASE)
                     .build();
         }
-        return fromYamlFallback();
+        KbLlmEffectiveConfig yaml = fromYamlFallback();
+        if (row == null) {
+            return yaml;
+        }
+        // 占位行 / 未启用：key 仍走 yaml，模型等非敏感字段以 DB 为准，避免问答页和配置页不一致
+        return KbLlmEffectiveConfig.builder()
+                .enabled(yaml.isEnabled())
+                .provider(defaultString(row.getProvider(), yaml.getProvider()))
+                .baseUrl(defaultString(row.getBaseUrl(), yaml.getBaseUrl()))
+                .apiKey(yaml.getApiKey())
+                .apiKeyMask(yaml.getApiKeyMask())
+                .model(defaultString(row.getModel(), yaml.getModel()))
+                .temperature(toDouble(row.getTemperature(), yaml.getTemperature()))
+                .timeoutSeconds(toInt(row.getTimeoutSeconds(), yaml.getTimeoutSeconds()))
+                .extraModels(parseExtraModels(row.getExtraModels()))
+                .source(KbLlmConfigSource.YAML_FALLBACK)
+                .build();
     }
 
     @Override
     public KbPlatformLlmConfigVo getAdminView() {
         kbAclService.assertPlatformLlmManage();
         ensureSingletonRow();
+        llmRuntime.refresh();
         KbPlatformLlmConfig row = getSingletonRow();
         KbLlmEffectiveConfig effective = llmRuntime.current();
         return toVo(row, effective);
@@ -240,9 +257,9 @@ public class KbPlatformLlmConfigServiceImpl implements KbPlatformLlmConfigServic
         if (row != null) {
             vo.setEnabled(intTrue(row.getEnabled()));
             vo.setCallLogEnabled(resolveCallLogEnabled(row));
-            vo.setProvider(row.getProvider());
-            vo.setBaseUrl(row.getBaseUrl());
-            vo.setModel(row.getModel());
+            vo.setProvider(defaultString(row.getProvider(), effective.getProvider()));
+            vo.setBaseUrl(defaultString(row.getBaseUrl(), effective.getBaseUrl()));
+            vo.setModel(defaultString(row.getModel(), effective.getModel()));
             vo.setTemperature(toDouble(row.getTemperature(), effective.getTemperature()));
             vo.setTimeoutSeconds(toInt(row.getTimeoutSeconds(), effective.getTimeoutSeconds()));
             vo.setExtraModels(parseExtraModels(row.getExtraModels()));

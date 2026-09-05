@@ -100,7 +100,7 @@ public class KbOpsServiceImplTest {
         drift.setWikiOnlyTotal(3);
         when(kbDriftService.driftSummary(null, 5)).thenReturn(drift);
 
-        KbOpsDashboardVo vo = service.dashboard(null, 7);
+        KbOpsDashboardVo vo = service.dashboard(null, 7, true);
         Assert.assertNotNull(vo.getDriftSummary());
         Assert.assertTrue(vo.getDriftSummary().isDrifted());
         Assert.assertEquals(3, vo.getDriftSummary().getWikiOnlyTotal());
@@ -122,7 +122,7 @@ public class KbOpsServiceImplTest {
         issue.setSpaceId(1L);
         when(kbLintIssueMapper.selectList(any())).thenReturn(Collections.singletonList(issue));
 
-        KbOpsDashboardVo vo = service.dashboard(null, 7);
+        KbOpsDashboardVo vo = service.dashboard(null, 7, false);
         Assert.assertEquals(7, vo.getSyncTrend().size());
         Assert.assertEquals(1, vo.getLintSummary().getOpenCount());
         Assert.assertTrue(vo.getLlm().getAvailable());
@@ -130,6 +130,34 @@ public class KbOpsServiceImplTest {
         Assert.assertEquals(0.8, vo.getLlm().getSuccessRate(), 0.001);
         Assert.assertNotNull(vo.getRetrievalQuality());
         Assert.assertEquals(3, vo.getRetrievalQuality().getStrategies().size());
+        for (com.moli.knowledge.server.dto.KbOpsEvalStrategySummaryVo s : vo.getRetrievalQuality().getStrategies()) {
+            Assert.assertFalse(s.isHasLatestRun());
+            Assert.assertNull(s.getGatePass());
+        }
+        Assert.assertNull(vo.getDriftSummary());
         verify(kbAclService).assertCanOpsDashboard(null);
+    }
+
+    @Test
+    public void dashboard_derivesGatePassWhenDbNull() {
+        com.moli.knowledge.server.entity.KbEvalRun run = new com.moli.knowledge.server.entity.KbEvalRun();
+        run.setStrategy("hybrid-rerank");
+        run.setHit3(new java.math.BigDecimal("0.8333"));
+        run.setErrors(0);
+        run.setGatePass(null);
+        run.setRunAt(new Date());
+        when(kbEvalRunMapper.selectOne(any())).thenReturn(run);
+        when(kbEvalBaselinesProvider.baselineHit3(any())).thenReturn(new java.math.BigDecimal("0.8333"));
+        when(kbEvalBaselinesProvider.evaluateGate(any(), any(), any(), any())).thenReturn(true);
+
+        KbOpsDashboardVo vo = service.dashboard(null, 7, false);
+        com.moli.knowledge.server.dto.KbOpsEvalStrategySummaryVo hybridRerank = vo.getRetrievalQuality()
+                .getStrategies().stream()
+                .filter(s -> "hybrid-rerank".equals(s.getStrategy()))
+                .findFirst()
+                .orElse(null);
+        Assert.assertNotNull(hybridRerank);
+        Assert.assertTrue(hybridRerank.isHasLatestRun());
+        Assert.assertEquals(Boolean.TRUE, hybridRerank.getGatePass());
     }
 }

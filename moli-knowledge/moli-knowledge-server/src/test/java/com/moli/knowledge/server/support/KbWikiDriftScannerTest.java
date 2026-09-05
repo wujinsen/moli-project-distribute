@@ -1,6 +1,7 @@
 package com.moli.knowledge.server.support;
 
 import com.moli.knowledge.server.config.KbWikiProperties;
+import com.moli.knowledge.server.util.KbContentHashUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +45,21 @@ public class KbWikiDriftScannerTest {
         Assert.assertNotNull(snap);
         Assert.assertEquals("wiki/guides/page.md", snap.getRelativePath());
         Assert.assertEquals(
-                com.moli.knowledge.server.util.KbContentHashUtil.sha256(content),
+                KbContentHashUtil.sha256WikiMarkdown(content),
                 snap.getContentHash());
+    }
+
+    @Test
+    public void scanWikiDir_matchesPythonSyncHashForCrlfFile() throws Exception {
+        String crlfBytes = "---\r\ntitle: Page\r\n---\r\nhello";
+        Path md = kbRoot.resolve("wiki/guides/crlf-page.md");
+        Files.write(md, crlfBytes.getBytes(StandardCharsets.UTF_8));
+
+        Map<String, WikiPageSnapshot> wiki = scanner.scanWikiDir("wiki");
+        WikiPageSnapshot snap = wiki.get("guides/crlf-page");
+        Assert.assertNotNull(snap);
+        String lfContent = "---\ntitle: Page\n---\nhello";
+        Assert.assertEquals(KbContentHashUtil.sha256(lfContent), snap.getContentHash());
     }
 
     @Test

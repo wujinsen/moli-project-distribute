@@ -22,6 +22,7 @@
 | Loki API | **28110** |
 | Alloy UI | **28111** |
 | Prometheus | **29090** |
+| Alertmanager | **29093** |
 | SkyWalking UI | **28120** |
 | SkyWalking OAP gRPC | **28121** |
 

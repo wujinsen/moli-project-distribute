@@ -79,7 +79,7 @@ kb:
     provider: ${KB_LLM_PROVIDER:glm}
     base-url: ${KB_LLM_BASE_URL:https://open.bigmodel.cn/api/paas/v4}
     api-key: ${KB_LLM_API_KEY:}
-    model: ${KB_LLM_MODEL:glm-4-flash}
+    model: ${KB_LLM_MODEL:GLM-5.3-Flash}
     temperature: 0.3
     timeout-seconds: 90
     config-secret: ${KB_LLM_CONFIG_SECRET:}

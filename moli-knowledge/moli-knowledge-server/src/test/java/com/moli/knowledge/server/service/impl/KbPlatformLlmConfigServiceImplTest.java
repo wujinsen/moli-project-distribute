@@ -83,6 +83,21 @@ public class KbPlatformLlmConfigServiceImplTest {
     }
 
     @Test
+    public void resolveEffective_usesDbModelWhenYamlKeyFallback() {
+        KbPlatformLlmConfig row = new KbPlatformLlmConfig();
+        row.setId(KbPlatformLlmConfig.SINGLETON_ID);
+        row.setEnabled(0);
+        row.setProvider("glm");
+        row.setModel("GLM-5.4-Flash");
+        when(platformLlmConfigMapper.selectById(KbPlatformLlmConfig.SINGLETON_ID)).thenReturn(row);
+
+        KbLlmEffectiveConfig cfg = service.resolveEffective();
+        Assert.assertEquals(KbLlmConfigSource.YAML_FALLBACK, cfg.getSource());
+        Assert.assertEquals("GLM-5.4-Flash", cfg.getModel());
+        Assert.assertEquals("glm", cfg.getProvider());
+    }
+
+    @Test
     public void isCallLogEnabled_prefersDatabaseOverYaml() {
         KbPlatformLlmConfig row = new KbPlatformLlmConfig();
         row.setCallLogEnabled(0);

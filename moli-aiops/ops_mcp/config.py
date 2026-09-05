@@ -46,5 +46,21 @@ KB_BASE_URL = os.environ.get("KB_BASE_URL", "http://127.0.0.1:28104").rstrip("/"
 KB_AUTH_TOKEN = os.environ.get("KB_AUTH_TOKEN", "")
 KB_TIMEOUT_S = float(os.environ.get("OPS_KB_TIMEOUT_S", "20"))
 
+# --- 可观测性（SkyWalking OAP GraphQL v2 + Loki）------------------------
+# 本机 compose：OAP HTTP 28122:12800，Loki 28110:3100
+PROMETHEUS_URL = os.environ.get("OPS_PROMETHEUS_URL", "http://127.0.0.1:29090").rstrip("/")
+
+SW_OAP_GRAPHQL_URL = os.environ.get(
+    "OPS_SW_OAP_GRAPHQL_URL", "http://127.0.0.1:28122/graphql"
+).rstrip("/")
+LOKI_URL = os.environ.get("OPS_LOKI_URL", "http://127.0.0.1:28110").rstrip("/")
+OBS_TIMEOUT_S = float(os.environ.get("OPS_OBS_TIMEOUT_S", "12"))
+# 与 Grafana Moli Trace Logs 面板一致；trace_id 只放正文 |=，不作 Loki 标签
+LOKI_SERVICE_SELECTOR = os.environ.get(
+    "OPS_LOKI_SERVICE_SELECTOR",
+    '{service=~"moli-gateway|user-center-server|order-server|ai-server|knowledge-server"}',
+)
+LOKI_LOG_LIMIT = int(os.environ.get("OPS_LOKI_LOG_LIMIT", "80"))
+
 # --- 审计 ---------------------------------------------------------------
 AUDIT_DB = Path(os.environ.get("OPS_AUDIT_DB", str(_HERE / "data" / "aiops.db")))

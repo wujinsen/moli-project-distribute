@@ -29,7 +29,7 @@ from ops_mcp import config as ops_config
 from ops_mcp.errors import OpsToolError
 from ops_mcp.safety import approval as approval_mod
 
-from . import config, trace
+from . import alert_webhook, config, trace
 from .auth import ShiroAuthMiddleware
 from .graph import DiagnosisEngine
 from .models import Alert
@@ -127,6 +127,8 @@ class DiagnoseRequest(BaseModel):
     service: str = ""
     description: str = ""
     source: str = "manual"
+    trace_id: str = ""
+    labels: dict[str, str] = Field(default_factory=dict)
 
 
 class ApproveRequest(BaseModel):
@@ -148,6 +150,23 @@ class RerunRequest(BaseModel):
 # --- 接口 ---------------------------------------------------------------
 
 
+def _start_diagnose(alert: Alert) -> dict[str, str]:
+    run_id = f"run-{uuid.uuid4().hex[:12]}"
+    incident_id = alert.id or f"inc-{uuid.uuid4().hex[:8]}"
+    alert.id = incident_id
+    if not alert.fired_at:
+        alert.fired_at = time.strftime("%Y-%m-%dT%H:%M:%S")
+    trace.start_run(run_id, incident_id, alert)
+    _channel(run_id).emit({"type": "started", "message": f"开始诊断：{alert.title}"})
+    initial = {
+        "run_id": run_id, "incident_id": incident_id, "alert": alert.model_dump(mode="json"),
+        "evidence": [], "hypotheses": [], "progress": [], "iteration": 0,
+        "status": "running", "started_ms": int(time.time() * 1000),
+    }
+    threading.Thread(target=_pump, args=(run_id, initial), daemon=True).start()
+    return {"run_id": run_id, "incident_id": incident_id}
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {
@@ -158,28 +177,39 @@ def health() -> dict[str, Any]:
         "inventory_targets": [e.id for e in ENGINE.ctx.inventory.entries],
         "exec_enabled": ops_config.EXEC_ENABLED,
         "force_dry_run": config.FORCE_DRY_RUN,
+        "alert_webhook_configured": bool(config.ALERT_WEBHOOK_SECRET),
+        "prometheus_url": ops_config.PROMETHEUS_URL,
+    }
+
+
+@app.post("/hooks/alertmanager")
+def alertmanager_hook(payload: dict[str, Any]) -> dict[str, Any]:
+    """Alertmanager webhook。鉴权在中间件用 Bearer，不走 Shiro。"""
+    alerts = alert_webhook.alerts_from_payload(payload, inventory=ENGINE.ctx.inventory)
+    started: list[dict[str, str]] = []
+    skipped: list[str] = []
+    for alert in alerts:
+        fp = alert_webhook.fingerprint(alert.labels)
+        if alert_webhook.should_skip_duplicate(fp, ttl_s=config.ALERT_DEDUP_TTL_S):
+            skipped.append(fp)
+            continue
+        started.append(_start_diagnose(alert))
+    return {
+        "ok": True,
+        "received": len(payload.get("alerts") or []),
+        "started": started,
+        "skipped": skipped,
     }
 
 
 @app.post("/diagnose")
 def diagnose(body: DiagnoseRequest) -> dict[str, Any]:
-    run_id = f"run-{uuid.uuid4().hex[:12]}"
-    incident_id = f"inc-{uuid.uuid4().hex[:8]}"
     alert = Alert(
-        id=incident_id, title=body.title, description=body.description,
+        title=body.title, description=body.description,
         target=body.target, service=body.service, source=body.source,
-        fired_at=time.strftime("%Y-%m-%dT%H:%M:%S"),
+        trace_id=body.trace_id, labels=body.labels,
     )
-    trace.start_run(run_id, incident_id, alert)
-    _channel(run_id).emit({"type": "started", "message": f"开始诊断：{body.title}"})
-
-    initial = {
-        "run_id": run_id, "incident_id": incident_id, "alert": alert.model_dump(mode="json"),
-        "evidence": [], "hypotheses": [], "progress": [], "iteration": 0,
-        "status": "running", "started_ms": int(time.time() * 1000),
-    }
-    threading.Thread(target=_pump, args=(run_id, initial), daemon=True).start()
-    return {"run_id": run_id, "incident_id": incident_id}
+    return _start_diagnose(alert)
 
 
 @app.get("/runs/{run_id}/stream")

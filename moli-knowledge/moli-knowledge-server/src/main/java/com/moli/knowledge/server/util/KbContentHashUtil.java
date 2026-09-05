@@ -11,6 +11,21 @@ public final class KbContentHashUtil {
     private KbContentHashUtil() {
     }
 
+    /**
+     * 与 Python {@code Path.read_text(encoding="utf-8")} 一致：Universal newlines 归一为 LF 后再 hash。
+     * Windows CRLF wiki 若直接 hash 原始字节会与 DB（sync 口径）全员不一致。
+     */
+    public static String sha256WikiMarkdown(String rawUtf8) {
+        return sha256(normalizeWikiNewlines(rawUtf8));
+    }
+
+    public static String normalizeWikiNewlines(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("\r\n", "\n").replace("\r", "\n");
+    }
+
     public static String sha256(String text) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");

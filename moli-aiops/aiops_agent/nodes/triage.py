@@ -45,16 +45,22 @@ def _heuristic(alert: dict, topology: dict) -> Triage:
     targets = [target] if target else [s.get("id") for s in (topology.get("servers") or [])][:3]
     service = alert.get("service") or ""
 
+    focus = [
+        "采集主机指标，确认 CPU、内存、磁盘是否有资源瓶颈",
+        "检索最近日志中的 ERROR 与异常堆栈",
+        "查询故障前的近期变更",
+    ]
+    if alert.get("source") == "webhook" or (alert.get("labels") or {}).get("alertname"):
+        focus.insert(0, "对照 Prometheus 抓取、5xx 占比与堆内存窗口")
+    if alert.get("trace_id") or (alert.get("labels") or {}).get("trace_id"):
+        focus.insert(0, "按 trace_id 拉取 SkyWalking Span 与 Loki 全链路日志")
+
     return Triage(
         severity=severity,
         summary=alert.get("title") or "未提供告警标题",
         affected_targets=[str(t) for t in targets if t],
         affected_services=[service] if service else [],
-        investigation_focus=[
-            "采集主机指标，确认 CPU、内存、磁盘是否有资源瓶颈",
-            "检索最近日志中的 ERROR 与异常堆栈",
-            "查询故障前的近期变更",
-        ],
+        investigation_focus=focus,
     )
 
 

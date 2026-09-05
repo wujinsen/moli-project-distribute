@@ -61,12 +61,14 @@ sources:
 - raw/wujinsen_markdown/面试笔试/精尽面试题/dubbo/精尽 Dubbo 面试题.note.md
 related: [dubbo-与-nacos, dubbo-面试题, netty-reactor与线程模型, io模型与-netty]
 created: 2026-06-22
-updated: 2026-07-05
+updated: 2026-09-02
 ---
 
 # Dubbo 调用原理与分层
 
 > 枢纽 [[middleware/dubbo-与-nacos]]；系统架构。
+
+**Dubbo 一次 RPC 调用经过哪些层次**：Consumer 代理 → Cluster 选 Invoker → Protocol 封装 → Serialization → Transport（Netty）→ Provider 执行 → 返回 Result。对应下面「一次 RPC」步骤与十层架构中的 RPC / Remoting。
 
 ## 一次 RPC 调用（Consumer → Provider）
 

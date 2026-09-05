@@ -10,12 +10,14 @@ sources:
 - raw/wujinsen_markdown/源码分析/nacos/Nacos 架构.note.md
 related: [dubbo-与-nacos, nacos-config动态配置实践]
 created: 2026-06-22
-updated: 2026-07-05
+updated: 2026-09-02
 ---
 
 # Nacos 注册与配置
 
 > 枢纽 [[middleware/dubbo-与-nacos]]；本地启动。
+
+**Nacos 做注册中心和配置中心分别怎么用**：注册中心用 `nacos-discovery`（服务实例注册/发现，见「服务注册发现」）；配置中心用 `nacos-config`（`bootstrap.yml` 拉共享配置，见「配置中心」）。两者可指向同一 `server-addr`，职责分开。
 
 ## 服务注册发现
 

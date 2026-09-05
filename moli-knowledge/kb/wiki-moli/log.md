@@ -61,3 +61,4 @@
 ## [2026-08-31] ingest | 可观测性生产部署 → create ops/可观测性生产部署; docs/ops/observability-production.md + draw.io prod-topology/log-resilience; enrich 可观测性平台/监控与日志/生产检查清单/observability-platform-plan
 
 ## [2026-09-01] docs | Shiro Actuator/Prometheus 10006 排障 → docs/ops/monitoring-and-logs.md §4.3; enrich 茉莉-shiro-跨服务/故障排查指南§8/监控与日志/茉莉登录与鉴权故障根因汇总/认证与会话机制; shiro-starter README
+## [2026-09-02] enrich | eval hit@3 词面 · docker部署指南 / API网关-概要设计 / 用户中心-概要设计 / 知识库模块-概要设计

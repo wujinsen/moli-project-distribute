@@ -40,12 +40,14 @@ sources:
 - raw/wujinsen_markdown/面试笔试/高级java/缓存更新的套路.note.md
 related: [redis-缓存, redis-面试题]
 created: 2026-06-22
-updated: 2026-07-05
+updated: 2026-09-02
 ---
 
 # Redis 数据结构与使用场景
 
 > 枢纽 [[cache/redis-缓存]]。
+
+**Redis 有哪些数据结构？分别适合什么场景**：String 缓存计数、Hash 对象字段、List 队列、Set 去重、ZSet 排行榜、Bitmap / HyperLogLog / Stream 见下表。本页是数据结构主答，面试题页只作交叉引用。
 
 | 类型 | 典型命令 | 场景 |
 |------|----------|------|

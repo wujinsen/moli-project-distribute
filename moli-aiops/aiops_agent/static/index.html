@@ -160,7 +160,13 @@ const $ = (id) => document.getElementById(id);
 let currentRun = null, source = null, pendingSteps = [];
 
 async function loadHealth() {
-  const h = await (await fetch('/health')).json();
+  const resp = await fetch('/health');
+  const h = await resp.json();
+  if (!resp.ok) {
+    $('target').innerHTML = '<option value="">inventory 为空（/health 需登录或重启服务）</option>';
+    $('health').innerHTML = `<span class="chip off">${h.detail || ('HTTP ' + resp.status)}</span>`;
+    return;
+  }
   $('health').innerHTML = [
     `<span class="chip ${h.llm_configured ? 'on' : 'off'}">模型 ${h.llm_configured ? h.llm_providers.join('/') : '未配置 · 规则兜底'}</span>`,
     `<span class="chip">CMDB ${h.cmdb_source}</span>`,
@@ -168,7 +174,7 @@ async function loadHealth() {
     h.force_dry_run ? `<span class="chip off">强制干跑</span>` : '',
   ].join('');
   $('target').innerHTML = (h.inventory_targets || []).map(t => `<option>${t}</option>`).join('')
-    || '<option value="">inventory 为空</option>';
+    || '<option value="">inventory 为空（请确认 moli-aiops/inventory.yaml 存在后重启 uvicorn）</option>';
 }
 
 async function loadRuns() {

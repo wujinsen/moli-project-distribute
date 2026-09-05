@@ -1,6 +1,7 @@
 package com.moli.common.core;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.moli.common.enums.ResponseCodeEnums;
 import lombok.Data;
 
@@ -16,6 +17,9 @@ public class MoliResult<T> implements Serializable {
     private T data;
     private int code;
     private String msg;
+    /** SkyWalking 根 Trace ID（32 hex）。无探针时省略，不回 spanId。 */
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private String traceId;
 
     public MoliResult(T data) {
         this.setData(data);
@@ -43,32 +47,32 @@ public class MoliResult<T> implements Serializable {
     public static <T> MoliResult<T> success() {
         MoliResult<T> result = new MoliResult<>();
         result.setCode(SUCCESS_CODE);
-        return result;
+        return attachTrace(result);
     }
 
 
     public static <T> MoliResult<T> success(T t) {
-        return new MoliResult(t, SUCCESS_CODE);
+        return attachTrace(new MoliResult(t, SUCCESS_CODE));
     }
 
     public static <T> MoliResult<T> success(T t, String message) {
-        return new MoliResult(t, SUCCESS_CODE, message);
+        return attachTrace(new MoliResult(t, SUCCESS_CODE, message));
     }
 
     public static <T> MoliResult<T> success(T t, int code) {
-        return new MoliResult(t, code);
+        return attachTrace(new MoliResult(t, code));
     }
 
     public static <T> MoliResult<T> success(T t, int code, String message) {
-        return new MoliResult(t, code, message);
+        return attachTrace(new MoliResult(t, code, message));
     }
 
     public static <T> MoliResult<T> error() {
-        return new MoliResult(ResponseCodeEnums.ERROR.getCode());
+        return attachTrace(new MoliResult(ResponseCodeEnums.ERROR.getCode()));
     }
 
     public static <T> MoliResult<T> error(T t) {
-        return new MoliResult(t, ResponseCodeEnums.ERROR.getCode());
+        return attachTrace(new MoliResult(t, ResponseCodeEnums.ERROR.getCode()));
     }
 
     public static <T> MoliResult<T> error(T data, String message) {
@@ -76,7 +80,7 @@ public class MoliResult<T> implements Serializable {
         moliResult.setCode(ResponseCodeEnums.ERROR.getCode());
         moliResult.setData(data);
         moliResult.setMsg(message);
-        return moliResult;
+        return attachTrace(moliResult);
     }
 
     public static <T> MoliResult<T> error(int code, T data, String message) {
@@ -84,11 +88,18 @@ public class MoliResult<T> implements Serializable {
         moliResult.setCode(code);
         moliResult.setData(data);
         moliResult.setMsg(message);
-        return moliResult;
+        return attachTrace(moliResult);
     }
 
     public static <T> MoliResult<T> errorMsg(int code, String message) {
-        return new MoliResult(code, message);
+        return attachTrace(new MoliResult(code, message));
+    }
+
+    static <T> MoliResult<T> attachTrace(MoliResult<T> result) {
+        if (result.getTraceId() == null || result.getTraceId().isEmpty()) {
+            result.setTraceId(TraceIds.currentRoot());
+        }
+        return result;
     }
 
 }

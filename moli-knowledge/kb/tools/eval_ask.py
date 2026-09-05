@@ -58,9 +58,11 @@ FALLBACK_SPACE_IDS = {
 }
 
 
-DEFAULT_LOGIN_BASE = os.environ.get("MOLI_LOGIN_BASE", "http://127.0.0.1:8888")
+DEFAULT_LOGIN_BASE = os.environ.get("MOLI_LOGIN_BASE", "http://127.0.0.1:28101")
 DEFAULT_KB_BASES = [
     os.environ.get("MOLI_KB_BASE", "").strip(),
+    "http://127.0.0.1:28100/KnowledgeServer",
+    "http://127.0.0.1:28104",
     "http://127.0.0.1:21000/KnowledgeServer",
     "http://127.0.0.1:8090",
 ]
@@ -99,9 +101,15 @@ def http_probe(url: str, *, token: str = "", timeout: int = 5) -> tuple[bool, st
 
 
 def login(login_base: str, username: str, password: str) -> str:
-    """登录拿 token。默认走 user-center 直连 8888/login。"""
+    """登录拿 token。默认走 user-center 直连 28101/login（见 docs/ops/local-dev-ports.md）。"""
     bases = []
-    for b in (login_base, DEFAULT_LOGIN_BASE, "http://127.0.0.1:21000/UserCenter"):
+    for b in (
+        login_base,
+        DEFAULT_LOGIN_BASE,
+        "http://127.0.0.1:28100/UserCenter",
+        "http://127.0.0.1:8888",
+        "http://127.0.0.1:21000/UserCenter",
+    ):
         b = (b or "").rstrip("/")
         if b and b not in bases:
             bases.append(b)
@@ -147,7 +155,7 @@ def resolve_kb_base(kb_base_arg: str) -> tuple[str, list[str]]:
             return base, tried
         errors.append(f"{base} -> {detail}")
     msg = "KnowledgeServer 均不可达。已尝试：\n  " + "\n  ".join(errors)
-    msg += "\n提示：8888 是 user-center，不是网关；KnowledgeServer 走 21000/KnowledgeServer 或直连 8090。"
+    msg += "\n提示：本地端口见 docs/ops/local-dev-ports.md；KnowledgeServer 走 28100/KnowledgeServer 或直连 28104。"
     raise RuntimeError(msg)
 
 
@@ -163,7 +171,7 @@ def auth_smoke_test(kb_base: str, token: str) -> None:
             f"KnowledgeServer 已探活，但带登录态调用 /kb/ask 失败: HTTP {e.code}\n"
             f"  {body}\n"
             "常见原因：user-center / Dubbo / Redis Session 未就绪，或 knowledge-server 需重启。\n"
-            "建议：先确认 user-center-server(8888) 正常，再重启 moli-knowledge-server(8090)。"
+            "建议：先确认 user-center-server(28101) 正常，再确认 knowledge-server(28104)。"
         ) from e
 
 
@@ -746,13 +754,13 @@ def percentile_ms(values: list[int], pct: float) -> int | None:
 def main() -> int:
     ap = argparse.ArgumentParser(description="KB /kb/ask 评测（golden set 回归）")
     ap.add_argument("--login-base", default=os.environ.get("MOLI_LOGIN_BASE", DEFAULT_LOGIN_BASE),
-                    help="登录基址（默认 user-center 直连 http://127.0.0.1:8888）")
+                    help="登录基址（默认 user-center 直连 http://127.0.0.1:28101）")
     ap.add_argument("--gateway", default=os.environ.get("MOLI_GATEWAY", ""),
                     help="已废弃，等同 --login-base；保留兼容")
     ap.add_argument("--username", default=os.environ.get("MOLI_EVAL_USER", "admin"))
     ap.add_argument("--password", default=os.environ.get("MOLI_EVAL_PASS", "123456"))
     ap.add_argument("--kb-base", default=os.environ.get("MOLI_KB_BASE", ""),
-                    help="KnowledgeServer 基址；默认自动尝试 21000/KnowledgeServer → 8090 直连")
+                    help="KnowledgeServer 基址；默认自动尝试 28100/KnowledgeServer → 28104 直连")
     ap.add_argument("--golden", default=str(DEFAULT_GOLDEN))
     ap.add_argument("--top-k", type=int, default=8,
                     help="citations 召回上限（默认 8；需 ≥ gate-at-k 才能派生 hit@k）")
@@ -902,7 +910,7 @@ def main() -> int:
     try:
         token = login(login_base, args.username, args.password)
     except urllib.error.URLError as e:
-        print(f"[error] 连不上登录服务 {login_base}（{e.reason}）。请先启动 user-center-server(8888)。")
+        print(f"[error] 连不上登录服务 {login_base}（{e.reason}）。请先启动 UserCenter (dev)（28101）。")
         return 2
     except RuntimeError as e:
         print(f"[error] {e}")
@@ -1215,7 +1223,14 @@ def main() -> int:
         gate_failed = True
 
     if args.emit_db:
-        from eval_gate import emit_eval_run
+        from eval_gate import emit_eval_run, evaluate_gate, load_baselines
+
+        # 契约 §2.2：--emit-db 就地写 gate_pass；不必再带 --gate-from-baselines
+        if gate_pass is None and args.strategy:
+            try:
+                _, _, gate_pass = evaluate_gate(report, args.strategy, load_baselines())
+            except Exception as exc:  # noqa: BLE001
+                print(f"[warn] emit-db 门禁判定跳过（{exc}）")
 
         emit_eval_run(
             report,

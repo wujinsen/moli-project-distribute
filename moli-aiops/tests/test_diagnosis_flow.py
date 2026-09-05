@@ -152,6 +152,44 @@ class FakeToolbelt:
     def ops_kb_search(self, ctx, question, top_k=6):  # noqa: ARG002
         return success_payload({"kb": {"mode": "retrieval", "answer": "", "citations": []}})
 
+    def ops_trace_get(self, ctx, trace_id, lookback_hours=24):  # noqa: ARG002
+        return success_payload(
+            {
+                "trace": {
+                    "trace_id": trace_id,
+                    "span_count": 3,
+                    "error_spans": 1,
+                    "services": ["moli-gateway", "knowledge-server"],
+                    "duration_ms": 42,
+                    "spans": [],
+                }
+            }
+        )
+
+    def ops_metrics_query(self, ctx, service="", preset="up", query=""):  # noqa: ARG002
+        return success_payload(
+            {"metrics": {"preset": preset, "query": query or preset, "sample_count": 1, "samples": [{"value": "1"}]}}
+        )
+
+    def ops_logs_by_trace(self, ctx, trace_id, lookback_hours=24, limit=None):  # noqa: ARG002
+        return success_payload(
+            {
+                "logs": {
+                    "trace_id": trace_id,
+                    "hit_count": 2,
+                    "hits": [
+                        {
+                            "service": "knowledge-server",
+                            "level": "",
+                            "ts": "2026-09-03 09:00:00",
+                            "line": f"trace_id=TID:{trace_id}.1.1 ERROR boom",
+                        }
+                    ],
+                    "truncated": False,
+                }
+            }
+        )
+
     # --- 安全与执行：这两个走真实实现 ---
     def ops_assess_command(self, ctx, command):  # noqa: ARG002
         return success_payload(
@@ -436,3 +474,28 @@ def test_runs_without_any_llm_provider(engine):
     assert values["triage"]["severity"] == "P0"
     assert values["hypotheses"], "规则兜底也要产出候选根因"
     assert values["plan"]["steps"], "规则兜底也要产出处置预案"
+
+
+def test_investigator_pulls_trace_lane_when_alert_has_trace_id(engine):
+    """W1：告警带 trace_id 时 investigator 必须走 SkyWalking + Loki，失败不得拖垮整轮。"""
+    alert = Alert(
+        id="inc-trace-1",
+        title="knowledge-server 500，信封里有 traceId",
+        description="报障：TID:13eef851b9434faa8dfcadbeeaa924a7.128.1",
+        target=TARGET,
+        service=SERVICE,
+        source="manual",
+        trace_id="TID:13eef851b9434faa8dfcadbeeaa924a7.128.17882712296580005",
+    )
+    result = engine.start(alert, run_id="run-trace-w1")
+    evidence = result["values"]["evidence"]
+    tools = {item["tool"] for item in evidence}
+    assert "ops_trace_get" in tools
+    assert "ops_logs_by_trace" in tools
+    trace_ev = next(item for item in evidence if item["tool"] == "ops_trace_get")
+    assert trace_ev["kind"] == "trace"
+    assert not trace_ev["error"]
+    assert (trace_ev["data"] or {}).get("error_spans") == 1
+    logs_ev = next(item for item in evidence if item["tool"] == "ops_logs_by_trace")
+    assert logs_ev["kind"] == "trace_logs"
+    assert (logs_ev["data"] or {}).get("hit_count") == 2

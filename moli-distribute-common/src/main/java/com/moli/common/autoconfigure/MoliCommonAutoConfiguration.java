@@ -2,6 +2,7 @@ package com.moli.common.autoconfigure;
 
 import com.moli.common.core.MoliResult;
 import com.moli.common.exception.GlobalExceptionHandler;
+import com.moli.common.web.MoliResultTraceAdvice;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,12 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass(MoliResult.class)
-@Import({GlobalExceptionHandler.class, com.moli.common.utils.SpringUtil.class, com.moli.common.core.IdGenerator.class, MoliJacksonAutoConfiguration.class})
+@Import({
+        GlobalExceptionHandler.class,
+        MoliResultTraceAdvice.class,
+        com.moli.common.utils.SpringUtil.class,
+        com.moli.common.core.IdGenerator.class,
+        MoliJacksonAutoConfiguration.class
+})
 public class MoliCommonAutoConfiguration {
 }

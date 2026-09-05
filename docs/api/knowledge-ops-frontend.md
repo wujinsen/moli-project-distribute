@@ -315,7 +315,13 @@ commit/publish 响应 **`nextSteps`** → 渲染 [KbWorkflowNextSteps](knowledge
 | `GET /kb/ops/eval-trend?strategy=&days=14` | 按日 hit@3/MRR（当日最后一次 run） |
 | `GET /kb/ops/eval-runs?strategy=&limit=20` | run 明细含 `report_path` / `gate_pass` / `by_difficulty_json` |
 
-Dashboard 新增字段 `retrievalQuality.strategies[]`：`strategy` · `hit3` · `mrr` · `baselineHit3` · `deltaHit3` · `gatePass`。
+Dashboard 新增字段 `retrievalQuality.strategies[]`：`strategy` · `hasLatestRun` · `hit3` · `mrr` · `baselineHit3` · `deltaHit3` · `gatePass`。
+
+| `gatePass` | 前端展示 |
+|------------|----------|
+| `true` | 通过 |
+| `false` | 未通过（有 run 且门禁失败） |
+| `null` | **无评测 / 未判定**（`hasLatestRun=false` 或落库时未写 `gate_pass`）。**不要画成「未通过」** |
 
 **AI-8 LLM 缓存/成本（additive · `dashboard.llm`）**：
 

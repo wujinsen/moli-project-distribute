@@ -37,7 +37,7 @@
 | 本地 dev（meiling-ui vite proxy） | `/operation/*` → `user-center :8888` |
 | 经网关（若统一入口） | `{gateway}/UserCenterServer/operation/*`（以 [gateway-routes.md](gateway-routes.md) 为准） |
 
-**统一响应**：`MoliResult<T>` → `{ code: 200, data: T, msg?: string }`；分页 `data` 为 `PageRes<T>` → `{ list, total, pageNum, pageSize }`。
+**统一响应**：`MoliResult<T>` → `{ code: 200, data: T, msg?: string, traceId?: string }`；`traceId` 为 SkyWalking **32 位根 ID**（报障贴 Grafana / 诊断用），无探针时省略。分页 `data` 为 `PageRes<T>` → `{ list, total, pageNum, pageSize }`。
 
 ---
 

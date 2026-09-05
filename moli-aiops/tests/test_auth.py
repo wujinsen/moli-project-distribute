@@ -11,7 +11,7 @@ from aiops_agent.server import app
 
 
 def test_required_perm_mapping() -> None:
-    assert required_perm("GET", "/health") == "operation:aiops:list"
+    assert required_perm("GET", "/health") is None
     assert required_perm("POST", "/diagnose") == "operation:aiops:diagnose"
     assert required_perm("GET", "/runs/run-abc/stream") == "operation:aiops:list"
     assert required_perm("POST", "/runs/run-abc/approve") == "operation:aiops:approve"
@@ -24,12 +24,14 @@ def test_has_perm_full() -> None:
 
 
 @pytest.mark.asyncio
-async def test_health_requires_auth_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_health_ok_without_auth_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(agent_config, "AUTH_ENABLED", True)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/health")
-    assert resp.status_code == 401
+    assert resp.status_code == 200
+    assert resp.json()["ok"] is True
+    assert "inventory_targets" in resp.json()
 
 
 @pytest.mark.asyncio

@@ -24,10 +24,11 @@ public class KbOpsController {
     private KbOpsService kbOpsService;
 
     @GetMapping("/dashboard")
-    @ApiOperation("KBOPS-9 · 运维 Dashboard：Sync 趋势、Lint 工单、断链、LLM 调用率、wiki↔DB 漂移")
+    @ApiOperation("KBOPS-9 · 运维 Dashboard：Sync 趋势、Lint 工单、断链、LLM 调用率；漂移默认走 GET /kb/sync/drift")
     public MoliResult<KbOpsDashboardVo> dashboard(@RequestParam(required = false) Long spaceId,
-                                                  @RequestParam(required = false, defaultValue = "7") Integer trendDays) {
-        return MoliResult.success(kbOpsService.dashboard(spaceId, trendDays));
+                                                  @RequestParam(required = false, defaultValue = "7") Integer trendDays,
+                                                  @RequestParam(required = false, defaultValue = "false") Boolean includeDrift) {
+        return MoliResult.success(kbOpsService.dashboard(spaceId, trendDays, Boolean.TRUE.equals(includeDrift)));
     }
 
     @GetMapping("/eval-trend")

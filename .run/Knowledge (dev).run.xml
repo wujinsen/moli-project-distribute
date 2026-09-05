@@ -3,6 +3,7 @@
     <option name="ACTIVE_PROFILES" value="dev" />
     <envs>
       <env name="NACOS_SERVER_ADDR" value="127.0.0.1:28548" />
+      <env name="KB_WIKI_ROOT" value="$PROJECT_DIR$/moli-knowledge/kb" />
     </envs>
     <module name="moli-knowledge-server" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.moli.knowledge.server.KnowledgeApplication" />

@@ -49,6 +49,7 @@ docker compose -f deploy/observability/docker-compose.observability.yml up -d
 |------|------|
 | Grafana | http://127.0.0.1:28300（admin/admin，请改密码） |
 | Prometheus | http://127.0.0.1:29090 |
+| Alertmanager | http://127.0.0.1:29093 |
 | Loki API | http://127.0.0.1:28110（根路径 404 正常，用 `/ready`） |
 | SkyWalking UI | http://127.0.0.1:28120 |
 
@@ -238,7 +239,35 @@ Select-String -Path "D:\work\moli_project\moli-project-distribute\moli-user-cent
 | SkyWalking「最近一小时」对不上 logback 时间 | OAP 容器默认 UTC，UI 若改成 UTC+0，列表时间会变成 02:xx，无法对北京时间日志 | 右上角保持 **UTC+8**；Compose 里 OAP/UI 已设 `TZ=Asia/Shanghai`。改 compose 后需 `up -d skywalking-oap skywalking-ui` 并硬刷新 |
 | 同一 Trace 在 Loki 看似重复 | 多线程 / 多 Span 各打一行 | Grafana Deduplication → exact（可选） |
 
-### 4.9 后续（Phase 4 / moli-aiops）
+### 4.9 W1 已落地（Agent / 报障信封）
+
+| 能力 | 谁用 | 说明 |
+|------|------|------|
+| `ops_trace_get` | Cursor MCP / investigator | OAP `queryTraces` v2；默认最近 24h（Asia/Shanghai） |
+| `ops_logs_by_trace` | 同上 | Loki `{service=~"..."} \|= "<32-hex>"`，不加 `level` |
+| `MoliResult.traceId` | 报障 / 前端 | 错误信封与管理接口 JSON 回 32 位根 ID（无探针时省略该字段） |
+
+告警或 `POST /diagnose` 带 `trace_id` 时，investigator 会多拉一路全链路证据；这一路失败不中断整轮诊断。
+
+```powershell
+# 本机 compose 已起时，用错误信封里的 traceId：
+python -c "from ops_mcp.toolbelt import ToolContext, ops_trace_get, ops_logs_by_trace; ctx=ToolContext(); print(ops_trace_get(ctx, '<32-hex>')); print(ops_logs_by_trace(ctx, '<32-hex>'))"
+```
+
+**W3 已落地（规则告警 → 诊断）**
+
+| 项 | 说明 |
+|----|------|
+| 规则 | `deploy/observability/prometheus/rules/moli-alerts.yml`：`MoliServiceDown` / `MoliHttp5xx` / `MoliHeapHigh` |
+| Alertmanager | http://127.0.0.1:29093 ；webhook `http://host.docker.internal:28105/hooks/alertmanager` |
+| 鉴权 | `Authorization: Bearer` = `AIOPS_ALERT_WEBHOOK_SECRET`（本地默认 `moli-local-alert-webhook`） |
+| 诊断 | 只处理 `firing`；同 `alertname+service+instance` 10 分钟去重；investigator 会查 Prometheus 窗口 |
+
+本地要先起 `moli-aiops`（`:28105`）并设置与 compose 相同的 webhook secret。未启动的 Java 服务会触发 `MoliServiceDown`，属预期。
+
+W2（运维台 Trace 排障页、SkyWalking ↔ Grafana 深链接）尚未做。统计异常 / 多信号融合预警仍未做。
+
+### 4.10 后续（Phase 4 / 值班自动化）
 
 - 告警自动解析 ERROR 日志中的 `trace_id`，推送全链路 Grafana 链接
 - 诊断报告同时附带 SkyWalking Span 摘要 + Loki 全服务 ERROR 摘录

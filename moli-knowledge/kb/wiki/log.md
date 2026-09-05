@@ -1369,3 +1369,4 @@
 ## [2026-07-05] sync | enterprise-kb insert=118 update=96 skip=260 (defer-reopen batch)
 ## [2026-07-11] ingest | 批次#WB-20260711201324 E2E walkthrough 1783768404838 (Web工作台) → create note-a, note-b <!-- ingest-job:731226591115493376 -->
 ## [2026-07-12] cleanup | 删除 enterprise-kb/database/e2e-* 联调残留页 9 篇（e2e-import / e2e-broken / e2e-dup / e2e-script-fix）
+## [2026-09-02] enrich | eval hit@3 词面 · dubbo-调用原理与分层 / nacos-注册与配置 / jvm-内存与gc / redis-数据结构与使用场景

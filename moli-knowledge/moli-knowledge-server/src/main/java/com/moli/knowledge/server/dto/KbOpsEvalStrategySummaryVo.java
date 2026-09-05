@@ -14,6 +14,9 @@ public class KbOpsEvalStrategySummaryVo {
     @ApiModelProperty("策略")
     private String strategy;
 
+    @ApiModelProperty("是否已有评测 run；false 时 gatePass 必为 null，勿展示「未通过」")
+    private boolean hasLatestRun;
+
     @ApiModelProperty("最近一次 run_at")
     private Date latestRunAt;
 
@@ -34,6 +37,6 @@ public class KbOpsEvalStrategySummaryVo {
     @ApiModelProperty("latest hit@3 − baseline")
     private BigDecimal deltaHit3;
 
-    @ApiModelProperty("最近一次门禁是否通过")
+    @ApiModelProperty("最近一次门禁：true 通过 / false 未通过 / null 无评测或落库时未判定")
     private Boolean gatePass;
 }

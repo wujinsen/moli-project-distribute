@@ -6,7 +6,7 @@
     </envs>
     <module name="moli-user-center-server" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.moli.user.center.server.UserCenterApplication" />
-    <option name="VM_PARAMETERS" value="-javaagent:D:\work\moli_project\moli-project-distribute\deploy\observability\skywalking-agent\skywalking-agent.jar -Dskywalking.agent.service_name=user-center-server -Dskywalking.collector.backend_service=127.0.0.1:28121" />
+    <option name="VM_PARAMETERS" value="-javaagent:$PROJECT_DIR$/deploy/observability/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name=user-center-server -Dskywalking.collector.backend_service=127.0.0.1:28121" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <method v="2">
       <option name="Make" enabled="true" />

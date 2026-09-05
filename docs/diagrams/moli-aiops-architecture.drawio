@@ -19,7 +19,7 @@
         <mxCell id="src-probe" value="健康巡检&#xa;operation_server_info.status=2" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="l0">
           <mxGeometry x="40" y="45" width="260" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="src-webhook" value="Webhook 接入&#xa;POST /diagnose" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="l0">
+        <mxCell id="src-webhook" value="Alertmanager webhook&#xa;POST /hooks/alertmanager" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="l0">
           <mxGeometry x="330" y="45" width="240" height="55" as="geometry" />
         </mxCell>
         <mxCell id="src-manual" value="人工发起&#xa;单页 UI 描述现象" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="l0">
@@ -124,11 +124,17 @@
         <mxCell id="t-audit-tool" value="ops_audit_trail&#xa;按事故查全部工具调用&#xa;含被拦下的尝试" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
           <mxGeometry x="825" y="145" width="225" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="cmdb-note" value="CMDB 可插拔&#xa;─────────────&#xa;auto：先探 user-center REST，不可达则回退本地 inventory&#xa;演示时 Java 栈没起也能跑" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="g-evidence">
-          <mxGeometry x="30" y="245" width="490" height="85" as="geometry" />
+        <mxCell id="t-trace" value="ops_trace_get&#xa;OAP queryTraces v2&#xa;32 位根 Trace ID" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="30" y="245" width="245" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="inject-note" value="取证命令由代码固定拼装，不接受任何外部字符串 —— 天然免注入&#xa;&#xa;资源指标回答「机器累不累」，回答不了「服务在不在」：CPU 2% 的机器上服务照样可能停着" style="text;html=1;fontSize=11;fontColor=#82b366;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="g-evidence">
-          <mxGeometry x="540" y="245" width="510" height="85" as="geometry" />
+        <mxCell id="t-loki" value="ops_logs_by_trace&#xa;Loki 正文 |= 根 ID&#xa;不加 level 过滤" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="g-evidence">
+          <mxGeometry x="295" y="245" width="245" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="cmdb-note" value="CMDB 可插拔&#xa;─────────────&#xa;auto：先探 user-center REST，不可达则回退本地 inventory&#xa;演示时 Java 栈没起也能跑" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#f5f5f5;strokeColor=#999999;dashed=1;" vertex="1" parent="g-evidence">
+          <mxGeometry x="560" y="245" width="225" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="inject-note" value="取证命令由代码固定拼装，不接受外部字符串。W1 全链路工具只读 OAP/Loki，不 SSH。" style="text;html=1;fontSize=11;fontColor=#82b366;align=left;verticalAlign=top;spacingLeft=6;spacingTop=6;" vertex="1" parent="g-evidence">
+          <mxGeometry x="805" y="245" width="245" height="70" as="geometry" />
         </mxCell>
 
         <mxCell id="g-safety" value="安全层与处置（会改变生产状态）" style="swimlane;html=1;startSize=26;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="l2">
@@ -169,7 +175,7 @@
         <mxCell id="d-sqlite" value="sqlite&#xa;aiops.db：trace + 执行审计&#xa;checkpoints.db：LangGraph 快照&#xa;按 incident_id 串成完整时间线" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="l3">
           <mxGeometry x="1380" y="45" width="310" height="95" as="geometry" />
         </mxCell>
-        <mxCell id="d-mcp" value="MCP stdio 出口&#xa;10 个工具挂给&#xa;Cursor / Claude Desktop&#xa;等任意 MCP 客户端" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l3">
+        <mxCell id="d-mcp" value="MCP stdio 出口&#xa;12 个工具挂给&#xa;Cursor / Claude Desktop&#xa;等任意 MCP 客户端" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="l3">
           <mxGeometry x="1730" y="45" width="270" height="95" as="geometry" />
         </mxCell>
 

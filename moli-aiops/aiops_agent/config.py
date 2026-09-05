@@ -48,3 +48,7 @@ MAX_HYPOTHESES = int(os.environ.get("AIOPS_MAX_HYPOTHESES", "4"))
 
 # 即使人已审批，执行阶段是否仍走干跑。首次接生产时建议先开着
 FORCE_DRY_RUN = _flag("AIOPS_FORCE_DRY_RUN", False)
+
+# Alertmanager → /hooks/alertmanager。空则拒绝 webhook（本地 compose 默认见 .env.example）
+ALERT_WEBHOOK_SECRET = os.environ.get("AIOPS_ALERT_WEBHOOK_SECRET", "")
+ALERT_DEDUP_TTL_S = int(os.environ.get("AIOPS_ALERT_DEDUP_TTL_S", "600"))

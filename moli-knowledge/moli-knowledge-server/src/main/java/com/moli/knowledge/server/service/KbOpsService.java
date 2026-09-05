@@ -14,10 +14,11 @@ public interface KbOpsService {
     /**
      * 聚合 Sync 趋势、Lint 工单、断链、LLM 可用性。
      *
-     * @param spaceId   空间 ID，null=全部可读空间
-     * @param trendDays 趋势天数（默认 7，最大 30）
+     * @param spaceId      空间 ID，null=全部可读空间
+     * @param trendDays    趋势天数（默认 7，最大 30）
+     * @param includeDrift 是否同步扫描 wiki↔DB 漂移（默认 false；漂移请用 GET /kb/sync/drift）
      */
-    KbOpsDashboardVo dashboard(Long spaceId, Integer trendDays);
+    KbOpsDashboardVo dashboard(Long spaceId, Integer trendDays, boolean includeDrift);
 
     /**
      * 检索质量按日趋势（AI-3）。

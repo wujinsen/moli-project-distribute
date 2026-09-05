@@ -68,12 +68,14 @@ sources:
 - raw/wujinsen_markdown/源码分析/OpenJDK/openJDK之如何下载各个版本的openJDK源码.note.md
 related: [jvm-垃圾收集算法与收集器, jvm-oom与排查入门, jvm-面试题, jmm与happens-before, java-并发]
 created: 2026-06-22
-updated: 2026-07-05
+updated: 2026-09-02
 ---
 
 # JVM 内存与 GC（概念枢纽）
 
 > 运行时区域见下表；收集器见 [[java/jvm-垃圾收集算法与收集器]]；OOM 排查 [[java/jvm-oom与排查入门]]；面试 [[java/jvm-面试题]]。Java 并发内存语义见 [[java/jmm与happens-before]]。
+
+**JVM 内存结构和 GC 是怎么工作的**：运行时数据区（堆 / 栈 / 方法区等）见下表；GC 主战场在堆，分代后由收集器回收。annex 原文插图不当主答，以本页为准。
 
 ## 运行时数据区（JDK 8 HotSpot）
 

@@ -137,3 +137,53 @@ jobs:
         run: |
           python eval_ask.py --strategy hybrid --gate-from-baselines --emit-db || \
             echo "::warning::hybrid observe gate failed (non-blocking)"
+
+  hybrid-rerank-observe:
+    name: hybrid-rerank observe (non-blocking)
+    if: >
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.strategy == 'hybrid-rerank' || github.event.inputs.strategy == 'all'))
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Install dependencies
+        run: pip install -r moli-knowledge/kb/tools/requirements-sync.txt
+
+      - name: Check eval stack secrets
+        id: stack
+        env:
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+          MOLI_KB_BASE: ${{ secrets.MOLI_KB_BASE }}
+        run: |
+          if [[ -z "${MOLI_LOGIN_BASE}" || -z "${MOLI_KB_BASE}" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::hybrid-rerank observe skipped: missing stack secrets"
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Run hybrid-rerank eval + baselines gate (observe only)
+        if: steps.stack.outputs.skip != 'true'
+        env:
+          MOLI_LOGIN_BASE: ${{ secrets.MOLI_LOGIN_BASE }}
+          MOLI_KB_BASE: ${{ secrets.MOLI_KB_BASE }}
+          MOLI_EVAL_USER: ${{ secrets.MOLI_EVAL_USER }}
+          MOLI_EVAL_PASS: ${{ secrets.MOLI_EVAL_PASS }}
+          KB_SYNC_HOST: ${{ secrets.KB_SYNC_DB_HOST }}
+          KB_SYNC_PORT: ${{ secrets.KB_SYNC_DB_PORT }}
+          KB_SYNC_USER: ${{ secrets.KB_SYNC_DB_USER }}
+          KB_SYNC_PASSWORD: ${{ secrets.KB_SYNC_DB_PASSWORD }}
+          KB_SYNC_DB: ${{ secrets.KB_SYNC_DB_NAME }}
+          GITHUB_SHA: ${{ github.sha }}
+        working-directory: moli-knowledge/kb/tools
+        run: |
+          python eval_ask.py --strategy hybrid-rerank --gate-from-baselines --emit-db || \
+            echo "::warning::hybrid-rerank observe gate failed (non-blocking)"

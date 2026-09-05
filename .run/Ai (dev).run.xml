@@ -3,7 +3,6 @@
     <option name="ACTIVE_PROFILES" value="dev" />
     <envs>
       <env name="NACOS_SERVER_ADDR" value="127.0.0.1:28548" />
-      <env name="MOLI_LOG_DIR" value="$MODULE_WORKING_DIR$/logs" />
     </envs>
     <module name="moli-ai-server" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.moli.ai.server.AiApplication" />

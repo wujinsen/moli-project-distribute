@@ -105,4 +105,56 @@ public class KbEvalBaselinesProvider {
         }
         return root.path("golden_total").asInt();
     }
+
+    /**
+     * AI-3 §1.2 就地判定。基线缺失或 hit3 为空时返回 {@code null}（未判定，不是未通过）。
+     */
+    public Boolean evaluateGate(String strategy, BigDecimal hit3, Integer errors, String byDifficultyJson) {
+        if (root == null || strategy == null || strategy.trim().isEmpty() || hit3 == null) {
+            return null;
+        }
+        JsonNode strat = root.path("strategies").path(strategy);
+        if (strat.isMissingNode() || strat.isNull() || !strat.has("hit3")) {
+            return null;
+        }
+        BigDecimal tolerance = strat.has("tolerance") ? strat.path("tolerance").decimalValue() : BigDecimal.ZERO;
+        BigDecimal minHit3 = strat.path("hit3").decimalValue().subtract(tolerance);
+        if (hit3.compareTo(minHit3) < 0) {
+            return false;
+        }
+        if (errors != null && errors > 0) {
+            return false;
+        }
+        if (strat.has("dirty_hit3") && !strat.path("dirty_hit3").isNull()) {
+            BigDecimal dirtyHit3 = dirtyHit3FromJson(byDifficultyJson);
+            if (dirtyHit3 == null) {
+                dirtyHit3 = BigDecimal.ZERO;
+            }
+            BigDecimal minDirty = strat.path("dirty_hit3").decimalValue().subtract(tolerance);
+            if (dirtyHit3.compareTo(minDirty) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static BigDecimal dirtyHit3FromJson(String byDifficultyJson) {
+        if (byDifficultyJson == null || byDifficultyJson.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            JsonNode dirtyHitAt = new ObjectMapper().readTree(byDifficultyJson)
+                    .path("dirty").path("hit_at");
+            JsonNode node = dirtyHitAt.path("3");
+            if (node.isMissingNode() || node.isNull()) {
+                node = dirtyHitAt.path(3);
+            }
+            if (node.isMissingNode() || node.isNull() || !node.isNumber()) {
+                return null;
+            }
+            return node.decimalValue();
+        } catch (IOException e) {
+            return null;
+        }
+    }
 }

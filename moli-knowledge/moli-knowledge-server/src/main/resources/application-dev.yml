@@ -82,7 +82,7 @@ kb:
     provider: glm
     base-url: https://open.bigmodel.cn/api/paas/v4
     api-key: ${ZHIPU_API_KEY:e3cce3056c10404cb27bd7bc9bfe6cfa.h8eD7w474NtdLzM0}
-    model: glm-4-flash
+    model: GLM-5.3-Flash
     temperature: 0.3
     timeout-seconds: 90
     # T19 · 平台 DB 存 api-key 时的 AES 密钥（32 字节 Base64 或任意字符串 SHA-256）
@@ -166,7 +166,7 @@ kb:
     vector:
       base-url: http://127.0.0.1:8099
       top-n: 20
-      timeout-ms: 1500
+      timeout-ms: 8000
     fusion:
       rrf-k: 60
     rerank:
@@ -215,8 +215,9 @@ kb:
   wiki:
     # Web 在线编辑（T14）读写 kb/wiki* markdown 文件
     enabled: true
-    # kb/ 根目录（KbRepoPathUtil：monorepo 根或 server 模块 cwd）
-    root: moli-knowledge/kb
+    # kb/ 根目录；IDEA 见 .run/Knowledge (dev).run.xml 的 KB_WIKI_ROOT
+    # 默认相对 monorepo 根；Windows 示例：D:/work/.../moli-knowledge/kb
+    root: ${KB_WIKI_ROOT:moli-knowledge/kb}
     # space_code → wiki 子目录（相对 root）
     space-dirs:
       enterprise-kb: wiki

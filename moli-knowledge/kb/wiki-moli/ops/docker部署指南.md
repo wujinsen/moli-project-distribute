@@ -12,14 +12,14 @@ sources:
   - moli-knowledge/kb/wiki-moli/ops/minio-附件存储指南.md
 related: [本地启动指南, minio-附件存储指南]
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-09-02
 ---
 
 # Docker 部署指南
 
 > 概念 `moli-knowledge/kb/wiki/ops/容器与-docker.md`；本机 Jar 启动 [[本地启动指南]]；MinIO 示例 [[minio-附件存储指南]]。
 
-面向「用 Docker 跑中间件或打包 Java 服务」的操作摘要。茉莉 **dev 不强制 Docker**，但 MinIO/监控栈常用容器。
+**用 Docker 把整套服务跑起来**：本地用 `docker-compose` 先起 MySQL / Redis / Nacos 等中间件，再按下文把各 Java 微服务打成镜像跑起来。茉莉 **dev 不强制 Docker**（日常仍可用 [[本地启动指南]]），但 MinIO/监控栈和整套容器化部署走本页。
 
 ## 1. 安装（Linux）
 
