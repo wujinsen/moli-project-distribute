@@ -1,6 +1,6 @@
 # 企业知识库 · 前端对接 API 文档
 
-> 更新：2026-06-25 · 后端：`moli-knowledge-server`（:8090）
+> 更新：2026-09-10 · 后端：`moli-knowledge-server`（:8090）
 > 供 `meiling-ui` 前端对接知识库模块（浏览 / Query / 图谱 / 体检 / 文档管理）。
 > 表结构见 [`../sql/KNOWLEDGE_SCHEMA.md`](../sql/KNOWLEDGE_SCHEMA.md)；后端实现见 [`../../moli-knowledge/moli-knowledge-server/README.md`](../../moli-knowledge/moli-knowledge-server/README.md)。
 
@@ -671,6 +671,62 @@ GET /KnowledgeServer/kb/index/types?spaceId=900000000000000001
 | `useful` | `1` 有用 / `0` 无用 |
 
 > 后端是否走生成式取决于 `application-dev.yml` 的 `kb.llm.enabled + api-key`。前端无需关心，按 `mode` 展示即可（generative 显示富文本答案；retrieval 提示"检索式"并列出引用）。
+
+### 多轮对话 `/kb/chat/**`（AI-11 P0 · additive）
+
+> 契约：[`docs/design/contracts/AI-11-contract.md`](../design/contracts/AI-11-contract.md) · 方案：[`docs/design/kb-agent-session-memory.md`](../design/kb-agent-session-memory.md)  
+> **不改** `POST /kb/ask` 字段与单轮语义。权限复用菜单 902 `kb:ask:list`，**不新增**侧栏菜单。  
+> 前端：`knowledge/ask/index` 左会话列表 + 右消息流；无 session 时先 `POST /sessions` 再发第一条。单次提问 / 评测仍走 `/kb/ask`。  
+> DDL：[`docs/sql/43_kb_chat_session.sql`](../sql/43_kb_chat_session.sql)（已有库手工执行）。配置：`kb.chat.max-history-turns`（默认 **6**）。
+
+鉴权与 Ask 相同：`Authorization` = Shiro sessionId。HTTP 仍 200；他人 session 业务码 **404**（不暴露存在性），已关闭会话发消息业务码 **409**。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `POST` | `/kb/chat/sessions` | 新建会话。body `{ spaceId? }` |
+| `GET` | `/kb/chat/sessions` | 当前用户；进行中优先，再按 `lastMessageAt` 倒序。分页 `pageNum`/`pageSize`（默认 1/20） |
+| `GET` | `/kb/chat/sessions/{id}/messages` | 校验归属；按消息 id 升序 |
+| `POST` | `/kb/chat/sessions/{id}/messages` | **核心多轮**（见下） |
+| `POST` | `/kb/chat/sessions/{id}/close` | `status=0`；P0 不抽取长期记忆 |
+
+**`POST /kb/chat/sessions` 响应 `data`**
+
+| 字段 | 说明 |
+|------|------|
+| `chatSessionId` | 会话 ID |
+| `title` | 新建时为「新对话」；首条消息改为问句截断（约 40 字） |
+| `spaceId` | 会话默认空间 |
+| `status` | `1` 进行中 / `0` 已关闭 |
+| `lastMessageAt` / `createTime` | 时间 |
+
+**`POST /kb/chat/sessions/{id}/messages` 请求**（检索字段与 `AskRequest` 对齐；`useLlm` 默认 **true**）
+
+```json
+{
+  "question": "那日志里 connection refused 怎么查？",
+  "spaceId": 900000000000000003,
+  "useLlm": true,
+  "retrievalStrategy": "hybrid",
+  "graphExpand": false
+}
+```
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `question` | 是 | 本轮用户原文（入库与 UI 用这个；召回另拼上一轮用户问） |
+| `spaceId` / `spaceIds` | 否 | 省略则用会话 `spaceId`，再否则全部可读空间 |
+| `useLlm` | 否 | 默认 **true**（与 `/kb/ask` 的默认 false 不同）；LLM 不可用时仍降级 retrieval |
+| `topK` / `llmContextTopK` / `retrievalStrategy` / `graphExpand` | 否 | 同 `POST /kb/ask` |
+
+**响应 `data`**：`AskResponse` 全部字段 +
+
+| 字段 | 说明 |
+|------|------|
+| `chatSessionId` | 会话 |
+| `userMessageId` / `assistantMessageId` | 本轮两条消息 |
+| `retrievalQuery` | 实际召回串（调试；前端默认可隐藏） |
+
+消息列表项：`messageId`、`role`（`user`/`assistant`）、`content`、`qaLogId`（助手行）、`createTime`。
 
 ### DeepResearch（AI-10 · additive）
 
@@ -1548,7 +1604,7 @@ bash moli-knowledge/kb/tools/ci/run_sync.sh dry-run
 |------|----------------|----------|----------|
 | 文档浏览 | `knowledge/browse/index` | `/kb/space/mine` + `/kb/index*` + `/kb/page` | KNOWLEDGE_API §2–3 |
 | 文档管理 | `knowledge/documents/index` | `/kb/document/search` + `/kb/wiki-moli/page` | §8.1 |
-| 智能问答 | `knowledge/ask/index` | `/kb/ask` | §5 |
+| 智能问答 | `knowledge/ask/index` | `/kb/ask` + `/kb/chat/**`（AI-11 P0） | §5 · 多轮对话 |
 | 主题调研 | `knowledge/research/index` | `/kb/research*` | §3 DeepResearch |
 | 关系图谱 | `knowledge/graph/index` | `/kb/graph` | §6 |
 | 健康体检 | `knowledge/lint/index` | `/kb/lint*` + `/kb/sync/*` | §4 |

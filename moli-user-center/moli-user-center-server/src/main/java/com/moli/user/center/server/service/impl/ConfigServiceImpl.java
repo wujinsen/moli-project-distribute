@@ -9,7 +9,9 @@ import com.moli.user.center.server.config.util.RedisUtil;
 import com.moli.user.center.server.mapper.ConfigMapper;
 import com.moli.user.center.server.service.ConfigService;
 import com.moli.user.center.server.sysparam.ConfigKey;
+import com.moli.user.center.server.sysparam.ConfigSecrets;
 import com.moli.user.center.server.sysparam.ConfigSource;
+import com.moli.user.center.server.sysparam.ValueType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,15 +87,15 @@ public class ConfigServiceImpl implements ConfigService {
             vo.setDescription(key.getDescription());
             vo.setOverridden(override != null);
             if (override != null) {
-                vo.setEffectiveValue(override);
+                vo.setEffectiveValue(maskSecret(key, override));
                 vo.setSource(ConfigSource.DB_OVERRIDE.name());
             } else {
                 String fromEnv = environment.getProperty(key.getKey());
                 if (fromEnv != null) {
-                    vo.setEffectiveValue(fromEnv);
+                    vo.setEffectiveValue(maskSecret(key, fromEnv));
                     vo.setSource(ConfigSource.ENVIRONMENT.name());
                 } else {
-                    vo.setEffectiveValue(key.getDefaultValue());
+                    vo.setEffectiveValue(maskSecret(key, key.getDefaultValue()));
                     vo.setSource(ConfigSource.DEFAULT.name());
                 }
             }
@@ -105,6 +107,15 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     public void setOverride(String configKey, String configValue) {
         ConfigKey declared = requireDeclared(configKey);
+
+        if (declared.getValueType() == ValueType.SECRET
+                && ConfigSecrets.isMask(configValue)) {
+            if (selectByKey(configKey) == null && StringUtils.isBlank(environment.getProperty(configKey))) {
+                throw new BaseException("参数 " + configKey + " 请填写真实值，不要提交掩码");
+            }
+            log.info("参数 {} 提交了掩码，保持原值", configKey);
+            return;
+        }
 
         String invalidReason = declared.getValueType().check(configValue);
         if (invalidReason != null) {
@@ -124,7 +135,11 @@ public class ConfigServiceImpl implements ConfigService {
         }
 
         evict(configKey);
-        log.info("参数 {} 覆盖值更新为 [{}]", configKey, normalized);
+        if (declared.getValueType() == ValueType.SECRET) {
+            log.info("参数 {} 覆盖值已更新（密钥已掩码）", configKey);
+        } else {
+            log.info("参数 {} 覆盖值更新为 [{}]", configKey, normalized);
+        }
     }
 
     @Override
@@ -210,5 +225,12 @@ public class ConfigServiceImpl implements ConfigService {
                     + "可用参数：" + Arrays.toString(Arrays.stream(ConfigKey.values()).map(ConfigKey::getKey).toArray()));
         }
         return declared.get();
+    }
+
+    private static String maskSecret(ConfigKey key, String raw) {
+        if (key.getValueType() != ValueType.SECRET) {
+            return raw;
+        }
+        return ConfigSecrets.maskIfPresent(raw);
     }
 }

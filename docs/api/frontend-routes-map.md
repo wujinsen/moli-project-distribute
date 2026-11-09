@@ -34,7 +34,7 @@ Authorization: {token}  # 后续请求
 |---------|------|-----------|-----------|-------|-------------|
 | 900 | 企业知识库 | `knowledge` | Layout | — | — |
 | 901 | 文档浏览 | `knowledge/browse/index` | KnowledgeBrowse | `kb:browse:list` | `/kb/index` `/kb/page` |
-| 902 | 智能问答 | `knowledge/ask/index` | KnowledgeAsk | `kb:ask:list` | `/kb/ask` |
+| 902 | 智能问答 | `knowledge/ask/index` | KnowledgeAsk | `kb:ask:list` | `/kb/ask` · `/kb/chat/**` |
 | 911 | 主题调研 | `knowledge/research/index` | KnowledgeResearch | `kb:ask:list` | `/kb/research*` |
 | 903 | 关系图谱 | `knowledge/graph/index` | KnowledgeGraph | `kb:graph:list` | `/kb/graph` |
 | 904 | 健康体检 | `knowledge/lint/index` | KnowledgeLint | `kb:lint:list` | `/kb/lint` |

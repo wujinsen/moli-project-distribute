@@ -13,16 +13,71 @@ groups:
       - alert: MoliHttp5xx
         expr: |
           (
-            sum by (service) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            sum by (service) (rate(http_server_requests_seconds_count{status=~"5..",uri!~"/actuator.*"}[5m]))
             /
-            clamp_min(sum by (service) (rate(http_server_requests_seconds_count[5m])), 0.001)
+            clamp_min(sum by (service) (rate(http_server_requests_seconds_count{uri!~"/actuator.*"}[5m])), 0.001)
           ) > 0.05
         for: 5m
         labels:
           severity: warning
         annotations:
           summary: "{{ $labels.service }} HTTP 5xx 占比过高"
-          description: "近 5 分钟 5xx 占总请求超过 5%。"
+          description: "近 5 分钟业务接口 5xx 占总请求超过 5%（已排除 /actuator）。"
+
+      - alert: MoliHttpLatencyHigh
+        expr: |
+          (
+            sum by (service) (rate(http_server_requests_seconds_sum{uri!~"/actuator.*"}[5m]))
+            /
+            clamp_min(sum by (service) (rate(http_server_requests_seconds_count{uri!~"/actuator.*"}[5m])), 0.001)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} HTTP 平均延迟过高"
+          description: "近 5 分钟业务接口平均延迟 > 1s（summary，已排除 /actuator）。"
+
+      - alert: MoliHttpP95High
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (service, le) (rate(http_server_requests_seconds_bucket{uri!~"/actuator.*"}[5m]))
+          ) > 1.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} HTTP P95 过高"
+          description: "近 5 分钟业务接口 P95 > 1.5s。需 management.metrics.distribution.percentiles-histogram 且服务已重启后才有 _bucket。"
+
+      - alert: MoliGatewayRoute5xx
+        expr: |
+          (
+            sum by (routeId) (rate(gateway_requests_seconds_count{httpStatusCode=~"5.."}[5m]))
+            /
+            clamp_min(sum by (routeId) (rate(gateway_requests_seconds_count[5m])), 0.001)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "网关路由 {{ $labels.routeId }} 5xx 占比过高"
+          description: "近 5 分钟该 Spring Cloud Gateway 路由 5xx 超过 5%。"
+
+      - alert: MoliGatewayRouteLatencyHigh
+        expr: |
+          (
+            sum by (routeId) (rate(gateway_requests_seconds_sum[5m]))
+            /
+            clamp_min(sum by (routeId) (rate(gateway_requests_seconds_count[5m])), 0.001)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "网关路由 {{ $labels.routeId }} 平均延迟过高"
+          description: "近 5 分钟该路由平均延迟 > 1s。"
 
       - alert: MoliHeapHigh
         expr: |
@@ -37,3 +92,38 @@ groups:
         annotations:
           summary: "{{ $labels.service }} 堆内存偏高"
           description: "JVM heap used/max > 90% 已持续 5 分钟。"
+
+      - alert: MoliGcPauseHigh
+        expr: |
+          sum by (service) (rate(jvm_gc_pause_seconds_sum[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} GC 停顿占比过高"
+          description: "近 5 分钟 GC pause 时间占比 > 20%。"
+
+      - alert: MoliDruidPoolHigh
+        expr: |
+          (
+            sum by (service) (druid_pool_active)
+            /
+            clamp_min(sum by (service) (druid_pool_max), 1)
+          ) > 0.85
+          or
+          sum by (service) (druid_pool_waiting) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} Druid 连接池紧张"
+          description: "active/max > 85% 或已有线程在等待连接，持续 5 分钟。"
+
+      - alert: MoliProcessCpuHigh
+        expr: process_cpu_usage{service=~"moli-gateway|user-center-server|order-server|ai-server|knowledge-server"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} 进程 CPU 偏高"
+          description: "process_cpu_usage > 85% 已持续 5 分钟。"

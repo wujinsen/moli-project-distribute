@@ -20,6 +20,7 @@ from ..errors import (
     OpsToolError,
 )
 from ..schemas import LokiLogDump, LokiLogHit, TraceDump, TraceSpanDump, model_dump_compact
+from .deeplinks import build_deeplinks
 
 # SkyWalking UI 复制的是「根 ID.segment.xxx」；Loki / 检索只认前 32 位 hex
 _TID_PREFIX = re.compile(r"^(?:TID:)?", re.IGNORECASE)
@@ -274,6 +275,8 @@ def fetch_trace(trace_id: str, *, lookback_hours: int = 24) -> dict[str, Any]:
             error_spans=errors,
             services=services,
             duration_ms=duration_ms,
+            start_ms=min_start or 0,
+            end_ms=max_end or 0,
             spans=dumps,
             note=note,
         )
@@ -391,3 +394,49 @@ def fetch_logs_by_trace(
             note=note,
         )
     )
+
+
+def inspect_trace(trace_id: str, *, lookback_hours: int = 24) -> dict[str, Any]:
+    """排障页一次查出 Span + Loki + 深链接。某一路失败不挡另一路。"""
+    root = normalize_trace_id(trace_id)
+    errors: dict[str, str] = {}
+    trace_dump: dict[str, Any] | None = None
+    logs_dump: dict[str, Any] | None = None
+    try:
+        trace_dump = fetch_trace(trace_id, lookback_hours=lookback_hours)
+    except OpsToolError as exc:
+        if exc.code == OPS_INVALID_INPUT:
+            raise
+        errors["trace"] = exc.message
+    try:
+        logs_dump = fetch_logs_by_trace(trace_id, lookback_hours=lookback_hours)
+    except OpsToolError as exc:
+        if exc.code == OPS_INVALID_INPUT:
+            raise
+        errors["logs"] = exc.message
+
+    sw_id = ""
+    start_ms = end_ms = None
+    if trace_dump:
+        sw_id = str(trace_dump.get("oap_trace_id") or "")
+        start_ms = int(trace_dump.get("start_ms") or 0) or None
+        end_ms = int(trace_dump.get("end_ms") or 0) or None
+    if not sw_id:
+        full = _full_sw_id(trace_id)
+        sw_id = full or root
+
+    payload: dict[str, Any] = {
+        "ok": not errors,
+        "root_trace_id": root,
+        "queried_id": trace_id,
+        "links": build_deeplinks(
+            root, sw_trace_id=sw_id, start_ms=start_ms, end_ms=end_ms
+        ),
+    }
+    if trace_dump is not None:
+        payload["trace"] = trace_dump
+    if logs_dump is not None:
+        payload["logs"] = logs_dump
+    if errors:
+        payload["errors"] = errors
+    return payload

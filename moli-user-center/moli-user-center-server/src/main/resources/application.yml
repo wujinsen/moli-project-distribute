@@ -79,6 +79,21 @@ ops:
     enabled: ${OPS_COMMAND_ENABLED:false}
     max-chars: ${OPS_COMMAND_MAX_CHARS:8192}
     default-work-dir: ${OPS_COMMAND_DEFAULT_WORK_DIR:/opt/moli-project-distribute}
+  alert:
+    email:
+      enabled: ${OPS_ALERT_EMAIL_ENABLED:false}
+      to: ${OPS_ALERT_EMAIL_TO:}
+      from: ${OPS_ALERT_EMAIL_FROM:}
+    smtp:
+      host: ${OPS_ALERT_SMTP_HOST:}
+      port: ${OPS_ALERT_SMTP_PORT:465}
+      username: ${OPS_ALERT_SMTP_USERNAME:}
+      password: ${OPS_ALERT_SMTP_PASSWORD:}
+      ssl: ${OPS_ALERT_SMTP_SSL:true}
+
+moli:
+  alert-mail:
+    webhook-secret: ${MOLI_ALERT_MAIL_WEBHOOK_SECRET:moli-local-alert-webhook}
 
 management:
   endpoints:
@@ -98,3 +113,6 @@ management:
     tags:
       application: ${spring.application.name}
       env: ${spring.profiles.active:default}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true

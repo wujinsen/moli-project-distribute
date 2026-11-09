@@ -97,6 +97,8 @@ def test_fetch_trace_posts_query_traces(monkeypatch) -> None:
     assert dump["span_count"] == 1
     assert dump["error_spans"] == 1
     assert dump["services"] == ["knowledge-server"]
+    assert dump["start_ms"] == 1000
+    assert dump["end_ms"] == 1042
     query = captured["json"]["query"]
     assert "queryTraces" in query
     assert "queryBasicTraces" not in query

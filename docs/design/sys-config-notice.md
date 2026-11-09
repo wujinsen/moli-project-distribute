@@ -128,12 +128,9 @@ public enum ConfigKey {
 }
 ```
 
-`ValueType` 落地为 `BOOLEAN` / `INT` / `STRING`（丢掉了草案里的 `JSON`：没有消费方，而校验一个字符串是不是合法 JSON 还得引依赖）。
+`ValueType` 落地为 `BOOLEAN` / `INT` / `STRING` / `SECRET`（`SECRET` 与 STRING 校验相同，列表与日志掩码）。
 
-**没有落地 `Validators`（range / enumOf / regex）**。首批 4 个键全是布尔，`ValueType.BOOLEAN.check()`
-已经能拒掉一切非 `true/false` 的输入，range 校验没有校验对象。等第一个数值型参数（如
-`sso.ticket-ttl-seconds`）进注册表时再加 —— 那时才知道需要哪几种校验器，而不是现在猜。
-`ConfigKey` 构造器届时多一个参数即可，无需改动取值链与接口。
+**没有落地 `Validators`（range / enumOf / regex）**。写入仍靠 `ValueType.check()`。SMTP 端口走 `INT`，密码走 `SECRET`。
 
 **key 沿用现有 yaml 路径**（`captcha.enabled` 而非另起 `sys.captcha.enabled`）。这样 §3.3 的取值链可以直接落到 `Environment`，存量 yaml 与部署脚本无需改动，也不会出现「yaml 一个名、DB 另一个名」的对照负担。
 
@@ -185,8 +182,10 @@ if (!configService.getBoolean(ConfigKey.CAPTCHA_ENABLED)) { ... }
 | GET | `/config/list` | `config:list` | **注册表 ∪ 覆盖值**，返回每项的 生效值 / 默认值 / 类型 / 分组 / 来源 / 是否被覆盖；可按 `group` 过滤；**无分页** |
 | PUT | `/config` | `config:edit` + `list` | 写覆盖值 `{configKey, configValue}`；校验 key 已声明 + 值可按声明类型解析；upsert |
 | DELETE | `/config/{configKey}` | `config:remove` + `list` | **重置为默认**（删除覆盖行） |
+| POST | `/config/alert-email/test` | `config:edit` + `list` | 用当前生效 SMTP 发测试信（**不**创建参数） |
+| POST | `/hooks/alertmail` | 无登录；Bearer | Alertmanager → 仅 `MoliServiceDown` 发信 |
 
-**没有 `POST`**——参数不能由 UI 创建，新增参数是代码变更。
+**没有「新建参数」的 `POST`**——参数不能由 UI 创建，新增参数是代码变更。测试邮件接口是动作，不是 CRUD。
 **不用 `id` 寻址**——`config_key` 就是业务主键，`/config/{id}` 会迫使前端多存一个无意义的 id。
 **没有分页**——数十条参数，`PageRes` 在这里是负担。
 
@@ -401,7 +400,7 @@ SQL 迁移走 [`@sql-migration-baseline`](../../.cursor/skills/sql-migration-bas
 
 | # | 议题 | 结论 |
 |---|------|------|
-| Q1 | 首批纳入注册表的参数范围 | ✅ **已定**：只收 `captcha.enabled`、`sso.enabled`、`ops.command.enabled`、`ops.health.probe-enabled` 四个开关。其余（`swagger.show`、`sso.entry-path`）留 yaml，等有实际改动需求再纳入——注册表的价值在于精准，不在于全 |
+| Q1 | 纳入注册表的参数范围 | ✅ **演进**：首批四个开关仍在；2026-09-09 增加 OPS 组 SMTP / 收件人（`ops.alert.email.*`、`ops.alert.smtp.*`），供 Java 宕机邮件告警。其余（`swagger.show`、`sso.entry-path`）仍留 yaml |
 | Q2 | 公告是否需要按角色/部门/系统定向 | ⬜ **未决**，本期按全员可见实现。定向会引入 `sys_notice_target` 关联表与「谁能看到」的鉴权分支。**注意这与参数不加 `system_id` 的理由不同**：参数天然全平台，公告的受众是本质属性，所以这一条更可能在二期回来 |
 | Q3 | `session-expire-seconds` 等 Bean 构建期参数怎么呈现 | ⬜ **未决**，本期回避：该参数不纳入注册表，`hotReload` 标记也未落地（§3.4）。真要纳入时需一并决定 UI 只读呈现与写接口是否拒绝 |
 | Q4 | 公告过期清理 | ⬜ 暂不做定时物理删除。过期公告是运营留档，靠 `expire_time` 从阅读侧隐藏即可 |
@@ -412,6 +411,7 @@ SQL 迁移走 [`@sql-migration-baseline`](../../.cursor/skills/sql-migration-bas
 
 | 日期 | 变更 |
 |------|------|
+| 2026-09-09 | Java 宕机邮件告警：`ConfigKey` 增加 SMTP/收件人（含 `SECRET` 掩码）、`POST /config/alert-email/test`、Alertmanager `POST /hooks/alertmail`。流程见 [`moli-alert-email.drawio`](../diagrams/moli-alert-email.drawio) |
 | 2026-08-17 | ops 真热开关闭环：`OPS_COMMAND_ENABLED` / `OPS_HEALTH_PROBE_ENABLED` 调用点改读 `ConfigService`；基线去掉 `sys_config` 误入种子行；补 `OperationCommandServiceImplTest` / `OperationHealthProbeSchedulerTest` |
 | 2026-08-16 | **后端落地完成**（S1–S6），本文回写为实况。实施中相对草案的三处收窄：① 未落地 `Validators`（首批全布尔，无校验对象）；② 未落地 `hotReload` 标记（Q3 因此仍未决）；③ 未落地 `GET /config/effective/{configKey}`（无消费方，且会对全体登录用户暴露内部参数）。另修正两点：`isPortalEnabled()` 方法未去重（会形成 Bean 循环依赖，只统一了参数来源）；公告保存校验从「过期时间 vs 入参发布时间」改为「过期时间不得为过去」——原校验比较的 `publishTime` 随后就被丢弃，实为空转。参数注册表包名由 `config/param` 调整为 `sysparam`（`config` 包是 Spring 基础设施配置，混入业务注册表易误解） |
 | 2026-08-16 | **重写**。初版沿用通用后台模板的 `sys_config`（9 业务列，自由录入键值）与 `sys_notice`，未结合本项目实际。核查发现 Nacos 配置中心处于 `enabled: false`、运行期开关全为 `@Value` 静态注入且 `sso.enabled` 重复注入两处，据此改为**注册表驱动**：表塌缩为 key→value 两列、删除即重置、UI 不可新增参数、去分页、四级取值链兼容 yaml/Nacos，并新增存量 `@Value` 迁移方案。公告侧补齐阅读面（`/notice/feed*` 独立前缀、撤回态、水位未读表），替代原「已读表延后」的搁置结论 |

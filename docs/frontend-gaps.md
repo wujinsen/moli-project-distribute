@@ -21,6 +21,8 @@
 
 ## 一、运营管理（2026-07-13）
 
+> **拆服务**：将本栏迁出 user-center 的设计已定稿、**暂不开工**。[ops-service-extract-plan.md](design/ops-service-extract-plan.md)。现行前缀仍是 `/UserCenter/operation`。
+
 ### 1.1 已完成（前后端契约已对齐）
 
 | 任务 | 说明 |

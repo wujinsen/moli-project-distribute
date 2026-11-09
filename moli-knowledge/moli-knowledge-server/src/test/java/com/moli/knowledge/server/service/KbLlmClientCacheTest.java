@@ -100,4 +100,16 @@ public class KbLlmClientCacheTest {
         verify(callLogService).recordSuccess(eq("ask"), eq(1L), eq("glm"), eq("glm-4-flash"), anyLong(),
                 eq(false), eq(false), eq(10), eq(5), any(BigDecimal.class));
     }
+
+    @Test
+    public void chat_askChatScene_skipsSemanticCacheLookupAndPut() throws Exception {
+        when(providerAdapter.chatLegacy(any(), eq("sys"), eq("question"), isNull())).thenReturn("fresh");
+        when(costEstimator.estimateCostUsd(anyInt(), anyInt())).thenReturn(new BigDecimal("0.000015"));
+
+        String answer = kbLlmClient.chat("ask_chat", 1L, "sys", "question", null);
+
+        Assert.assertEquals("fresh", answer);
+        verify(semanticCache, never()).lookup(any(), any(), any(), any());
+        verify(semanticCache, never()).put(any(), any(), any(), any(), any(), any(), any());
+    }
 }

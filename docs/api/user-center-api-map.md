@@ -1,12 +1,12 @@
 # 后台接口迭代地图
 
-最后更新: 2026-06-11  
-适用范围: `moli-server` 当前代码中的 Controller 接口
+最后更新: 2026-09-09  
+适用范围: `moli-user-center-server` 当前代码中的 Controller 接口
 
 ## 1. 基本结论
 
-- 控制器数量: 17
-- HTTP 接口数量: 约 75（`GET/POST/PUT/DELETE` 注解统计）
+- 控制器数量: 18
+- HTTP 接口数量: 约 77（`GET/POST/PUT/DELETE` 注解统计）
 - 统一返回: `MoliResult<T>`
 - 分页返回: `PageRes<T>`
 - 鉴权方式: Shiro Session（token 实际为 sessionId）
@@ -14,7 +14,7 @@
 - 超级管理员: `superadmin` / `admin` 拥有 `*:*:*`，可进入任意已注册系统（含停用），进入 INTERNAL 系统时返回全部菜单；多系统时与普通用户一样需先选系统（仅 1 个 INTERNAL 时登录自动进入）
 - 无权限响应: HTTP 200 + `code=10009`；Shiro 鉴权失败 `msg=无权限操作`；业务层校验保留细分文案
 - 全局鉴权策略:
-  - 放行: `/login`、`/sso/validate`、Swagger 相关
+  - 放行: `/login`、`/sso/validate`、`/actuator/**`、`/hooks/alertmail`、Swagger 相关
   - 其余路径: `authc` 拦截（未登录返回 token 失效 JSON）
 
 ## 2. 认证与会话
@@ -128,15 +128,22 @@
 - `DELETE /post/{ids}`：批量删除；权限 `system:post:remove` + `system:post:list`
 - `GET /post/allPost`：全部岗位；权限 `system:post:list`
 
-### 参数设置 `ConfigController`（前缀 `config`，3个）
+### 参数设置 `ConfigController`（前缀 `config`，4个）
 
 契约详见 [`sys-config-notice-api.md`](sys-config-notice-api.md) §2。
 
 - `GET /config/list`：参数列表（**注册表驱动**，非表驱动；无分页）；权限 `system:config:list`；可选 `group=SECURITY|PORTAL|OPS`
 - `PUT /config`：设置覆盖值；权限 `system:config:edit` + `system:config:list`
 - `DELETE /config/{configKey}`：重置为默认（删覆盖行，**不是**删参数）；权限 `system:config:remove` + `system:config:list`
+- `POST /config/alert-email/test`：按当前生效 SMTP 发测试信；权限 `system:config:edit` + `system:config:list`
 
-**无 `POST`**：参数在代码 `ConfigKey` 枚举里声明，不能由 UI 创建，故也无 `system:config:add`。
+**无「新建参数」的 `POST`**：参数在代码 `ConfigKey` 枚举里声明，不能由 UI 创建，故也无 `system:config:add`。
+
+### 告警邮件 webhook `AlertMailWebhookController`（前缀 `/hooks/alertmail`，1个）
+
+- `POST /hooks/alertmail`：Alertmanager 推送；Shiro **anon**；`Authorization: Bearer` = `moli.alert-mail.webhook-secret`；只发 `MoliServiceDown`
+
+契约详见 [`sys-config-notice-api.md`](sys-config-notice-api.md) §2.5。流程见 [`moli-alert-email.drawio`](../diagrams/moli-alert-email.drawio)。
 
 ### 通知公告 `NoticeController`（前缀 `notice`，10个）
 

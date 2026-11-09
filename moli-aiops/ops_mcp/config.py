@@ -61,6 +61,10 @@ LOKI_SERVICE_SELECTOR = os.environ.get(
     '{service=~"moli-gateway|user-center-server|order-server|ai-server|knowledge-server"}',
 )
 LOKI_LOG_LIMIT = int(os.environ.get("OPS_LOKI_LOG_LIMIT", "80"))
+# 浏览器深链接（值班人点开，不是容器互调）
+GRAFANA_URL = os.environ.get("OPS_GRAFANA_URL", "http://127.0.0.1:28300").rstrip("/")
+SW_UI_URL = os.environ.get("OPS_SW_UI_URL", "http://127.0.0.1:28120").rstrip("/")
+OPS_CONSOLE_URL = os.environ.get("OPS_CONSOLE_URL", "http://127.0.0.1:28105").rstrip("/")
 
 # --- 审计 ---------------------------------------------------------------
 AUDIT_DB = Path(os.environ.get("OPS_AUDIT_DB", str(_HERE / "data" / "aiops.db")))

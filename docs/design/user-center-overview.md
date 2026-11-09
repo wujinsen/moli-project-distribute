@@ -62,9 +62,10 @@ meiling-ui ──HTTP──► gateway:21000/UserCenter/** ──► user-center
 
 ### 3.4 运营管理子系统（2026-07）
 
-- 包：`operation/` · 表 `operation_*` · API `/operation/*`
+- 包：`operation/` · 表 `operation_*` · API `/operation/*`（**仍寄住本服务**）
 - 四台账 + 部署中心 + 拓扑/关系 + 任务历史（含 DC-4 分组）
 - 详见 [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md) · [operation-server-ops-prd.md](../product/operation-server-ops-prd.md)
+- **拆成独立 `ops-server`（设计稿）**：[`ops-service-extract-plan.md`](ops-service-extract-plan.md)
 
 ### 3.5 对外 RPC
 

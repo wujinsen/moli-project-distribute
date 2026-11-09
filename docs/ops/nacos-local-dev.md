@@ -82,6 +82,21 @@ Nacos 2.x 除 HTTP **28548** 外，还必须能连 **gRPC 29548 / 29549**（相�
 4. **完全重启 IDEA**（仅 Stop/Run 不会刷新已加载的系统环境变量）
 5. 重启 Nacos：`.\scripts\nacos-docker.ps1 restart`
 
+### 网关 `Connection timed out` 到一个已经不存在的 IP
+
+Nacos 实例健康、本机 `127.0.0.1:28101` 也通，但网关日志类似：
+
+```text
+ConnectException: Connection timed out: /192.168.3.100:28101
+```
+
+原因：服务启动时按当时网卡选了注册 IP（VPN / 旧 Wi-Fi），网卡断开后 IP 消失，心跳仍报这个地址。`application-dev.yml` 已把本机发现地址钉成 `127.0.0.1`（`spring.cloud.nacos.discovery.ip` + Dubbo `host`）。改完后必须重启对应 `(dev)` 进程才会重新注册。
+
+```powershell
+curl.exe -s "http://127.0.0.1:28548/nacos/v1/ns/instance/list?serviceName=user-center-server&namespaceId=dev"
+# hosts[].ip 应为 127.0.0.1
+```
+
 ---
 
 ## 相关

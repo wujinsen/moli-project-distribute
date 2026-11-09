@@ -204,20 +204,24 @@ trace_id=TID:13eef851b9434faa8dfcadbeeaa924a7.128.17882712296580005 sw_ctx=SW_CT
 
 Trace ID 为空时面板无结果，属正常。
 
-### 4.6 SkyWalking ↔ Grafana 互跳（待配置）
+### 4.6 SkyWalking ↔ Grafana 互跳（W2 已落地）
 
-Phase 3 验收项：Trace 详情一键打开 Grafana 全链路日志。可在 SkyWalking OAP 配置 **External Link**（生产替换域名）：
+排障流程：
 
-```text
-http://<grafana-host>/d/moli-trace-logs?var-trace_id=<前32位TraceID>&from=<epochMs-5m>&to=<epochMs+5m>
-```
+![Trace 排障与深链接](../diagrams/png/moli-observability-trace-troubleshoot.png)
 
-告警通知模板建议附带：
+> 可编辑源文件：[moli-observability-trace-troubleshoot.drawio](../diagrams/moli-observability-trace-troubleshoot.drawio)（本机未装 puppeteer 时用 diagrams.net 导出 PNG）
 
-- SkyWalking Trace 链接（按 UI 路由）
-- Grafana `moli-trace-logs` 链接（预填 `trace_id`）
+| 从 | 到 | 本机 URL |
+|----|----|----------|
+| SkyWalking UI（右下角按钮，`skywalking-ui-gateway` 注入） | Grafana | `http://127.0.0.1:28300/d/moli-trace-logs?orgId=1&var-trace_id=<32-hex>&from=<epochMs-5m>&to=<epochMs+5m>` |
+| Grafana Moli Trace Logs 顶部链接 | SkyWalking 10.4 | `http://127.0.0.1:28120/traces/<trace_id>` |
+| 任一端 | 运维台排障页 | `http://127.0.0.1:28105/trace?trace_id=<32-hex>` |
+| meiling-ui | 同上 API | `GET /AiOpsServer/trace/inspect?trace_id=`（权限 `operation:aiops:list`） |
 
-实现深链接后更新本节 URL 示例。
+生产把 `OPS_GRAFANA_URL` / `OPS_SW_UI_URL` / `GRAFANA_PUBLIC_URL` 换成内网域名。SkyWalking 10.4 没有官方 External Link，所以 UI 走 HTML 注入，浏览器端口仍是 **28120**。
+
+告警通知模板建议附带 SkyWalking `/traces/:id` 与 Grafana `moli-trace-logs` 两条链接。
 
 ### 4.7 本地 grep（无 Grafana 时）
 
@@ -254,18 +258,32 @@ Select-String -Path "D:\work\moli_project\moli-project-distribute\moli-user-cent
 python -c "from ops_mcp.toolbelt import ToolContext, ops_trace_get, ops_logs_by_trace; ctx=ToolContext(); print(ops_trace_get(ctx, '<32-hex>')); print(ops_logs_by_trace(ctx, '<32-hex>'))"
 ```
 
-**W3 已落地（规则告警 → 诊断）**
+**W3 已落地（规则告警 → 诊断 / 邮件）**
+
+流程见 [`moli-alert-email.drawio`](../diagrams/moli-alert-email.drawio)（用 diagrams.net 或 Draw.io 扩展打开）。
 
 | 项 | 说明 |
 |----|------|
-| 规则 | `deploy/observability/prometheus/rules/moli-alerts.yml`：`MoliServiceDown` / `MoliHttp5xx` / `MoliHeapHigh` |
-| Alertmanager | http://127.0.0.1:29093 ；webhook `http://host.docker.internal:28105/hooks/alertmanager` |
-| 鉴权 | `Authorization: Bearer` = `AIOPS_ALERT_WEBHOOK_SECRET`（本地默认 `moli-local-alert-webhook`） |
+| 规则 | `deploy/observability/prometheus/rules/moli-alerts.yml`：`MoliServiceDown` / `MoliHttp5xx` / `MoliHttpLatencyHigh` / `MoliHttpP95High` / `MoliGatewayRoute5xx` / `MoliGatewayRouteLatencyHigh` / `MoliHeapHigh` / `MoliGcPauseHigh` / `MoliDruidPoolHigh` / `MoliProcessCpuHigh` |
+| Alertmanager | http://127.0.0.1:29093 ；webhook ① `http://host.docker.internal:28105/hooks/alertmanager`（AIOps 诊断）② `http://host.docker.internal:28101/hooks/alertmail`（邮件，仅 `MoliServiceDown`） |
+| 鉴权 | `Authorization: Bearer` = 本地默认 `moli-local-alert-webhook`（AIOps：`AIOPS_ALERT_WEBHOOK_SECRET`；用户中心：`MOLI_ALERT_MAIL_WEBHOOK_SECRET` / `moli.alert-mail.webhook-secret`） |
 | 诊断 | 只处理 `firing`；同 `alertname+service+instance` 10 分钟去重；investigator 会查 Prometheus 窗口 |
+| 邮件 | 参数设置「运维」分组配 SMTP 并打开 `ops.alert.email.enabled`；用户中心自身宕机时发不出信。流程见 [`moli-alert-email.drawio`](../diagrams/moli-alert-email.drawio) |
 
-本地要先起 `moli-aiops`（`:28105`）并设置与 compose 相同的 webhook secret。未启动的 Java 服务会触发 `MoliServiceDown`，属预期。
+本地要先起 `moli-aiops`（`:28105`）并设置与 compose 相同的 webhook secret。未启动的 Java 服务会触发 `MoliServiceDown`，属预期。邮件通道还需用户中心 `:28101` 已启动，并在参数设置里打开告警、配全 SMTP。改 `alertmanager.yml` 后执行 `docker compose restart alertmanager`。
 
-W2（运维台 Trace 排障页、SkyWalking ↔ Grafana 深链接）尚未做。统计异常 / 多信号融合预警仍未做。
+**OBS-07 本机已跑通（2026-09-06）**：经网关 `GET /KnowledgeServer/kb/index`（需登录）可看到同一 `trace_id` 贯穿 `moli-gateway` → `knowledge-server` HTTP → Dubbo `getUserById` / `getPermissionsByUserId` → `user-center-server` MySQL/Jedis，以及 knowledge 自身 JDBC。SkyWalking UI 用 32 位根 ID 查。Servlet 成功/失败信封 `MoliResult.traceId` 为同一 32 位根 ID（需 `apm-toolkit-trace` + Agent）。`logging.file.path` 由 `MoliLoggingPathEnvironmentPostProcessor` 钉到仓库 Alloy 目录，不随 Maven/IDEA 的 CWD 嵌套。
+
+**W2 已落地（排障页 + 深链接）**
+
+| 项 | 说明 |
+|----|------|
+| 页面 | `GET /trace`（`moli-aiops/aiops_agent/static/trace.html`）；菜单 410 见 `docs/sql/42_operation_aiops_trace_menu.sql` |
+| API | `GET /trace/inspect` 复用 `ops_trace_get` + `ops_logs_by_trace`，回 `links.grafana_trace_logs` / `links.skywalking_ui` |
+| 互跳 | SkyWalking UI 注入按钮 → Grafana；Grafana Dashboard 链接 → `/traces/${trace_id}` |
+| Alloy | 采集标签补 `host=local`（与已有 `service` / `env` 一起出现在 Loki） |
+
+统计异常 / 多信号融合预警仍未做。
 
 ### 4.10 后续（Phase 4 / 值班自动化）
 
@@ -373,6 +391,8 @@ Wiki 详述：[[茉莉-shiro-跨服务]] · [[故障排查指南]] § Prometheus
 | order | `GET /seckill/metrics` Redis 计数 |
 | 五个 Java 服务 | `/actuator/prometheus` JVM、HTTP、线程、连接池等 |
 | user-center | Druid 连接池自定义指标 |
+
+Grafana：**Dashboards / Moli / Moli RED**（`deploy/observability/grafana/dashboards/moli-red.json`）。告警规则与盘上阈值对齐（5xx>5%、均延>1s、P95>1.5s、堆>90%、GC>20%、Druid>85%）。P95 依赖 `http_server_requests_seconds_bucket`，需服务带上 `management.metrics.distribution.percentiles-histogram` 后重启。
 
 压测栈见 [load-test/README.md](../../load-test/README.md)。
 

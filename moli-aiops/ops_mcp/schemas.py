@@ -266,6 +266,8 @@ class TraceDump(BaseModel):
     error_spans: int = 0
     services: list[str] = Field(default_factory=list)
     duration_ms: int = 0
+    start_ms: int = 0
+    end_ms: int = 0
     spans: list[TraceSpanDump] = Field(default_factory=list)
     note: str = ""
 

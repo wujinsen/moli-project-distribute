@@ -192,6 +192,10 @@
             <artifactId>apm-toolkit-logback-1.x</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-trace</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.moli</groupId>
             <artifactId>moli-distribute-common</artifactId>
             <version>${revision}</version>

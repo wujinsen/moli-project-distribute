@@ -4,6 +4,7 @@ import com.moli.common.constant.PermissionConstants;
 import com.moli.common.core.MoliResult;
 import com.moli.user.center.common.domain.vo.ConfigItemVo;
 import com.moli.user.center.common.domain.vo.ConfigUpdateRequest;
+import com.moli.user.center.server.service.AlertMailService;
 import com.moli.user.center.server.service.ConfigService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -20,7 +21,8 @@ import java.util.List;
  *
  * <p>接口形态与其它系统管理模块**故意不同**，原因见设计 §3.5：
  * <ul>
- *   <li>无 {@code POST}：参数由代码 {@code ConfigKey} 注册表声明，不能由 UI 创建；</li>
+ *   <li>无「新建参数」的 {@code POST}：参数由代码 {@code ConfigKey} 注册表声明，不能由 UI 创建
+ *       （{@code POST /config/alert-email/test} 只是发测试信，不创建参数）；</li>
  *   <li>不用 id 寻址：{@code configKey} 就是业务主键，用 id 会迫使前端多存一个无意义的值；</li>
  *   <li>无分页：参数是数十条量级，{@code PageRes} 在这里是纯负担。</li>
  * </ul>
@@ -33,6 +35,9 @@ public class ConfigController {
 
     @Autowired
     private ConfigService configService;
+
+    @Autowired
+    private AlertMailService alertMailService;
 
     /**
      * 参数列表。数据源是**注册表 ∪ 覆盖值**，因此从未被改过的参数也会返回，
@@ -67,6 +72,18 @@ public class ConfigController {
     @ApiOperation(value = "重置参数为默认值", notes = "删除运行期覆盖行，回落 yaml 或声明默认值")
     public MoliResult<Boolean> reset(@PathVariable String configKey) {
         configService.resetToDefault(configKey);
+        return MoliResult.success(Boolean.TRUE);
+    }
+
+    /**
+     * 用当前生效的 SMTP / 收件人发一封测试信，确认邮箱配置可用。
+     */
+    @PostMapping("/alert-email/test")
+    @RequiresPermissions(value = {PermissionConstants.SYSTEM_CONFIG_EDIT, PermissionConstants.SYSTEM_CONFIG_LIST},
+            logical = Logical.AND)
+    @ApiOperation(value = "发送测试告警邮件", notes = "使用参数设置中当前生效的 SMTP 与收件人")
+    public MoliResult<Boolean> sendTestAlertEmail() {
+        alertMailService.sendTest();
         return MoliResult.success(Boolean.TRUE);
     }
 

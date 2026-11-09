@@ -38,9 +38,43 @@
         <mxCell id="e6" value="P2 记忆检索" style="endArrow=block;html=1;strokeColor=#b85450;dashed=1;fontSize=10;" edge="1" parent="1" source="pack" target="chroma"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1000" y="220"/><mxPoint x="700" y="220"/></Array></mxGeometry></mxCell>
         <mxCell id="e7" style="endArrow=block;html=1;strokeColor=#d6b656;" edge="1" parent="1" source="pack" target="llm"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="e8" value="抽取后写入" style="endArrow=block;html=1;strokeColor=#b85450;dashed=1;fontSize=10;" edge="1" parent="1" source="llm" target="chroma"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="970" y="430"/><mxPoint x="700" y="430"/></Array></mxGeometry></mxCell>
-        <mxCell id="note" value="P0：session + 最近 K 轮注入 Ask，不改 /kb/ask 契约。&#xa;P1：摘要 + token 预算。&#xa;P2：长期记忆抽取/召回（与 wiki 向量 collection 隔离）。&#xa;P3：Agentic / Research / AIOps 可选挂同一 chatSessionId。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="note" value="P0：session + 最近 K 轮注入 Ask，不改 /kb/ask 契约。Chat 跳过语义缓存。&#xa;P1：摘要 + token 预算。&#xa;P2：长期记忆抽取/召回（与 wiki 向量 collection 隔离）。&#xa;P3：Agentic / Research 可选挂同一 chatSessionId。" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="40" y="430" width="1040" height="90" as="geometry" />
         </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="moli-kb-agent-memory-p0" name="P0 多轮时序">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" value="AI-11 P0 · POST /kb/chat/sessions/{id}/messages" style="text;html=1;fontSize=18;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="1. 校验 session.user_id&#xa;= 当前 Shiro 用户" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="2. INSERT user 消息&#xa;content = 原文 question" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="320" y="80" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="3. ChatPack&#xa;召回 query = 上轮用户问 + 本轮&#xa;生成带最近 K=6 轮" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="80" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="4. ask(req, pack)&#xa;Guardrails 看本轮原文&#xa;跳过语义缓存" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="920" y="80" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="5. INSERT assistant 消息&#xa;qa_log_id 对齐 kb_qa_log" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="320" y="220" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="6. 返回 Ask 同构字段&#xa;+ chatSessionId + messageId" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;fontSize=11;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="600" y="220" width="280" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="s1" target="s2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="s2" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;strokeColor=#9673a6;" edge="1" parent="1" source="s3" target="s4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="endArrow=block;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="s4" target="s5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="endArrow=block;html=1;strokeColor=#d79b00;" edge="1" parent="1" source="s5" target="s6"><mxGeometry relative="1" as="geometry" /></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

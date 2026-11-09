@@ -9,9 +9,11 @@ import java.util.regex.Pattern;
 /**
  * 从 SkyWalking Toolkit / MDC 取出<strong>根</strong> Trace ID（32 位 hex）。
  * <p>
- * 不依赖 skywalking-toolkit：common 不能绑 Agent 版本。有 Toolkit 时反射调用
- * {@code TraceContext.traceId()}；没有则读 MDC。UI 复制的
- * {@code TID:hex.segment.xxx} 一律收成前 32 位，方便贴 Loki / Grafana。
+ * 不依赖 skywalking-toolkit：common 不能绑 Agent 版本。业务模块需引入
+ * {@code apm-toolkit-trace}（Agent {@code activations/apm-toolkit-trace-activation}
+ * 织入 {@code TraceContext.traceId()}）。没有 Toolkit 时读 MDC
+ * （{@link com.moli.common.web.SkyWalkingTraceMdcFilter} 会先写入）。
+ * UI 复制的 {@code TID:hex.segment.xxx} 一律收成前 32 位，方便贴 Loki / Grafana。
  * 信封里只回 {@code traceId}，不回 {@code spanId}。
  */
 public final class TraceIds {

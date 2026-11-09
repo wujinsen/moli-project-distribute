@@ -20,6 +20,8 @@
 | `knowledge-route` | `/KnowledgeServer/**` | knowledge-server | `knowledge-server` | **1** |
 | `aiops-route` | `/AiOpsServer/**` | moli-aiops FastAPI | 固定 URI `:28105`（演示） | **1** |
 
+**规划（未实施）**：运维台账从 user-center 拆出后增加 `/OpsServer/**` → `ops-server :28106`。详见 [`ops-service-extract-plan.md`](../design/ops-service-extract-plan.md)。现行运营 API 仍走 `/UserCenter/operation/**`。
+
 **StripPrefix=1**：去掉第一段路径再转发。
 
 示例：`GET /UserCenter/login` → 转发到 user-center `GET /login`。

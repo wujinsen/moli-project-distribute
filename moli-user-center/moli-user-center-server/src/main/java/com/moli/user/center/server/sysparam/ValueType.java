@@ -37,6 +37,16 @@ public enum ValueType {
         public String checkParsable(String raw) {
             return null;
         }
+    },
+
+    /**
+     * 密钥类字符串。校验与 STRING 相同，列表接口掩码，日志不打印原文。
+     */
+    SECRET {
+        @Override
+        public String checkParsable(String raw) {
+            return null;
+        }
     };
 
     /**

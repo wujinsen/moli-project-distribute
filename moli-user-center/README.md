@@ -30,7 +30,7 @@
 | 多系统门户 | `/system`, `/auth/capabilities` | 系统注册、进入/切换、权限快照 |
 | RBAC | `/user`, `/role`, `/menu`, `/dept`, `/post`, `/dict`, `/action` | 用户/角色/菜单/部门/岗位/字典/动作 |
 | 审计 | `/log` | 登录日志、操作日志 |
-| 运维资产 | `/operation/platform|server|project|component` | 平台/服务器/项目/组件台账 |
+| **运维资产（现行）** | `/operation/platform|server|project|component` | 平台/服务器/项目/组件台账；**拆服务规划** [`docs/design/ops-service-extract-plan.md`](../docs/design/ops-service-extract-plan.md)（暂不开工） |
 | 部署中心 | `/operation/deploy`、`/operation/file`、`/operation/command`、`/operation/task` | 远程启停、SFTP 上传、受控 shell（见 [`docs/api/operation-deploy-api.md`](../docs/api/operation-deploy-api.md)） |
 | 压测 | `/loadtest/login` | 仅 `spring.profiles.active=loadtest` |
 | Dubbo | — | `getInfoByUserName` / `getUserById` / `getPermissionsByUserId` |
@@ -65,7 +65,8 @@ java -jar moli-user-center-server/target/moli-user-center-server-*.jar
 | **HTTP API** | [`docs/api/user-center-api-map.md`](../docs/api/user-center-api-map.md) |
 | **Dubbo API** | [`docs/api/user-center-dubbo.md`](../docs/api/user-center-dubbo.md) |
 | **测试** | [`docs/test/user-center.md`](../docs/test/user-center.md) + [`load-test/README.md`](../load-test/README.md) |
-| **运维** | [`kb/wiki-moli/ops/user-center-运维要点.md`](../moli-knowledge/kb/wiki-moli/ops/user-center-运维要点.md) |
+| 运维 | [`kb/wiki-moli/ops/user-center-运维要点.md`](../moli-knowledge/kb/wiki-moli/ops/user-center-运维要点.md) |
+| **运维拆服务（规划）** | [`docs/design/ops-service-extract-plan.md`](../docs/design/ops-service-extract-plan.md)（**暂不开工**） |
 | **Wiki 浏览页** | [`kb/wiki/services/用户中心.md`](../moli-knowledge/kb/wiki/services/用户中心.md) |
 | **跨服务接入** | [`moli-user-center-shiro-starter/README.md`](moli-user-center-shiro-starter/README.md) |
 

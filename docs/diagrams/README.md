@@ -30,7 +30,7 @@
 | [`moli-kb-hybrid-retrieval.drawio`](moli-kb-hybrid-retrieval.drawio) | **混合检索 + GraphRAG AI-2/5**：ngram + 向量 RRF → 可选 Graph 扩跳（kb_relation）→ 可选 Rerank + 评测（`docs/design/kb-hybrid-retrieval.md`） |
 | [`moli-kb-agentic-rag.drawio`](moli-kb-agentic-rag.drawio) | **Agentic RAG AI-7**：S0–S5 编排状态机 · 自检/回补 · `kb_agentic_trace`（`docs/design/kb-hybrid-retrieval.md` §8） |
 | [`moli-kb-deep-research.drawio`](moli-kb-deep-research.drawio) | **DeepResearch AI-10**：Planner→Retriever→Writer→Reviewer · Ingest 回写 outputs/ · SSE（`docs/design/contracts/AI-10-contract.md`） |
-| [`moli-kb-agent-memory.drawio`](moli-kb-agent-memory.drawio) | **会话/上下文/记忆 AI-11（规划）**：chatSession ≠ Shiro · 打包预算 · 用户记忆独立 collection（`docs/design/kb-agent-session-memory.md`） |
+| [`moli-kb-agent-memory.drawio`](moli-kb-agent-memory.drawio) | **会话/上下文/记忆 AI-11**：chatSession ≠ Shiro · P0 时序 · 用户记忆独立 collection（方案 `docs/design/kb-agent-session-memory.md` · 契约 `docs/design/contracts/AI-11-contract.md`） |
 | [`moli-ai-chatbi-flow.drawio`](moli-ai-chatbi-flow.drawio) | **ChatBI / NL2SQL 调用链 AI-4**：Java 壳 AST 白名单+只读执行，Python sidecar 生成解读（设计见 `docs/design/bi-chatbi-nl2sql.md`） |
 | [`moli-gateway-routes.drawio`](moli-gateway-routes.drawio) | **网关路由一览**：五路由（含 AiOpsServer）+ StripPrefix + 端口 |
 | [`moli-rbac-model.drawio`](moli-rbac-model.drawio) | **RBAC 模型**：用户→角色→菜单/动作 + Shiro 运行时 |
@@ -38,6 +38,7 @@
 | [`moli-user-center-position.drawio`](moli-user-center-position.drawio) | **用户中心定位**：网关 HTTP + Dubbo + 共享 Redis |
 | [`moli-seckill-flow.drawio`](moli-seckill-flow.drawio) | **秒杀全链路**：Gateway → Lua → 队列 → MySQL |
 | [`moli-deploy-topology.drawio`](moli-deploy-topology.drawio) | **本地部署拓扑**：基础设施 + 启动顺序 |
+| [`moli-ops-extract.drawio`](moli-ops-extract.drawio) | **运维独立服务拆分**：目标进程（ops-server :28106 + /OpsServer）与 P0/P1/P2 切流（设计见 `docs/design/ops-service-extract-plan.md`） |
 | [`moli-operation-refactor.drawio`](moli-operation-refactor.drawio) | **运营管理改造目标**：台账四模块 + 部署中心 + operation_task + SSH 状态同步 |
 | [`moli-operation-port-matrix.drawio`](moli-operation-port-matrix.drawio) | **端口矩阵 SVR-21**：DB 表 + Provider 缓存 + 审计/CRUD 双通道 |
 | [`moli-operation-server-links.drawio`](moli-operation-server-links.drawio) | **项目/组件多服务器 SVR-22**：主 `server_id` + N:N 关联表 + API |
@@ -46,9 +47,11 @@
 | [`moli-sso-menu-flow.drawio`](moli-sso-menu-flow.drawio) | **SSO 菜单按系统隔离**：login → enter/switch → getRouters 过滤（设计见 `docs/design/sso-menu-system-isolation.md`） |
 | [`moli-aiops-architecture.drawio`](moli-aiops-architecture.drawio) | **AIOps 故障诊断多智能体平台**：L0 告警源 → L1 LangGraph 九节点（含 `interrupt()` 人工确认闸门）→ L2 `ops_mcp` 12 个工具（含 W1 `ops_trace_get` / `ops_logs_by_trace`）→ L3 CMDB·SSH·KB·OAP/Loki·sqlite（模块 README `moli-aiops/README.md`） |
 | [`moli-observability-platform.drawio`](moli-observability-platform.drawio) | **可观测性平台**：Prometheus/Grafana/Alertmanager、Loki/Alloy、SkyWalking，以及 AM webhook → AIOps 诊断 |
+| [`moli-alert-email.drawio`](moli-alert-email.drawio) | **Java 宕机邮件告警**：参数设置 SMTP → Prometheus `MoliServiceDown` → Alertmanager → `POST /hooks/alertmail` → 用户中心发信 |
 | [`moli-observability-prod-topology.drawio`](moli-observability-prod-topology.drawio) | **生产可观测性部署拓扑**：业务机 Alloy + 监控机 Loki/Prometheus/Grafana + 对象存储 |
 | [`moli-observability-log-resilience.drawio`](moli-observability-log-resilience.drawio) | **日志可靠性分层**：L1 落盘 → L2 Alloy → L3 Loki/S3 → L4 冷归档；故障影响矩阵 |
 | [`moli-observability-core-trace-flow.drawio`](moli-observability-core-trace-flow.drawio) | **核心服务调用链**：Gateway → user-center/order/knowledge HTTP 路由，Shiro Starter → user-center Dubbo 鉴权，以及 trace_id/span_id 父子关系 |
+| [`moli-observability-trace-troubleshoot.drawio`](moli-observability-trace-troubleshoot.drawio) | **W2 Trace 排障**：运维台 `/trace/inspect` 复用 W1 取证 + SkyWalking ↔ Grafana 深链接 |
 | [`moli-sys-config-notice-er.drawio`](moli-sys-config-notice-er.drawio) | **参数设置 / 通知公告 ER**（3 表）：`sys_config` 只存运行期覆盖值（定义在代码 `ConfigKey` 注册表）+ 四级取值链 · `sys_notice` 三态发布 + `sys_notice_read_cursor` 未读水位（设计见 `docs/design/sys-config-notice.md`） |
 
 **两空间 Sync 映射**（权威操作说明：`moli-knowledge/kb/wiki-moli/ops/wiki同步指南.md` §1）：
@@ -157,6 +160,7 @@ docs/diagrams/png/moli-sys-config-notice-er.png
 docs/diagrams/png/moli-aiops-architecture.png
 docs/diagrams/png/moli-observability-platform.png
 docs/diagrams/png/moli-observability-core-trace-flow.png
+docs/diagrams/png/moli-observability-trace-troubleshoot.png
 ```
 
 在 [`docs/zh-CN/ARCHITECTURE.md`](../zh-CN/ARCHITECTURE.md) 可替换 Mermaid 为 PNG（按需）。

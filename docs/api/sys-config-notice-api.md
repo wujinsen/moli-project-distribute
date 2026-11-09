@@ -1,16 +1,18 @@
 # 参数设置 / 通知公告 · HTTP API 契约
 
-> **状态**：后端已实现（前端待接） · **更新**：2026-08-16  
-> **服务**：`moli-user-center-server` · 前缀 `/config`、`/notice`  
+> **状态**：后端 + 参数设置页已接 · **更新**：2026-09-09  
+> **服务**：`moli-user-center-server` · 前缀 `/config`、`/notice`；告警 webhook `/hooks/alertmail`  
 > **设计**：[`sys-config-notice.md`](../design/sys-config-notice.md)  
-> **迁移**：[`38_sys_config.sql`](../sql/38_sys_config.sql) · [`39_sys_notice.sql`](../sql/39_sys_notice.sql)
+> **迁移**：[`38_sys_config.sql`](../sql/38_sys_config.sql) · [`39_sys_notice.sql`](../sql/39_sys_notice.sql)  
+> **宕机邮件流程**：[`moli-alert-email.drawio`](../diagrams/moli-alert-email.drawio)
 
 ---
 
 ## 0. 读前须知（两个与其它模块不同的地方）
 
-1. **参数不能新建**。`/config` 没有 `POST`。参数在代码 `ConfigKey` 枚举里声明，
+1. **参数不能新建**。没有「创建参数」的 `POST`。参数在代码 `ConfigKey` 枚举里声明，
    页面能做的只是「改值」和「重置为默认」。因此也没有 `system:config:add` 权限。
+   （`POST /config/alert-email/test` 只发测试信，不创建参数。）
 2. **公告有两套接口**。`/notice/*` 是后台管理（要 `system:notice:*` 权限，可见草稿）；
    `/notice/feed*` 是给所有登录用户的阅读侧（无 perms，只可见已发布且未过期）。
    前端**不要**用后台接口渲染通知栏，否则普通用户会收到 403。
@@ -22,7 +24,7 @@
 | perm_code | 用途 |
 |-----------|------|
 | `system:config:list` | 菜单 8、参数列表 |
-| `system:config:edit` | `PUT /config`（需与 `list` AND） |
+| `system:config:edit` | `PUT /config`、`POST /config/alert-email/test`（均需与 `list` AND） |
 | `system:config:remove` | `DELETE /config/{configKey}` 重置为默认（需与 `list` AND） |
 | `system:notice:list` | 菜单 9、后台列表与详情 |
 | `system:notice:add` | `POST /notice`（需与 `list` AND） |
@@ -53,14 +55,15 @@
 | `configKey` | string | 参数键名，同时是业务主键 |
 | `effectiveValue` | string | 当前生效值 |
 | `defaultValue` | string | 代码声明的默认值 |
-| `valueType` | string | `BOOLEAN` / `INT` / `STRING`，前端据此渲染控件 |
+| `valueType` | string | `BOOLEAN` / `INT` / `STRING` / `SECRET`，前端据此渲染控件 |
 | `groupCode` | string | `SECURITY` / `PORTAL` / `OPS` |
 | `groupName` | string | 分组展示名，可直接用于左侧分区标题 |
 | `description` | string | 参数说明 |
 | `source` | string | `DB_OVERRIDE` / `ENVIRONMENT` / `DEFAULT`，见 §2.4 |
 | `overridden` | boolean | 是否存在覆盖值；`true` 时展示「重置为默认」按钮 |
 
-**前端渲染建议**：`valueType=BOOLEAN` 用开关，`INT` 用数字输入，`STRING` 用文本框。
+**前端渲染建议**：`BOOLEAN` 用开关，`INT` 用数字输入，`STRING` 用文本框，`SECRET` 用密码框。
+列表里 `SECRET` 的 `effectiveValue` 为 `********`（无值则为空串）。前端未改密码时会把掩码原样提交，后端视为「保持原值」。
 不要自己维护「哪个 key 是开关」的映射表 —— 类型由后端声明下发。
 
 ### 2.2 `PUT /config`
@@ -89,7 +92,26 @@
 重置为默认值 —— **删除的是覆盖行，不是参数**。参数由代码声明，永远存在；
 重置后生效值回落到 yaml 或声明默认值。对未被覆盖的参数重复调用不报错（幂等）。
 
-### 2.4 生效值来源（`source` 字段的含义）
+### 2.4 `POST /config/alert-email/test`
+
+用**当前已生效**的 SMTP / 收件人发一封测试信。权限与 `PUT /config` 相同（`edit` + `list`）。
+
+未打开 `ops.alert.email.enabled`、或 SMTP/收件人未配全时返回业务错误 `msg`（可直接展示）。
+前端超时建议 ≥ 25s（SMTP 连接本身有数秒超时）。
+
+### 2.5 `POST /hooks/alertmail`（Alertmanager，非登录）
+
+Alertmanager 直连用户中心 `:28101`（不走网关）。Shiro **anon**，用 `Authorization: Bearer`，
+密钥为 `moli.alert-mail.webhook-secret`（环境变量 `MOLI_ALERT_MAIL_WEBHOOK_SECRET`，本地默认与 AIOps webhook 相同：`moli-local-alert-webhook`）。
+
+只处理 `firing` 且 `alertname=MoliServiceDown` 的告警；其它规则（5xx / 堆内存等）忽略。
+同 `service+instance` 10 分钟进程内去重。
+
+**限制**：用户中心自身宕机时无法发出本邮件。
+
+本地 Alertmanager 配置：`deploy/observability/alertmanager/alertmanager.yml`。改 YAML 后需重启 Alertmanager 容器。
+
+### 2.6 生效值来源（`source` 字段的含义）
 
 后端按四级顺序取值，`source` 表示命中了哪一级：
 
@@ -101,7 +123,7 @@
 
 运维需要这个字段来判断「这个值是我改的，还是部署时就这样」。
 
-### 2.5 首批参数
+### 2.7 已注册参数（含邮件告警）
 
 | configKey | 类型 | 默认 | 分组 | 说明 |
 |-----------|------|------|------|------|
@@ -109,6 +131,14 @@
 | `sso.enabled` | BOOLEAN | `true` | PORTAL | 多系统门户开关 |
 | `ops.command.enabled` | BOOLEAN | `false` | OPS | 运维远程命令开关（安全开关，事故时需能立即关停） |
 | `ops.health.probe-enabled` | BOOLEAN | `true` | OPS | 服务器健康巡检定时任务开关 |
+| `ops.alert.email.enabled` | BOOLEAN | `false` | OPS | Java 服务宕机邮件告警总开关 |
+| `ops.alert.email.to` | STRING | 空 | OPS | 收件人，逗号/分号分隔 |
+| `ops.alert.email.from` | STRING | 空 | OPS | 发件人；留空则用 SMTP 用户名 |
+| `ops.alert.smtp.host` | STRING | 空 | OPS | SMTP 主机 |
+| `ops.alert.smtp.port` | INT | `465` | OPS | SMTP 端口 |
+| `ops.alert.smtp.username` | STRING | 空 | OPS | SMTP 用户名 |
+| `ops.alert.smtp.password` | SECRET | 空 | OPS | SMTP 密码/授权码（列表掩码） |
+| `ops.alert.smtp.ssl` | BOOLEAN | `true` | OPS | SSL（465 开；587 可关并走 STARTTLS） |
 
 新增参数是**代码变更**（加一个枚举常量），不需要写 SQL，也不需要前端改动 ——
 列表是注册表驱动的，新参数会自动出现在页面上。

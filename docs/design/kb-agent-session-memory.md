@@ -1,187 +1,112 @@
-# 知识库对话：会话、上下文与长短期记忆（规划）
+# 知识库对话：会话、上下文与长短期记忆（AI-11 方案）
 
-> 状态：design · 2026-09-03  
-> 建议任务号：**AI-11**（AI-1～10 已收官；本波补「多轮对话」缺口）  
-> 范围：`moli-knowledge-server` + meiling-ui 知识库问答；**不**引入 AgentScope / Spring AI / LangChain4j  
-> 栈约束：Java 8、Spring Boot 2、既有 `KbAskService` / `KbLlmClient` / `kb-retrieval`
+> 状态：**P0 已落地 · 2026-09-10**（P1 摘要/预算、P2 长期记忆未开工）  
+> 施工契约（字段/不变量/验收）：[`contracts/AI-11-contract.md`](contracts/AI-11-contract.md)  
+> 范围：`moli-knowledge-server` + meiling-ui 智能问答；**不**引入 AgentScope / Spring AI / LangChain4j  
+> 栈：Java 8、Spring Boot 2、既有 `KbAskService` / `KbLlmClient` / `kb-retrieval`
 
 ![会话上下文记忆](../diagrams/png/moli-kb-agent-memory.png)
 
-> 源文件：[moli-kb-agent-memory.drawio](../diagrams/moli-kb-agent-memory.drawio)（若 PNG 未导出，用 diagrams.net 打开源文件）
+> 源文件：[moli-kb-agent-memory.drawio](../diagrams/moli-kb-agent-memory.drawio)（含架构页 + P0 时序页；PNG 未导出时用 diagrams.net 打开）
+
+本文件讲**为什么和怎么分层**；落地以契约为准。G8「无多轮/无记忆」是开工前缺口；AI-1～10 已收官，本波只补这一条。
 
 ---
 
 ## 1. 问题
 
-今日 `/kb/ask` 是**单轮**：请求里只有 `question`，下一句不知道上一句。`kb_qa_log` 是审计流水，不是会话。Shiro `sessionId` 只证明登录身份。
+今日 `/kb/ask` 是**单轮**：请求里只有 `question`。`kb_qa_log` 是审计，不是会话。Shiro `sessionId` 只证明登录身份。ChatBI `/bi/chat/ask` 查业务库 SQL，与知识库问答不是同一条链路。
 
-缺的三块：
+| 能力 | 缺什么 | 本波 |
+|------|--------|------|
+| 会话管理 | 没有 `chatSessionId` | **P0** |
+| 短期记忆 | 最近 N 轮不进 prompt | **P0** |
+| 上下文预算 | 无 token 裁剪、无滚摘要 | P1 |
+| 长期记忆 | 无跨会话用户事实 | P2 |
 
-| 能力 | 缺什么 |
-|------|--------|
-| 会话管理 | 没有 `chatSessionId`，无法挂多轮消息、列表、关闭 |
-| 短期记忆 | 最近 N 轮不会自动进入 prompt |
-| 上下文管理 | 没有 token 预算、旧轮摘要、超长裁剪 |
-| 长期记忆 | 没有「按用户抽取事实、下次检索再注入」；wiki 是组织知识，不是用户记忆 |
-
-**非目标**：改登录态；把 wiki 当用户记忆；金融级记忆审计；Java 21 / Boot 3 升级。
-
-**不变量**：`POST /kb/ask` 请求/响应语义不变。多轮只走新 API；Ask 仍可被 Chat 内部调用。
+**非目标**：改登录态；把 wiki 当用户记忆；金融级记忆审计；Java 21 / Boot 3；改 `/kb/ask` HTTP 契约。
 
 ---
 
 ## 2. 分层（与登录会话拆开）
 
-```
-Shiro sessionId     → 你是谁（已有）
-kb_chat_session.id  → 这是哪一次聊天
-kb_chat_message     → 这一次里说过什么（短时）
-kb_user_memory      → 跨聊天还要记住的事实（长时）
-上下文打包器         → 这一次 LLM 调用塞哪些 token
-```
+Shiro sessionId → 你是谁（已有）。  
+`kb_chat_session.id` → 这是哪一次聊天。  
+`kb_chat_message` → 这一次里说过什么（短时）。  
+`kb_user_memory` → 跨聊天还要记住的事实（长时，P2）。  
+上下文打包器 → 这一次 LLM 调用塞哪些 token。
+
+P0 只实现前三层里的 session + message + 最近 K 轮打包。
 
 ---
 
-## 3. 数据（建议增量 SQL，落地时走 `@sql-migration-baseline`）
+## 3. 数据
 
-**`kb_chat_session`**
-
-| 列 | 说明 |
-|----|------|
-| id | 雪花；对外 `chatSessionId` |
-| user_id | 必填，= Shiro 用户 |
-| space_id | 可空；会话默认检索空间 |
-| title | 首问截断或 LLM 短标题 |
-| summary | P1：旧轮压缩摘要 |
-| status | 1 进行中 / 0 已关闭 |
-| last_message_at | 列表排序 |
-| 审计 + is_delete | 与现表一致 |
-
-**`kb_chat_message`**
-
-| 列 | 说明 |
-|----|------|
-| id | 雪花 |
-| session_id | FK 逻辑 |
-| role | user / assistant / system_note |
-| content | 原文 |
-| qa_log_id | 可空，链到既有 `kb_qa_log` |
-| token_est | 估算，供预算 |
-| create_time | |
-
-**`kb_user_memory`**（P2）
-
-| 列 | 说明 |
-|----|------|
-| id | 雪花 |
-| user_id | 隔离边界 |
-| kind | episodic / semantic / procedural |
-| text | 一条可检索事实（短） |
-| source_session_id | 可空 |
-| salience | 0–1，衰减用 |
-| expires_at | 可空 |
-| content_hash | 去重 |
-
-向量：**单独** Chroma collection（如 `moli_user_memory_v1`），metadata 含 `userId` + `memoryId`。禁止写入 wiki 的 `moli_kb_chunks_bgem3_v1`，避免组织知识与个人记忆混检索。
-
-Redis（可选热路径）：`kb:chat:{sessionId}:tail` 存最近 K 条 JSON，TTL = 空闲超时（如 24h）。Miss 回源 MySQL。
+增量编号 **`docs/sql/43_kb_chat_session.sql`**（不可用 42，已占用）。列定义与索引见契约 §2。P0 两张表；P2 再加 `kb_user_memory`。向量记忆必须用独立 Chroma collection，禁止写入 wiki 的 `moli_kb_chunks_bgem3_v1`。
 
 ---
 
-## 4. API（均挂 `/kb/chat`，权限复用 `kb:ask` 或新码 `kb:chat`）
+## 4. API 与接线
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/kb/chat/sessions` | 创建会话（可带 spaceId） |
-| GET | `/kb/chat/sessions` | 当前用户列表 |
-| GET | `/kb/chat/sessions/{id}/messages` | 翻页历史 |
-| POST | `/kb/chat/sessions/{id}/messages` | **多轮提问**（核心） |
-| POST | `/kb/chat/sessions/{id}/close` | 关闭；P2 触发记忆抽取 |
+均挂 `/kb/chat/**`，权限复用 **`kb:ask:list`**。核心是 `POST /kb/chat/sessions/{id}/messages`：内部 `ask(req, ChatPack)`，公开 `ask(req)` 零行为变化。
 
-`POST .../messages` 体：与 `AskRequest` 对齐的检索字段（spaceIds、useLlm、retrievalStrategy、graphExpand）+ `question`。服务端：
+检索用「上一轮用户问 + 本轮问」；生成才带最近 K=6 轮原文。Chat 路径跳过 AI-8 语义缓存（C-INV-4）。
 
-1. 校验 session 属于当前 user  
-2. 写入 user 消息  
-3. **打包上下文**（§5）→ 调 `KbAskService.ask`（question 可改写为「带历史的检索 query」，原文仍入库）  
-4. 写入 assistant 消息 + `qa_log_id`  
-5. 返回 Ask 同构的 answer/citations，外加 `chatSessionId`、`messageId`
-
-P0 检索 query：用「最近 1 轮摘要 + 本轮问题」做召回，避免只搜「那下一步呢」。生成 prompt 才带完整历史。
+字段表、错误码、验收见契约 §3～§6。
 
 ---
 
-## 5. 上下文打包（P0 简版 → P1 完整预算）
+## 5. 上下文打包
 
-优先级从高到低，超 `kb.chat.max-prompt-tokens`（默认如 6k）则砍低优先级：
+优先级从高到低（P1 才按 token 砍；P0 只按轮数砍最旧）：
 
-1. 系统规则（Ask 现有 +「可使用下列会话摘录，事实仍以检索片段为准」）  
+1. 系统规则（Ask 现有 +「摘录只用于指代，事实以检索片段为准」）  
 2. 本轮用户问题  
-3. RAG 片段（`llmContextTopK`，幻觉约束仍靠引用）  
-4. P2 长期记忆 top-M（默认 3）  
+3. RAG 片段（`llmContextTopK`）  
+4. P2 长期记忆 top-M  
 5. `session.summary`  
-6. 最近 K 轮原文（默认 K=6，user+assistant 各算一轮）
+6. 最近 K 轮原文（默认 6）
 
-P0 只做 1+2+3+6，K=6，超长从最旧一轮删。  
-P1 加：每满 12 轮用 LLM 把更早内容滚进 `summary`（只增补，带日期）。
-
-**幻觉**：历史只当指代消解（「那个网关」= 上一轮的 moli-gateway），数字/结论仍须 citations。Guardrails 在打包后、调 LLM 前照旧走。
+幻觉约束不变：数字/结论须 citations。Guardrails 看**本轮原文**。
 
 ---
 
-## 6. 长期记忆（P2）
+## 6. 长期记忆（P2，不开工）
 
-**写入**（会话关闭或每 N 轮异步）：
-
-- Prompt：从本会话抽出 ≤5 条「对用户以后有用的事实」，JSON 数组；禁止把检索到的 wiki 原文当用户记忆  
-- 过滤：PII 走既有脱敏；空/重复 `content_hash` 跳过  
-- 同时写 MySQL + sidecar `/embed`
-
-**读出**（每次 messages）：
-
-- `POST /search`，`filter.userId` 必须等于当前用户  
-- 与 RAG 分栏进入 prompt：`[用户记忆]` vs `[知识库片段]`
-
-**衰减**：30 天未命中则 `salience` 下调；低于阈值不再召回（行保留可人工）。
+关会话或每 N 轮抽出 ≤5 条「对用户以后有用」的事实；PII 走既有脱敏；读出时 `filter.userId` 必须等于当前用户；与 RAG 分栏进 prompt。
 
 ---
 
-## 7. 分期与验收
+## 7. 分期
 
-| 阶段 | 做 | 验收 |
-|------|----|------|
-| **P0** 会话 + 短时 | 表 + CRUD + messages 注入最近 K 轮；UI 对话页带 session | 两轮：「502 查哪」→「日志 connection refused」第二轮答里出现网关/上游，且 `/kb/ask` 单测零回归 |
-| **P1** 预算 + 摘要 | token 估算、滚摘要、配置项 | 20 轮后 prompt 仍低于预算；摘要含早期结论 |
-| **P2** 长时 | 抽取 + 独立 collection + 召回 | 新 session 问「昨天那个网关」能带出记忆条；搜不到别人的记忆 |
-| **P3** 挂接 | Agentic/Research 可选 `chatSessionId`；AIOps 不强制 | 同一会话里先 Ask 再 agentic 不丢指代 |
+| 阶段 | 做 | 验收摘要 |
+|------|----|----------|
+| **P0** | 表 + Chat API + K 轮注入；问答页加会话栏 | 两轮指代可接上；Ask 单测 / ngram 评测零回归 |
+| **P1** | token 预算、滚摘要 | 20 轮后 prompt 仍低于预算 |
+| **P2** | 抽取 + 独立 collection | 新 session 能召回「昨天那个网关」；隔离他人 |
+| **P3** | Agentic/Research 可选挂 session | 不在第一刀 |
 
-评测：`eval_ask.py` **默认不带 session**（避免污染 hit@3）。另做 `eval/chat_memory.jsonl`：2～4 轮脚本，断言第二轮 citations 或答案关键词。不纳入 ngram CI 阻断，直到稳定。
-
----
-
-## 8. 前端
-
-知识库问答页：会话列表 | 消息流 | 发送走 `/kb/chat/sessions/{id}/messages`。  
-「新对话」= POST sessions。旧「单次提问」可保留直连 `/kb/ask`（调试/评测）。
+前端：不新增菜单，改 902 智能问答。旧「单次 `/kb/ask`」保留给评测。
 
 ---
 
-## 9. 风险
+## 8. 风险
 
 | 风险 | 处理 |
 |------|------|
-| 历史把错误结论带进下一轮 | Prompt 写明事实以 citations 为准；P2 抽取人工可删 |
-| 记忆泄漏到他人 | 所有查询强制 `user_id = 当前用户`；Chroma filter 同等 |
-| sidecar 挂了 | P2 降级：只读 MySQL LIKE/最近条，或跳过长时 |
-| 与语义缓存冲突 | AI-8 缓存 key 须含 `chatSessionId` 或 Chat 路径禁用语义缓存 |
+| 历史把错误结论带进下一轮 | Prompt 写明事实以 citations 为准 |
+| 记忆泄漏 | 所有查询强制 `user_id`；P2 Chroma 同等 filter |
+| 语义缓存串会话 | P0 Chat 不走 lookup/put |
+| sidecar 挂了 | P2 降级跳过长时；P0 不依赖 sidecar 记忆 |
 
 ---
 
-## 10. 建议开工顺序
+## 9. 默认已拍板（无异议即按此开工）
 
-1. 本方案确认（表名、K、是否新权限码）  
-2. `docs/sql/42_kb_chat_session.sql` 增量 + 合并基线  
-3. Java `KbChatController` / `KbChatService`（P0）  
-4. meiling-ui 对话壳  
-5. P1/P2 按上表
+1. 权限 `kb:ask:list`，不新造 `kb:chat:*`  
+2. 不新增侧栏菜单  
+3. P0 无 Redis、无 `kb_user_memory`  
+4. 对话默认 `useLlm=true`  
+5. SQL 文件号 **43**
 
-未确认前不改 `/kb/ask`、不改 golden 门禁。
+未确认前不改 `/kb/ask`、不改 golden 门禁。施工入口：契约 §8。

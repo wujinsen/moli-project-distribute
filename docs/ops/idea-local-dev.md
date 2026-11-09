@@ -48,6 +48,7 @@ VM options: -javaagent:$PROJECT_DIR$/deploy/observability/skywalking-agent/skywa
 ```
 
 **不要**在 VM options 里加 `-Dlogging.file.path=...`（尤其指向仓库根目录）。
+common / Gateway 会在启动时把 yml 里的相对 `logging.file.path` 解析成**仓库根下的绝对路径**，因此从模块目录 `mvn spring-boot:run` 也不会再写出 `moli-xxx/moli-xxx/.../logs` 套娃目录。显式 `MOLI_LOG_DIR` 仍然优先。
 
 | 服务 | 默认日志目录 | 日志文件 |
 |------|-------------|----------|

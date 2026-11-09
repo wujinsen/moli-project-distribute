@@ -2,6 +2,7 @@
 
 > 状态：**PoC 已落地**（`deploy/observability/`）；生产高可用/TLS/告警待办  
 > 范围：`moli-gateway`、user-center、order、ai、knowledge、moli-aiops 及基础设施  
+> **规划中（未实施）**：独立 `ops-server :28106` 接入同一套 scrape/日志/Trace，见 [`ops-service-extract-plan.md`](ops-service-extract-plan.md)。  
 > 目标：统一指标、日志与分布式链路，支持从告警定位到具体日志和调用跨度。  
 > 端口权威表：`docs/ops/local-dev-ports.md` · 操作手册：`docs/ops/monitoring-and-logs.md` · wiki [[监控与日志]]
 
@@ -173,7 +174,7 @@
 - Actuator 已按最小端点暴露，但生产安全组/防火墙白名单尚需部署侧实施。
 - 单机 Loki filesystem 与 SkyWalking H2 仅供 PoC，生产存储、高可用、备份策略未落地。
 - Grafana 日志 Dashboard 和 `trace_id` 检索入口（**Moli Trace Logs** Dashboard + `docs/ops/monitoring-and-logs.md` §4）。
-- **W3 已落地**：Prometheus 规则 + Alertmanager webhook → `POST /hooks/alertmanager` → `/diagnose`。钉钉/企微等通知通道仍待办。
+- **W3 已落地**：Prometheus 规则 + Alertmanager webhook → `POST /hooks/alertmanager` → `/diagnose`。Java 宕机另走 `POST /hooks/alertmail` 发邮件（参数设置 SMTP）。钉钉/企微仍待办。
 
 ---
 
@@ -238,7 +239,7 @@
 
 - 一次网关请求能看到完整跨服务 Trace。
 - HTTP 与 Dubbo Span 父子关系正确。
-- 错误 Span 能跳转到同一 `trace_id` 的 Loki 日志（Grafana **Moli Trace Logs** Dashboard；SkyWalking → Grafana 深链接待配置）。
+- 错误 Span 能跳转到同一 `trace_id` 的 Loki 日志（Grafana **Moli Trace Logs**；SkyWalking UI 右下角按钮 / 运维台 `GET /trace/inspect` 已接深链接）。
 - 关闭 Agent 后业务仍能正常启动，作为回滚路径。
 
 ### Phase 4 · Python 与 AIOps
@@ -247,7 +248,8 @@
 
 - **W1 已落地**：`ops_trace_get`（OAP `queryTraces` v2）+ `ops_logs_by_trace`（Loki 正文 `|=`）已挂 MCP 与 investigator；告警 / `POST /diagnose` 带 `trace_id` 时诊断报告含 Span 摘要与同 trace 日志。Servlet 服务错误信封 `MoliResult.traceId` 回 32 位根 ID。
 - moli-aiops、knowledge Python sidecar 使用 OpenTelemetry/SkyWalking Python 探针或标准 Trace Context（待办）。
-- **W3 已落地**：Alertmanager → `POST /hooks/alertmanager`（Bearer）→ 诊断；investigator 用 `ops_metrics_query` 读 Prom 窗口。钉钉/企微通知仍待办。
+- **W2 已落地**：运维台 Trace 排障页 `GET /trace` + `GET /trace/inspect`；SkyWalking ↔ Grafana 深链接；Alloy 补 `host` 标签。
+- **W3 已落地**：Alertmanager → `POST /hooks/alertmanager`（Bearer）→ 诊断；Java 宕机另 `POST /hooks/alertmail` 发邮件。investigator 用 `ops_metrics_query` 读 Prom 窗口。钉钉/企微仍待办。
 
 ---
 
@@ -319,9 +321,9 @@
 | OBS-04 | PoC 已完成 | Alloy + Loki 日志采集 | `deploy/observability/alloy/`、`loki/` |
 | OBS-05 | 基础完成 | 统一 Logback Trace/Span 上下文；脱敏规则待办 | 各服务 `logback-spring.xml` |
 | OBS-06 | PoC 已完成 | SkyWalking OAP/UI + Agent 模板 | `deploy/observability/`、`deploy/linux/*.env.example` |
-| OBS-07 | 待运行验收 | Trace/Span 传播 PoC | gateway、Dubbo、异步线程、knowledge |
-| OBS-08 | 部分完成 | Grafana 基础 Dashboard + **Moli Trace Logs** 全链路日志；告警与 SkyWalking 深链接待办 | `deploy/observability/grafana/`、`docs/ops/monitoring-and-logs.md` §4 |
-| OBS-09 | W1+W3 | AIOps 按 `trace_id` 关联 SW/Loki；AM webhook 进诊断；钉钉/企微待办 | `moli-aiops/`、`deploy/observability/` |
+| OBS-07 | 本机已验收 2026-09-06 | Trace/Span 传播 PoC（Gateway HTTP → Knowledge → Dubbo 鉴权 → JDBC/Redis）；异步线程/MQ 仍待专项 | gateway、Dubbo、knowledge |
+| OBS-08 | RED+告警+深链接 | Grafana Overview + **Moli RED** + **Moli Trace Logs**；Prom 规则含 5xx/延迟/P95/网关路由/堆/GC/Druid/CPU。SkyWalking ↔ Grafana 深链接已接 | `deploy/observability/grafana/`、`skywalking-ui/deeplink_inject.py`、`prometheus/rules/moli-alerts.yml` |
+| OBS-09 | W1+W2+W3 | AIOps 按 `trace_id` 关联 SW/Loki；排障页 `/trace/inspect`；AM webhook 进诊断；Java 宕机邮件已接参数设置 SMTP；钉钉/企微待办 | `moli-aiops/`、`deploy/observability/`、`moli-user-center` |
 | OBS-10 | 部分完成 | 运维 Runbook、容量压测与故障演练 | `docs/ops/`、`load-test/` |
 | OBS-11 | 已完成 | MyBatis `Slf4jImpl` + mapper DEBUG 落盘（dev/pro），Loki 可采 SQL | 各模块 `application-*.yml`、`logback-spring.xml` |
 | OBS-12 | 待办 | 生产主机 Alloy systemd 安装与日志路径验收 | `docs/ops/observability-production.md`、`deploy/observability/` |

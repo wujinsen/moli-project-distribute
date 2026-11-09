@@ -26,7 +26,8 @@ from sse_starlette.sse import EventSourceResponse
 from langgraph.types import Command
 
 from ops_mcp import config as ops_config
-from ops_mcp.errors import OpsToolError
+from ops_mcp.errors import OPS_INVALID_INPUT, OpsToolError
+from ops_mcp.evidence.observability import inspect_trace
 from ops_mcp.safety import approval as approval_mod
 
 from . import alert_webhook, config, trace
@@ -179,6 +180,8 @@ def health() -> dict[str, Any]:
         "force_dry_run": config.FORCE_DRY_RUN,
         "alert_webhook_configured": bool(config.ALERT_WEBHOOK_SECRET),
         "prometheus_url": ops_config.PROMETHEUS_URL,
+        "grafana_url": ops_config.GRAFANA_URL,
+        "skywalking_ui_url": ops_config.SW_UI_URL,
     }
 
 
@@ -200,6 +203,16 @@ def alertmanager_hook(payload: dict[str, Any]) -> dict[str, Any]:
         "started": started,
         "skipped": skipped,
     }
+
+
+@app.get("/trace/inspect")
+def trace_inspect(trace_id: str, lookback_hours: int = 24) -> dict[str, Any]:
+    """值班排障：复用 ops_trace_get + ops_logs_by_trace，并回 SkyWalking/Grafana 深链接。"""
+    try:
+        return inspect_trace(trace_id, lookback_hours=lookback_hours)
+    except OpsToolError as exc:
+        status = 400 if exc.code == OPS_INVALID_INPUT else 502
+        raise HTTPException(status, exc.message) from exc
 
 
 @app.post("/diagnose")
@@ -331,11 +344,20 @@ def rerun(run_id: str, body: RerunRequest) -> dict[str, Any]:
     return {"run_id": run_id, "reran_from": body.node}
 
 
-@app.get("/", response_class=HTMLResponse)
-def index() -> str:
+def _static_html(name: str) -> str:
     from pathlib import Path
 
-    return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
+    return (Path(__file__).parent / "static" / name).read_text(encoding="utf-8")
+
+
+@app.get("/", response_class=HTMLResponse)
+def index() -> str:
+    return _static_html("index.html")
+
+
+@app.get("/trace", response_class=HTMLResponse)
+def trace_page() -> str:
+    return _static_html("trace.html")
 
 
 def main() -> None:

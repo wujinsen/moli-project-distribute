@@ -1,6 +1,7 @@
 # 服务器运维模块 · 演进规划（技术端运维）
 
 > 更新：2026-07-13 · 状态：**后端 + 前端主线已闭环**（SVR-1～28、21、22～24）；**2026-07-13 已修** 多服务器双轨同步与 `serverId`/`serverIp` 绑定  
+> **后续（已定稿 · 暂不开工）**：从 user-center 拆成 `ops-server`，见 [`ops-service-extract-plan.md`](ops-service-extract-plan.md)  
 > **meiling-ui 交付**：[`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)
 > 归属：`moli-user-center` · `operation_*` 表 · 菜单「运营/运维管理」(id 400)
 > 边界：**只管服务器/基础设施资产运维**；知识库内容管道运维见 [`kb-ops-roadmap.md`](kb-ops-roadmap.md)（另一条独立路线，互不重叠）
@@ -257,6 +258,7 @@ SVR-13~20 功能已上线，但 **Schema 漂移、组件缺 `server_id`、定时
 
 ## 9. 相关
 
+- **独立服务拆分（对标 knowledge，设计稿 2026-09-09）**：[`ops-service-extract-plan.md`](ops-service-extract-plan.md) · 图 [`moli-ops-extract.drawio`](../diagrams/moli-ops-extract.drawio)
 - **改造方案**：[`operation-module-refactor-plan.md`](operation-module-refactor-plan.md)
 - 表结构：`docs/sql/USER_CENTER_SCHEMA.md` §2.3、`scripts/moli.sql`
 - API 地图：`docs/api/user-center-api-map.md` §4

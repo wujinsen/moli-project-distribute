@@ -28,7 +28,7 @@
 
 ---
 
-## 2. 表清单（15 张 · 含 T19 平台 LLM）
+## 2. 表清单（核心 + 增量）
 
 ### 核心内容（9）
 
@@ -60,6 +60,8 @@
 | `kb_space_member` | 空间级 ACL：成员可为**用户或角色**（复用用户中心），角色 `viewer/editor/admin` |
 | `kb_qa_log` | Query 历史：问题、答案、`citations`(JSON 引用)、作用域、provider/model、token、`useful` 反馈 |
 | `kb_agentic_trace` | Agentic 编排 trace（AI-7）：改写/子问题/每轮 steps_json、coverage、关联 `kb_qa_log.id` |
+| `kb_chat_session` | AI-11 P0 多轮会话（归属用户、默认空间、标题、status、last_message_at）；DDL [`43_kb_chat_session.sql`](43_kb_chat_session.sql) · **未合并** `scripts/moli.sql` |
+| `kb_chat_message` | AI-11 P0 会话消息（`user`/`assistant`、`qa_log_id`、token 粗估）；同上脚本 |
 
 ### 平台配置（1 · T19）
 

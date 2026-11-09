@@ -12,6 +12,9 @@ from aiops_agent.server import app
 
 def test_required_perm_mapping() -> None:
     assert required_perm("GET", "/health") is None
+    assert required_perm("GET", "/trace") is None
+    assert required_perm("GET", "/trace/") is None
+    assert required_perm("GET", "/trace/inspect") == "operation:aiops:list"
     assert required_perm("POST", "/diagnose") == "operation:aiops:diagnose"
     assert required_perm("GET", "/runs/run-abc/stream") == "operation:aiops:list"
     assert required_perm("POST", "/runs/run-abc/approve") == "operation:aiops:approve"
@@ -74,6 +77,62 @@ async def test_diagnose_forbidden_without_perm(monkeypatch: pytest.MonkeyPatch) 
             json={"title": "t", "target": "sandbox-app"},
         )
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_trace_inspect_forbidden_without_list(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(agent_config, "AUTH_ENABLED", True)
+
+    async def fake_validate(token: str) -> AuthContext | None:
+        return AuthContext(permissions=frozenset(["operation:aiops:diagnose"]), full_permission=False)
+
+    monkeypatch.setattr("aiops_agent.auth.validate_token", fake_validate)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get(
+            "/trace/inspect",
+            params={"trace_id": "13eef851b9434faa8dfcadbeeaa924a7"},
+            headers={"Authorization": "login_token_test"},
+        )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_trace_inspect_ok_with_list_perm(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(agent_config, "AUTH_ENABLED", True)
+
+    async def fake_validate(token: str) -> AuthContext | None:
+        return AuthContext(permissions=frozenset(["operation:aiops:list"]), full_permission=False)
+
+    monkeypatch.setattr("aiops_agent.auth.validate_token", fake_validate)
+    monkeypatch.setattr(
+        "aiops_agent.server.inspect_trace",
+        lambda trace_id, lookback_hours=24: {
+            "ok": True,
+            "root_trace_id": "13eef851b9434faa8dfcadbeeaa924a7",
+            "queried_id": trace_id,
+            "links": {"grafana_trace_logs": "http://g", "skywalking_ui": "http://s", "ops_console": "http://o"},
+        },
+    )
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get(
+            "/trace/inspect",
+            params={"trace_id": "13eef851b9434faa8dfcadbeeaa924a7"},
+            headers={"Authorization": "login_token_test"},
+        )
+    assert resp.status_code == 200
+    assert resp.json()["ok"] is True
+
+
+@pytest.mark.asyncio
+async def test_trace_page_ok_without_auth(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(agent_config, "AUTH_ENABLED", True)
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/trace")
+    assert resp.status_code == 200
+    assert "Trace 排障" in resp.text
 
 
 @pytest.mark.asyncio

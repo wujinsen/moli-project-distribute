@@ -150,10 +150,27 @@ services:
     environment:
       TZ: Asia/Shanghai
       SW_OAP_ADDRESS: http://skywalking-graphql-compat:12800
-    ports:
-      - "28120:8080"
     depends_on:
       - skywalking-graphql-compat
+    restart: unless-stopped
+
+  # 浏览器仍走 :28120。注入 Grafana / 运维台深链接按钮（SW 10.4 无官方 External Link）。
+  skywalking-ui-gateway:
+    image: python:3.12-alpine
+    container_name: moli-skywalking-ui-gateway
+    command: ["python", "/app/deeplink_inject.py"]
+    environment:
+      UPSTREAM_URL: http://skywalking-ui:8080
+      LISTEN_PORT: "8080"
+      GRAFANA_PUBLIC_URL: ${GRAFANA_PUBLIC_URL:-http://127.0.0.1:28300}
+      GRAFANA_DASHBOARD_UID: moli-trace-logs
+      AIOPS_TRACE_URL: ${AIOPS_TRACE_URL:-http://127.0.0.1:28105/trace}
+    ports:
+      - "28120:8080"
+    volumes:
+      - ./skywalking-ui/deeplink_inject.py:/app/deeplink_inject.py:ro
+    depends_on:
+      - skywalking-ui
     restart: unless-stopped
 
 volumes:

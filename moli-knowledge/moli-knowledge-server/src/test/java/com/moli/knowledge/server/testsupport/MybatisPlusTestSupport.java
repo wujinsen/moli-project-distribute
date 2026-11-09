@@ -3,6 +3,8 @@ package com.moli.knowledge.server.testsupport;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.moli.knowledge.server.entity.KbAttachment;
+import com.moli.knowledge.server.entity.KbChatMessage;
+import com.moli.knowledge.server.entity.KbChatSession;
 import com.moli.knowledge.server.entity.KbDocument;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 
@@ -25,7 +27,9 @@ public final class MybatisPlusTestSupport {
             MapperBuilderAssistant assistant = new MapperBuilderAssistant(configuration, "");
             Class<?>[] entities = new Class<?>[]{
                     KbDocument.class,
-                    KbAttachment.class
+                    KbAttachment.class,
+                    KbChatSession.class,
+                    KbChatMessage.class
             };
             for (Class<?> entity : entities) {
                 TableInfoHelper.initTableInfo(assistant, entity);

@@ -6,7 +6,8 @@
 > **技术规划**：[server-ops-module-roadmap.md](../design/server-ops-module-roadmap.md)  
 > **HTTP 契约索引**：[user-center-api-map.md](user-center-api-map.md) §4  
 > **端口矩阵权威**：[production-checklist.md](../ops/production-checklist.md) §2  
-> **边界**：本文档是 **user-center `operation_*` 基础设施台账**；**不是**知识库内容管道运维（见 [knowledge-ops-frontend.md](knowledge-ops-frontend.md)）。
+> **边界**：本文档是 **user-center `operation_*` 基础设施台账**；**不是**知识库内容管道运维（见 [knowledge-ops-frontend.md](knowledge-ops-frontend.md)）。  
+> **拆服务规划（暂不开工）**：进程迁到 `ops-server`、浏览器前缀改为 `/OpsServer` 的方案见 [ops-service-extract-plan.md](../design/ops-service-extract-plan.md)。**当前联调仍用** `{base}/UserCenter/operation/**`。
 
 ---
 

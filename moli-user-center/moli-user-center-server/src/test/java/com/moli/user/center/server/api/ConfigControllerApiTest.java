@@ -2,6 +2,7 @@ package com.moli.user.center.server.api;
 
 import com.moli.user.center.common.domain.vo.ConfigUpdateRequest;
 import com.moli.user.center.server.controller.ConfigController;
+import com.moli.user.center.server.service.AlertMailService;
 import com.moli.user.center.server.service.ConfigService;
 import com.moli.user.center.server.testsupport.AbstractApiTest;
 import com.moli.user.center.server.testsupport.ControllerTestSupport;
@@ -24,6 +25,9 @@ public class ConfigControllerApiTest extends AbstractApiTest {
 
     @Mock
     private ConfigService configService;
+
+    @Mock
+    private AlertMailService alertMailService;
 
     @Test
     public void GET_config_list() {
@@ -51,5 +55,11 @@ public class ConfigControllerApiTest extends AbstractApiTest {
     public void DELETE_config_reset() {
         ControllerTestSupport.assertSuccess(controller.reset("captcha.enabled"));
         verify(configService).resetToDefault("captcha.enabled");
+    }
+
+    @Test
+    public void POST_config_alertEmailTest() {
+        ControllerTestSupport.assertSuccess(controller.sendTestAlertEmail());
+        verify(alertMailService).sendTest();
     }
 }

@@ -8,6 +8,7 @@ import com.moli.common.constant.CommonConstant;
 import com.moli.knowledge.server.config.KbSearchProperties;
 import com.moli.knowledge.server.dto.AskRequest;
 import com.moli.knowledge.server.dto.AskResponse;
+import com.moli.knowledge.server.dto.ChatPack;
 import com.moli.knowledge.server.dto.KbChunkAskRow;
 import com.moli.knowledge.server.dto.retrieval.RerankCandidateDto;
 import com.moli.knowledge.server.dto.retrieval.RerankHitDto;
@@ -99,13 +100,23 @@ public class KbAskServiceImpl implements KbAskService {
 
     @Override
     public AskResponse ask(AskRequest request) {
-        return executeAsk(request, null);
+        return ask(request, ChatPack.NONE);
+    }
+
+    @Override
+    public AskResponse ask(AskRequest request, ChatPack pack) {
+        return executeAsk(request, null, pack);
     }
 
     /**
      * @param preGuard 非 null 时跳过重复检测（Agentic BLOCK 路径）
      */
     AskResponse executeAsk(AskRequest request, InputGuardOutcome preGuard) {
+        return executeAsk(request, preGuard, ChatPack.NONE);
+    }
+
+    AskResponse executeAsk(AskRequest request, InputGuardOutcome preGuard, ChatPack pack) {
+        ChatPack chatPack = pack == null ? ChatPack.NONE : pack;
         String rawQuestion = request.getQuestion().trim();
         int citationTopK = request.getTopK() == null || request.getTopK() <= 0
                 ? kbAskProperties.normalizedCitationTopK()
@@ -134,8 +145,9 @@ public class KbAskServiceImpl implements KbAskService {
             return buildGuardRejectResponse(request, guardOutcome, scopeSpaces, question);
         }
 
-        Scope scope = detectScope(question);
-        List<String> terms = buildTerms(question);
+        String retrievalQuery = ChatPack.resolveRetrievalQuery(question, chatPack);
+        Scope scope = detectScope(retrievalQuery);
+        List<String> terms = buildTerms(retrievalQuery);
         int candidateLimit = kbSearchProperties.normalizedAskCandidateLimit();
         List<AskResponse.Citation> citations;
         String llmContext;
@@ -144,13 +156,13 @@ public class KbAskServiceImpl implements KbAskService {
             String strategy = resolveRetrievalStrategy(request);
             ChunkRecallResult chunkResult;
             if (kbSearchProperties.isNgramStrategy(strategy)) {
-                chunkResult = recallAndScoreChunks(scopeSpaces, scope, question, terms, candidateLimit);
+                chunkResult = recallAndScoreChunks(scopeSpaces, scope, retrievalQuery, terms, candidateLimit);
             } else {
-                chunkResult = recallHybridChunks(scopeSpaces, scope, question, terms, candidateLimit, strategy,
+                chunkResult = recallHybridChunks(scopeSpaces, scope, retrievalQuery, terms, candidateLimit, strategy,
                         request);
             }
             DocumentRecallResult docResult = recallAndScoreDocuments(
-                    scopeSpaces, scope, question, terms, candidateLimit);
+                    scopeSpaces, scope, retrievalQuery, terms, candidateLimit);
             if (chunkResult != null && !chunkResult.scored.isEmpty()) {
                 citations = buildMergedCitations(chunkResult.scored, docResult.scored, terms, citationTopK);
                 llmContext = buildChunkContext(chunkResult.scored, llmContextTopK, llmContextMaxChars);
@@ -160,7 +172,7 @@ public class KbAskServiceImpl implements KbAskService {
             }
         } else {
             DocumentRecallResult docResult = recallAndScoreDocuments(
-                    scopeSpaces, scope, question, terms, candidateLimit);
+                    scopeSpaces, scope, retrievalQuery, terms, candidateLimit);
             citations = buildDocumentCitations(docResult.scored, terms, citationTopK);
             llmContext = buildContext(docResult.scored, llmContextTopK, llmContextMaxChars);
         }
@@ -185,8 +197,9 @@ public class KbAskServiceImpl implements KbAskService {
             try {
                 Long askSpaceId = request.getSpaceId() != null ? request.getSpaceId()
                         : (scopeSpaces.size() == 1 ? scopeSpaces.get(0) : null);
-                String answer = kbLlmClient.chat(KbLlmCallScenes.ASK, askSpaceId, SYSTEM_PROMPT,
-                        "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + llmContext);
+                String llmScene = chatPack.isChat() ? KbLlmCallScenes.ASK_CHAT : KbLlmCallScenes.ASK;
+                String answer = kbLlmClient.chat(llmScene, askSpaceId, SYSTEM_PROMPT,
+                        buildGenerativeUserPrompt(question, llmContext, chatPack));
                 resp.setAnswer(answer);
                 resp.setMode("generative");
                 outputGroundingService.applyGrounding(resp, askSpaceId, guardOutcome);
@@ -1097,6 +1110,16 @@ public class KbAskServiceImpl implements KbAskService {
     /** 前端显式 useLlm=true 且后端 kb.llm 已就绪时才调 LLM。 */
     private boolean shouldUseLlm(AskRequest request) {
         return Boolean.TRUE.equals(request.getUseLlm()) && kbLlmClient.usable();
+    }
+
+    /** 生成 user prompt：可选历史块 + 原 Ask 模板。ChatPack.NONE 时与 AI-11 前一致。 */
+    static String buildGenerativeUserPrompt(String question, String llmContext, ChatPack pack) {
+        String body = "问题：" + question + "\n\n可用知识库页（只能依据这些作答）：\n\n" + llmContext;
+        String history = pack == null ? "" : pack.formatHistoryBlock();
+        if (StringUtils.isBlank(history)) {
+            return body;
+        }
+        return history + "\n" + body;
     }
 
     private String retrievalAnswer(String question, List<AskResponse.Citation> citations) {

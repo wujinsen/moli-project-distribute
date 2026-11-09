@@ -11,9 +11,17 @@
       "icon": "external link",
       "tags": [],
       "targetBlank": true,
-      "title": "SkyWalking UI",
+      "title": "SkyWalking Trace",
       "type": "link",
-      "url": "http://127.0.0.1:28120"
+      "url": "http://127.0.0.1:28120/traces/${trace_id}"
+    },
+    {
+      "icon": "dashboard",
+      "tags": [],
+      "targetBlank": true,
+      "title": "AIOps Trace 排障",
+      "type": "link",
+      "url": "http://127.0.0.1:28105/trace?trace_id=${trace_id}"
     }
   ],
   "panels": [
@@ -31,7 +39,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "**用法**：SkyWalking Trace 详情复制 Trace ID → 粘贴到上方变量（只保留前 32 位，如 `13eef851b9434faa8dfcadbeeaa924a7`）→ 时间范围对齐 Trace 发生时刻 ±5 分钟。\n\n**排障顺序**：先在 SkyWalking 看哪一段 Span 报错/变慢，再用本页拉全服务日志。不要固定 `level=INFO`（SQL 等为 DEBUG）。",
+        "content": "**用法**：SkyWalking Trace 详情复制 Trace ID → 粘贴到上方变量（只保留前 32 位）→ 时间范围对齐 Trace 发生时刻 ±5 分钟。\n\n**互跳**：本页顶部链接可打开 SkyWalking `/traces/${trace_id}` 或运维台 `/trace?trace_id=`。SkyWalking UI 右下角按钮跳回本 Dashboard（`var-trace_id` + ±5 分钟）。\n\n**排障顺序**：先看错误/慢 Span，再拉全服务日志。不要固定 `level=INFO`（SQL 等为 DEBUG）。",
         "mode": "markdown"
       },
       "title": "说明",

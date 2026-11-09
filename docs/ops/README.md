@@ -19,6 +19,7 @@
 | **[maven-build-packaging.md](maven-build-packaging.md)** | **开发 / 生产 Maven 打包命令（`${revision}`）** |
 | **[idea-local-dev.md](idea-local-dev.md)** | **IDEA 本地启动（`.run` 配置在 Git，重装 IDE 免手配）** |
 | **[local-dev-ports.md](local-dev-ports.md)** | **本地开发端口表（281xx / 28548 Nacos）** |
+| **[ops 独立服务拆分（设计 · 暂不开工）](../design/ops-service-extract-plan.md)** | **运营管理迁出 user-center → `ops-server :28106` / `/OpsServer`** |
 | **[nacos-local-dev.md](nacos-local-dev.md)** | **本地 Nacos Docker · 28548** |
 | [../test/release-smoke-checklist.md](../test/release-smoke-checklist.md) | 发布后冒烟 |
 

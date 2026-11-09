@@ -1,4 +1,8 @@
 spring:
+  cloud:
+    nacos:
+      discovery:
+        ip: 127.0.0.1
   datasource:
     url: jdbc:mysql://localhost:3306/moli?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -127,6 +131,9 @@ kb:
     citation-top-k: 8
     llm-context-top-k: 3
     llm-context-max-chars: 12000
+  chat:
+    # AI-11 P0 多轮：注入生成的最近完整轮数（一对 user+assistant = 1 轮）
+    max-history-turns: 6
   agentic:
     # AI-7 Agentic RAG（默认关，A-INV-4 零回归；POST /kb/ask/agentic 或 agentic=true 启用）
     enabled: false
@@ -265,3 +272,8 @@ kb:
   browse:
     # 浏览与管理统一按分类（= wiki 一级目录）；groupBy=type 已废弃
     default-group-by: category
+
+dubbo:
+  protocols:
+    dubbo:
+      host: 127.0.0.1

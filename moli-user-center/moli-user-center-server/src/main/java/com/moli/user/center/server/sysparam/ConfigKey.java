@@ -49,7 +49,63 @@ public enum ConfigKey {
             ValueType.BOOLEAN,
             "true",
             ConfigGroup.OPS,
-            "服务器健康巡检定时任务开关");
+            "服务器健康巡检定时任务开关"),
+
+    OPS_ALERT_EMAIL_ENABLED(
+            "ops.alert.email.enabled",
+            ValueType.BOOLEAN,
+            "false",
+            ConfigGroup.OPS,
+            "Java 服务宕机邮件告警。打开后，Prometheus MoliServiceDown 会发到下方收件人"),
+
+    OPS_ALERT_EMAIL_TO(
+            "ops.alert.email.to",
+            ValueType.STRING,
+            "",
+            ConfigGroup.OPS,
+            "告警收件邮箱，多个用逗号或分号分隔"),
+
+    OPS_ALERT_EMAIL_FROM(
+            "ops.alert.email.from",
+            ValueType.STRING,
+            "",
+            ConfigGroup.OPS,
+            "发件人地址。留空则使用 SMTP 用户名"),
+
+    OPS_ALERT_SMTP_HOST(
+            "ops.alert.smtp.host",
+            ValueType.STRING,
+            "",
+            ConfigGroup.OPS,
+            "SMTP 服务器，如 smtp.qq.com / smtp.163.com"),
+
+    OPS_ALERT_SMTP_PORT(
+            "ops.alert.smtp.port",
+            ValueType.INT,
+            "465",
+            ConfigGroup.OPS,
+            "SMTP 端口。QQ/网易常用 465（SSL）或 587（STARTTLS）"),
+
+    OPS_ALERT_SMTP_USERNAME(
+            "ops.alert.smtp.username",
+            ValueType.STRING,
+            "",
+            ConfigGroup.OPS,
+            "SMTP 用户名，一般为完整邮箱"),
+
+    OPS_ALERT_SMTP_PASSWORD(
+            "ops.alert.smtp.password",
+            ValueType.SECRET,
+            "",
+            ConfigGroup.OPS,
+            "SMTP 密码或授权码（QQ/163 需在邮箱设置里开 SMTP 并生成授权码）"),
+
+    OPS_ALERT_SMTP_SSL(
+            "ops.alert.smtp.ssl",
+            ValueType.BOOLEAN,
+            "true",
+            ConfigGroup.OPS,
+            "SMTP 使用 SSL（端口 465 请开；587 可关并改用 STARTTLS）");
 
     private final String key;
     private final ValueType valueType;

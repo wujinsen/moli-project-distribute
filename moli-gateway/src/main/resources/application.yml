@@ -30,4 +30,8 @@ management:
     tags:
       application: ${spring.application.name}
       env: ${spring.profiles.active:default}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        gateway.requests: true
 

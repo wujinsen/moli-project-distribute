@@ -3,6 +3,7 @@ package com.moli.knowledge.server.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moli.knowledge.server.dto.AskRequest;
 import com.moli.knowledge.server.dto.AskResponse;
+import com.moli.knowledge.server.dto.ChatPack;
 import com.moli.knowledge.server.dto.QaHistoryVo;
 
 public interface KbAskService {
@@ -11,6 +12,11 @@ public interface KbAskService {
      * 知识库问答：定作用域 → 选页 → （有 key）调 LLM 带引用作答 / （无 key）检索式答案，并记 kb_qa_log。
      */
     AskResponse ask(AskRequest request);
+
+    /**
+     * 多轮对话内部重载。HTTP {@code POST /kb/ask} 仍只调 {@link #ask(AskRequest)}。
+     */
+    AskResponse ask(AskRequest request, ChatPack pack);
 
     /** 当前用户的问答历史（按可读空间过滤）。 */
     Page<QaHistoryVo> history(Long spaceId, int pageNum, int pageSize);

@@ -58,4 +58,12 @@ class TraceIdsTest {
     void errorEnvelope_omitsTraceIdWhenNoContext() {
         assertNull(MoliResult.errorMsg(500, "服务器错误").getTraceId());
     }
+
+    @Test
+    void successEnvelope_attachesRootTraceIdFromMdc() {
+        MDC.put("trace_id", "TID:13eef851b9434faa8dfcadbeeaa924a7.141.1");
+        MoliResult<String> result = MoliResult.success("ok");
+        assertEquals("13eef851b9434faa8dfcadbeeaa924a7", result.getTraceId());
+        assertEquals("ok", result.getData());
+    }
 }

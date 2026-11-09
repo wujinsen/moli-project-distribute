@@ -2,6 +2,7 @@
 
 > **状态**：active · 2026-07-13（W1–W10 + P3 前后端对齐）  
 > **技术路线图**：[`docs/design/server-ops-module-roadmap.md`](../design/server-ops-module-roadmap.md)  
+> **拆成独立服务（已定稿 · 暂不开工）**：[`docs/design/ops-service-extract-plan.md`](../design/ops-service-extract-plan.md)  
 > **改造方案**：[`docs/design/operation-module-refactor-plan.md`](../design/operation-module-refactor-plan.md)  
 > **前端契约**：[`docs/api/operation-frontend.md`](../api/operation-frontend.md) · [`operation-frontend-handoff.md`](../api/operation-frontend-handoff.md)  
 > **HTTP 契约**：[`docs/api/operation-deploy-api.md`](../api/operation-deploy-api.md)  
@@ -11,7 +12,7 @@
 
 ## 1. 背景与定位
 
-面向 **平台运维 / SRE**，在 user-center 内提供：
+面向 **平台运维 / SRE**，**当前**在 user-center 内提供（独立 `ops-server` 为后续规划，见拆分计划）：
 
 1. **四台账** — 平台、服务器、项目、组件  
 2. **部署中心** — 远程启停、SFTP 上传、命令执行、任务观测  

@@ -84,7 +84,8 @@ public class KbLlmClient {
         String provider = getProvider();
         String model = resolveModel(modelOverride);
 
-        if (cacheProperties.isEnabled()) {
+        boolean skipSemanticCache = KbLlmCallScenes.ASK_CHAT.equals(scene);
+        if (cacheProperties.isEnabled() && !skipSemanticCache) {
             Optional<KbLlmSemanticCacheEntry> cached =
                     semanticCache.lookup(scene, model, systemPrompt, userPrompt);
             if (cached.isPresent()) {
@@ -115,7 +116,7 @@ public class KbLlmClient {
                 failover = routed.isFailover();
             }
 
-            if (cacheProperties.isEnabled()) {
+            if (cacheProperties.isEnabled() && !skipSemanticCache) {
                 semanticCache.put(scene, model, systemPrompt, userPrompt, answer, actualProvider, actualModel);
             }
 

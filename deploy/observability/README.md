@@ -48,15 +48,18 @@ docker compose -f deploy/observability/docker-compose.observability.yml down -v
 ## 3. 首次验证
 
 1. 服务指标：`http://127.0.0.1:28101/actuator/prometheus`
-2. Prometheus → **Status / Targets**：已启动服务应为 `UP`；**Alerts** 应加载 `moli-core`（`MoliServiceDown` / `MoliHttp5xx` / `MoliHeapHigh`）
-2b. Alertmanager http://127.0.0.1:29093 ：firing 后 webhook 到本机 `moli-aiops :28105/hooks/alertmanager`（Bearer `moli-local-alert-webhook`，需先起 AIOps 并设置相同 secret）
+2. Prometheus → **Status / Targets**：已启动服务应为 `UP`；**Alerts** 应加载 `moli-core`（实例、5xx、延迟/P95、网关路由、堆/GC/Druid/CPU）
+2b. Alertmanager http://127.0.0.1:29093 ：firing 后 webhook ① 本机 `moli-aiops :28105/hooks/alertmanager`（诊断）② `user-center :28101/hooks/alertmail`（邮件，仅 `MoliServiceDown`）。Bearer 本地均为 `moli-local-alert-webhook`
 3. Grafana → **Dashboards / Moli / Moli Observability Overview**（http://127.0.0.1:28300，admin/admin）
+3b. Grafana → **Dashboards / Moli / Moli RED**：业务 QPS / 5xx / 平均延迟 / P95，以及网关按 `routeId`。P95 需各服务重启以导出 `_bucket`
 4. Grafana → **Dashboards / Moli / Moli Trace Logs**：SkyWalking 复制 Trace ID 前 32 位 → 一次查全服务日志（操作见 `docs/ops/monitoring-and-logs.md` §4）
 5. Grafana → **Explore / Loki**：查询 `{service="user-center-server"}`（时间范围选 **Last 7 days** 或更长；若只选 Last 1 hour 而服务近期未写日志文件，会显示 No logs found）
 6. SkyWalking UI：http://127.0.0.1:28120 ，启用 Java Agent 后应出现对应服务和 Trace  
    - 服务名用 `knowledge-server`（不要选幽灵名 `moli-knowledge`）  
    - 右上角保持 **UTC+8**（OAP 已设 `Asia/Shanghai`）。「最近一小时」按北京时间查，才能对上 logback 日志时间。不要改成 UTC+0。  
    - Trace 列表经 `skywalking-graphql-compat`（Caddy h2c + Python 改写）把 UI 10.4 的 `queryBasicTraces` 转成 BanyanDB 的 `queryTraces`；**改 compose 后需 `up -d` 并硬刷新浏览器**
+   - 浏览器端口仍是 28120，实际先经过 `moli-skywalking-ui-gateway`：Trace 页右下角可跳 Grafana **Moli Trace Logs** 或 `http://127.0.0.1:28105/trace`
+7. 运维台排障：`http://127.0.0.1:28105/trace` 粘贴信封 `traceId`，应同时看到 Span、Loki 命中和两条深链接
 
 **SkyWalking Agent ≠ Loki 日志**：`-javaagent` 只把 **Trace/拓扑** 上报到 OAP（28121），**不会**把日志推到 Loki。Grafana 里的日志来自 Alloy 采集各模块目录下的 `*.log` 文件（见 §4）。
 

@@ -3,7 +3,8 @@
 > **更新**：2026-07-13（**S-VO + W7–W10 前端已完工** · **W1–W10 走查 ✅**）  
 > **后端**：commit **`b4ac176a`** · `:8888` 无 API 阻塞  
 > **走查**：[operation-w1-w10-walkthrough.md](../test/operation-w1-w10-walkthrough.md) · meiling-ui 交付稿 [`meiling-ui/docs/api/operation-frontend-handoff.md`](../../meiling-ui/docs/api/operation-frontend-handoff.md)  
-> **给后端**：[frontend-backend-dependencies.md](frontend-backend-dependencies.md) · [operation-backend-handoff.md](operation-backend-handoff.md)
+> **给后端**：[frontend-backend-dependencies.md](frontend-backend-dependencies.md) · [operation-backend-handoff.md](operation-backend-handoff.md)  
+> **拆服务规划（暂不开工）**：[ops-service-extract-plan.md](../design/ops-service-extract-plan.md) · 现行前缀 `/UserCenter/operation`
 
 本地：`http://127.0.0.1:5141` → proxy `8888` · `admin`/`123456`  
 **前置**：重启 user-center `:8888`（含 `toVo` 计数、批量 deploy、任务取消等 2026-07-13 改动）

@@ -7,6 +7,8 @@
 | 包 | 内容 |
 |----|------|
 | `com.moli.common.core` | `MoliResult`（含可选 `traceId`）、`TraceIds`、`BaseEntity`、`BasePage`、雪花 ID |
+| `com.moli.common.logging` | `MoliLogDirs`：把 `logging.file.path` 钉到仓库 Alloy 目录 |
+| `com.moli.common.web` | `MoliResultTraceAdvice`、`SkyWalkingTraceMdcFilter` |
 | `com.moli.common.constant` | Redis/Shiro/权限/系统分组等常量 |
 | `com.moli.common.enums` | 业务类型、HTTP 方法、操作者类型、响应码 |
 | `com.moli.common.exception` | `BaseException`、`GlobalExceptionHandler` |

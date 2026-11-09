@@ -6,6 +6,8 @@ package com.moli.knowledge.server.support;
 public final class KbLlmCallScenes {
 
     public static final String ASK = "ask";
+    /** AI-11 多轮生成；写 kb_llm_call_log，但不走语义缓存。 */
+    public static final String ASK_CHAT = "ask_chat";
     public static final String AGENTIC_REWRITE = "agentic_rewrite";
     public static final String AGENTIC_SELF_CHECK = "agentic_self_check";
     public static final String ASK_GROUNDING = "ask_grounding";

@@ -13,6 +13,7 @@
 | **ai** | **28103** | Dubbo **28883** |
 | **knowledge** | **28104** | Dubbo **28884** |
 | **aiops (FastAPI)** | **28105** | 网关 `/AiOpsServer/**` |
+| **ops-server（规划）** | **28106** | 未实施。计划网关 `/OpsServer/**`，见 [ops-service-extract-plan.md](../design/ops-service-extract-plan.md) |
 
 **可观测性（本地 Docker PoC）：**
 

@@ -75,8 +75,8 @@
         <mxCell id="sw-ui" value="SkyWalking UI&#xa;链路树 + Span 详情&#xa;拓扑与性能分析" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="view">
           <mxGeometry x="880" y="70" width="360" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="diagnosis" value="moli-aiops / 运维人员&#xa;告警 → 指标窗口 → trace_id&#xa;→ Span → 同链路日志" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;" vertex="1" parent="view">
-          <mxGeometry x="1430" y="60" width="400" height="110" as="geometry" />
+        <mxCell id="diagnosis" value="moli-aiops / Trace 排障页&#xa;告警 → 指标窗口 → trace_id&#xa;GET /trace/inspect → Span + Loki&#xa;深链接 Grafana ↔ SkyWalking" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fontStyle=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;" vertex="1" parent="view">
+          <mxGeometry x="1430" y="50" width="400" height="130" as="geometry" />
         </mxCell>
 
         <mxCell id="e-metrics" value="metrics" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;endArrow=block;strokeColor=#82b366;fontSize=10;" edge="1" parent="1" source="apps" target="prom-scrape">

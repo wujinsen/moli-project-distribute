@@ -186,6 +186,21 @@ public class ConfigServiceImplTest extends AbstractApiTest {
         verify(configMapper, never()).insert(any());
     }
 
+    @Test
+    public void setOverride_keepsSecretWhenMaskSubmitted() {
+        useEnvironment();
+        SysConfig existing = new SysConfig();
+        existing.setId(2L);
+        existing.setConfigKey("ops.alert.smtp.password");
+        existing.setConfigValue("real-auth-code");
+        when(configMapper.selectOne(any())).thenReturn(existing);
+
+        configService.setOverride("ops.alert.smtp.password", ConfigSecrets.MASK);
+
+        verify(configMapper, never()).updateById(any());
+        verify(configMapper, never()).insert(any());
+    }
+
     // ---------- 重置为默认 ----------
 
     @Test
@@ -272,5 +287,19 @@ public class ConfigServiceImplTest extends AbstractApiTest {
         Assert.assertFalse(opsItems.isEmpty());
         opsItems.forEach(it ->
                 Assert.assertEquals(ConfigKey.ConfigGroup.OPS.name(), it.getGroupCode()));
+    }
+
+    @Test
+    public void listItems_masksSecretPassword() {
+        useEnvironment();
+        when(redisUtil.get(anyString())).thenReturn("__no_override__");
+        when(redisUtil.get(Constants.SYS_CONFIG_KEY + "ops.alert.smtp.password")).thenReturn("auth-code-123");
+
+        List<ConfigItemVo> items = configService.listItems(null);
+        ConfigItemVo password = items.stream()
+                .filter(it -> "ops.alert.smtp.password".equals(it.getConfigKey()))
+                .findFirst().orElseThrow(AssertionError::new);
+        Assert.assertEquals(ConfigSecrets.MASK, password.getEffectiveValue());
+        Assert.assertEquals("SECRET", password.getValueType());
     }
 }

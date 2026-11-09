@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 @Import({
         GlobalExceptionHandler.class,
         MoliResultTraceAdvice.class,
+        com.moli.common.web.MoliTraceWebConfiguration.class,
         com.moli.common.utils.SpringUtil.class,
         com.moli.common.core.IdGenerator.class,
         MoliJacksonAutoConfiguration.class

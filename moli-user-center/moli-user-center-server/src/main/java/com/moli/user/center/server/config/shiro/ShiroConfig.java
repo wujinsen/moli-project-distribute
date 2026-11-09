@@ -81,6 +81,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/loadtest/**", "anon");
         filterChainDefinitionMap.put("/sso/validate", "anon");
         filterChainDefinitionMap.put("/actuator/**", "anon");
+        filterChainDefinitionMap.put("/hooks/alertmail", "anon");
         filterChainDefinitionMap.put("/**", "authc");
         //未授权界面
         //配置shiro默认登录界面地址，前后端分离中登录界面跳转应由前端路由控制，后台仅返回json数据

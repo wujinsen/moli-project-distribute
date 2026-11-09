@@ -23,14 +23,15 @@
 | **知识库双入口导入（T20）** | [`kb-import-entry-design.md`](kb-import-entry-design.md) · 产品 [`../product/knowledge-import-entry-prd.md`](../product/knowledge-import-entry-prd.md) |
 | **知识库模块总览** | [`knowledge-module-overview.md`](knowledge-module-overview.md) |
 | **AI 模块（v1 骨架）** | [`ai-module-overview.md`](ai-module-overview.md) · [ai-api.md](../api/ai-api.md) |
-| **AI 能力演进路线（Hybrid 检索 / ChatBI / Agentic RAG / GraphRAG / MCP）** | [`ai-capability-roadmap.md`](ai-capability-roadmap.md) · 产品 [`../product/ai-capability-prd.md`](../product/ai-capability-prd.md) · 排期 [`ai-capability-schedule.md`](ai-capability-schedule.md) |
+| **AI 能力演进路线（Hybrid 检索 / ChatBI / Agentic RAG / GraphRAG / MCP）** | [`ai-capability-roadmap.md`](ai-capability-roadmap.md) · 产品 [`../product/ai-capability-prd.md`](../product/ai-capability-prd.md) · 排期 [`ai-capability-schedule.md`](ai-capability-schedule.md) · **AI-11 多轮** [`kb-agent-session-memory.md`](kb-agent-session-memory.md) · [契约](contracts/AI-11-contract.md) |
 | **AI · 混合检索 + 评测升级（AI-1/2/3）** | [`kb-hybrid-retrieval.md`](kb-hybrid-retrieval.md) · 图 [`moli-kb-hybrid-retrieval.drawio`](../diagrams/moli-kb-hybrid-retrieval.drawio) |
 | **AI · ChatBI / NL2SQL Agent（AI-4）** | [`bi-chatbi-nl2sql.md`](bi-chatbi-nl2sql.md) · 图 [`moli-ai-chatbi-flow.drawio`](../diagrams/moli-ai-chatbi-flow.drawio) |
 | **API 网关** | [`gateway-design.md`](gateway-design.md) · 路由 [`../api/gateway-routes.md`](../api/gateway-routes.md) |
 | **运维规划（两条独立线）** | [`server-ops-module-roadmap.md`](server-ops-module-roadmap.md) · [`kb-ops-roadmap.md`](kb-ops-roadmap.md) |
+| **运维管理拆成独立服务（对标 knowledge · 暂不开工）** | [`ops-service-extract-plan.md`](ops-service-extract-plan.md) · 图 [`moli-ops-extract.drawio`](../diagrams/moli-ops-extract.drawio) |
 | **拓扑与关系（SVR-25/28）** | [`server-topology-visualization.md`](server-topology-visualization.md) · [`operation-relations-navigation.md`](operation-relations-navigation.md) · 图 [`moli-operation-topology-graph.drawio`](../diagrams/moli-operation-topology-graph.drawio) |
 | **运营管理 + 部署中心改造** | [`operation-module-refactor-plan.md`](operation-module-refactor-plan.md) · 图 [`moli-operation-refactor.drawio`](../diagrams/moli-operation-refactor.drawio) |
-| **可观测性平台（Metrics / Logs / Traces）** | [`observability-platform-plan.md`](observability-platform-plan.md) · 平台图 [`moli-observability-platform.drawio`](../diagrams/moli-observability-platform.drawio) · 核心调用链 [`moli-observability-core-trace-flow.drawio`](../diagrams/moli-observability-core-trace-flow.drawio) |
+| **可观测性平台（Metrics / Logs / Traces）** | [`observability-platform-plan.md`](observability-platform-plan.md) · 平台图 [`moli-observability-platform.drawio`](../diagrams/moli-observability-platform.drawio) · 核心调用链 [`moli-observability-core-trace-flow.drawio`](../diagrams/moli-observability-core-trace-flow.drawio) · 排障深链接 [`moli-observability-trace-troubleshoot.drawio`](../diagrams/moli-observability-trace-troubleshoot.drawio) |
 | **端口矩阵可配置化（SVR-21）** | [`operation-port-matrix-config.md`](operation-port-matrix-config.md) · API [`operation-port-matrix-api.md`](../api/operation-port-matrix-api.md) · 图 [`moli-operation-port-matrix.drawio`](../diagrams/moli-operation-port-matrix.drawio) |
 | **项目/组件多服务器关联（SVR-22）** | [`operation-server-links.md`](operation-server-links.md) · 图 [`moli-operation-server-links.drawio`](../diagrams/moli-operation-server-links.drawio) |
 | 方案长文、踩坑、最佳实践 | `articles/` |
@@ -56,6 +57,7 @@
 | ![RBAC 模型](../diagrams/png/moli-rbac-model.png) | [moli-rbac-model.drawio](../diagrams/moli-rbac-model.drawio) |
 | ![秒杀链路](../diagrams/png/moli-seckill-flow.png) | [moli-seckill-flow.drawio](../diagrams/moli-seckill-flow.drawio) |
 | ![本地部署](../diagrams/png/moli-deploy-topology.png) | [moli-deploy-topology.drawio](../diagrams/moli-deploy-topology.drawio) |
+| ![运维独立服务拆分](../diagrams/png/moli-ops-extract.png) | [moli-ops-extract.drawio](../diagrams/moli-ops-extract.drawio) · ops-server :28106 + P0/P1/P2 |
 | ![可观测性平台](../diagrams/png/moli-observability-platform.png) | [moli-observability-platform.drawio](../diagrams/moli-observability-platform.drawio) · Prometheus + Grafana + Loki/Alloy + SkyWalking |
 | ![核心服务调用链](../diagrams/png/moli-observability-core-trace-flow.png) | [moli-observability-core-trace-flow.drawio](../diagrams/moli-observability-core-trace-flow.drawio) · Gateway / user-center / order / knowledge Trace/Span |
 | ![AI 能力路线](../diagrams/png/moli-ai-capability-roadmap.png) | [moli-ai-capability-roadmap.drawio](../diagrams/moli-ai-capability-roadmap.drawio) · AI-1~10 四波 |

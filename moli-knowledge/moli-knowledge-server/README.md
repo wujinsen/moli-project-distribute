@@ -109,6 +109,7 @@ moli-knowledge-server/
 | `kb_sync_log` | kb→DB 单向增量同步审计（M2） |
 | `kb_space_member` | 空间级 ACL（成员可为用户或角色，viewer/editor/admin） |
 | `kb_qa_log` | Query `/kb/ask` 历史：问题/答案/引用(JSON)/provider/model/token/反馈 |
+| `kb_chat_session` / `kb_chat_message` | AI-11 P0 多轮对话；DDL `docs/sql/43_kb_chat_session.sql` |
 
 > `doc_type`=内容格式(markdown/rich)，`kb_type`=知识类型(guide/service/concept/article/interview/output)，两者不同。
 > 向量库刻意不建，先用 MySQL ngram 全文索引，量大再外置（见 [ROADMAP §五](../kb/ROADMAP.md)）。
@@ -162,9 +163,14 @@ moli-knowledge-server/
 ### 问答 Query `/kb`（T2）
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/ask` | 提问。返回 `AskResponse`（含 `qaLogId` 供反馈） |
+| POST | `/ask` | 单轮提问。返回 `AskResponse`（含 `qaLogId` 供反馈） |
 | GET | `/ask/history?spaceId=&pageNum=&pageSize=` | 我的问答历史 `Page<QaHistoryVo>` |
 | PUT | `/ask/feedback/{id}?useful=` | 问答反馈（1有用/0无用） |
+| POST | `/chat/sessions` | AI-11 新建多轮会话 |
+| GET | `/chat/sessions` | 当前用户会话列表 |
+| GET | `/chat/sessions/{id}/messages` | 会话消息 |
+| POST | `/chat/sessions/{id}/messages` | 发送一轮（最近 K 轮 + 检索改写） |
+| POST | `/chat/sessions/{id}/close` | 关闭会话 |
 
 ### 浏览 `/kb`（T3）
 | 方法 | 路径 | 说明 |
@@ -247,7 +253,7 @@ POST /kb/wiki/lint-space
 | 阶段 | 事项 |
 |------|------|
 | M2 | `kb`（markdown）→ `kb_document` **单向同步**；`kb_document` 加 `slug` 唯一键 |
-| Query | 新增 `POST /kb/ask`：检索选页 → 拼上下文 → 调 LLM → **带引用答案 + 来源列表**（先中等模型，可随时换 `key+base-url+model`） |
+| Query | `POST /kb/ask` 单轮；**AI-11 P0** `POST /kb/chat/**` 多轮（不改 Ask HTTP 契约） |
 | 浏览 | `/kb/index` meta + `/kb/index/items|search|locate`、`/kb/page`（`/kb/graph`、`/kb/lint` 已落地，见上 [REST API](#图谱与体检-kb移植自-kbtoolsservepy)） |
 | 后期 | ~~空间级 ACL（复用 Shiro）~~ ✅、~~附件上传（MinIO）~~ ✅、检索升级（Meilisearch/向量，按量触发） |
 

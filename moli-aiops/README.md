@@ -6,6 +6,8 @@
 面向茉莉自己的微服务集群（`moli-gateway` / `moli-user-center` / `moli-order` / `moli-knowledge`），
 CMDB 直接读 `moli-user-center` 的运维台账，知识检索直接调 `moli-knowledge` 的 `/kb/ask`。
 
+> **规划（暂不开工）**：台账迁到独立 `ops-server` 后，CMDB 基址改为 `/OpsServer`。见 [`docs/design/ops-service-extract-plan.md`](../docs/design/ops-service-extract-plan.md)。当前仍用 `OPS_USER_CENTER_BASE_URL`。
+
 ---
 
 ## 1. 架构
@@ -197,6 +199,8 @@ docker compose -f drills/sandbox/docker-compose.yml up -d --build
 | GET | `/runs/{id}/history` | checkpoint 历史 |
 | POST | `/runs/{id}/rerun` | 从指定节点单步重跑 |
 | GET | `/health` | 依赖自检（无需登录）：LLM、CMDB、执行开关、本地 inventory 目标列表 |
+| GET | `/trace` | Trace 排障页（无需登录；查数走 `/trace/inspect`） |
+| GET | `/trace/inspect` | 按 `trace_id` 拉 Span + Loki，并回 Grafana / SkyWalking 深链接 |
 
 ---
 
@@ -215,18 +219,20 @@ docker compose -f drills/sandbox/docker-compose.yml up -d --build
 | `OPS_SW_OAP_GRAPHQL_URL` | `http://127.0.0.1:28122/graphql` | SkyWalking OAP GraphQL（只走 `queryTraces` v2） |
 | `OPS_LOKI_URL` | `http://127.0.0.1:28110` | Loki，按 32 位根 `trace_id` 正文检索 |
 | `OPS_PROMETHEUS_URL` | `http://127.0.0.1:29090` | Prometheus，供 `ops_metrics_query` |
+| `OPS_GRAFANA_URL` | `http://127.0.0.1:28300` | 排障页 Grafana 深链接（浏览器地址） |
+| `OPS_SW_UI_URL` | `http://127.0.0.1:28120` | 排障页 SkyWalking `/traces/:id` |
 | `AIOPS_ALERT_WEBHOOK_SECRET` | 空（拒绝） | Alertmanager Bearer；本地 compose 用 `moli-local-alert-webhook` |
 
 只读取证不受 `OPS_EXEC_ENABLED` 影响——关停开关时仍然能查，只是不能改。
 
 ### meiling-ui 整合
 
-前端入口在 **运营管理 → 故障诊断 / 诊断历史**（`meiling-ui`）。
+前端入口在 **运营管理 → 故障诊断 / 诊断历史 / Trace 排障**（`meiling-ui`）。本仓也可直接打开 `http://127.0.0.1:28105/trace`。
 
 | 项 | 说明 |
 |----|------|
 | 联调契约 | [`docs/api/aiops-frontend-handoff.md`](../docs/api/aiops-frontend-handoff.md) |
-| 菜单 SQL | [`docs/sql/40_operation_aiops_menu.sql`](../docs/sql/40_operation_aiops_menu.sql) |
+| 菜单 SQL | [`docs/sql/40_operation_aiops_menu.sql`](../docs/sql/40_operation_aiops_menu.sql)、[`docs/sql/42_operation_aiops_trace_menu.sql`](../docs/sql/42_operation_aiops_trace_menu.sql) |
 | 浏览器前缀 | `/AiOpsServer/*` → FastAPI `:8099` |
 | 入站鉴权 | `Authorization` → user-center `/auth/capabilities`（默认开启） |
 | 独立演示页 | `GET /` 仍提供 `static/index.html`；可设 `AIOPS_AUTH_DISABLED=true` |
@@ -248,6 +254,7 @@ pytest 覆盖安全闸门、MCP 注册与全链路取证：
 | `test_mcp_tools.py` | 13 个工具的 schema 与 `ToolAnnotations` 是否如实反映危险等级 |
 | `test_alert_webhook.py` | AM 载荷解析、Bearer、同指纹去重 |
 | `test_observability.py` | Trace ID 归一化、`queryTraces` v2、Loki `|=` 正文检索（HTTP 全 mock） |
+| `test_deeplinks.py` | Grafana / SkyWalking URL、`inspect_trace` 单路失败仍回链接 |
 | `test_service_health.py` | 信号缺失 vs 信号为负、无 systemd 的容器服务、unit 名含 shell 元字符 |
 | `test_diagnosis_flow.py` | 端到端：规则兜底、interrupt 挂起与恢复、风险标签来源、症状不得盖过根因 |
 

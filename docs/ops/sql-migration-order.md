@@ -57,6 +57,9 @@
 | 33 | `37_kb_research_menu.sql` | AI-10 · 主题调研菜单 911 + 角色绑定 |
 | 34 | `38_sys_config.sql` | 系统管理 · 参数设置 `sys_config` + 动作权限 + 角色 1/2 菜单 8（**已合并进 `moli.sql` 基线**） |
 | 35 | `39_sys_notice.sql` | 系统管理 · 通知公告 `sys_notice` + `sys_notice_read_cursor` + 角色 1/2 菜单 9（**已合并进 `moli.sql` 基线**） |
+| 36 | `40_operation_aiops_menu.sql` | AIOps 故障诊断 / 诊断历史菜单 408 / 409 + `operation:aiops:*` |
+| 37 | `42_operation_aiops_trace_menu.sql` | AIOps Trace 排障菜单 410（复用 `operation:aiops:list`） |
+| 38 | `43_kb_chat_session.sql` | AI-11 P0 · 知识库多轮 `kb_chat_session` / `kb_chat_message`（**未合并** `moli.sql`） |
 
 ---
 

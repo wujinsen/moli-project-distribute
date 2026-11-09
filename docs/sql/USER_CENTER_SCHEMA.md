@@ -10,6 +10,8 @@
 
 用户中心数据分为 **RBAC 核心**（`sys_*`）与 **运维资产**（`operation_*`）两套域，共用 MySQL 库 `moli`。
 
+> **归属规划（暂不开工）**：`operation_*` 计划改由独立服务 `ops-server` 读写，表名与库不变。见 [`../design/ops-service-extract-plan.md`](../design/ops-service-extract-plan.md)。当前仍由 user-center 承载。
+
 | 目标 | 说明 |
 |------|------|
 | RBAC | 用户—角色—菜单/动作；部门、岗位、字典 |
@@ -174,7 +176,7 @@ sys_notice   (孤立表，notice_type 对应字典 sys_notice_type)
 | 表 | 行数 | 备注 |
 |----|------|------|
 | `sys_user` | 33 | 含演示账号 |
-| `sys_menu` | 32 | 含 RBAC + 运维（含拓扑图 407）+ 知识库菜单 |
+| `sys_menu` | 32 | 含 RBAC + 运维（含拓扑图 407、AIOps 408/409、Trace 排障 410）+ 知识库菜单 |
 | `sys_role` | 10 | |
 | `sys_system` | 35 | 多系统门户演示 |
 | `sys_action` | 38 | 动作码目录（追 38/39 后 +5：config 2 + notice 3） |

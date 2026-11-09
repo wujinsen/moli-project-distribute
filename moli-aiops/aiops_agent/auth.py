@@ -16,7 +16,13 @@ from . import alert_webhook, config
 log = logging.getLogger("aiops.auth")
 
 MOLI_SUCCESS_CODES = {0, 200}
-_SKIP_PATHS = {"/", "/health"}
+_SKIP_PATHS = {"/", "/health", "/trace"}
+
+
+def _norm_path(path: str) -> str:
+    if not path or path == "/":
+        return "/"
+    return path.rstrip("/") or "/"
 
 
 @dataclass(frozen=True)
@@ -26,8 +32,11 @@ class AuthContext:
 
 
 def required_perm(method: str, path: str) -> str | None:
-    if path in {"/", "/health"}:
+    path = _norm_path(path)
+    if path in _SKIP_PATHS:
         return None
+    if method == "GET" and path == "/trace/inspect":
+        return "operation:aiops:list"
     if method == "POST" and path == "/diagnose":
         return "operation:aiops:diagnose"
     if method == "GET" and path == "/runs":
@@ -80,7 +89,7 @@ class ShiroAuthMiddleware(BaseHTTPMiddleware):
         if not config.AUTH_ENABLED:
             return await call_next(request)
 
-        path = request.url.path
+        path = _norm_path(request.url.path)
         if path in _SKIP_PATHS:
             return await call_next(request)
         if path == "/hooks/alertmanager":

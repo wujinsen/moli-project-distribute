@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 com.moli.common.autoconfigure.MoliCommonAutoConfiguration
+org.springframework.boot.env.EnvironmentPostProcessor=\
+com.moli.common.logging.MoliLoggingPathEnvironmentPostProcessor
